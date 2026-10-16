@@ -1,0 +1,68 @@
+{
+  "version": "1.0",
+  "jobId": "e2e-sample",
+  "templateId": "SUES_CALMA",
+  "artifacts": {
+    "source": {
+      "status": "ok"
+    },
+    "transcript": {
+      "status": "ok"
+    },
+    "captions": {
+      "status": "ok"
+    },
+    "vision": {
+      "status": "ok"
+    },
+    "reframePlan": {
+      "status": "ok"
+    },
+    "template": {
+      "status": "ok"
+    },
+    "directorPlan": {
+      "status": "ok"
+    },
+    "preview": {
+      "status": "ok"
+    },
+    "finalMp4": {
+      "status": "ok"
+    }
+  },
+  "validations": [
+    {
+      "id": "source-intact",
+      "status": "pass"
+    },
+    {
+      "id": "captions-human-reviewed",
+      "status": "pass"
+    },
+    {
+      "id": "face-track-stable",
+      "status": "pass"
+    },
+    {
+      "id": "safe-zones-ok",
+      "status": "pass"
+    },
+    {
+      "id": "preview-reviewed",
+      "status": "pass"
+    },
+    {
+      "id": "final-decodes",
+      "status": "pass"
+    },
+    {
+      "id": "audio-present",
+      "status": "pass"
+    },
+    {
+      "id": "no-secret-leak",
+      "status": "pass"
+    }
+  ]
+}
