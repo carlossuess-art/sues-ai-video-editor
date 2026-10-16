@@ -68,10 +68,12 @@ main como base. Leer este archivo y el Doc maestro antes de cada bloque; no recr
 el proyecto ni usar créditos Lovable para modificar este motor. Añadir la URL de
 este repo y los IDs de Drive a las instrucciones del Proyecto ChatGPT.
 
-## Acceso Sandbox pendiente · 16/10/2026
+## Alta Shotstack pendiente · 16/10/2026
 
-GitHub operativo. Navegador situado en el acceso de Shotstack. La autenticación no
-se inició: falta autorización explícita de Carlos para acceder al servicio externo,
-según el límite indicado al arrancar el POC. No se enviaron credenciales ni se creó
-cuenta. Siguiente paso: obtener esa autorización; después usar inicio de sesión seguro
-o entregar a Carlos el alta si corresponde. Sin tarjeta, suscripción, recarga ni cargos.
+Carlos autorizó expresamente el acceso a Shotstack. Autenticación con Google completada.
+La web está en https://app.shotstack.io/onboarding. Se prepararon nombre y uso
+“Add video editing inside my product”. No se marcó la aceptación de condiciones ni
+se pulsó Get Started. Carlos debe elegir nivel técnico, revisar/aceptar condiciones
+y completar el alta personalmente. Después comprobar créditos y API Keys → Sandbox.
+No se ha leído ni configurado ninguna API key. Sin tarjeta, compra, recarga ni cargos.
+La fase sigue al 70 % / global 11,5 %; primer render pendiente.
