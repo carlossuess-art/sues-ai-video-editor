@@ -98,5 +98,5 @@ No se ejecutó ninguna transcripción remota ni se consumieron créditos.
 5. Renderizar primer vídeo subtitulado en Sandbox.
 6. Ajustar primer estilo SUES de captions y cerrar Fase 3.
 
-Bloqueos actuales: únicamente la prueba ASR real si implica coste o requiere una credencial.
-Necesito de Carlos ahora: nada; pedir aprobación justo antes de ejecutar ASR con coste.
+Bloqueos actuales: Carlos ya autorizó hasta 0,01 USD para UNA prueba ASR real. Se creó una clave OpenAI temporal de 24 h mediante flujo cifrado, sin exponerla en chat/Drive/GitHub. El entorno de chat intentó llamar al endpoint de transcripción, pero la red del contenedor no pudo resolver api.openai.com; la petición no salió y no hubo coste. Archivos temporales de clave privada/clave descifrada se eliminaron. Audio de 230.528 bytes conservado para la prueba.
+Necesito de Carlos ahora: nada. Siguiente ejecución recomendada: Work, porque dispone del entorno de red/navegación necesario para completar la llamada ASR y continuar con captions/render sin reconfigurar el proyecto.
