@@ -1,0 +1,28 @@
+{
+  "conservative": {
+    "keyframes": 73,
+    "start": 0,
+    "end": 37.9508,
+    "zoomMin": 1.12,
+    "zoomMax": 1.12,
+    "maxCropStepPx": 0,
+    "maxCropSpeedPxPerSec": 0,
+    "maxZoomRatePerSec": 0,
+    "meanAbsoluteEyeLineError": 0.12451295776255707,
+    "medianEyeLine": 0.5265879583333334,
+    "faceCroppedSamples": 0
+  },
+  "composition": {
+    "keyframes": 73,
+    "start": 0,
+    "end": 37.9508,
+    "zoomMin": 1.4,
+    "zoomMax": 1.4,
+    "maxCropStepPx": 23.194684420524368,
+    "maxCropSpeedPxPerSec": 27.81692081829924,
+    "maxZoomRatePerSec": 0,
+    "meanAbsoluteEyeLineError": 0.014924700074513332,
+    "medianEyeLine": 0.4113960521148793,
+    "faceCroppedSamples": 0
+  }
+}

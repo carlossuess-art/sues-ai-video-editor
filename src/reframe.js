@@ -92,3 +92,41 @@ export function summarizeReframePlan(plan){
     maxZoomRatePerSec:maxZoomRate
   };
 }
+
+// Fixed shot framing is separate from semantic zoom events (future Director).
+export const CAMERA_PROFILES=Object.freeze({
+  conservative:Object.freeze({zoom:1.12,maxZoom:1.2,eyeLine:.40,headroom:.06}),
+  composition:Object.freeze({zoom:1.40,maxZoom:1.45,eyeLine:.40,headroom:.06})
+});
+
+export function buildCameraProfilePlan(frames,{profile='composition',crop={},stabilization={},tracking={}}={}){
+  assert(Object.hasOwn(CAMERA_PROFILES,profile),'Camera: perfil desconocido');
+  const cfg={...CAMERA_PROFILES[profile],...crop};
+  assert(Object.values(cfg).every(Number.isFinite),'Camera: parámetros no finitos');
+  assert(cfg.zoom>=1&&cfg.maxZoom>=cfg.zoom&&cfg.maxZoom<=2,'Camera: zoom inválido');
+  assert(cfg.eyeLine>=.2&&cfg.eyeLine<=.65&&cfg.headroom>=0&&cfg.headroom<=.2,'Camera: composición inválida');
+  const points=stabilizeFaceTrack(buildFaceTrack(frames,tracking),stabilization);
+  const keyframes=points.map(p=>{
+    const w=p.frameWidth,h=p.frameHeight,aspect=9/16;
+    const height=Math.min(h,w/aspect)/cfg.zoom,width=height*aspect;
+    const x=clamp(p.smoothed.eyeX-width/2,0,w-width);
+    const desiredY=Math.min(p.smoothed.eyeY-height*cfg.eyeLine,p.face.y-height*cfg.headroom);
+    const y=clamp(desiredY,0,h-height);
+    return {time:p.time,x,y,width,height,zoom:cfg.zoom,anchor:'eyes',outputWidth:1080,outputHeight:1920};
+  });
+  return {version:'1.0',mode:'face-eye-reframe-stable',profile,framing:cfg,
+    interpolation:'linear-source-time-hold-ends',stabilization:{...DEFAULT_STABILIZATION,...stabilization},
+    keyframes,safeZones:PORTRAIT_SAFE_ZONES};
+}
+
+export function sampleReframeAt(plan,time){
+  assert(Number.isFinite(time)&&time>=0,'Camera: tiempo inválido');
+  const k=plan?.keyframes;assert(k?.length,'Camera: keyframes vacíos');
+  if(time<=k[0].time)return {...k[0],time};
+  if(time>=k.at(-1).time)return {...k.at(-1),time};
+  const i=k.findIndex(p=>p.time>=time),a=k[i-1],b=k[i];
+  assert(b.time>a.time,'Camera: timestamps desordenados');
+  const f=(time-a.time)/(b.time-a.time),out={...a,time};
+  for(const field of ['x','y','width','height','zoom'])out[field]=lerp(a[field],b[field],f);
+  return out;
+}

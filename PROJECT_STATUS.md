@@ -1,137 +1,69 @@
 # Estado técnico · 16/10/2026
 
-FASE 4/10 · VISIÓN: CARA, OJOS, REENCUADRE, ZOOM Y SAFE ZONES · EN CURSO
-Progreso fase: 55 %.
-Progreso global: 33 % = Fases 1–3 (25 %) + ~55 % de Fase 4 (~8 %).
-Rama activa: feat/phase-4-vision-camera.
-Último hito: detecciones reales de MediaPipe convertidas en una estrategia de cámara estable offline: dead zone, límites de velocidad/escala y compilador de Reframe Plan.
+FASE 4/10 · VISIÓN / CÁMARA INTELIGENTE · COMPLETADA PARA EL POC
+Progreso fase: 100 %.
+Progreso global: 40 % = Fases 1–3 (25 %) + Fase 4 (15 %).
+Rama oficial: feat/phase-4-vision-camera.
+Último hito: dos perfiles parametrizados comparados sobre POC real, crops e interpolación
+validados, preview local con audio archivado y 50/50 tests aprobados.
 
-## Fase 4 · Implementado
+## Decisiones y validación Fase 4
 
-- Nuevo `src/vision.js` provider-neutral.
-- Contrato de detecciones: tiempo, tamaño de frame, caras, confianza y ojos opcionales.
-- Selección de cara principal por confianza + tamaño + continuidad temporal.
-- Anclaje a la línea de ojos; fallback geométrico si faltan landmarks.
-- Suavizado temporal de posición y escala para reducir jitter.
-- Crop vertical 9:16 limitado a los bordes de la fuente.
-- Zoom base 1,08 con límite 1,35; todavía no es zoom semántico del Director IA.
-- Safe zones 1080x1920 para contenido/captions/UI.
-- `buildReframePlan()` produce keyframes independientes del proveedor de render.
-- `package.json` incluye `src/vision.js` en `npm run check`.
-- Documento técnico: `docs/PHASE_4_VISION.md`.
+- Base recomendada: composition, zoom fijo 1,40×, tope configurado 1,45×.
+- Alternativa conservative: 1,12× fijo, tope 1,20×, más contexto.
+- Línea de ojos objetivo 0,40; headroom mínimo 0,06 del crop.
+- La composición inicial fija es distinta de los futuros zooms semánticos del Director.
+- 73 keyframes de 74 muestras existentes, sin repetir MediaPipe/ASR.
+- Composición: mediana ojos 0,4114 frente a 0,5266 del conservador; error medio
+  0,0149 frente a 0,1245. Cara completa 73/73 y crops siempre dentro de fuente.
+- Crop composición: velocidad máx 27,82 px/s; paso máx 23,19 px; zoom rate 0.
+  Conservador en este POC queda fijado a bordes, velocidad 0.
+- Prueba interpolada a 30 fps con bounds y endpoint hold. No zoom periódico.
+- Preview local: 864×552, 24fps, 38,274 s, audio original. Sin APIs de render.
+- Fotogramas 2/10/20/35 s inspeccionados: composición reduce techo vacío y conserva
+  cabeza/torso. Se entrega vídeo para percepción de Carlos; no se afirma escucha
+  o visionado humano completo. Cierre técnico de cámara para este POC, no gate V1.
+- Test inicial fallaba al confundir paso por muestra con velocidad usando PTS
+  irregulares; corregido para verificar el contrato 4 % diagonal/s.
+- Baseline legacy reproducido: 27,4636 px/s, zoom 1,105247–1,145857, rate 0,015450/s.
+- Suite completa 50/50; npm run check OK. No npm ci: dependencias existentes válidas.
 
-## Validación
+## Código y comandos
 
-- 7/7 tests aislados de visión pasan en Node 22 en el entorno de chat.
-- Baseline completo anterior: 36/36 tests de Fase 3.
-- Prueba rápida actual: 8/8 tests Node (7 núcleo + fixture real) y 1/1 Python.
-- Suite combinada completa no repetida para ahorrar cuota Work.
-- POC real: 978 frames decodificados; 74 muestras, 73 con cara (98,65 %).
-- Dimensiones orientadas 1080×1920; timestamps 0–37,9508 s, sin fallback.
-- Ojos dentro de bbox en todas las detecciones. Desplazamiento de ancla: mediana
-  0,246 %, p95 2,27 %, máximo 8,66 % de diagonal (0,519–1,557 s, arranque/pérdida).
-  No afirmar estabilidad perfecta; filtrar este salto al preparar el track.
-- Coste adicional: 0 USD.
-- Sin render, ASR, IA generativa, CapCut, Lovable ni nuevas suscripciones.
+- src/vision.js: contrato detector, selección, ancla y safe zones.
+- src/reframe.js: filtro temporal, CAMERA_PROFILES, buildCameraProfilePlan,
+  sampleReframeAt; legado buildStableReframePlan conservado.
+- scripts/vision/build_reframe.mjs: default composition; --profile conservative/legacy.
+- scripts/vision/preview_reframe.py: comparación local sin importar MediaPipe.
+- JSON real: examples/vision/poc001.mediapipe.json, 74 muestras/73 cara, 20.576 bytes.
+- Métricas: examples/vision/poc001.camera-profiles.metrics.json.
+- Informe y comandos exactos: docs/CAMERA_PROFILES_VALIDATION.md.
+- npm run reframe -- examples/vision/poc001.mediapipe.json runtime/vision/poc001.reframe.json
+- npm run reframe -- examples/vision/poc001.mediapipe.json runtime/vision/conservative.json --profile conservative
+- npm test; npm run check.
+- Preview: venv runtime/preview-venv, opencv-python-headless==5.0.0.93 + FFmpeg.
+  No modelo facial ni clave necesarios para reproducir desde fixture.
 
-## Decisiones vigentes
+## Inventario y costes
 
-- Tracking/visión será clásico y reemplazable antes que generativo.
-- Línea de ojos estable > centro geométrico del frame.
-- Zoom sólo se volverá semántico cuando el Director IA aporte motivo; esta fase sólo
-  resuelve composición y estabilidad.
-- El mismo track facial podrá alimentar después relight, máscaras y motions.
-- Safe zones deben ser una restricción común para reencuadre, captions y overlays.
+- Repo privado: https://github.com/carlossuess-art/sues-ai-video-editor (1422196475).
+- Maestro: https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit
+- Pruebas Drive: 1efHjGfJ3b5vDYTkdMM_dUjQOumXGgqYr.
+- Original intacto: 1zSsbtfIBH3GEvrnkZfvGhssYRsw9kh82.
+- Comparativa: https://drive.google.com/file/d/1CtP7UUYC2BoMg96MtfCQXTrYX9wxlHz1/view?usp=drivesdk
+- Fotogramas: https://drive.google.com/file/d/1FdeYFyD2pGR5Y3OBxw7PToKaGjMSBYF3/view?usp=drivesdk
+- Auditoría: https://drive.google.com/file/d/1tiazA2Qkl8vlpPCJ9WVkhMCJP7ioYb6P/view?usp=drivesdk
+- Entrega en chat: libfile_c66d6825453c8191b0e41a4b9f5f26d5.
+- Coste nuevo bloque: 0 USD. ASR histórico 0,0039 USD; no repetido.
+- Sin Shotstack, generación, CapCut, Lovable, compras ni nuevos servicios.
 
-## Fases 1–3
+## Límites y continuación
 
-Fase 3 quedó cerrada al 100 % con captions por bloques aceptados por Carlos.
-No repetir ASR ni render de Fase 3. Baseline completo: 36/36 tests.
-
-## Referencias visuales
-
-El Roadmap Maestro contiene las referencias prioritarias de edición y el ranking de Carlos,
-incluido el Reel de deckeanu como referencia nº1 y Sues_Reel2_May_V1.mov como nº2.
-No usar esas referencias para copiar un estilo literal; extraer mecanismos para ADN SUES.
-
-## Detector candidato
-
-MediaPipe Face Landmarker (Python) queda como candidato preferido para el POC real:
-modo VIDEO, malla facial densa, tracking interno y ejecución local/open source sin tarifa
-por llamada. Se mantendrá detrás del adaptador propio; no es dependencia irreversible.
-Instalado y ejecutado: Python 3.12, mediapipe 1.1.1, opencv-python-headless 5.0.0.93.
-Modelo oficial float16/1 face_landmarker.task, SHA256
-64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff.
-No devuelve confianza de detección: score=1 es sólo proxy de presencia, no probabilidad.
-
-## Adaptador y salida
-
-- scripts/vision/face_landmarker.py: VIDEO, num_faces=1, muestreo objetivo 2 fps,
-  inferencia lado máximo 640; bbox y centros de ojos en píxeles de fuente orientada.
-- scripts/vision/requirements.txt y README.md: dependencias y comandos.
-- examples/vision/poc001.mediapipe.json: JSON real completo muestreado, 20.576 bytes.
-  Usar propiedad frames directamente con validateVisionFrame/buildFaceTrack.
-- Fuente original local ya archivada en Drive: 1zSsbtfIBH3GEvrnkZfvGhssYRsw9kh82.
-- runtime/vision/poc001.detections.json es la salida local; modelo no se sube a Git.
-- Detalle técnico: docs/MEDIAPIPE_POC_RESULT.md.
-- No se generó Reframe Plan, keyframes, render ni trabajo visual.
-
-## Incidencias y límite de seguridad
-
-Faltaba libGLESv2.so.2. apt falló por permisos; se extrajo paquete oficial libgles2
-1.7.0-1build1 en /tmp/sues-vision-libs. Comando ejecutado:
-LD_LIBRARY_PATH=/tmp/sues-vision-libs/usr/lib/x86_64-linux-gnu /tmp/sues-vision-venv/bin/python scripts/vision/face_landmarker.py /workspace/scratch/572186c4327c/upload/PXL_20261016_141233241.mp4 --model runtime/vision/face_landmarker.task --out runtime/vision/poc001.detections.json
-
-La ejecución escribió el JSON completo antes de que auto-review rechazara una conexión
-inesperada del paquete a play.googleapis.com. Contenido transmitido no identificado.
-No se reintentó ni se evadió el bloqueo. El JSON existente se validó sólo offline.
-No repetir inferencia hasta aclarar/autorizar ese tráfico; no afirmar ejecución sin red.
-
-## Estabilización offline añadida desde chat normal
-
-- `src/reframe.js`: filtro temporal independiente del detector.
-- Dead zone 0,6 % de diagonal para no perseguir micromovimientos.
-- Límite de movimiento 4 % de diagonal/s y escala 12 %/s.
-- Constantes temporales: posición 1,2 s; escala 1,5 s.
-- `tests/reframe.test.js`: pruebas sintéticas + fixture real preparadas.
-- `scripts/vision/build_reframe.mjs`: compilador offline JSON de detección → Reframe Plan.
-- `package.json`: comando `npm run reframe -- input.json output.json` y syntax checks.
-- Análisis: `docs/REFRAME_POC_ANALYSIS.md`.
-
-Replay analítico del fixture guardado, sin MediaPipe ni red: movimiento máximo estimado
-del crop ~27,46 px/s; paso máximo ~1,29 % de diagonal; zoom ~1,105–1,146; cambio máximo
-de zoom ~0,0155/s. Son métricas numéricas, no validación visual.
-
-Hallazgo: como la fuente ya es 1080×1920 y el sujeto está bajo/derecha, con el zoom
-conservador el crop toca borde derecho e inferior en todas las muestras. La línea de ojos
-ideal no siempre puede alcanzarse sin más zoom. No aumentar zoom a ciegas: comparar
-visualmente perfil conservador vs perfil de composición cuando vuelva Work.
-
-
-## Pretrabajo paralelo Fases 5–10
-
-Mientras Work no estaba disponible se adelantaron foundations independientes, todas desde
-el cierre estable de Fase 3 (10e194a...) para evitar depender de Fase 4 incompleta.
-No suman progreso global ni cuentan como fases iniciadas hasta integrarse y validarse.
-
-- F5 `feat/phase-5-template-foundation`: BrandKit/Template v1, cuatro estilos estructurales, tests. Foundation ~35 %.
-- F6 `feat/phase-6-motion-library-foundation`: Motion Asset v1, blur-resource, yes/no, listas, badges/cues, tests. Foundation ~30 %.
-- F7 `feat/phase-7-director-contract`: Director Plan v1 + enforcement determinista por plantilla, tests. Foundation ~25 %.
-- F8 `feat/phase-8-app-contract`: create-edit, ajustes, estados de job, requisitos de seguridad, tests. Foundation ~15 %.
-- F9 `feat/phase-9-e2e-acceptance`: manifest y gates técnico/cualitativo V1, tests. Foundation ~10 %.
-- F10 `feat/phase-10-consolidation-contract`: deployment checklist + frontera CapCut/MCP, tests. Foundation ~10 %.
-
-Detalle y commits: `docs/PARALLEL_FOUNDATIONS_5_10.md`.
-Orden futuro: cerrar F4 → integrar F5 → F6 → F7 → F8 → ejecutar F9 → F10.
-
-## Siguiente acción exacta
-
-Mientras no haya Work: no hace falta repetir MediaPipe. El núcleo offline ya está preparado.
-Cuando vuelva Work: checkout de la rama, ejecutar suite completa y `npm run reframe`
-sobre el fixture real; revisar el plan generado y hacer una prueba visual de dos perfiles
-(conservador y composición). Sólo después conectar keyframes al render.
-
-Bloqueos: nuevas inferencias MediaPipe siguen pendientes de aclarar por tráfico inesperado;
-no bloquea el fixture ya existente. La validación visual/render sí requiere entorno Work.
-Necesito de Carlos: nada hasta recuperar cuota Work.
-Coste externo adicional: 0 USD.
+MediaPipe 1.1.1 intentó tráfico a play.googleapis.com bloqueado por auto-review:
+no se ha reejecutado. Fixture existente permite completar este bloque offline.
+Una cara, muestra aproximada 2 fps; no es seguimiento de producción validado en más tomas.
+El plan usa tiempo fuente: mapear al timeline cortado antes de exportar E2E.
+Safe zones disponibles; resolución de conflictos de overlays vendrá con plantillas/motions.
+Siguiente: integrar foundations F5→F10 con diff, contratos y suite tras cada merge.
+No cerrar estética de estilos sin 3 Reels por estilo y validación propia de esa fase.
+Bloqueos para integración offline: ninguno. Necesito de Carlos: nada por ahora.
