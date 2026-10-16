@@ -67,3 +67,11 @@ Bloqueo GitHub resuelto. Continuar los cambios del POC en poc/phase-2, preservan
 main como base. Leer este archivo y el Doc maestro antes de cada bloque; no recrear
 el proyecto ni usar créditos Lovable para modificar este motor. Añadir la URL de
 este repo y los IDs de Drive a las instrucciones del Proyecto ChatGPT.
+
+## Acceso Sandbox pendiente · 16/10/2026
+
+GitHub operativo. Navegador situado en el acceso de Shotstack. La autenticación no
+se inició: falta autorización explícita de Carlos para acceder al servicio externo,
+según el límite indicado al arrancar el POC. No se enviaron credenciales ni se creó
+cuenta. Siguiente paso: obtener esa autorización; después usar inicio de sesión seguro
+o entregar a Carlos el alta si corresponde. Sin tarjeta, suscripción, recarga ni cargos.
