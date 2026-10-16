@@ -56,3 +56,8 @@ Repo privado: https://github.com/carlossuess-art/sues-ai-video-editor (ID 142219
 main contiene la base preparada; poc/phase-2 es la rama de trabajo para validar el
 primer vídeo real. Sin workflows de Actions ni servicios de pago habilitados.
 El ZIP previo de Drive conserva el estado antes de publicar; continuar desde GitHub.
+
+## Resultado real · 16/10/2026
+
+POC técnico completado; ver [informe de prueba](POC_RESULTS_001.md).
+19 tests offline y primer render cloud satisfactorios. Sin cargos; 10 créditos intactos.

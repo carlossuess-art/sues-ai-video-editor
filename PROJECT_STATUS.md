@@ -1,88 +1,70 @@
 # Estado técnico · 16/10/2026
 
-FASE 2/10 · POC CLOUD
-Progreso fase: 80 % (Sandbox y autenticación real preparados; render pendiente).
-Progreso global: 12,5 % = Fase 1 al 90 % × 5 % + Fase 2 al 80 % × 10 %.
-Fase 1 conserva 90 % hasta validar proveedor/almacenamiento con la prueba real.
+FASE 2/10 · POC CLOUD · COMPLETADA
+Progreso fase: 100 %.
+Progreso global: 15 % = Fase 1 al 100 % × 5 % + Fase 2 al 100 % × 10 %.
+Fase 1 cerrada al validar proveedor y almacenamiento con vídeo real.
 
-Último hito: POC implementado, validación contra snapshot oficial, 18 tests offline
-aprobados, comprobación de sintaxis y dry-run satisfactorios. Repositorio privado creado y
-rama de trabajo poc/phase-2 habilitada. No se ha renderizado
-ningún vídeo. Autenticación de Ingest/Edit verificada con GET de lectura.
+Último hito: primer MP4 cloud generado y descargado; 37,3 s, 1080×1920,
+30fps, voz original, título y cierre. Sandbox con marca de agua; coste real 0 USD.
+Saldo posterior: 10 créditos; dashboard indica 0 gastados.
 
-## Decisiones
+## Arquitectura y decisiones
 
-- Candidato provisional: Shotstack Edit + Ingest, exclusivamente `stage`.
-- Node.js 22+, JavaScript ESM; Ajv con lockfile. Payload validado antes de enviarse.
-- MP4 vertical 1080×1920, 30fps, 2 segmentos, título/outro, voz original.
-- `contain` evita recortar caras sin tracking; bandas si el original es horizontal.
-- Fuentes temporales en Ingest; hosting permanente del render excluido explícitamente.
-- Publicación por URL no equivale a almacenamiento privado. No usar material sensible
-  para este POC. El original de Drive permanece privado y sin cambios.
-- Captions manuales cronometradas mediante rich-text para esta fase; ASR en Fase 3.
-- Producción y generación IA bloqueadas en código. Sin OpenAI key ni coste IA.
-- Sin CapCut, nuevas cuotas, UI grande ni créditos Lovable.
+- Node.js 22+, JavaScript ESM, Ajv y snapshot OpenAPI oficial.
+- Shotstack Edit + Ingest stage validado como motor POC; adaptador reemplazable.
+- Video Edit Plan estructurado → timeline validado → render → descarga → archivo → limpieza.
+- Contain conserva el encuadre. Rotación 90° del HEVC de móvil resuelta por Shotstack.
+- Corte mecánico 12–13 s, título inicial y outro: demuestra montaje, no edición semántica.
+- Voz original volumen 1; sin música, ASR ni captions en esta ejecución.
+- Captions temporizadas mediante rich-text preparadas; transcripción en Fase 3.
+- Fuente temporal Ingest eliminada tras archivar; CDN permanente excluido.
+- Original y resultado privados en Drive; vídeos y credenciales excluidos de Git.
+- Producción/generación IA bloqueadas. Sin CapCut, Lovable, suscripciones ni compras.
+- PAYG orientativo: 0,20 USD/min; este vídeo equivaldría a unos 0,125 USD de render,
+  sujeto a reglas de facturación/extras. No se ha ejecutado producción.
 
-## Inventario y persistencia
+## Inventario
 
+- Doc maestro: https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit
 - Drive principal: 1SNifaQFcBMzQ_H_3UQZcNMkUmzrMykOf
-- Doc maestro: 1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ
 - Pruebas Drive: 1efHjGfJ3b5vDYTkdMM_dUjQOumXGgqYr
 - Estado Drive: 1aRkcle1mpKjom3E35rY_-soF0QrsSPUE
-- GitHub: https://github.com/carlossuess-art/sues-ai-video-editor
-- ID de repositorio: 1422196475. Visibilidad privada; propietario carlossuess-art.
-- Rama principal: main. Rama de trabajo Fase 2: poc/phase-2.
-- Repositorio creado mediante navegador autenticado; código publicado por conector.
-- Base local previa: 7fabed55527dfa4a20e867330642f531dbffcc35. El commit remoto
-  desciende del README inicial de GitHub; los hashes locales previos son históricos.
-- Paquete previo en Drive: 1PM7nfmFfzDzO5sWXLnmWIhNPsCp5qymX.
-  Es snapshot anterior a publicar GitHub; el repo es ahora la fuente técnica vigente.
-- Lovable: 12 proyectos comprobados, ninguno específico; no se han gastado créditos.
-- Sites relacionado: Sues Content Studio, appgprj_6a933e68e0408191a75dc6ff0364b0e2,
-  https://sues-content-studio-v1.suesholistics.chatgpt.site (estudio editorial).
-  Se consultaron metadatos, no su código; su reutilización como UI queda para Fase 8.
-  No se modificó ni se creó un Site paralelo.
-- Servicio añadido: repositorio privado GitHub. Sin nuevas cuentas ni API keys.
-  Sin workflows de pago ni suscripciones; coste de este bloque: 0 USD.
+- Repo privado: https://github.com/carlossuess-art/sues-ai-video-editor
+- Repo ID: 1422196475. Rama activa: poc/phase-2; main conserva baseline.
+- Original Drive: 1zSsbtfIBH3GEvrnkZfvGhssYRsw9kh82 (96.942.857 bytes).
+- Resultado Drive: 1uQl_nLIwO7NqzayotOQhewnOT7hXRh5S (24.873.991 bytes).
+- Render: a4708c00-45f2-4260-aef7-ebdc7d7b3c2d.
+- Source eliminado: zzz01m52-haf02-7avyc-1w53k-0523av.
+- Fuente vacía descartada/eliminada: zzz01m52-h8jp1-sa35t-19hz1-7kcj1e.
+- Resultado local: runtime/prueba-001/result.mp4. Job conservado como CLEANED.
+- Clave Sandbox sólo en .env local ignorado, permisos 0600; nunca en docs/commits.
+  Cuenta gratuita: 10 créditos, caducidad indicada 15/11/2026.
+- Snapshot histórico Drive anterior a GitHub: 1PM7nfmFfzDzO5sWXLnmWIhNPsCp5qymX.
+- Site relacionado, no modificado: Sues Content Studio,
+  appgprj_6a933e68e0408191a75dc6ff0364b0e2,
+  https://sues-content-studio-v1.suesholistics.chatgpt.site . Reutilización UI en Fase 8.
+- No workflows de Actions ni costes nuevos. GitHub es la fuente técnica vigente.
 
-## Pruebas y límites
+## Validación
 
-`npm test` → 18/18; `npm run check` → OK; `npm run dry-run` → OK.
-Pruebas: compilación/schema, tiempos, URL, capas, solapamiento, música, prohibición de
-costes, endpoints stage, polling, errores, locks, ciclo mock completo, descarga MP4,
-recuperación sin doble POST y fallo real de duración/ingest. Todo con mocks/offline.
-Validado con la cuenta real: GET Ingest stage /sources y GET Edit stage /templates.
-Ambos han respondido correctamente. Cuenta con 10 créditos gratuitos, caducidad 15/11/2026.
-No validado aún: PUT de vídeo, render real, tipografía visual, sincronía,
-resolución y audio del MP4 ni tiempo efectivo de render.
+19/19 tests offline aprobados, sintaxis y diff verificados. Nuevo test de Content-Length
+para PUT de vídeo. API real Ingest/Edit, subida, polling, render, descarga y limpieza
+verificados. Decodificación completa MP4 sin errores. Fotogramas de inicio, centro y
+cierre revisados: orientación y textos correctos. AAC no silencioso y niveles próximos
+al original; no se afirma revisión auditiva humana ni reproducción física en móvil.
+Latencia envío→descarga: 62,96 s; renderTime reportado: 11,634 s.
+Incidencias resueltas: timeout API aumentado a 120 s y Content-Length explícito en PUT.
+Un lock residual retirado tras comprobar ausencia del proceso; no se duplicó render.
+Evidencia detallada: docs/POC_RESULTS_001.md.
 
-## Bloqueos y siguiente acción exacta
+## Siguiente acción exacta
 
-1. Carlos adjunta vídeo real de 30–60 s o lo sube a 06_PRUEBAS de Drive.
-2. Ejecutar `npm run poc -- run /ruta/video.mp4 --out runtime/prueba-001 --execute-stage`.
-3. Inspeccionar MP4 y anotar duración, tamaño, latencia, marca de agua y coste (0).
-4. Archivar original/resultado/job en Drive; ejecutar cleanup del sourceId de ese job.
-5. Actualizar este archivo y Doc; sólo cerrar Fase 2 tras MP4 comprobado.
+Iniciar FASE 3/10 · Transcripción + segmentación + subtítulos (0 %): definir contrato de
+transcript con timestamps y edición manual, implementar compilación de captions y
+validación offline; después evaluar ASR sin activar cargos. Reutilizar vídeo archivado.
+Bloqueos actuales: ninguno. Necesito de Carlos: nada para preparación offline de Fase 3.
+Leer este archivo y Doc maestro antes de continuar; conservar historial y rama activa.
 
-Bloqueo GitHub resuelto. Continuar los cambios del POC en poc/phase-2, preservando
-main como base. Leer este archivo y el Doc maestro antes de cada bloque; no recrear
-el proyecto ni usar créditos Lovable para modificar este motor. Añadir la URL de
-este repo y los IDs de Drive a las instrucciones del Proyecto ChatGPT.
-
-## Shotstack Sandbox operativo · 16/10/2026
-
-Carlos completó el alta personalmente. Cuenta gratuita: 10 créditos; caducidad indicada
-en dashboard 15/11/2026. Entorno web SANDBOX seleccionado. No se contrató ningún plan.
-La clave stage existente se configuró sin imprimirla en el chat: .env con permisos
-0600 y git check-ignore confirmado. No hay claves en GitHub, Drive, Library ni docs.
-Configuración disponible sólo en este entorno Work; si caduca/se pierde el workspace,
-recuperar la clave desde la sesión autorizada o gestor de secretos, sin leerla en chat.
-
-Validación real sin render: GET https://api.shotstack.io/ingest/stage/sources y
-GET https://api.shotstack.io/edit/stage/templates → respuesta autenticada correcta.
-No se enviaron POST de render/upload/generación, no hay vídeos remotos creados.
-La copia al portapapeles del navegador no devolvía contenido; se usó el ejemplo cURL
-visible de Sandbox para guardar la clave sin exponerla. No se rotaron claves.
-
-Único material pendiente: vídeo propio de 30–60 s. Cuando llegue, ejecutar el POC.
-Coste nuevo: 0. Fase 2: 80 % / global 12,5 %. El render real sigue pendiente.
+Auditoría privada Drive (job, plan, timeline, verificación):
+https://drive.google.com/file/d/1SB6EX0zl02B0LuahAYdcg-D6OV3l07YF/view

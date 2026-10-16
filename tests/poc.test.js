@@ -105,3 +105,9 @@ test('provider failure and invalid real duration leave job cleanable',async()=>{
  assert.equal(new Jobs(join(d,'job')).load().state,'FAILED');assert.equal(c.submits,0);
  }
 });
+test('signed S3 upload streams with explicit Content-Length instead of chunked encoding',async()=>{
+ const d=dir(),file=join(d,'video.mp4');writeFileSync(file,'fake');let observed;
+ const client=new ShotstackStage({key:'test',fetchImpl:async(url,options)=>{observed=options;for await(const chunk of options.body){}return {ok:true,status:200};}});
+ await client.upload('https://shotstack-ingest-api-stage-sources.s3.amazonaws.com/id/source',file);
+ assert.equal(observed.headers['Content-Length'],'4');assert.equal(observed.method,'PUT');
+});
