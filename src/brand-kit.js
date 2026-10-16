@@ -17,6 +17,7 @@ export function validateBrandKit(b){
   assert(typeof b.id==='string'&&b.id.length>0,'BrandKit: id obligatorio');
   assert(typeof b.name==='string'&&b.name.length>0,'BrandKit: name obligatorio');
   for(const k of ['primary','accent']) assert(typeof b.fonts?.[k]==='string'&&b.fonts[k].length>0,`BrandKit: font ${k} inválida`);
+  for(const k of ['text','accent','dark','danger','success']) assert(hex.test(b.colors?.[k]),`BrandKit: color ${k} obligatorio`);
   for(const [k,v] of Object.entries(b.colors??{})) assert(hex.test(v),`BrandKit: color ${k} inválido`);
   assert(Number.isInteger(b.captions?.maxLines)&&b.captions.maxLines>=1&&b.captions.maxLines<=3,'BrandKit: maxLines');
   assert(Number.isInteger(b.captions?.maxCharsPerLine)&&b.captions.maxCharsPerLine>=12&&b.captions.maxCharsPerLine<=40,'BrandKit: maxCharsPerLine');

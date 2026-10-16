@@ -1,0 +1,135 @@
+{
+  "version": "1.0",
+  "policy": {
+    "templateId": "SUES_CALMA",
+    "pacing": "slow",
+    "cuts": {
+      "minShot": 2.2,
+      "maxShot": 7
+    },
+    "camera": {
+      "baseZoom": 1.04,
+      "maxZoom": 1.18,
+      "zoomReasons": [
+        "emphasis",
+        "revelation",
+        "emotional-turn"
+      ],
+      "zoomSpace": "relative-to-framing"
+    },
+    "captions": {
+      "mode": "blocks",
+      "font": "Open Sans",
+      "color": "#FFFFFF",
+      "accent": "#D7B56D"
+    },
+    "transitions": [
+      "cut",
+      "soft-fade",
+      "subtle-punch"
+    ],
+    "motions": [
+      "BLURRED_RESOURCE_01",
+      "NUMBER_BADGE_GOLD_01"
+    ],
+    "look": {
+      "blackWhite": "semantic",
+      "relight": "semantic"
+    },
+    "audio": {
+      "families": [
+        "calma-expansion",
+        "shadow-tension"
+      ]
+    },
+    "outro": {
+      "text": "Vuelve a ti · Sues Holistics",
+      "duration": 3
+    },
+    "constraints": {
+      "semanticZoomOnly": true,
+      "respectSafeZones": true
+    }
+  },
+  "events": [
+    {
+      "id": "decision-001",
+      "type": "caption-emphasis",
+      "start": 0.2,
+      "end": 2.1,
+      "reason": "hook verbal",
+      "rule": "highlight-key-phrase",
+      "params": {
+        "text": "Te enseñaron a mirar"
+      },
+      "templateId": "SUES_CALMA"
+    },
+    {
+      "id": "decision-002",
+      "type": "zoom",
+      "start": 4.2,
+      "end": 5.7,
+      "reason": "énfasis conceptual",
+      "rule": "semantic-zoom-only",
+      "params": {
+        "scale": 1.12,
+        "reason": "emphasis"
+      },
+      "templateId": "SUES_CALMA"
+    },
+    {
+      "id": "decision-003",
+      "type": "motion",
+      "start": 9.4,
+      "end": 12.4,
+      "reason": "apoyo visual de ejemplo",
+      "rule": "resource-when-explanatory",
+      "params": {
+        "motionId": "BLURRED_RESOURCE_01"
+      },
+      "templateId": "SUES_CALMA"
+    },
+    {
+      "id": "decision-004",
+      "type": "look",
+      "start": 18,
+      "end": 22,
+      "reason": "tramo introspectivo",
+      "rule": "semantic-black-white",
+      "params": {
+        "preset": "BLACK_WHITE_SOFT"
+      },
+      "templateId": "SUES_CALMA"
+    },
+    {
+      "id": "decision-005",
+      "type": "outro",
+      "start": 34,
+      "end": 37,
+      "reason": "cierre de marca",
+      "rule": "brand-outro",
+      "params": {
+        "preset": "SUES_OUTRO_01"
+      },
+      "templateId": "SUES_CALMA"
+    }
+  ],
+  "unresolvedMotions": [
+    "quote-card"
+  ],
+  "camera": {
+    "profile": "composition",
+    "framingZoom": 1.4,
+    "absoluteZoomLimit": 1.6,
+    "maxSemanticScale": 1.142857142857143
+  },
+  "renderReady": false,
+  "pending": [
+    "timeline-time-map",
+    "motion-bindings-and-renderer",
+    "look-audio-outro-enforcement",
+    "safe-zone-layout",
+    "human-style-references",
+    "real-e2e"
+  ]
+}

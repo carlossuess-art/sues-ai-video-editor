@@ -1,11 +1,15 @@
 # Estado técnico · 16/10/2026
 
-FASE 4/10 · VISIÓN / CÁMARA INTELIGENTE · COMPLETADA PARA EL POC
-Progreso fase: 100 %.
-Progreso global: 40 % = Fases 1–3 (25 %) + Fase 4 (15 %).
+FASE 5/10 · BRAND KIT + TEMPLATE ENGINE
+Progreso fase: 40 % (estimación técnica; estética sin cerrar).
+Progreso global: 44 % = Fases 1–4 (40 %) + 40 % del peso de Fase 5 (4 %).
 Rama oficial: feat/phase-4-vision-camera.
-Último hito: dos perfiles parametrizados comparados sobre POC real, crops e interpolación
-validados, preview local con audio archivado y 50/50 tests aprobados.
+Último hito: Fase 4 completa para POC_001; foundations F5→F10 integradas en orden
+con dos padres, revisión de diff y suite tras cada merge; preflight cruzado añadido.
+Suite final: 72/72 tests; npm run check cubre todos los JS/MJS de src/scripts.
+Coste externo nuevo: 0 USD. Ningún servicio de pago ejecutado.
+Trazabilidad completa: docs/FOUNDATIONS_INTEGRATION_RESULT.md.
+Código/auditoría: examples/foundation-preflight.sample.json (renderReady:false).
 
 ## Decisiones y validación Fase 4
 
@@ -64,6 +68,14 @@ no se ha reejecutado. Fixture existente permite completar este bloque offline.
 Una cara, muestra aproximada 2 fps; no es seguimiento de producción validado en más tomas.
 El plan usa tiempo fuente: mapear al timeline cortado antes de exportar E2E.
 Safe zones disponibles; resolución de conflictos de overlays vendrá con plantillas/motions.
-Siguiente: integrar foundations F5→F10 con diff, contratos y suite tras cada merge.
+Foundations ya integradas. Preflight conecta aliases de motion y distingue zoom
+semántico relativo del encuadre fijo; rechaza combinado >1,60× y tiempos inválidos.
+quote-card sin resolver explícitamente. No hay renderer de motions ni E2E aprobado.
+Siguiente: revisar 3 Reels SUES_CALMA, concretar tokens/layout, resolver motion
+pendiente y bindings/safe zones antes de un preview integrado local.
 No cerrar estética de estilos sin 3 Reels por estilo y validación propia de esa fase.
-Bloqueos para integración offline: ninguno. Necesito de Carlos: nada por ahora.
+Bloqueo para cierre estético F5: referencias suficientes de SUES_CALMA.
+Necesito de Carlos: 3 Reels del estilo antes de cerrar estética; pueden reutilizarse
+las referencias prioritarias si encajan. No se necesita vídeo nuevo ni API key.
+Backend pendiente: mapeo de tiempo, enforcement look/audio/outro y preview integrado.
+No se avanzan fases posteriores por el hecho de fusionar sus contratos.

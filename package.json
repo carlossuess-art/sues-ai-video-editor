@@ -10,7 +10,7 @@
     "test": "node --test",
     "dry-run": "node src/cli.js prepare examples/plan.json --out runtime/demo",
     "poc": "node --env-file-if-exists=.env src/cli.js",
-    "check": "node --check src/cli.js && node --check src/provider.js && node --check src/plan.js && node --check src/jobs.js && node --check src/transcript.js && node --check src/vision.js && node --check src/reframe.js && node --check scripts/vision/build_reframe.mjs",
+    "check": "node scripts/check.mjs",
     "reframe": "node scripts/vision/build_reframe.mjs"
   },
   "dependencies": {
