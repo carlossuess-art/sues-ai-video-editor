@@ -37,3 +37,8 @@ test('unsafe effects are removed with evidence; invalid base source still fails'
  const p=prepareProject(project);assert.ok(p.director.audit.rejections.length);assert.equal(p.director.decisions.filter(d=>d.type==='zoom').length,0);
  project.inputs.source.duration=30;assert.throws(()=>prepareProject(project),/duration/);
 });
+
+test('small nonzero zoom intensity remains usable above template minimum',()=>{
+ const d=buildAutomaticDirector({...fixture(),settings:{zoomIntensity:.25,motions:false}});
+ const zoom=d.decisions.find(e=>e.type==='zoom');assert.ok(zoom);assert.ok(zoom.params.scale>=1.04&&zoom.params.scale<1.08);
+});

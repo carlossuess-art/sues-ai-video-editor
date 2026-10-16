@@ -1,0 +1,71 @@
+{
+  "version": "1.0",
+  "jobId": "0c39a89e-48ae-461e-b886-36d73ce58c9f",
+  "state": "DONE",
+  "summary": {
+    "duration": 38.31,
+    "sourceWords": 75,
+    "mappedWords": 75,
+    "omittedWords": 0,
+    "captions": 16,
+    "zooms": 2,
+    "motions": 1,
+    "rejections": [],
+    "externalCostUSD": 0,
+    "productionReady": false
+  },
+  "fingerprint": "1bedba3f36c8d8651fecca51a4db9dab0c476790f533967558e846b12227fd1a",
+  "renderAttempts": 1,
+  "range": {
+    "status": 206,
+    "bytes": 1024
+  },
+  "audit": {
+    "version": "1.0",
+    "sourceSha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a",
+    "sourcePreserved": true,
+    "durationPlanned": 38.31,
+    "durationEncoded": 38.3,
+    "output": "preview.mp4",
+    "outputSha256": "a5e14849b73272fbf7f194c7d2851559d3b741b4ad3f5a5a0dc9586d61efed6a",
+    "bytes": 18602463,
+    "video": {
+      "codec": "h264",
+      "width": 1080,
+      "height": 1920,
+      "fps": "30/1"
+    },
+    "audioPresent": true,
+    "backgroundAudio": null,
+    "broll": [],
+    "captions": 16,
+    "font": {
+      "family": "Open Sans",
+      "regularSha256": "47cbab19bc5dc3527772ac056a31bfc0a964c3d34867a857bb44c2bbd8acd7e4",
+      "boldSha256": "f805aa580f0d37bf6ea265c74758387b7ef5fcfeeb9bed713304d0481ed603a8"
+    },
+    "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "fullDecode": "pass",
+    "productionReady": false,
+    "externalCostUSD": 0
+  },
+  "browserVisualQA": "not performed: browser cannot reach worker loopback",
+  "humanAcceptance": false,
+  "externalCostUSD": 0,
+  "videoDriveId": "1--Al_j2ZuMZlVMDe9JTw7a4dYGsAiz1B",
+  "libraryFileId": "libfile_3c26d9eeb0548191aacbe82aca5e9427",
+  "engineEquivalence": {
+    "latestPreparationFingerprint": "8dcc3a8d9f4d21f4758e02491e1cfa1acc01f7fd1deb1d6cff6df028d67c4a5a",
+    "manifest": "identical",
+    "filter": "byte-identical",
+    "ass": "byte-identical",
+    "reason": "source/music byte hashes added to cache fingerprint after render; actual render inputs unchanged"
+  },
+  "geometryReplay": {
+    "frames": 1150,
+    "maxCombinedZoom": 1.498,
+    "captionFaceChecks": 809,
+    "outroFaceChecks": 90,
+    "faceMethod": "nearest existing detection projected per output frame; not new inference"
+  }
+}

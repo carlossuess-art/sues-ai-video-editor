@@ -32,7 +32,8 @@ export function buildAutomaticDirector({transcript,template,brand,camera,setting
  const cutoff=transcript.sourceDuration-Math.max(3,policy.outro.duration),candidates=[];
  const maxBase=Math.max(...camera.keyframes.map(k=>k.zoom));
  assert(Number.isFinite(maxBase)&&maxBase>=1&&maxBase<=1.6,'camera zoom');
- const scale=Math.min(1+.08*options.zoomIntensity,policy.camera.maxZoom,1.6/maxBase);
+ const target=Math.max(policy.camera.baseZoom,1.08);
+ const scale=Math.min(options.zoomIntensity===0?1:policy.camera.baseZoom+(target-policy.camera.baseZoom)*options.zoomIntensity,policy.camera.maxZoom,1.6/maxBase);
  const permitted=policy.camera.zoomReasons;
  for(let i=0;i<transcript.words.length;i++){
   for(let count=3;count<=6&&i+count<=transcript.words.length;count++){
@@ -51,7 +52,7 @@ export function buildAutomaticDirector({transcript,template,brand,camera,setting
  if(limit>0&&options.zoomIntensity>0&&scale>=policy.camera.baseZoom){
   for(const c of candidates){
    const start=c.start,end=Math.min(cutoff,Math.max(c.end,start+2.4));
-   if(end-start<2.4||chosen.some(e=>start<e.end+2&&end>e.start-2))continue;
+   if(end-start<2.4-1e-6||chosen.some(e=>start<e.end+2&&end>e.start-2))continue;
    chosen.push({start,end});
    decisions.push({type:'zoom',start,end,reason:`Coincidencia léxica en locución: ${c.hits.map(h=>h.token).join(', ')}`,rule:'calma-lexical-v1',params:{scale,ramp:Math.min(1,(end-start)/2),reason:c.hits[0].kind},evidence:{...c,method:'spanish-lexicon-not-llm',timing:'existing-word-timestamps'}});
    if(chosen.length>=limit)break;
@@ -59,7 +60,7 @@ export function buildAutomaticDirector({transcript,template,brand,camera,setting
  }
  if(options.motions){
   const quote=candidates.find(c=>c.text.length<=48&&c.sourceWordIndexes.length<=5&&/[.!?…]$/.test(c.text)&&c.end-c.start>=.6&&Math.min(cutoff,Math.max(c.end,c.start+2.2))-c.start>=1.5);
-  if(quote)decisions.push({type:'motion',start:quote.start,end:Math.min(cutoff,Math.max(quote.end,quote.start+2.2)),reason:`Cita literal de palabras ${quote.sourceWordIndexes[0]}–${quote.sourceWordIndexes.at(-1)}`,rule:'calma-literal-quote-v1',params:{motionId:'QUOTE_CARD_01',bindings:{quote:quote.text},semanticReason:'reflection'},evidence:{...quote,method:'exact-transcript-quote-not-llm',timing:'existing-word-timestamps'}});
+  if(quote)decisions.push({type:'motion',start:quote.start,end:Math.min(cutoff,Math.max(quote.end,quote.start+2.2)),reason:`Cita literal de palabras ${quote.sourceWordIndexes[0]}–${quote.sourceWordIndexes.at(-1)}`,rule:'calma-literal-quote-v1',params:{motionId:'QUOTE_CARD_01',bindings:{quote:quote.text},semanticReason:'reflection'},evidence:{...quote,displayEnd:Math.min(cutoff,Math.max(quote.end,quote.start+2.2)),displayHoldExtendsASRTimestamps:false,method:'exact-transcript-quote-not-llm',timing:'existing-word-timestamps'}});
  }
  decisions.sort((a,b)=>a.start-b.start||a.end-b.end);
  return {version:'1.0',templateId:template.id,timeSpace:'edit-timeline',selection:'offline-lexical-baseline-v1',decisions,segments,

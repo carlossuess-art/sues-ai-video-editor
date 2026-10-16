@@ -1,0 +1,10 @@
+{
+  "synthetic": true,
+  "musicQuiet880Hz": 0.014966969026117284,
+  "musicUnderVoice880Hz": 0.0031488354904076715,
+  "voice440Hz": 0.2497534571052033,
+  "musicFadeEnd880Hz": 0.0010855112032436861,
+  "duckRatio": 0.21038564888542027,
+  "decode": "pass",
+  "externalCostUSD": 0
+}

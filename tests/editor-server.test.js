@@ -5,6 +5,7 @@ import {mkdtempSync,writeFileSync,readFileSync,mkdirSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {createEditorServer,parseRange} from '../src/editor-server.js';
+import {loadProject,prepareProject} from '../src/local-pipeline.js';
 import {EditorJobs} from '../src/editor-jobs.js';
 function fixture(){
  const dir=mkdtempSync(join(tmpdir(),'sues-editor-')),read=p=>JSON.parse(readFileSync(resolve('examples',p),'utf8'));
@@ -31,7 +32,11 @@ test('HTTP app protects sessions, origins and paths; persists edits and forbids 
   const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+token}});assert.equal(session.status,200);
   const cookie=session.headers.get('set-cookie').split(';')[0],headers={Cookie:cookie,'Content-Type':'application/json','X-Sues-Request':'editor'};
   assert.equal((await fetch(url+'/api/jobs',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:'{}'})).status,403);
-  const create=await fetch(url+'/api/jobs',{method:'POST',headers,body:JSON.stringify({profileId:'test'})});assert.equal(create.status,201);const job=await create.json();assert.equal(job.state,'PREVIEW_READY');
+  const create=await fetch(url+'/api/jobs',{method:'POST',headers,body:JSON.stringify({profileId:'test'})});assert.equal(create.status,201);
+  const design=await (await fetch(url+'/api/design?profileId=test',{headers})).json();assert.equal(design.styles.filter(s=>s.available).length,1);assert.equal(design.motions.filter(m=>m.rendered).length,3);assert.equal(design.brand.fonts.primary,'Open Sans');
+  const manifest=await (await fetch(url+'/manifest.webmanifest')).json();assert.equal(manifest.display,'standalone');
+  const worker=await (await fetch(url+'/sw.js')).text();assert.ok(!worker.includes("cache.add('/api/"));
+  const job=await create.json();assert.equal(job.state,'PREVIEW_READY');
   assert.throws(()=>new EditorJobs({directory,profiles:f.profiles}),/busy/);
   const bad=await fetch(url+'/api/jobs/'+job.id,{method:'PATCH',headers,body:JSON.stringify({settings:{zoomIntensity:2}})});assert.equal(bad.status,400);
   const good=await fetch(url+'/api/jobs/'+job.id,{method:'PATCH',headers,body:JSON.stringify({settings:{zoomIntensity:0,motions:false,captionOverrides:{'seg-001':'Puedes sentir.'}}})});assert.equal(good.status,200);
@@ -56,4 +61,8 @@ test('worker exports once, serves byte ranges, and records render cancellation a
   // Simulate a persisted interruption after a dead worker, then reopen.
   const raw=app.jobs.get(second.id);raw.state='RENDERING';app.jobs.save(raw);await app.close();const restarted=new EditorJobs({directory,profiles:f.profiles,renderer});assert.equal(restarted.get(second.id).state,'FAILED');await restarted.close();
  }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
+});
+
+test('changing source bytes invalidates a prepared fingerprint, and configured source SHA is enforced',()=>{
+ const f=fixture();try{const before=prepareProject(loadProject(f.profiles.test)).fingerprint;writeFileSync(join(f.dir,'source.mp4'),'different source bytes');const after=prepareProject(loadProject(f.profiles.test)).fingerprint;assert.notEqual(after,before);const config=JSON.parse(readFileSync(f.profiles.test));config.source.sha256='0'.repeat(64);writeFileSync(f.profiles.test,JSON.stringify(config));assert.throws(()=>loadProject(f.profiles.test),/SHA256 mismatch/);}finally{rmSync(f.dir,{recursive:true,force:true});}
 });

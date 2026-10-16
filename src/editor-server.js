@@ -3,6 +3,9 @@ import {readFileSync,statSync,createReadStream} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomBytes,timingSafeEqual} from 'node:crypto';
+import {loadProject} from './local-pipeline.js';
+import {RENDERED_MOTIONS} from './semantic-render.js';
+import {MOTION_ALIASES} from './foundation-integration.js';
 import {EditorJobs} from './editor-jobs.js';
 const WEB=resolve(dirname(fileURLToPath(import.meta.url)),'../web');
 const eq=(a,b)=>typeof a==='string'&&Buffer.byteLength(a)===Buffer.byteLength(b)&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
@@ -36,6 +39,11 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     const cookie=/(?:^|;\s*)sues_session=([^;]+)/.exec(req.headers.cookie??'')?.[1];
     if(!eq(cookie,token))return json(res,401,{error:'Session required'});
     if(!['GET','HEAD'].includes(req.method)&&req.headers['x-sues-request']!=='editor')return json(res,403,{error:'Request header required'});
+    if(path==='/api/design'&&req.method==='GET'){
+     const id=url.searchParams.get('profileId');if(!Object.hasOwn(profiles,id))return json(res,404,{error:'Unknown profile'});
+     const project=loadProject(profiles[id]),{brand,template,catalog}=project.inputs;
+     return json(res,200,{brand,template,styles:['SUES_CALMA','SUES_IMPACTO','SUES_EXPLICA','SUES_HISTORIA'].map(id=>({id,available:id==='SUES_CALMA'})),motions:catalog.map(m=>({id:m.id,type:m.type,tags:m.tags,minDuration:m.trigger.minDuration,reasons:m.trigger.semanticReasons,rendered:RENDERED_MOTIONS.includes(m.id),allowedInTemplate:template.motion.allowed.map(a=>MOTION_ALIASES[a]??a).includes(m.id)}))});
+    }
     if(path==='/api/profiles'&&req.method==='GET')return json(res,200,Object.keys(profiles).map(id=>({id,title:id,template:'SUES_CALMA',mode:'existing-transcript-and-vision'})));
     if(path==='/api/jobs'&&req.method==='GET')return json(res,200,jobs.list());
     if(path==='/api/jobs'&&req.method==='POST'){
@@ -60,7 +68,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     }
     return json(res,405,{error:'Method not allowed'});
    }
-   const files={'/':['index.html','text/html; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8']};
+   const files={'/':['index.html','text/html; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon.svg':['icon.svg','image/svg+xml']};
    if(req.method!=='GET'||!Object.hasOwn(files,path))return json(res,404,{error:'Not found'});
    const [file,type]=files[path];res.setHeader('Content-Type',type);res.end(readFileSync(join(WEB,file)));
   }catch(error){if(res.headersSent)return res.destroy();const safe=/not found|Unknown profile/i.test(error.message)?404:/busy|ready|changed|transition|owned|Adjustments/.test(error.message)?409:400;json(res,safe,{error:error.code?'No se pudo acceder al recurso local configurado':error.message.replaceAll(directory,'[local]')});}

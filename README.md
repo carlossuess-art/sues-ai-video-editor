@@ -1,10 +1,39 @@
-# SUES AI VIDEO EDITOR · POC cloud
+# SUES AI VIDEO EDITOR
 
-Módulo técnico de la Fase 2. Node.js 22+; render remoto con Shotstack sandbox.
-No necesita ejecutar FFmpeg, IA ni render pesado en el PC. Tampoco usa Lovable o CapCut.
+Editor SUES en desarrollo: CALMA con cámara/captions/motions, Director léxico
+offline y estudio local del worker Work. La arquitectura objetivo sigue siendo
+cloud-first; no se exige al PC de Carlos realizar el trabajo pesado.
+El POC Shotstack sandbox se conserva como ruta de render cloud independiente.
 
 Fuente funcional viva: [Roadmap Maestro](https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit).
 Leer primero este documento y `PROJECT_STATUS.md` para continuar.
+
+## Estado ejecutable actual
+
+Leer PROJECT_STATUS.md antes de cambiar el proyecto. F5 estética provisional;
+no declarar V1 ni aceptación humana. Suite114 tests. Sólo CALMA tiene renderer
+integrado; otros estilos conservan contratos iniciales.
+
+Con medios y análisis previamente preparados:
+
+```sh
+npm run automatic:preview -- examples/projects/calma-local.example.json runtime/mi-version --render
+npm run editor -- examples/projects/calma-local.example.json runtime/editor-jobs 4173
+```
+
+Node22+, Python3, FFmpeg/ffprobe conlibass yfontconfig en el worker. Fuentes/licencia
+Open Sans y medios propios fuera de Git. Preparación y rutas exactas:
+[Estudio local](docs/SUES_LOCAL_EDITOR.md), [Medios/fuentes](docs/SUES_CALMA_LOCAL_PREVIEW.md).
+No llama modelos ni proveedores al ajustar/exportar. Guarda75/75 palabras en la
+prueba real; el corte técnico del POC no se aplica al Director automático.
+
+El estudio escucha sólo loopback, no proporciona una URL pública ni ingesta de
+nuevos vídeos con ASR/visión. La UI incluye montaje, ajustes, plantillas, Brand Kit
+ y catálogo de motions; estas tres últimas son vistas de consulta. Manifest/SW
+preparan el shell PWA; instalación/QA visual en navegador aún pendientes. El SW
+no cachea medios ni API. No ejecutar nuevos servicios de pago por defecto.
+
+## Ruta histórica: POC cloud de Fase2
 
 ## Validar sin cuenta, vídeo ni coste
 

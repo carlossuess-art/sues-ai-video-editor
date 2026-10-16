@@ -63,7 +63,9 @@ sale del loopback; despliegue real exige HTTPS, usuarios y aislamiento de medios
 Pantallas de este prototipo: material ya preparado, trabajos, montaje, ajustes,
 captions, exportación, reproductor y descarga. Sólo CALMA se ofrece como estilo
 visual funcional. Impacto/Explica/Historia conservan sus contratos, no una falsa UI
-operativa. Brand Kit/Motion Library siguen en archivos; todavía no son pantallas.
+operativa. Plantillas, Brand Kit y Motion Library tienen pantallas de consulta conectadas a
+los archivos reales. La edición de identidad/catálogo y la selección manual de
+motions en UI siguen pendientes.
 
 API privada local:
 - POST /api/session con Bearer token → cookie de sesión.
@@ -94,3 +96,41 @@ idempotencia, worker ocupado, cancelación, reinicio y ranges. Los tests de life
 usan un worker sintético pequeño; un smoke separado ejecuta FFmpeg real con el
 original de Carlos para verificar integración, decodificación y fuente intacta.
 No equivalen a aprobación humana de captions, escucha o aceptación estéticaV1.
+
+
+## Música propia opcional
+
+No se selecciona música por defecto ni se descargan pistas de terceros. El perfil
+local puede declarar backgroundAudio con assetId, rights (owned/licensed), localFile,
+gain (0..0,18, excluido0) y sourceIn. Ruta relativa al perfil; requiere audio de
+longitud suficiente para el montaje, sin loop implícito. El operador declara sus
+derechos: el motor no los verifica jurídicamente ni inventa una licencia.
+
+Se conservan los segmentos de voz originales en una rama propia. Sólo la música
+pasa por sidechain de voz (threshold0,025,ratio6,attack25ms,release350ms), con fade
+1,2s/2s y limitador final0,95 sin normalización automática. Se valida hash antes y
+después del recurso, duración del stream de audio y salida. Sin pista configurada,
+el grafo de voz anterior permanece idéntico. No SFX automáticos nuevos.
+
+Smoke de audio reproducible:
+`node scripts/templates/smoke_audio.mjs NUEVO_DIR DIRECTORIO_FUENTES`.
+Usa tonos sintéticos propios440/880Hz y mide presencia de voz, reducción durante
+voz y fade final. No representa escucha ni valoración musical del material real.
+
+## Shell PWA
+
+Manifest, icono tipográfico provisional y service worker de shell están incluidos.
+No es logo final ni confirma instalación. Cache sólo HTML/JS/CSS/icono/manifest;
+nunca jobs, transcripciones, API, tokens o vídeos. El procesamiento requiere worker
+accesible. No se declara una app offline de edición ni despliegue móvil terminado.
+
+## Resultado real del bloque
+
+Vídeo completo38,30s,75/75 palabras,16captions, dos zooms relativos1,07×
+(intensidad75 %) y cita literal. Máximo combinado1,498×. Ver plan y auditoría en
+examples/director/calma-automatic-real.json y examples/preview/calma-automatic-real.audit.json.
+API real: crear→plan→ajustes→render→DONE→Range206/1024bytes. Un render pese a POST
+repetido; fuente intacta,1080×1920/30fps,AAC y decodificación íntegra. La corrección
+posterior del fingerprint añadió hashes de bytes de medios: plan idéntico y grafo/
+ASS byte idénticos al render verificados. Suite114 tests y check del frontend incluidos.
+Revisión visual de frames de vídeo hecha; no QA visual del navegador ni aceptaciónV1.

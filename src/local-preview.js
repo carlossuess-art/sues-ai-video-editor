@@ -1,3 +1,4 @@
+import {prepareBackgroundAudio,backgroundAudioFilter} from './audio-mix.js';
 import {prepareSemanticRender,semanticZoomFilter} from './semantic-render.js';
 import {buildTimeMap,mapCameraToEdit} from './time-map.js';
 import {mapWordsToTimeline,segmentWords} from './transcript.js';
@@ -39,7 +40,7 @@ function validateCamera(camera,width,height){
   }
 }
 
-export function prepareLocalPreview({template,brand,transcript,camera,source,segments,slots=[],assets=[],mediaBindings={},director,visionFrames=[],catalog=[]}){
+export function prepareLocalPreview({template,brand,transcript,camera,source,segments,slots=[],assets=[],mediaBindings={},director,visionFrames=[],catalog=[],backgroundAudio}){
   assert(source&&finite(source.duration)&&Number.isInteger(source.width)&&Number.isInteger(source.height),'source');
   assert(Math.abs(source.duration-transcript.sourceDuration)<.05,'transcript/source duration');
   validateCamera(camera,source.width,source.height);
@@ -64,7 +65,7 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
   const semantic=prepareSemanticRender({director,policy,camera,timeMap,visionFrames,catalog,broll,captions,layout:PREVIEW_LAYOUT});
   return {version:'1.0',kind:'local-preview',source,policy,timeMap,camera,semantic,
     cameraSpans:mapCameraToEdit(camera,timeMap),captions,broll,selectedMedia,layout:PREVIEW_LAYOUT,
-    duration:timeMap.duration,renderColors:{dark:brand.colors.dark},originalVoice:true,colorTreatment:'identity-natural',
+    audioMix:prepareBackgroundAudio(backgroundAudio,timeMap.duration),duration:timeMap.duration,renderColors:{dark:brand.colors.dark},originalVoice:true,colorTreatment:'identity-natural',
     renderReady:true,productionReady:false,
     pending:['automated-director-selection','real-broll-visual-acceptance','music-and-sfx','full-audiovisual-acceptance','app-e2e']};
 }
@@ -136,5 +137,7 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
     filters.push(`[${base}][broll${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${d.start})*lt(t,${d.end})'[composed${i}]`);base=`composed${i}`;
   }
   filters.push(`[${base}]ass=filename=${assFile}:fontsdir=fonts[video]`);
+  assert(!plan.audioMix||hasAudio,'background music requires original voice track');
+  filters.push(...backgroundAudioFilter(plan.audioMix,1+plan.selectedMedia.length));
   return filters.join(';\n')+'\n';
 }
