@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "templateId": "SUES_CALMA",
+  "decisions": [
+    {
+      "type": "caption-emphasis",
+      "start": 0.2,
+      "end": 2.1,
+      "reason": "hook verbal",
+      "rule": "highlight-key-phrase",
+      "params": {
+        "text": "Te enseñaron a mirar"
+      }
+    },
+    {
+      "type": "zoom",
+      "start": 4.2,
+      "end": 5.7,
+      "reason": "énfasis conceptual",
+      "rule": "semantic-zoom-only",
+      "params": {
+        "scale": 1.12,
+        "reason": "emphasis"
+      }
+    },
+    {
+      "type": "motion",
+      "start": 9.4,
+      "end": 12.4,
+      "reason": "apoyo visual de ejemplo",
+      "rule": "resource-when-explanatory",
+      "params": {
+        "motionId": "BLURRED_RESOURCE_01"
+      }
+    },
+    {
+      "type": "look",
+      "start": 18,
+      "end": 22,
+      "reason": "tramo introspectivo",
+      "rule": "semantic-black-white",
+      "params": {
+        "preset": "BLACK_WHITE_SOFT"
+      }
+    },
+    {
+      "type": "outro",
+      "start": 34,
+      "end": 37,
+      "reason": "cierre de marca",
+      "rule": "brand-outro",
+      "params": {
+        "preset": "SUES_OUTRO_01"
+      }
+    }
+  ]
+}
