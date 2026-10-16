@@ -30,7 +30,8 @@ Módulos nuevos de Fase 3 probados aisladamente en entorno local:
 - transcript/segmentación: 6 tests;
 - normalización ASR: 5 tests;
 - compilador offline de captions: 2 tests.
-Total: 13/13 aprobados.
+Total nuevo aislado: 13/13 aprobados.
+Suite completa ejecutada en Work: 32/32 aprobados; npm run check: OK.
 
 Además se reutilizó POC_001 real:
 - fuente: 38,310156 s;
@@ -44,8 +45,8 @@ Además se reutilizó POC_001 real:
 El dry run detectó que el corte mecánico 12–13 s atraviesa habla. Esto confirma que los
 cortes definitivos deberán respetar fronteras de palabra/frase.
 
-La suite completa del repo (Fase 2 + Fase 3) todavía debe volver a ejecutarse en un checkout
-con dependencias antes de cerrar la fase.
+La suite completa (Fase 2 + Fase 3) se ejecutó con dependencias en Work el 16/10/2026:
+32 tests aprobados, 0 fallos. No fue necesario modificar código.
 
 ## ASR · decisión provisional
 
@@ -63,7 +64,8 @@ Estado de documentación oficial consultada el 16/10/2026:
 - Shotstack rich-caption puede auto-transcribir con sincronía palabra a palabra, pero la
   transcripción/generación consume créditos incluso en Sandbox.
 
-No se ejecutó ninguna transcripción remota ni se consumieron créditos.
+Se intentó una llamada ASR real en Work; OpenAI rechazó con HTTP 429,
+credit_balance_exhausted / insufficient_quota. Sin transcripción ni cargo de procesamiento.
 
 ## Arquitectura y seguridad
 
@@ -90,13 +92,38 @@ No se ejecutó ninguna transcripción remota ni se consumieron créditos.
 
 ## Siguiente acción exacta
 
-1. Ejecutar suite completa del repo en un checkout con dependencias.
+1. Resolver saldo/cuota del proyecto OpenAI antes de otro intento. Suite completa ya aprobada.
 2. Realizar UNA prueba ASR real con timestamps por palabra usando el audio de 230 KB,
-   sólo tras aprobación de cualquier coste.
+   dentro del máximo ya autorizado de 0,01 USD, sólo después de resolver cuota.
 3. Normalizar transcript real al contrato v1.0 y comparar con el texto de referencia.
 4. Compilar captions y validar sincronía.
 5. Renderizar primer vídeo subtitulado en Sandbox.
 6. Ajustar primer estilo SUES de captions y cerrar Fase 3.
 
-Bloqueos actuales: Carlos ya autorizó hasta 0,01 USD para UNA prueba ASR real. Se creó una clave OpenAI temporal de 24 h mediante flujo cifrado, sin exponerla en chat/Drive/GitHub. El entorno de chat intentó llamar al endpoint de transcripción, pero la red del contenedor no pudo resolver api.openai.com; la petición no salió y no hubo coste. Archivos temporales de clave privada/clave descifrada se eliminaron. Audio de 230.528 bytes conservado para la prueba.
-Necesito de Carlos ahora: nada. Siguiente ejecución recomendada: Work, porque dispone del entorno de red/navegación necesario para completar la llamada ASR y continuar con captions/render sin reconfigurar el proyecto.
+Bloqueos actuales: OpenAI devuelve HTTP 429 credit_balance_exhausted / insufficient_quota
+en la organización Criptoleaders, Default project. La red HTTPS mediante proxy funciona:
+no es el anterior fallo de DNS ni un rate limit transitorio. No se hizo un segundo intento.
+Necesito de Carlos: revisar saldo/facturación del proyecto OpenAI, o seleccionar un proyecto
+con saldo disponible. No se compra ni recarga automáticamente. ChatGPT Plus y API son
+facturaciones separadas. https://platform.openai.com/settings/organization/billing
+
+## Ejecución Work · 16/10/2026 17:15 Europe/Madrid
+
+Carlos autorizó crear clave temporal 24 h y guardarla en .env.local ignorado. Se creó
+mediante conector cifrado; secreto local y clave privada temporal eliminados tras el
+rechazo. La clave del proveedor caduca a las 24 h; no afirmar revocación remota.
+Audio extraído de la copia local original ya archivada en Drive: MP3 mono 16 kHz,
+48 kbps, 38,34 s, 230.529 bytes. No se modificó vídeo original.
+Petición: whisper-1, verbose_json, timestamp_granularities[]=word, language=es.
+Un POST de transcripción; sin reintentos. HTTP 429 credit_balance_exhausted.
+Coste de procesamiento de este intento rechazado: 0 USD; no existe resultado/usage ASR.
+Estimación si se procesa: ≈0,003834 USD (0,006 USD/min), cota redondeada 0,0039 USD.
+Máximo autorizado sigue 0,01 USD; no comprar créditos. No se envió render Shotstack ni
+se crearon fuentes Ingest, por lo que no hay fuentes nuevas que limpiar.
+No se generaron transcript real/captions reales/render: no sustituirlos por el dry run.
+
+Audio Drive: https://drive.google.com/file/d/1qIG_xTxMeQGJhErKvAtOxQz3ZkNK5QwC/view?usp=drivesdk
+Auditoría Drive: https://drive.google.com/file/d/1a3BJagRgUNY0taCWX_ZpPAcMKlm9qwZy/view?usp=drivesdk
+Informe: docs/ASR_ATTEMPT_001.md.
+Fase 3 permanece al 60 %, global 21 %; no cerrar hasta validar ASR y vídeo subtitulado.
+No iniciar Fase 4.
