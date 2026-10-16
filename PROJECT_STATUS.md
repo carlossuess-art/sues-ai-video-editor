@@ -1,14 +1,14 @@
 # Estado técnico · 16/10/2026
 
 FASE 2/10 · POC CLOUD
-Progreso fase: 70 % (estimación de preparación; el render real sigue pendiente).
-Progreso global: 11,5 % = Fase 1 al 90 % × 5 % + Fase 2 al 70 % × 10 %.
+Progreso fase: 80 % (Sandbox y autenticación real preparados; render pendiente).
+Progreso global: 12,5 % = Fase 1 al 90 % × 5 % + Fase 2 al 80 % × 10 %.
 Fase 1 conserva 90 % hasta validar proveedor/almacenamiento con la prueba real.
 
 Último hito: POC implementado, validación contra snapshot oficial, 18 tests offline
 aprobados, comprobación de sintaxis y dry-run satisfactorios. Repositorio privado creado y
 rama de trabajo poc/phase-2 habilitada. No se ha renderizado
-ningún vídeo ni se han realizado llamadas autenticadas a Shotstack.
+ningún vídeo. Autenticación de Ingest/Edit verificada con GET de lectura.
 
 ## Decisiones
 
@@ -51,14 +51,15 @@ ningún vídeo ni se han realizado llamadas autenticadas a Shotstack.
 Pruebas: compilación/schema, tiempos, URL, capas, solapamiento, música, prohibición de
 costes, endpoints stage, polling, errores, locks, ciclo mock completo, descarga MP4,
 recuperación sin doble POST y fallo real de duración/ingest. Todo con mocks/offline.
-No validado aún: ingest/autorización real, upload firmado, tipografía visual, sincronía,
-resolución y audio del MP4, latencia ni cuota disponible en la cuenta del usuario.
+Validado con la cuenta real: GET Ingest stage /sources y GET Edit stage /templates.
+Ambos han respondido correctamente. Cuenta con 10 créditos gratuitos, caducidad 15/11/2026.
+No validado aún: PUT de vídeo, render real, tipografía visual, sincronía,
+resolución y audio del MP4 ni tiempo efectivo de render.
 
 ## Bloqueos y siguiente acción exacta
 
-1. Carlos crea/inicia sesión en cuenta Shotstack gratuita; API Keys → Sandbox y
-   configura SHOTSTACK_STAGE_API_KEY en .env/gestor de secretos, sin publicarla.
-2. Introducir vídeo real de 30–60 s. Ejecutar el comando `run` del README.
+1. Carlos adjunta vídeo real de 30–60 s o lo sube a 06_PRUEBAS de Drive.
+2. Ejecutar `npm run poc -- run /ruta/video.mp4 --out runtime/prueba-001 --execute-stage`.
 3. Inspeccionar MP4 y anotar duración, tamaño, latencia, marca de agua y coste (0).
 4. Archivar original/resultado/job en Drive; ejecutar cleanup del sourceId de ese job.
 5. Actualizar este archivo y Doc; sólo cerrar Fase 2 tras MP4 comprobado.
@@ -68,12 +69,20 @@ main como base. Leer este archivo y el Doc maestro antes de cada bloque; no recr
 el proyecto ni usar créditos Lovable para modificar este motor. Añadir la URL de
 este repo y los IDs de Drive a las instrucciones del Proyecto ChatGPT.
 
-## Alta Shotstack pendiente · 16/10/2026
+## Shotstack Sandbox operativo · 16/10/2026
 
-Carlos autorizó expresamente el acceso a Shotstack. Autenticación con Google completada.
-La web está en https://app.shotstack.io/onboarding. Se prepararon nombre y uso
-“Add video editing inside my product”. No se marcó la aceptación de condiciones ni
-se pulsó Get Started. Carlos debe elegir nivel técnico, revisar/aceptar condiciones
-y completar el alta personalmente. Después comprobar créditos y API Keys → Sandbox.
-No se ha leído ni configurado ninguna API key. Sin tarjeta, compra, recarga ni cargos.
-La fase sigue al 70 % / global 11,5 %; primer render pendiente.
+Carlos completó el alta personalmente. Cuenta gratuita: 10 créditos; caducidad indicada
+en dashboard 15/11/2026. Entorno web SANDBOX seleccionado. No se contrató ningún plan.
+La clave stage existente se configuró sin imprimirla en el chat: .env con permisos
+0600 y git check-ignore confirmado. No hay claves en GitHub, Drive, Library ni docs.
+Configuración disponible sólo en este entorno Work; si caduca/se pierde el workspace,
+recuperar la clave desde la sesión autorizada o gestor de secretos, sin leerla en chat.
+
+Validación real sin render: GET https://api.shotstack.io/ingest/stage/sources y
+GET https://api.shotstack.io/edit/stage/templates → respuesta autenticada correcta.
+No se enviaron POST de render/upload/generación, no hay vídeos remotos creados.
+La copia al portapapeles del navegador no devolvía contenido; se usó el ejemplo cURL
+visible de Sandbox para guardar la clave sin exponerla. No se rotaron claves.
+
+Único material pendiente: vídeo propio de 30–60 s. Cuando llegue, ejecutar el POC.
+Coste nuevo: 0. Fase 2: 80 % / global 12,5 %. El render real sigue pendiente.
