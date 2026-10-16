@@ -107,6 +107,23 @@ conservador el crop toca borde derecho e inferior en todas las muestras. La lín
 ideal no siempre puede alcanzarse sin más zoom. No aumentar zoom a ciegas: comparar
 visualmente perfil conservador vs perfil de composición cuando vuelva Work.
 
+
+## Pretrabajo paralelo Fases 5–10
+
+Mientras Work no estaba disponible se adelantaron foundations independientes, todas desde
+el cierre estable de Fase 3 (10e194a...) para evitar depender de Fase 4 incompleta.
+No suman progreso global ni cuentan como fases iniciadas hasta integrarse y validarse.
+
+- F5 `feat/phase-5-template-foundation`: BrandKit/Template v1, cuatro estilos estructurales, tests. Foundation ~35 %.
+- F6 `feat/phase-6-motion-library-foundation`: Motion Asset v1, blur-resource, yes/no, listas, badges/cues, tests. Foundation ~30 %.
+- F7 `feat/phase-7-director-contract`: Director Plan v1 + enforcement determinista por plantilla, tests. Foundation ~25 %.
+- F8 `feat/phase-8-app-contract`: create-edit, ajustes, estados de job, requisitos de seguridad, tests. Foundation ~15 %.
+- F9 `feat/phase-9-e2e-acceptance`: manifest y gates técnico/cualitativo V1, tests. Foundation ~10 %.
+- F10 `feat/phase-10-consolidation-contract`: deployment checklist + frontera CapCut/MCP, tests. Foundation ~10 %.
+
+Detalle y commits: `docs/PARALLEL_FOUNDATIONS_5_10.md`.
+Orden futuro: cerrar F4 → integrar F5 → F6 → F7 → F8 → ejecutar F9 → F10.
+
 ## Siguiente acción exacta
 
 Mientras no haya Work: no hace falta repetir MediaPipe. El núcleo offline ya está preparado.
