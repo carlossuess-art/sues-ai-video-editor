@@ -1,0 +1,49 @@
+{
+  "version": "1.0",
+  "id": "SUES_EXPLICA",
+  "pacing": "medium",
+  "cuts": {
+    "minShot": 1.5,
+    "maxShot": 5.5
+  },
+  "camera": {
+    "baseZoom": 1.04,
+    "maxZoom": 1.2,
+    "zoomReasons": [
+      "emphasis",
+      "clarity",
+      "revelation"
+    ]
+  },
+  "captions": {
+    "mode": "blocks"
+  },
+  "transitions": {
+    "allowed": [
+      "cut",
+      "soft-fade",
+      "subtle-punch"
+    ]
+  },
+  "motion": {
+    "allowed": [
+      "blurred-resource",
+      "compare-yes-no",
+      "numbered-list"
+    ]
+  },
+  "look": {
+    "blackWhite": "optional",
+    "relight": "optional"
+  },
+  "audio": {
+    "families": [
+      "calma-expansion",
+      "impact-reveal"
+    ]
+  },
+  "constraints": {
+    "semanticZoomOnly": true,
+    "respectSafeZones": true
+  }
+}
