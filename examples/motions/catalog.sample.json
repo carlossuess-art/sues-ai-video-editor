@@ -1,0 +1,141 @@
+[
+  {
+    "version": "1.0",
+    "id": "BLURRED_RESOURCE_01",
+    "type": "background-treatment",
+    "renderMode": "dynamic",
+    "tags": [
+      "resource",
+      "blur",
+      "depth",
+      "reference-1"
+    ],
+    "trigger": {
+      "semanticReasons": [
+        "visual-proof",
+        "named-entity",
+        "example",
+        "screenshot"
+      ],
+      "minDuration": 1.2
+    },
+    "layers": [
+      {
+        "id": "base-video",
+        "kind": "video",
+        "start": 0,
+        "duration": 3,
+        "replaceable": false,
+        "effect": {
+          "blur": 22,
+          "dim": 0.18
+        }
+      },
+      {
+        "id": "resource",
+        "kind": "image",
+        "start": 0.18,
+        "duration": 2.55,
+        "replaceable": true,
+        "layout": "center-card"
+      },
+      {
+        "id": "resource-title",
+        "kind": "text",
+        "start": 0.28,
+        "duration": 2.35,
+        "replaceable": true,
+        "layout": "lower-third"
+      }
+    ]
+  },
+  {
+    "version": "1.0",
+    "id": "COMPARE_YES_NO_01",
+    "type": "layout",
+    "renderMode": "dynamic",
+    "tags": [
+      "compare",
+      "yes-no",
+      "education"
+    ],
+    "trigger": {
+      "semanticReasons": [
+        "comparison",
+        "wrong-vs-right"
+      ],
+      "minDuration": 2
+    },
+    "layers": [
+      {
+        "id": "divider",
+        "kind": "shape",
+        "start": 0,
+        "duration": 3,
+        "replaceable": false
+      },
+      {
+        "id": "no-text",
+        "kind": "text",
+        "start": 0.1,
+        "duration": 2.8,
+        "replaceable": true
+      },
+      {
+        "id": "yes-text",
+        "kind": "text",
+        "start": 0.1,
+        "duration": 2.8,
+        "replaceable": true
+      },
+      {
+        "id": "negative-hit",
+        "kind": "audio",
+        "start": 0.8,
+        "duration": 0.3,
+        "replaceable": false
+      },
+      {
+        "id": "positive-plin",
+        "kind": "audio",
+        "start": 1.7,
+        "duration": 0.3,
+        "replaceable": false
+      }
+    ]
+  },
+  {
+    "version": "1.0",
+    "id": "NUMBER_BADGE_GOLD_01",
+    "type": "badge",
+    "renderMode": "dynamic",
+    "tags": [
+      "list",
+      "number",
+      "gold"
+    ],
+    "trigger": {
+      "semanticReasons": [
+        "numbered-list",
+        "steps"
+      ],
+      "minDuration": 0.8
+    },
+    "layers": [
+      {
+        "id": "number",
+        "kind": "text",
+        "start": 0,
+        "duration": 1.8,
+        "replaceable": true
+      },
+      {
+        "id": "label",
+        "kind": "text",
+        "start": 0.12,
+        "duration": 1.68,
+        "replaceable": true
+      }
+    ]
+  }
+]
