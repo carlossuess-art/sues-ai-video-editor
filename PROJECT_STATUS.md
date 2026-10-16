@@ -1,70 +1,76 @@
 # Estado técnico · 16/10/2026
 
-FASE 2/10 · POC CLOUD · COMPLETADA
-Progreso fase: 100 %.
-Progreso global: 15 % = Fase 1 al 100 % × 5 % + Fase 2 al 100 % × 10 %.
-Fase 1 cerrada al validar proveedor y almacenamiento con vídeo real.
+FASE 3/10 · TRANSCRIPCIÓN + SEGMENTACIÓN + SUBTÍTULOS · EN CURSO
+Progreso fase: 40 %.
+Progreso global: 19 % = Fase 1 (5 %) + Fase 2 (10 %) + 40 % de Fase 3 (4 %).
 
-Último hito: primer MP4 cloud generado y descargado; 37,3 s, 1080×1920,
-30fps, voz original, título y cierre. Sandbox con marca de agua; coste real 0 USD.
-Saldo posterior: 10 créditos; dashboard indica 0 gastados.
+Último hito: Fase 2 integrada en main mediante PR #1 (squash
+cc9e390e254e82bc993b734208138b56183eccc1). Rama activa:
+feat/phase-3-transcript-captions.
 
-## Arquitectura y decisiones
+## Fase 2 cerrada
+
+Primer MP4 cloud real validado: 37,3 s, 1080×1920, 30fps, voz original,
+título y cierre; Sandbox con marca de agua. Coste real 0 USD. 19/19 tests del
+POC aprobados. Original y resultado archivados en Drive; fuente temporal eliminada.
+
+## Fase 3 · implementado
+
+- Contrato Transcript v1.0 independiente del proveedor.
+- Palabras con timestamps sobre la fuente, language, confidence opcional y duración.
+- Mapeo fuente → timeline que elimina palabras dentro de cortes y desplaza las posteriores.
+- Segmentación determinista por puntuación, pausas, palabras, caracteres y duración.
+- Correcciones manuales por segmento: texto, tiempos o eliminación.
+- Compilador transcript → captions editables → Video Edit Plan.
+- Title/outro se conservan; sólo se reemplazan captions.
+- 6 tests dedicados ejecutados fuera de GitHub: 6/6 aprobados.
+- package.json incluye chequeo sintáctico del módulo nuevo.
+- Documentación: docs/PHASE_3_TRANSCRIPT.md.
+
+## ASR · decisión provisional
+
+Mantener adaptador ASR reemplazable; no acoplar transcripción a Shotstack.
+
+Investigación vigente:
+- OpenAI recomienda gpt-transcribe para archivo, pero la guía actual remite a
+  whisper-1 cuando se necesitan timestamps palabra a palabra.
+- whisper-1 tiene retirada anunciada para 26/02/2027, por lo que no debe quedar
+  como dependencia rígida.
+- Shotstack rich-caption puede auto-transcribir y sincronizar palabra a palabra,
+  pero la auto-transcripción consume créditos incluso en Sandbox y usa un
+  subprocesador externo.
+- No se ha ejecutado ninguna transcripción remota ni consumido créditos.
+
+## Arquitectura y seguridad
 
 - Node.js 22+, JavaScript ESM, Ajv y snapshot OpenAPI oficial.
-- Shotstack Edit + Ingest stage validado como motor POC; adaptador reemplazable.
-- Video Edit Plan estructurado → timeline validado → render → descarga → archivo → limpieza.
-- Contain conserva el encuadre. Rotación 90° del HEVC de móvil resuelta por Shotstack.
-- Corte mecánico 12–13 s, título inicial y outro: demuestra montaje, no edición semántica.
-- Voz original volumen 1; sin música, ASR ni captions en esta ejecución.
-- Captions temporizadas mediante rich-text preparadas; transcripción en Fase 3.
-- Fuente temporal Ingest eliminada tras archivar; CDN permanente excluido.
-- Original y resultado privados en Drive; vídeos y credenciales excluidos de Git.
-- Producción/generación IA bloqueadas. Sin CapCut, Lovable, suscripciones ni compras.
-- PAYG orientativo: 0,20 USD/min; este vídeo equivaldría a unos 0,125 USD de render,
-  sujeto a reglas de facturación/extras. No se ha ejecutado producción.
+- Shotstack Edit + Ingest stage sigue como motor de render POC, detrás de adaptador.
+- Video Edit Plan propio → timeline → render.
+- Originales y resultados en Drive privado; vídeos y credenciales fuera de Git.
+- Producción/generación IA bloqueadas. Sin CapCut ni Lovable en esta fase.
+- Clave Sandbox sólo en entorno Work previo; no asumir persistencia entre entornos.
 
 ## Inventario
 
 - Doc maestro: https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit
 - Drive principal: 1SNifaQFcBMzQ_H_3UQZcNMkUmzrMykOf
 - Pruebas Drive: 1efHjGfJ3b5vDYTkdMM_dUjQOumXGgqYr
-- Estado Drive: 1aRkcle1mpKjom3E35rY_-soF0QrsSPUE
 - Repo privado: https://github.com/carlossuess-art/sues-ai-video-editor
-- Repo ID: 1422196475. Rama activa: poc/phase-2; main conserva baseline.
-- Original Drive: 1zSsbtfIBH3GEvrnkZfvGhssYRsw9kh82 (96.942.857 bytes).
-- Resultado Drive: 1uQl_nLIwO7NqzayotOQhewnOT7hXRh5S (24.873.991 bytes).
-- Render: a4708c00-45f2-4260-aef7-ebdc7d7b3c2d.
-- Source eliminado: zzz01m52-haf02-7avyc-1w53k-0523av.
-- Fuente vacía descartada/eliminada: zzz01m52-h8jp1-sa35t-19hz1-7kcj1e.
-- Resultado local: runtime/prueba-001/result.mp4. Job conservado como CLEANED.
-- Clave Sandbox sólo en .env local ignorado, permisos 0600; nunca en docs/commits.
-  Cuenta gratuita: 10 créditos, caducidad indicada 15/11/2026.
-- Snapshot histórico Drive anterior a GitHub: 1PM7nfmFfzDzO5sWXLnmWIhNPsCp5qymX.
-- Site relacionado, no modificado: Sues Content Studio,
-  appgprj_6a933e68e0408191a75dc6ff0364b0e2,
-  https://sues-content-studio-v1.suesholistics.chatgpt.site . Reutilización UI en Fase 8.
-- No workflows de Actions ni costes nuevos. GitHub es la fuente técnica vigente.
-
-## Validación
-
-19/19 tests offline aprobados, sintaxis y diff verificados. Nuevo test de Content-Length
-para PUT de vídeo. API real Ingest/Edit, subida, polling, render, descarga y limpieza
-verificados. Decodificación completa MP4 sin errores. Fotogramas de inicio, centro y
-cierre revisados: orientación y textos correctos. AAC no silencioso y niveles próximos
-al original; no se afirma revisión auditiva humana ni reproducción física en móvil.
-Latencia envío→descarga: 62,96 s; renderTime reportado: 11,634 s.
-Incidencias resueltas: timeout API aumentado a 120 s y Content-Length explícito en PUT.
-Un lock residual retirado tras comprobar ausencia del proceso; no se duplicó render.
-Evidencia detallada: docs/POC_RESULTS_001.md.
+- Repo ID: 1422196475.
+- main: Fase 2 validada.
+- Rama activa: feat/phase-3-transcript-captions.
+- Original Drive: 1zSsbtfIBH3GEvrnkZfvGhssYRsw9kh82.
+- Resultado Fase 2: 1uQl_nLIwO7NqzayotOQhewnOT7hXRh5S.
+- Render Fase 2: a4708c00-45f2-4260-aef7-ebdc7d7b3c2d.
 
 ## Siguiente acción exacta
 
-Iniciar FASE 3/10 · Transcripción + segmentación + subtítulos (0 %): definir contrato de
-transcript con timestamps y edición manual, implementar compilación de captions y
-validación offline; después evaluar ASR sin activar cargos. Reutilizar vídeo archivado.
-Bloqueos actuales: ninguno. Necesito de Carlos: nada para preparación offline de Fase 3.
-Leer este archivo y Doc maestro antes de continuar; conservar historial y rama activa.
+1. Ejecutar suite completa del repo en un entorno con checkout/dependencias.
+2. Añadir adaptador ASR sin activar cargos.
+3. Elegir una prueba controlada de timestamps reales.
+4. Generar transcript real del vídeo archivado.
+5. Compilar captions, revisar sincronía y sólo entonces hacer primer render subtitulado.
 
-Auditoría privada Drive (job, plan, timeline, verificación):
-https://drive.google.com/file/d/1SB6EX0zl02B0LuahAYdcg-D6OV3l07YF/view
+Bloqueos actuales: ninguno para seguir preparando código/documentación.
+Necesito de Carlos: nada ahora. Antes de consumir créditos o contratar un servicio,
+pedir aprobación expresa.
