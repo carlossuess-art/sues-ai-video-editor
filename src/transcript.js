@@ -49,7 +49,7 @@ export function mapWordsToTimeline(transcript, segments) {
   return {words:mapped,duration:cursor};
 }
 
-export function segmentWords(words,{maxWords=8,maxChars=42,maxDuration=4.5,gapBreak=0.65,minDuration=0.7}={}) {
+export function segmentWords(words,{maxWords=8,maxChars=42,maxDuration=4.5,gapBreak=0.65}={}) {
   assert(Array.isArray(words), 'segmentWords: words debe ser lista');
   if (!words.length) return [];
   const out=[];
@@ -61,7 +61,7 @@ export function segmentWords(words,{maxWords=8,maxChars=42,maxDuration=4.5,gapBr
       id:`seg-${String(out.length+1).padStart(3,'0')}`,
       text:clean(current.map(w=>w.text).join(' ')),
       start,
-      end:Math.max(end,start+Math.min(minDuration,Math.max(0.01,end-start))),
+      end,
       wordIndexes:current.map(w=>w.sourceWordIndex ?? null),
       source:'auto'
     });
