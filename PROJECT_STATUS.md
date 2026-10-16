@@ -49,13 +49,23 @@ El Roadmap Maestro contiene las referencias prioritarias de edición y el rankin
 incluido el Reel de deckeanu como referencia nº1 y Sues_Reel2_May_V1.mov como nº2.
 No usar esas referencias para copiar un estilo literal; extraer mecanismos para ADN SUES.
 
+## Detector candidato
+
+MediaPipe Face Landmarker (Python) queda como candidato preferido para el POC real:
+modo VIDEO, malla facial densa, tracking interno y ejecución local/open source sin tarifa
+por llamada. Se mantendrá detrás del adaptador propio; no es dependencia irreversible.
+Aún no está instalado ni validado sobre vídeo real.
+
 ## Siguiente acción exacta
 
-Elegir y validar un detector real de cara/ojos sobre el vídeo POC ya archivado, sin coste
-mensual nuevo. Normalizar detecciones al contrato `vision.js`, producir Reframe Plan real
-y revisar estabilidad de cara/ojos. Después conectar los keyframes al render.
+Validar MediaPipe Face Landmarker sobre el vídeo POC ya archivado: checkout completo,
+instalar/validar MediaPipe + OpenCV + modelo, extraer detecciones con timestamps,
+normalizarlas al contrato `vision.js`, producir Reframe Plan real y revisar estabilidad.
+Después conectar esos keyframes al render y repetir la suite completa.
 
-Bloqueos: ninguno para seguir diseñando/implementando.
-Necesito de Carlos: nada.
-Work sólo será necesario/recomendable cuando haga falta un checkout completo y ejecutar
-la integración real de vídeo/detector/render en un mismo entorno.
+Bloqueo de entorno para el siguiente bloque: requiere entorno de trabajo con checkout,
+dependencias/modelo y procesamiento real de vídeo. Normal chat ya completó el núcleo y
+la decisión de detector sin coste.
+Necesito de Carlos: nada salvo abrir Work cuando quiera continuar este bloque.
+Recomendación: GPT-6.1 Sol · Medium; da acceso a checkout/terminal y permite validar
+instalación, vídeo, tests y render en un único entorno.
