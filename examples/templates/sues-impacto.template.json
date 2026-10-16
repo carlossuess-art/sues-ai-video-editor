@@ -1,0 +1,51 @@
+{
+  "version": "1.0",
+  "id": "SUES_IMPACTO",
+  "pacing": "fast",
+  "cuts": {
+    "minShot": 0.8,
+    "maxShot": 3.8
+  },
+  "camera": {
+    "baseZoom": 1.06,
+    "maxZoom": 1.28,
+    "zoomReasons": [
+      "emphasis",
+      "revelation",
+      "emotional-turn",
+      "clarity"
+    ]
+  },
+  "captions": {
+    "mode": "word-highlight"
+  },
+  "transitions": {
+    "allowed": [
+      "cut",
+      "subtle-punch",
+      "whip",
+      "blur"
+    ]
+  },
+  "motion": {
+    "allowed": [
+      "blurred-resource",
+      "compare-yes-no",
+      "numbered-list"
+    ]
+  },
+  "look": {
+    "blackWhite": "semantic",
+    "relight": "semantic"
+  },
+  "audio": {
+    "families": [
+      "impact-reveal",
+      "shadow-tension"
+    ]
+  },
+  "constraints": {
+    "semanticZoomOnly": true,
+    "respectSafeZones": true
+  }
+}
