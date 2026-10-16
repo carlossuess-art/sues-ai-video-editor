@@ -13,3 +13,9 @@ outputs/
 *.webm
 *.zip
 .DS_Store
+
+# Python vision / local model
+.venv*/
+__pycache__/
+*.py[cod]
+*.task

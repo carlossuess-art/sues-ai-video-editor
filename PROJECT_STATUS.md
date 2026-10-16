@@ -1,10 +1,11 @@
 # Estado técnico · 16/10/2026
 
 FASE 4/10 · VISIÓN: CARA, OJOS, REENCUADRE, ZOOM Y SAFE ZONES · EN CURSO
-Progreso fase: 20 %.
-Progreso global: 28 % = Fases 1–3 (25 %) + 20 % de Fase 4 (3 %).
+Progreso fase: 40 %.
+Progreso global: 31 % = Fases 1–3 (25 %) + 40 % de Fase 4 (6 %).
 Rama activa: feat/phase-4-vision-camera.
-Último hito: núcleo determinista de cámara inteligente creado y probado de forma aislada.
+Último hito: detector MediaPipe VIDEO ejecutado sobre POC_001; JSON real de 20 KB
+compatible con vision.js, reutilizable sin Python desde chat normal.
 
 ## Fase 4 · Implementado
 
@@ -24,8 +25,13 @@ Rama activa: feat/phase-4-vision-camera.
 
 - 7/7 tests aislados de visión pasan en Node 22 en el entorno de chat.
 - Baseline completo anterior: 36/36 tests de Fase 3.
-- Suite combinada completa del repo: pendiente de repetir en checkout completo.
-- No se ha procesado todavía un vídeo real con detector de cara/ojos.
+- Prueba rápida actual: 8/8 tests Node (7 núcleo + fixture real) y 1/1 Python.
+- Suite combinada completa no repetida para ahorrar cuota Work.
+- POC real: 978 frames decodificados; 74 muestras, 73 con cara (98,65 %).
+- Dimensiones orientadas 1080×1920; timestamps 0–37,9508 s, sin fallback.
+- Ojos dentro de bbox en todas las detecciones. Desplazamiento de ancla: mediana
+  0,246 %, p95 2,27 %, máximo 8,66 % de diagonal (0,519–1,557 s, arranque/pérdida).
+  No afirmar estabilidad perfecta; filtrar este salto al preparar el track.
 - Coste adicional: 0 USD.
 - Sin render, ASR, IA generativa, CapCut, Lovable ni nuevas suscripciones.
 
@@ -54,18 +60,40 @@ No usar esas referencias para copiar un estilo literal; extraer mecanismos para 
 MediaPipe Face Landmarker (Python) queda como candidato preferido para el POC real:
 modo VIDEO, malla facial densa, tracking interno y ejecución local/open source sin tarifa
 por llamada. Se mantendrá detrás del adaptador propio; no es dependencia irreversible.
-Aún no está instalado ni validado sobre vídeo real.
+Instalado y ejecutado: Python 3.12, mediapipe 1.1.1, opencv-python-headless 5.0.0.93.
+Modelo oficial float16/1 face_landmarker.task, SHA256
+64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff.
+No devuelve confianza de detección: score=1 es sólo proxy de presencia, no probabilidad.
 
-## Siguiente acción exacta
+## Adaptador y salida
 
-Validar MediaPipe Face Landmarker sobre el vídeo POC ya archivado: checkout completo,
-instalar/validar MediaPipe + OpenCV + modelo, extraer detecciones con timestamps,
-normalizarlas al contrato `vision.js`, producir Reframe Plan real y revisar estabilidad.
-Después conectar esos keyframes al render y repetir la suite completa.
+- scripts/vision/face_landmarker.py: VIDEO, num_faces=1, muestreo objetivo 2 fps,
+  inferencia lado máximo 640; bbox y centros de ojos en píxeles de fuente orientada.
+- scripts/vision/requirements.txt y README.md: dependencias y comandos.
+- examples/vision/poc001.mediapipe.json: JSON real completo muestreado, 20.576 bytes.
+  Usar propiedad frames directamente con validateVisionFrame/buildFaceTrack.
+- Fuente original local ya archivada en Drive: 1zSsbtfIBH3GEvrnkZfvGhssYRsw9kh82.
+- runtime/vision/poc001.detections.json es la salida local; modelo no se sube a Git.
+- Detalle técnico: docs/MEDIAPIPE_POC_RESULT.md.
+- No se generó Reframe Plan, keyframes, render ni trabajo visual.
 
-Bloqueo de entorno para el siguiente bloque: requiere entorno de trabajo con checkout,
-dependencias/modelo y procesamiento real de vídeo. Normal chat ya completó el núcleo y
-la decisión de detector sin coste.
-Necesito de Carlos: nada salvo abrir Work cuando quiera continuar este bloque.
-Recomendación: GPT-6.1 Sol · Medium; da acceso a checkout/terminal y permite validar
-instalación, vídeo, tests y render en un único entorno.
+## Incidencias y límite de seguridad
+
+Faltaba libGLESv2.so.2. apt falló por permisos; se extrajo paquete oficial libgles2
+1.7.0-1build1 en /tmp/sues-vision-libs. Comando ejecutado:
+LD_LIBRARY_PATH=/tmp/sues-vision-libs/usr/lib/x86_64-linux-gnu /tmp/sues-vision-venv/bin/python scripts/vision/face_landmarker.py /workspace/scratch/572186c4327c/upload/PXL_20261016_141233241.mp4 --model runtime/vision/face_landmarker.task --out runtime/vision/poc001.detections.json
+
+La ejecución escribió el JSON completo antes de que auto-review rechazara una conexión
+inesperada del paquete a play.googleapis.com. Contenido transmitido no identificado.
+No se reintentó ni se evadió el bloqueo. El JSON existente se validó sólo offline.
+No repetir inferencia hasta aclarar/autorizar ese tráfico; no afirmar ejecución sin red.
+
+## Siguiente acción exacta desde chat normal
+
+Leer examples/vision/poc001.mediapipe.json y usar frames con el núcleo vision.js.
+Preparar/validar por separado el Reframe Plan y tratamiento de la pérdida/salto inicial,
+sin volver a instalar ni ejecutar MediaPipe. No conectar keyframes al render todavía.
+Auditar el tráfico del SDK antes de nuevas inferencias; eso queda fuera de este bloque.
+Bloqueos: sólo nuevas ejecuciones MediaPipe por conexión inesperada; el JSON permite
+continuar cámara offline. Necesito de Carlos: nada para continuar desde la muestra.
+Coste externo: 0 USD. DETENIDO tras guardar detección real y commit, por límite de Work.
