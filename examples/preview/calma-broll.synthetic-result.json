@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "fixture": "synthetic blue base 440Hz + red insert 1700Hz; no real footage",
+  "colorsRGB": {
+    "2.5": [
+      2,
+      0,
+      255
+    ],
+    "4.5": [
+      255,
+      0,
+      0
+    ],
+    "6.5": [
+      2,
+      0,
+      255
+    ]
+  },
+  "voice440HzMagnitude": 0.031220134487578634,
+  "resource1700HzMagnitude": 9.865350887121265e-9,
+  "resourceToVoiceRatio": 3.1599322197174817e-7,
+  "result": "pass"
+}

@@ -1,108 +1,102 @@
-# Estado técnico · 16/10/2026
+# Estado técnico vigente · 16/10/2026
 
 FASE 5/10 · BRAND KIT + TEMPLATE ENGINE
-Progreso fase: 50 % (plantilla provisional ejecutable en seco; estética sin cerrar).
-Progreso global: 45 % = Fases 1–4 (40 %) + 50 % del peso de Fase 5 (5 %).
+Progreso fase: 70 % (estimación técnica; plantilla/estética provisionales).
+Progreso global: 47 % = F1–F4 (40 %) + 70 % del peso de F5 (7 %).
 Rama oficial: feat/phase-4-vision-camera.
-Último hito: SUES_CALMA provisional cinematográfica (naturaleza/exteriores/retiros),
-compilación con BrandKit compartido y selector determinista de B-roll con fallback.
-Suite final: 80/80 tests; npm run check y CLI template:calma ejecutados.
-Coste externo nuevo: 0 USD. Ningún servicio de pago ejecutado.
-Trazabilidad completa: docs/FOUNDATIONS_INTEGRATION_RESULT.md.
-Código/auditoría: examples/foundation-preflight.sample.json (renderReady:false).
+Base de este bloque: fb95338d654290be88456ed2a6e2768673d3658f.
+Último hito: primer preview CALMA local integrado, cámara + cortes + captions +
+outro compartido; compositor B-roll con bindings locales probado con fixture real.
+Suite: 93/93 tests, npm run check, py_compile y smoke FFmpeg con colores/tonos OK.
+Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
+Necesito de Carlos: nada para continuar código; revisión estética pendiente.
 
-## Decisiones y validación Fase 4
+## Resultado verificable
 
-- Base recomendada: composition, zoom fijo 1,40×, tope configurado 1,45×.
-- Alternativa conservative: 1,12× fijo, tope 1,20×, más contexto.
-- Línea de ojos objetivo 0,40; headroom mínimo 0,06 del crop.
-- La composición inicial fija es distinta de los futuros zooms semánticos del Director.
-- 73 keyframes de 74 muestras existentes, sin repetir MediaPipe/ASR.
-- Composición: mediana ojos 0,4114 frente a 0,5266 del conservador; error medio
-  0,0149 frente a 0,1245. Cara completa 73/73 y crops siempre dentro de fuente.
-- Crop composición: velocidad máx 27,82 px/s; paso máx 23,19 px; zoom rate 0.
-  Conservador en este POC queda fijado a bordes, velocidad 0.
-- Prueba interpolada a 30 fps con bounds y endpoint hold. No zoom periódico.
-- Preview local: 864×552, 24fps, 38,274 s, audio original. Sin APIs de render.
-- Fotogramas 2/10/20/35 s inspeccionados: composición reduce techo vacío y conserva
-  cabeza/torso. Se entrega vídeo para percepción de Carlos; no se afirma escucha
-  o visionado humano completo. Cierre técnico de cámara para este POC, no gate V1.
-- Test inicial fallaba al confundir paso por muestra con velocidad usando PTS
-  irregulares; corregido para verificar el contrato 4 % diagonal/s.
-- Baseline legacy reproducido: 27,4636 px/s, zoom 1,105247–1,145857, rate 0,015450/s.
-- Suite completa 50/50; npm run check OK. No npm ci: dependencias existentes válidas.
+- Preview real: 37,30 s, H.264 1080×1920/30fps, AAC; plan 37,31 s (-0,01 s).
+- 16 bloques de captions del transcript existente, originalVoice, cierre de 3 s.
+- Cámara composition 1,40× fija, 73 keyframes existentes; sin nuevas inferencias.
+- Open Sans estática 400/700; captions 56 px y outro 44 px. Paleta del kit.
+- SHA256 original antes/después idéntico, guardado en render-audit.
+- Decodificación íntegra; 8 fotogramas QA revisados, incluidos ambos lados del corte.
+- 55 checks de bbox facial muestreada contra overlays activos, 0 colisiones.
+- Ancho caption máximo 661,18 px/caja 780; outro 523,44 px. Layout evita UI derecha
+  desde x=930 y franja inferior desde y=1540; caption/outro no se solapan.
+- No escucha completa ni aceptación estética humana. No se afirma V1 ni E2E app.
 
-## Código y comandos
+## Código y reproducción
 
-- src/vision.js: contrato detector, selección, ancla y safe zones.
-- src/reframe.js: filtro temporal, CAMERA_PROFILES, buildCameraProfilePlan,
-  sampleReframeAt; legado buildStableReframePlan conservado.
-- scripts/vision/build_reframe.mjs: default composition; --profile conservative/legacy.
-- scripts/vision/preview_reframe.py: comparación local sin importar MediaPipe.
-- JSON real: examples/vision/poc001.mediapipe.json, 74 muestras/73 cara, 20.576 bytes.
-- Métricas: examples/vision/poc001.camera-profiles.metrics.json.
-- Informe y comandos exactos: docs/CAMERA_PROFILES_VALIDATION.md.
-- npm run reframe -- examples/vision/poc001.mediapipe.json runtime/vision/poc001.reframe.json
-- npm run reframe -- examples/vision/poc001.mediapipe.json runtime/vision/conservative.json --profile conservative
-- npm test; npm run check.
-- Preview: venv runtime/preview-venv, opencv-python-headless==5.0.0.93 + FFmpeg.
-  No modelo facial ni clave necesarios para reproducir desde fixture.
+- src/time-map.js: fuente↔edición, repeats/reorder y cámara por spans sin puente.
+- src/local-preview.js: plan, ASS, kit/layout y filtros FFmpeg; crop con tiempo
+  fuente ANTES de reset PTS; fail-closed zoom efectivo >1,60 o tamaño variable.
+- Cortes intermedios de duración entera en frames 30fps para no acumular deriva;
+  último fragmento con tolerancia máxima de un frame, comprobada en salida.
+- prepare_local_preview.mjs + render_local_preview.py: prepare/probe/hash/render/
+  decode/audit. No overwrite. Fuente y recursos locales, audio principal conservado.
+- B-roll: binding explícito por sourceRef, duración de stream verificada, 9:16 cover,
+  audio del recurso excluido, repeatlast=0 y retorno al presentador al acabar slot.
+- Material marcado style-reference o brollEligible:false no puede usarse como B-roll.
+- Muestra de Carlos usa keep-presenter: todavía no hay B-roll propio seleccionado.
+- Smoke sintético reproduce azul→rojo→azul y conserva 440 Hz sin el recurso 1700 Hz;
+  relación recurso/voz 3,16e-7. No es validación de calidad de imágenes reales.
+- npm run preview:prepare -- examples/preview/calma-real.input.json runtime/calma/preview
+- npm run preview:render -- --source runtime/poc/original.mp4 --bundle runtime/calma/preview --out runtime/calma/local-new.mp4
+- npm run preview:smoke -- runtime/smoke-new runtime/calma/preview/fonts
+- npm run references:scan -- --out runtime/refs /ruta/a/los/seis.mp4
+- npm test; npm run check. Ver docs/SUES_CALMA_LOCAL_PREVIEW.md para materializar
+  fuente/transcript/fuentes tipográficas y ejecutar reframe primero.
+- Dependencias del lock sin cambios. Restauración local de cachés con integridad;
+  fast-uri v3.1.8 de tag oficial por conector. node_modules no se versiona.
 
-## Inventario y costes
+## Referencias CALMA
 
-- Repo privado: https://github.com/carlossuess-art/sues-ai-video-editor (1422196475).
-- Maestro: https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit
-- Pruebas Drive: 1efHjGfJ3b5vDYTkdMM_dUjQOumXGgqYr.
-- Original intacto: 1zSsbtfIBH3GEvrnkZfvGhssYRsw9kh82.
-- Comparativa: https://drive.google.com/file/d/1CtP7UUYC2BoMg96MtfCQXTrYX9wxlHz1/view?usp=drivesdk
-- Fotogramas: https://drive.google.com/file/d/1FdeYFyD2pGR5Y3OBxw7PToKaGjMSBYF3/view?usp=drivesdk
-- Auditoría: https://drive.google.com/file/d/1tiazA2Qkl8vlpPCJ9WVkhMCJP7ioYb6P/view?usp=drivesdk
-- Entrega en chat: libfile_c66d6825453c8191b0e41a4b9f5f26d5.
-- Coste nuevo bloque: 0 USD. ASR histórico 0,0039 USD; no repetido.
-- Sin Shotstack, generación, CapCut, Lovable, compras ni nuevos servicios.
+Siete archivos, seis payloads únicos; originales en Drive y no en GitHub.
+Inventario: examples/references/calma-20261016.inventory.json.
+Temporal: examples/references/calma-20261016.temporal.json. Se recorrieron todos
+los frames y se revisaron secuencias 1fps de toda la duración; no escucha/ASR.
+Candidatos scene>0,12: 18/2/6/2/1/1; NO son cortes confirmados ni tasa de montaje.
+Primera referencia: cinco apoyos aproximados, 14,87 s/25,68 % de cobertura;
+las fronteras dependen de muestras/candidatos y no son anotación frame a frame.
+Se mantiene provisional CALMA 2,5–6 s, cobertura ≤40 %, gap ≥3 s, voz propia,
+selección semántica. No se importa identidad, personas o música de esos Reels.
 
-## Límites y continuación
+## IDs y entregables
 
-MediaPipe 1.1.1 intentó tráfico a play.googleapis.com bloqueado por auto-review:
-no se ha reejecutado. Fixture existente permite completar este bloque offline.
-Una cara, muestra aproximada 2 fps; no es seguimiento de producción validado en más tomas.
-El plan usa tiempo fuente: mapear al timeline cortado antes de exportar E2E.
-Safe zones disponibles; resolución de conflictos de overlays vendrá con plantillas/motions.
-Foundations ya integradas. Preflight conecta aliases de motion y distingue zoom
-semántico relativo del encuadre fijo; rechaza combinado >1,60× y tiempos inválidos.
-quote-card sin resolver explícitamente. No hay renderer de motions ni E2E aprobado.
-SUES_CALMA provisional ya implementada por autorización posterior de Carlos:
-cinematográfica de naturaleza/exteriores/retiros, estética a afinar después.
-Comando: npm run template:calma -- examples/broll/calma-dry-run.input.json runtime/templates/sues-calma.plan.json
-Contratos y resultado: docs/SUES_CALMA_PROVISIONAL.md; examples/broll/calma-dry-run.output.json.
-BrandKit compartido resuelve fuentes, colores, captions y outro; logo pendiente de definir.
-No hay assets adicionales reales seleccionados ni render visual de esta plantilla.
-Siguiente: mapa de tiempos edición/fuente y aplicación local de decisiones con
-fallback de presentador, sin repetir análisis ni usar APIs de pago.
-Referencias no bloquean trabajo provisional; pedir 3 por estilo antes del cierre estético.
-Bloqueos de este bloque: ninguno. Necesito de Carlos: nada ahora.
-Backend pendiente: renderer/bindings, safe zones, enforcement look/audio/outro y E2E real.
-No se avanzan fases posteriores por el hecho de fusionar sus contratos.
+Repo: https://github.com/carlossuess-art/sues-ai-video-editor (1422196475).
+Maestro: https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit
+Fuente original: 1zSsbtfIBH3GEvrnkZfvGhssYRsw9kh82.
+Transcript: 11cNi2n-Qkim0_pKMkz2WMle3xDWH1nEa.
+Preview: https://drive.google.com/file/d/1BNpxaHnUUluHQKqzVOXKD96jzElrluLV/view?usp=drivesdk
+QA: https://drive.google.com/file/d/1o4fYQhtcyA3xXX1mYmicJzgagMjIF-oH/view?usp=drivesdk
+Auditoría: https://drive.google.com/file/d/1BaYgRv-yUSqjXPmUjyQZM_vLoVkh6any/view?usp=drivesdk
+Fuentes/licencia: https://drive.google.com/file/d/1el7DYji13Pj9aBOPIS5oz4KUQ8a8blj-/view?usp=drivesdk
+Análisis referencias: https://drive.google.com/file/d/19WDKXoRjZCOzAv2OXfoA59RQKgomoEDy/view?usp=drivesdk
+Vídeo en chat: libfile_c8264a14cc7c8191b3b9f461dc8488d3.
+Referencia/asignaciones Drive originales: examples/references/calma-20261016.inventory.json.
+Informe principal: docs/SUES_CALMA_LOCAL_PREVIEW.md.
+Auditorías compactas: examples/preview/calma-real.render-audit.json y calma-broll.synthetic-result.json.
 
-## Referencias CALMA recibidas · 16/10/2026 (último bloque)
+## Límites que siguen vigentes
 
-Fase 5: 50 %, global 45 %, sin aumento por catalogación.
-Siete archivos recibidos para CALMA, identificados por revisión como Reels editados
-para referencia de estilo. 1080×1920/30 fps, duración total 363,769 s incluyendo
-un duplicado de payload: 122919_008 y 123007_459 contienen streams de vídeo/audio
-idénticos (SHA256 de contenedor diferente). Se conservan los siete originales.
-Archivos persistidos y verificados por listado/tamaño en la carpeta canónica de
-referencias Drive 147twZ2YKpU1-ZHlVgp_MNLa3kPM18KH9; IDs/hashes en
-examples/references/calma-20261016.inventory.json. No se añaden como B-roll.
-28 fotogramas revisados (10/35/65/90 %). Hoja de contacto Drive:
-https://drive.google.com/file/d/1FFeEvCg1I0RREYGRyHq3veMvUPX0JQ5f/view?usp=drivesdk
-Informe docs/SUES_CALMA_REFERENCES_20261016.md; utilidad reproducible
-scripts/references/inspect_media.py ejecutada sobre los siete y py_compile OK.
-Manifiesto validado: siete entradas, seis payloads únicos, todos verticales y
-brollEligible:false. No cambios de motor: suite 80/80 es histórica, no reejecutada.
-Observaciones parciales: composición, presentador/captions y exteriores aprovechables;
-listas/colores/comparativas sólo opcionales. No cierre estético por muestreo.
-Sin escucha, ASR, medición de cortes/zooms ni render de plantilla en este bloque.
-Siguiente acción: análisis temporal de las seis referencias únicas y luego preview
-integrado con mapa edición→fuente y renderer local; no pedir más referencias ahora.
-Coste nuevo 0 USD. Bloqueos de este bloque: ninguno. Necesito de Carlos: nada.
+Fase 4 cerrada para un POC, una cara, muestra ~2fps. composition 1,40×/tope1,45;
+conservative 1,12×/tope1,20; eye-line .40, headroom .06; zoom fijo no semántico.
+Nuevas inferencias MediaPipe 1.1.1 siguen pendientes por tráfico inesperado a
+play.googleapis.com rechazado por auto-review. No reejecutado ni evadido; fixture
+existente permite el trabajo offline. ASR histórico 0,0039 USD, no repetido.
+
+Corte [12,13) heredado del POC: omite tres palabras, no es edición semántica final.
+No soundtrack/SFX, relight, logo final, zoom semántico ni renderer de motions.
+Color natural se aplica como identidad de fuente. Ramas/contratos F6–F10 siguen
+integrados como foundations, sin completar sus fases. quote-card sigue sin resolver.
+No UI grande ni backend persistente, seguridad de producción o E2E aprobado.
+
+## Siguiente acción exacta
+
+Leer maestro + este estado + docs/SUES_CALMA_LOCAL_PREVIEW.md. Continuar bindings
+/render de motions y zooms semánticos con safe zones; verificar después recursos
+propios de naturaleza/retiros con el compositor ya probado. Afinar estética antes
+de cerrar F5. No pedir más referencias ni repetir ASR/MediaPipe por defecto.
+Bloqueos de este bloque: ninguno. Sin nuevas cuotas ni servicios contratados.
+
+Histórico anterior íntegro: docs/archive/PROJECT_STATUS_BEFORE_LOCAL_CALMA_20261016.md.
+Más métricas de cámara: docs/CAMERA_PROFILES_VALIDATION.md.

@@ -1,0 +1,216 @@
+{
+  "version": "1.0",
+  "method": "FFmpeg scene >0.12 at 180x320, all source frames; 1fps contact sheets reviewed across full duration",
+  "threshold": 0.12,
+  "references": [
+    {
+      "file": "VID_20261016_122919_008.mp4",
+      "threshold": 0.12,
+      "events": [
+        {
+          "time": 5.83333,
+          "score": 0.305908
+        },
+        {
+          "time": 6.93333,
+          "score": 0.414056
+        },
+        {
+          "time": 9.16667,
+          "score": 0.46982
+        },
+        {
+          "time": 9.76667,
+          "score": 0.676611
+        },
+        {
+          "time": 10.9333,
+          "score": 0.571314
+        },
+        {
+          "time": 12.8667,
+          "score": 0.526869
+        },
+        {
+          "time": 14.5333,
+          "score": 0.485814
+        },
+        {
+          "time": 19.3333,
+          "score": 0.319699
+        },
+        {
+          "time": 20.5667,
+          "score": 0.596962
+        },
+        {
+          "time": 21.3333,
+          "score": 0.610121
+        },
+        {
+          "time": 24.6,
+          "score": 0.288623
+        },
+        {
+          "time": 26.8333,
+          "score": 0.600072
+        },
+        {
+          "time": 28.7333,
+          "score": 0.578416
+        },
+        {
+          "time": 36.2333,
+          "score": 0.344381
+        },
+        {
+          "time": 40.9667,
+          "score": 0.345959
+        },
+        {
+          "time": 41.0333,
+          "score": 0.274075
+        },
+        {
+          "time": 48.8667,
+          "score": 0.41849
+        },
+        {
+          "time": 53.8333,
+          "score": 0.358205
+        }
+      ],
+      "duration": 57.887083,
+      "candidateEventsPerMinute": 18.657011962409644,
+      "clustersWithinHalfSecond": 17,
+      "limitation": "Candidate changes, not verified cuts. Graphics, fades and movement can trigger; small cuts and gradual zooms can be missed."
+    },
+    {
+      "file": "VID_20261016_123139_098.mp4",
+      "threshold": 0.12,
+      "events": [
+        {
+          "time": 35.7,
+          "score": 0.289409
+        },
+        {
+          "time": 42.0333,
+          "score": 0.275594
+        }
+      ],
+      "duration": 46.086667,
+      "candidateEventsPerMinute": 2.6037899421105895,
+      "clustersWithinHalfSecond": 2,
+      "limitation": "Candidate changes, not verified cuts. Graphics, fades and movement can trigger; small cuts and gradual zooms can be missed."
+    },
+    {
+      "file": "VID_20261016_123155_545.mp4",
+      "threshold": 0.12,
+      "events": [
+        {
+          "time": 36.7667,
+          "score": 0.442677
+        },
+        {
+          "time": 36.8,
+          "score": 0.137587
+        },
+        {
+          "time": 36.9667,
+          "score": 0.449624
+        },
+        {
+          "time": 37.1667,
+          "score": 0.179752
+        },
+        {
+          "time": 44.3,
+          "score": 0.148018
+        },
+        {
+          "time": 55.4333,
+          "score": 0.808626
+        }
+      ],
+      "duration": 59.466667,
+      "candidateEventsPerMinute": 6.053811625258903,
+      "clustersWithinHalfSecond": 3,
+      "limitation": "Candidate changes, not verified cuts. Graphics, fades and movement can trigger; small cuts and gradual zooms can be missed."
+    },
+    {
+      "file": "VID_20261016_123219_741.mp4",
+      "threshold": 0.12,
+      "events": [
+        {
+          "time": 17.5667,
+          "score": 0.172041
+        },
+        {
+          "time": 36.8333,
+          "score": 0.715515
+        }
+      ],
+      "duration": 40.860104,
+      "candidateEventsPerMinute": 2.936850087312553,
+      "clustersWithinHalfSecond": 2,
+      "limitation": "Candidate changes, not verified cuts. Graphics, fades and movement can trigger; small cuts and gradual zooms can be missed."
+    },
+    {
+      "file": "VID_20261016_123248_823.mp4",
+      "threshold": 0.12,
+      "events": [
+        {
+          "time": 44.4333,
+          "score": 0.859709
+        }
+      ],
+      "duration": 48.479271,
+      "candidateEventsPerMinute": 1.2376423729639006,
+      "clustersWithinHalfSecond": 1,
+      "limitation": "Candidate changes, not verified cuts. Graphics, fades and movement can trigger; small cuts and gradual zooms can be missed."
+    },
+    {
+      "file": "VID_20261016_123512_257.mp4",
+      "threshold": 0.12,
+      "events": [
+        {
+          "time": 49.0667,
+          "score": 0.700199
+        }
+      ],
+      "duration": 53.101875,
+      "candidateEventsPerMinute": 1.12990360509869,
+      "clustersWithinHalfSecond": 1,
+      "limitation": "Candidate changes, not verified cuts. Graphics, fades and movement can trigger; small cuts and gradual zooms can be missed."
+    }
+  ],
+  "soundAnalysis": "not performed",
+  "visualReview": "1 fps still sequences; not continuous playback",
+  "firstReferenceBroll": {
+    "basis": "visual classification of 1fps sequences, boundaries snapped to scene candidates; approximate, not frame-accurate manual annotation",
+    "intervals": [
+      [
+        6.93333,
+        9.16667
+      ],
+      [
+        9.76667,
+        10.9333
+      ],
+      [
+        12.8667,
+        14.5333
+      ],
+      [
+        26.8333,
+        28.7333
+      ],
+      [
+        40.9667,
+        48.8667
+      ]
+    ],
+    "estimatedSeconds": 14.866569999999998,
+    "estimatedCoverage": 0.25682016141666697
+  }
+}

@@ -80,3 +80,7 @@ Primer ASR real y render subtitulado archivados. 36 tests aprobados.
 Fase 3 completada: Carlos validó los subtítulos por bloques y su sincronía aproximada.
 La precisión palabra a palabra se revisará al implementar ese estilo. Global 25 %.
 Ver PROJECT_STATUS.md y docs/ASR_RESULTS_002.md; no repetir ASR de pago.
+
+## Preview integrado local de CALMA
+
+La plantilla provisional ya dispone de cámara, cortes, captions, outro y compositor B-roll local con verificación de medios. Guía y evidencias: [SUES_CALMA_LOCAL_PREVIEW](docs/SUES_CALMA_LOCAL_PREVIEW.md). `npm run preview:prepare`, `npm run preview:render` y `npm run preview:smoke` trabajan sin servicios de pago. La estética y la aceptación E2E siguen pendientes; consultar siempre [PROJECT_STATUS](PROJECT_STATUS.md).

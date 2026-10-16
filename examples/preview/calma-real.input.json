@@ -1,0 +1,43 @@
+{
+  "templatePath": "examples/templates/sues-calma.template.json",
+  "brandKitPath": "examples/brand-kit.sues.json",
+  "transcriptPath": "runtime/poc/transcript.json",
+  "cameraPath": "runtime/calma/camera.json",
+  "source": {
+    "duration": 38.31,
+    "width": 1080,
+    "height": 1920,
+    "sha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a"
+  },
+  "segments": [
+    {
+      "in": 0,
+      "out": 12
+    },
+    {
+      "in": 13,
+      "out": 38.31
+    }
+  ],
+  "slots": [
+    {
+      "start": 5,
+      "end": 9,
+      "reason": "Metáfora de mirada y mundo interior; no hay B-roll propio verificado",
+      "tags": [
+        "nature",
+        "water"
+      ]
+    },
+    {
+      "start": 17,
+      "end": 21,
+      "reason": "Experiencia interior; sin material propio verificado",
+      "tags": [
+        "retreat",
+        "connection"
+      ]
+    }
+  ],
+  "assets": []
+}

@@ -12,7 +12,11 @@
     "poc": "node --env-file-if-exists=.env src/cli.js",
     "check": "node scripts/check.mjs",
     "reframe": "node scripts/vision/build_reframe.mjs",
-    "template:calma": "node scripts/templates/prepare_cinematic.mjs"
+    "template:calma": "node scripts/templates/prepare_cinematic.mjs",
+    "preview:prepare": "node scripts/templates/prepare_local_preview.mjs",
+    "preview:render": "python3 scripts/templates/render_local_preview.py",
+    "references:scan": "python3 scripts/references/scan_temporal.py",
+    "preview:smoke": "node scripts/templates/smoke_local_preview.mjs"
   },
   "dependencies": {
     "ajv": "^8.17.1"
