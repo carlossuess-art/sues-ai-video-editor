@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "language": "es",
+  "sourceDuration": 45,
+  "text": "Ejemplo de transcript con tiempos por palabra.",
+  "provider": "example",
+  "timing": "word",
+  "words": [
+    {"text": "Ejemplo", "start": 0.2, "end": 0.8, "confidence": 0.99},
+    {"text": "de", "start": 0.85, "end": 1.0, "confidence": 0.99},
+    {"text": "transcript", "start": 1.05, "end": 1.7, "confidence": 0.98},
+    {"text": "con", "start": 1.75, "end": 1.95, "confidence": 0.99},
+    {"text": "tiempos", "start": 2.0, "end": 2.5, "confidence": 0.98},
+    {"text": "por", "start": 2.55, "end": 2.75, "confidence": 0.99},
+    {"text": "palabra.", "start": 2.8, "end": 3.4, "confidence": 0.99}
+  ]
+}
