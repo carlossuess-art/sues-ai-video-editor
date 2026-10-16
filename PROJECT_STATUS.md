@@ -1,11 +1,10 @@
 # Estado técnico · 16/10/2026
 
 FASE 4/10 · VISIÓN: CARA, OJOS, REENCUADRE, ZOOM Y SAFE ZONES · EN CURSO
-Progreso fase: 40 %.
-Progreso global: 31 % = Fases 1–3 (25 %) + 40 % de Fase 4 (6 %).
+Progreso fase: 55 %.
+Progreso global: 33 % = Fases 1–3 (25 %) + ~55 % de Fase 4 (~8 %).
 Rama activa: feat/phase-4-vision-camera.
-Último hito: detector MediaPipe VIDEO ejecutado sobre POC_001; JSON real de 20 KB
-compatible con vision.js, reutilizable sin Python desde chat normal.
+Último hito: detecciones reales de MediaPipe convertidas en una estrategia de cámara estable offline: dead zone, límites de velocidad/escala y compilador de Reframe Plan.
 
 ## Fase 4 · Implementado
 
@@ -88,12 +87,34 @@ inesperada del paquete a play.googleapis.com. Contenido transmitido no identific
 No se reintentó ni se evadió el bloqueo. El JSON existente se validó sólo offline.
 No repetir inferencia hasta aclarar/autorizar ese tráfico; no afirmar ejecución sin red.
 
-## Siguiente acción exacta desde chat normal
+## Estabilización offline añadida desde chat normal
 
-Leer examples/vision/poc001.mediapipe.json y usar frames con el núcleo vision.js.
-Preparar/validar por separado el Reframe Plan y tratamiento de la pérdida/salto inicial,
-sin volver a instalar ni ejecutar MediaPipe. No conectar keyframes al render todavía.
-Auditar el tráfico del SDK antes de nuevas inferencias; eso queda fuera de este bloque.
-Bloqueos: sólo nuevas ejecuciones MediaPipe por conexión inesperada; el JSON permite
-continuar cámara offline. Necesito de Carlos: nada para continuar desde la muestra.
-Coste externo: 0 USD. DETENIDO tras guardar detección real y commit, por límite de Work.
+- `src/reframe.js`: filtro temporal independiente del detector.
+- Dead zone 0,6 % de diagonal para no perseguir micromovimientos.
+- Límite de movimiento 4 % de diagonal/s y escala 12 %/s.
+- Constantes temporales: posición 1,2 s; escala 1,5 s.
+- `tests/reframe.test.js`: pruebas sintéticas + fixture real preparadas.
+- `scripts/vision/build_reframe.mjs`: compilador offline JSON de detección → Reframe Plan.
+- `package.json`: comando `npm run reframe -- input.json output.json` y syntax checks.
+- Análisis: `docs/REFRAME_POC_ANALYSIS.md`.
+
+Replay analítico del fixture guardado, sin MediaPipe ni red: movimiento máximo estimado
+del crop ~27,46 px/s; paso máximo ~1,29 % de diagonal; zoom ~1,105–1,146; cambio máximo
+de zoom ~0,0155/s. Son métricas numéricas, no validación visual.
+
+Hallazgo: como la fuente ya es 1080×1920 y el sujeto está bajo/derecha, con el zoom
+conservador el crop toca borde derecho e inferior en todas las muestras. La línea de ojos
+ideal no siempre puede alcanzarse sin más zoom. No aumentar zoom a ciegas: comparar
+visualmente perfil conservador vs perfil de composición cuando vuelva Work.
+
+## Siguiente acción exacta
+
+Mientras no haya Work: no hace falta repetir MediaPipe. El núcleo offline ya está preparado.
+Cuando vuelva Work: checkout de la rama, ejecutar suite completa y `npm run reframe`
+sobre el fixture real; revisar el plan generado y hacer una prueba visual de dos perfiles
+(conservador y composición). Sólo después conectar keyframes al render.
+
+Bloqueos: nuevas inferencias MediaPipe siguen pendientes de aclarar por tráfico inesperado;
+no bloquea el fixture ya existente. La validación visual/render sí requiere entorno Work.
+Necesito de Carlos: nada hasta recuperar cuota Work.
+Coste externo adicional: 0 USD.
