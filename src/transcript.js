@@ -31,6 +31,9 @@ export function mapWordsToTimeline(transcript, segments) {
       const end = Math.min(w.end, s.out);
       if (end <= start) continue;
       const clipped = start !== w.start || end !== w.end;
+      // A cut through a spoken word must not display the complete word as a caption.
+      // Future semantic cutting should avoid this situation; for now fail safe by omitting it.
+      if (clipped) continue;
       mapped.push({
         ...w,
         text: clean(w.text),
