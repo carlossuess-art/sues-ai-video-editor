@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "templateId": "SUES_CALMA",
+  "timeSpace": "edit-timeline",
+  "selection": "manual-semantic-demo-not-ai",
+  "decisions": [
+    {
+      "type": "zoom",
+      "start": 5.2,
+      "end": 9.6,
+      "reason": "Giro del discurso: reconocer un mundo tras tus ojos",
+      "rule": "manual-revelation-demo",
+      "params": {
+        "scale": 1.08,
+        "ramp": 1.1,
+        "reason": "revelation"
+      }
+    },
+    {
+      "type": "zoom",
+      "start": 13.5,
+      "end": 17,
+      "reason": "Énfasis en detenerte y sentir",
+      "rule": "manual-emphasis-demo",
+      "params": {
+        "scale": 1.06,
+        "ramp": 1,
+        "reason": "emphasis"
+      }
+    },
+    {
+      "type": "motion",
+      "start": 14.1,
+      "end": 17,
+      "reason": "Cita literal de la locución: detenerte y sentir",
+      "rule": "manual-quote-demo",
+      "params": {
+        "motionId": "QUOTE_CARD_01",
+        "bindings": {
+          "quote": "detenerte y sentir."
+        },
+        "semanticReason": "reflection"
+      }
+    }
+  ]
+}

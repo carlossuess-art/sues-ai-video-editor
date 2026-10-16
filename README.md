@@ -84,3 +84,7 @@ Ver PROJECT_STATUS.md y docs/ASR_RESULTS_002.md; no repetir ASR de pago.
 ## Preview integrado local de CALMA
 
 La plantilla provisional ya dispone de cámara, cortes, captions, outro y compositor B-roll local con verificación de medios. Guía y evidencias: [SUES_CALMA_LOCAL_PREVIEW](docs/SUES_CALMA_LOCAL_PREVIEW.md). `npm run preview:prepare`, `npm run preview:render` y `npm run preview:smoke` trabajan sin servicios de pago. La estética y la aceptación E2E siguen pendientes; consultar siempre [PROJECT_STATUS](PROJECT_STATUS.md).
+
+### Motions y zoom semántico de CALMA
+
+[Guía de render semántico](docs/SUES_CALMA_SEMANTIC_RENDER.md): dos zooms de demostración anclados a ojos y tres motions ASS probados. `npm run semantic:smoke` verifica el anclaje en vídeo. La selección de la muestra es manual desde el transcript; el Director automático sigue pendiente.

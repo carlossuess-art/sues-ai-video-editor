@@ -5,7 +5,7 @@ const [inputPath,outputDir]=process.argv.slice(2);
 if(!inputPath||!outputDir){console.error('Usage: node scripts/templates/prepare_local_preview.mjs input.json output-directory');process.exit(1);}
 try{
  const read=p=>JSON.parse(readFileSync(p,'utf8')),input=read(inputPath);
- const plan=prepareLocalPreview({...input,template:read(input.templatePath),brand:read(input.brandKitPath),transcript:read(input.transcriptPath),camera:read(input.cameraPath)});
+ const plan=prepareLocalPreview({...input,template:read(input.templatePath),brand:read(input.brandKitPath),transcript:read(input.transcriptPath),camera:read(input.cameraPath),director:input.directorPath?read(input.directorPath):undefined,visionFrames:input.visionPath?read(input.visionPath).frames:[],catalog:input.catalogPath?read(input.catalogPath):[]});
  const out=resolve(outputDir);mkdirSync(out,{recursive:true});
  writeFileSync(join(out,'manifest.json'),JSON.stringify(plan,null,2)+'\n');
  writeFileSync(join(out,'captions.ass'),buildPreviewASS(plan,{fontFamily:input.previewFont??plan.policy.captions.font}));

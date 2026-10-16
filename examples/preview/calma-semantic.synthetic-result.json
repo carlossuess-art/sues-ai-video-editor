@@ -1,0 +1,55 @@
+{
+  "version": "1.0",
+  "fixture": "synthetic grid, synthetic detection, 8 percent zoom; not real-face inference",
+  "samples": [
+    {
+      "time": 1.5,
+      "anchor": {
+        "x": 134.44366197183098,
+        "y": 191.44366197183098,
+        "pixels": 142
+      },
+      "marker": {
+        "x": 53.5,
+        "y": 383.5,
+        "pixels": 64
+      }
+    },
+    {
+      "time": 4,
+      "anchor": {
+        "x": 134.5,
+        "y": 191.5,
+        "pixels": 144
+      },
+      "marker": {
+        "x": 47.41428571428571,
+        "y": 398.8857142857143,
+        "pixels": 70
+      }
+    },
+    {
+      "time": 6.5,
+      "anchor": {
+        "x": 134.5,
+        "y": 191.5,
+        "pixels": 144
+      },
+      "marker": {
+        "x": 53.5,
+        "y": 383.5,
+        "pixels": 64
+      }
+    }
+  ],
+  "expectedPeakMarker": {
+    "x": 47.02450704225352,
+    "y": 398.86450704225354
+  },
+  "renderedMotions": [
+    "QUOTE_CARD_01",
+    "DIVIDER_LINE_01",
+    "NUMBER_BADGE_GOLD_01"
+  ],
+  "result": "pass"
+}

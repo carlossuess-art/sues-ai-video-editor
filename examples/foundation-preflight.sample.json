@@ -62,7 +62,9 @@
     ],
     "motions": [
       "BLURRED_RESOURCE_01",
-      "NUMBER_BADGE_GOLD_01"
+      "NUMBER_BADGE_GOLD_01",
+      "QUOTE_CARD_01",
+      "DIVIDER_LINE_01"
     ],
     "look": {
       "blackWhite": "optional",
@@ -146,9 +148,7 @@
       "templateId": "SUES_CALMA"
     }
   ],
-  "unresolvedMotions": [
-    "quote-card"
-  ],
+  "unresolvedMotions": [],
   "camera": {
     "profile": "composition",
     "framingZoom": 1.4,

@@ -269,5 +269,40 @@
         "replaceable": false
       }
     ]
+  },
+  {
+    "version": "1.0",
+    "id": "QUOTE_CARD_01",
+    "type": "overlay",
+    "renderMode": "dynamic",
+    "tags": [
+      "quote",
+      "calma",
+      "reflection"
+    ],
+    "trigger": {
+      "semanticReasons": [
+        "reflection",
+        "emphasis",
+        "revelation"
+      ],
+      "minDuration": 1.5
+    },
+    "layers": [
+      {
+        "id": "panel",
+        "kind": "shape",
+        "start": 0,
+        "duration": 3,
+        "replaceable": false
+      },
+      {
+        "id": "quote",
+        "kind": "text",
+        "start": 0,
+        "duration": 3,
+        "replaceable": true
+      }
+    ]
   }
 ]

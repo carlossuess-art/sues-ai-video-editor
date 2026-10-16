@@ -61,7 +61,8 @@
     "motions": [
       "blurred-resource",
       "numbered-list",
-      "quote-card"
+      "quote-card",
+      "divider-line"
     ],
     "look": {
       "blackWhite": "optional",

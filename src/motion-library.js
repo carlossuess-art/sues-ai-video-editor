@@ -3,7 +3,7 @@ const num=x=>typeof x==='number'&&Number.isFinite(x);
 export const MOTION_TYPES=Object.freeze(['overlay','layout','transition','badge','audio-cue','background-treatment']);
 export const MOTION_IDS=Object.freeze([
   'BLURRED_RESOURCE_01','COMPARE_YES_NO_01','NUMBER_BADGE_GOLD_01',
-  'CHECK_GREEN_01','CROSS_RED_01','STRIKE_TEXT_01','DIVIDER_LINE_01'
+  'CHECK_GREEN_01','CROSS_RED_01','STRIKE_TEXT_01','DIVIDER_LINE_01','QUOTE_CARD_01'
 ]);
 
 export function validateMotionAsset(m){

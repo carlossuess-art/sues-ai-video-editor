@@ -1,3 +1,4 @@
+import {prepareSemanticRender,semanticZoomFilter} from './semantic-render.js';
 import {buildTimeMap,mapCameraToEdit} from './time-map.js';
 import {mapWordsToTimeline,segmentWords} from './transcript.js';
 import {compileTemplatePolicy} from './template.js';
@@ -38,7 +39,7 @@ function validateCamera(camera,width,height){
   }
 }
 
-export function prepareLocalPreview({template,brand,transcript,camera,source,segments,slots=[],assets=[],mediaBindings={}}){
+export function prepareLocalPreview({template,brand,transcript,camera,source,segments,slots=[],assets=[],mediaBindings={},director,visionFrames=[],catalog=[]}){
   assert(source&&finite(source.duration)&&Number.isInteger(source.width)&&Number.isInteger(source.height),'source');
   assert(Math.abs(source.duration-transcript.sourceDuration)<.05,'transcript/source duration');
   validateCamera(camera,source.width,source.height);
@@ -60,11 +61,12 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
     assert(typeof path==='string'&&path.length>0,'B-roll requires verified renderer bindings');
     return {...d,localFile:path};
   });
-  return {version:'1.0',kind:'local-preview',source,policy,timeMap,camera,
+  const semantic=prepareSemanticRender({director,policy,camera,timeMap,visionFrames,catalog,broll,captions,layout:PREVIEW_LAYOUT});
+  return {version:'1.0',kind:'local-preview',source,policy,timeMap,camera,semantic,
     cameraSpans:mapCameraToEdit(camera,timeMap),captions,broll,selectedMedia,layout:PREVIEW_LAYOUT,
     duration:timeMap.duration,renderColors:{dark:brand.colors.dark},originalVoice:true,colorTreatment:'identity-natural',
     renderReady:true,productionReady:false,
-    pending:['semantic-zoom-and-motion-renderer','real-broll-visual-acceptance','music-and-sfx','full-audiovisual-acceptance','app-e2e']};
+    pending:['automated-director-selection','real-broll-visual-acceptance','music-and-sfx','full-audiovisual-acceptance','app-e2e']};
 }
 
 const assColor=hex=>'&H00'+hex.slice(5,7)+hex.slice(3,5)+hex.slice(1,3);
@@ -79,6 +81,20 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   const event=(layer,start,end,style,text)=>{out+=`Dialogue: ${layer},${timestamp(start)},${timestamp(end)},${style},,0,0,0,,${text}\n`;};
   for(const c of plan.captions){
     const b=plan.layout.caption;event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})}${c.lines.map(safeText).join('\\N')}`);
+  }
+  for(const m of plan.semantic?.motions??[]){
+    const b=m.box,cx=(b.left+b.right)/2,cy=(b.top+b.bottom)/2,paint=assColor(plan.renderColors.dark).slice(4);
+    const goldCode=assColor(plan.policy.captions.accent).slice(4);
+    if(m.params.motionId==='QUOTE_CARD_01'){
+      event(2,m.start,m.end,'Outro',`{\\an7\\pos(${b.left},${b.top})\\p1\\bord0\\1c&H${paint}&\\1a&H35&\\fad(200,250)}m 0 0 l 780 0 780 150 0 150`);
+      event(3,m.start,m.end,'Outro',`{\\pos(${cx},${cy})\\fs44\\b1\\fad(200,250)}${m.lines.map(safeText).join('\\N')}`);
+    }else if(m.params.motionId==='DIVIDER_LINE_01'){
+      event(3,m.start,m.end,'Outro',`{\\an7\\pos(${b.left},${cy})\\p1\\bord0\\1c&H${goldCode}&\\fscx0\\t(0,300,\\fscx100)\\fad(100,250)}m 0 0 l 780 0 780 3 0 3`);
+    }else if(m.params.motionId==='NUMBER_BADGE_GOLD_01'){
+      const number=m.instance.layers.find(l=>l.id==='number').content;
+      event(3,m.start,m.end,'Outro',`{\\pos(${b.left+50},${cy})\\fs64\\b1\\fad(180,200)}${number}`);
+      event(3,m.layerTimes.label.start,m.layerTimes.label.end,'Outro',`{\\pos(${cx+55},${cy})\\1c${white}&\\fs42\\fad(180,200)}${m.lines.map(safeText).join('\\N')}`);
+    }
   }
   const b=plan.layout.outro,start=plan.duration-plan.policy.outro.duration;
   const color=hex=>assColor(hex).slice(4);
@@ -113,6 +129,8 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   }
   filters.push(`${spans.map((_,i)=>`[v${i}]${hasAudio?`[a${i}]`:''}`).join('')}concat=n=${n}:v=1:a=${hasAudio?1:0}[base]${hasAudio?'[audio]':''}`);
   let base='base';
+  const zoomFilter=semanticZoomFilter(plan.semantic??{zooms:[]});
+  if(zoomFilter){filters.push(`[base]${zoomFilter}[semantic-base]`);base='semantic-base';}
   for(const [i,d]of plan.selectedMedia.entries()){
     filters.push(`[${i+1}:v]trim=start=${d.sourceIn}:end=${d.sourceOut},setpts=PTS-${d.sourceIn}/TB,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1,fps=fps=30:start_time=0,setpts=PTS+${d.start}/TB[broll${i}]`);
     filters.push(`[${base}][broll${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${d.start})*lt(t,${d.end})'[composed${i}]`);base=`composed${i}`;
