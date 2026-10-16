@@ -1,0 +1,299 @@
+{
+  "version": "1.0",
+  "method": "ffprobe + compressed stream hashes + four sampled frames",
+  "limitations": [
+    "no full visual review",
+    "no listening or ASR",
+    "stream hashes exclude timestamps and container metadata",
+    "not a shot or zoom detector"
+  ],
+  "assets": [
+    {
+      "filename": "VID_20261016_122919_008.mp4",
+      "sha256": "63ce64b24f39a3e76f0d049562fdd7a505f1a063428322149bf57b617d4490ac",
+      "bytes": 36795583,
+      "duration": 57.887083,
+      "width": 1080,
+      "height": 1920,
+      "frameRate": "30/1",
+      "videoCodec": "hevc",
+      "audioPresent": true,
+      "streamPayloadHashes": {
+        "v": "ffebe7d487c566300ed08d9e7e9d3944ce718e42ab0e69d5332d64fc90d7e258",
+        "a": "146caa0606cf148d8a2eceec197b150d1fa401d6844b90c9a0ecb677bd0a8db4"
+      },
+      "samples": [
+        {
+          "requestedTime": 5.7887
+        },
+        {
+          "requestedTime": 20.2605
+        },
+        {
+          "requestedTime": 37.6266
+        },
+        {
+          "requestedTime": 52.0984
+        }
+      ],
+      "role": "style-reference",
+      "brollEligible": false,
+      "drive": {
+        "id": "1FKO2RjjBeOyQfuVr9byJ8HV9mMc_pk5y",
+        "url": "https://drive.google.com/file/d/1FKO2RjjBeOyQfuVr9byJ8HV9mMc_pk5y/view?usp=drivesdk"
+      },
+      "observations": {
+        "basis": "four sampled frames at 10/35/65/90 percent; not full audiovisual analysis",
+        "visible": "Interior cálido; presentador sentado; subtítulos blancos pequeños; objetos/libro como apoyo visual.",
+        "calmaUse": "composition-and-captions"
+      }
+    },
+    {
+      "filename": "VID_20261016_123007_459.mp4",
+      "sha256": "390605eae254fa89a285a1195fe154ea3c59b80eb5b8c35470b4cb4b5369f842",
+      "bytes": 36795583,
+      "duration": 57.887083,
+      "width": 1080,
+      "height": 1920,
+      "frameRate": "30/1",
+      "videoCodec": "hevc",
+      "audioPresent": true,
+      "streamPayloadHashes": {
+        "v": "ffebe7d487c566300ed08d9e7e9d3944ce718e42ab0e69d5332d64fc90d7e258",
+        "a": "146caa0606cf148d8a2eceec197b150d1fa401d6844b90c9a0ecb677bd0a8db4"
+      },
+      "samples": [
+        {
+          "requestedTime": 5.7887
+        },
+        {
+          "requestedTime": 20.2605
+        },
+        {
+          "requestedTime": 37.6266
+        },
+        {
+          "requestedTime": 52.0984
+        }
+      ],
+      "role": "style-reference",
+      "brollEligible": false,
+      "drive": {
+        "id": "1DgCvfZIytIS761HAvw_mv4i4Ydc9PqXA",
+        "url": "https://drive.google.com/file/d/1DgCvfZIytIS761HAvw_mv4i4Ydc9PqXA/view?usp=drivesdk"
+      },
+      "observations": {
+        "basis": "four sampled frames at 10/35/65/90 percent; not full audiovisual analysis",
+        "visible": "Mismo payload de vídeo y audio que 122919_008; contenedor diferente.",
+        "calmaUse": "duplicate-payload"
+      }
+    },
+    {
+      "filename": "VID_20261016_123139_098.mp4",
+      "sha256": "84070e635c780739385e493ec51b3c5552275ae22ff7fcf143a44f0e8eae1438",
+      "bytes": 28468929,
+      "duration": 46.086667,
+      "width": 1080,
+      "height": 1920,
+      "frameRate": "30/1",
+      "videoCodec": "hevc",
+      "audioPresent": true,
+      "streamPayloadHashes": {
+        "v": "aeb887da29501f7abd884326aa21e09cb3d086155c67ee378ce9812f092893c7",
+        "a": "34caea969fc9319ab4cc1a573483eee4579af5677d5432836e423139d5bef145"
+      },
+      "samples": [
+        {
+          "requestedTime": 4.6087
+        },
+        {
+          "requestedTime": 16.1303
+        },
+        {
+          "requestedTime": 29.9563
+        },
+        {
+          "requestedTime": 41.478
+        }
+      ],
+      "role": "style-reference",
+      "brollEligible": false,
+      "drive": {
+        "id": "1C7unTxVBNNk7UU_Cd7Z0mMadX7QIWSwa",
+        "url": "https://drive.google.com/file/d/1C7unTxVBNNk7UU_Cd7Z0mMadX7QIWSwa/view?usp=drivesdk"
+      },
+      "observations": {
+        "basis": "four sampled frames at 10/35/65/90 percent; not full audiovisual analysis",
+        "visible": "Presentador con fondo oscuro; columna numerada y libros; rótulo superior.",
+        "calmaUse": "optional-explainer-graphics"
+      }
+    },
+    {
+      "filename": "VID_20261016_123155_545.mp4",
+      "sha256": "1e45b5d5babeafeab6517c42bfd022c60fd1e24a30192c53cb1f135214e14e29",
+      "bytes": 36931424,
+      "duration": 59.466667,
+      "width": 1080,
+      "height": 1920,
+      "frameRate": "30/1",
+      "videoCodec": "hevc",
+      "audioPresent": true,
+      "streamPayloadHashes": {
+        "v": "741f37d7e1e440943f72f55ec75e63805f00250eab308b3f07ee3ab6f4965746",
+        "a": "aa94bcf04f6d78fab25cbaa470075620bc7c33f962f4a1bd142c7a07d95fc05a"
+      },
+      "samples": [
+        {
+          "requestedTime": 5.9467
+        },
+        {
+          "requestedTime": 20.8133
+        },
+        {
+          "requestedTime": 38.6533
+        },
+        {
+          "requestedTime": 53.52
+        }
+      ],
+      "role": "style-reference",
+      "brollEligible": false,
+      "drive": {
+        "id": "1e6vzUv6KLtMX-lF-ELUGyCVuR_9WEV2j",
+        "url": "https://drive.google.com/file/d/1e6vzUv6KLtMX-lF-ELUGyCVuR_9WEV2j/view?usp=drivesdk"
+      },
+      "observations": {
+        "basis": "four sampled frames at 10/35/65/90 percent; not full audiovisual analysis",
+        "visible": "Dos personas en interior; alternancia de protagonismo; rótulos de colores.",
+        "calmaUse": "optional-comparison"
+      }
+    },
+    {
+      "filename": "VID_20261016_123219_741.mp4",
+      "sha256": "43431849f08528f6386d7a7e64a339867ad695a5a8c9be4a5a0b6881e68cb5b9",
+      "bytes": 25305830,
+      "duration": 40.860104,
+      "width": 1080,
+      "height": 1920,
+      "frameRate": "30/1",
+      "videoCodec": "hevc",
+      "audioPresent": true,
+      "streamPayloadHashes": {
+        "v": "b7ccc0c6a635c61e9e5d9908dc2ccb14dd0313e9117f205b17e12c076ed8101f",
+        "a": "b15585d0060cb21a86d9f15f228ccebae712a01221836e1889553fb03d2cbca5"
+      },
+      "samples": [
+        {
+          "requestedTime": 4.086
+        },
+        {
+          "requestedTime": 14.301
+        },
+        {
+          "requestedTime": 26.5591
+        },
+        {
+          "requestedTime": 36.7741
+        }
+      ],
+      "role": "style-reference",
+      "brollEligible": false,
+      "drive": {
+        "id": "1u0jZevPptu4hYGn0l9X5vUv8kSpoxxz5",
+        "url": "https://drive.google.com/file/d/1u0jZevPptu4hYGn0l9X5vUv8kSpoxxz5/view?usp=drivesdk"
+      },
+      "observations": {
+        "basis": "four sampled frames at 10/35/65/90 percent; not full audiovisual analysis",
+        "visible": "Conversación en exterior junto a piscina; plano conjunto y primeros planos; CTA resaltado.",
+        "calmaUse": "exterior-and-framing"
+      }
+    },
+    {
+      "filename": "VID_20261016_123248_823.mp4",
+      "sha256": "712a69d2ff1513744cfe226eca5e1e70ded8b81db490cd0e80d0cd89f125203d",
+      "bytes": 30616871,
+      "duration": 48.479271,
+      "width": 1080,
+      "height": 1920,
+      "frameRate": "30/1",
+      "videoCodec": "hevc",
+      "audioPresent": true,
+      "streamPayloadHashes": {
+        "v": "9d05956c359aec632de0c726f83aa1891be5d321bf3f20d4b185dd60f54893ad",
+        "a": "9e1211e0f4610787190225fd86a4768d962a86b09543f752d2e282d3973dbfdf"
+      },
+      "samples": [
+        {
+          "requestedTime": 4.8479
+        },
+        {
+          "requestedTime": 16.9677
+        },
+        {
+          "requestedTime": 31.5115
+        },
+        {
+          "requestedTime": 43.6313
+        }
+      ],
+      "role": "style-reference",
+      "brollEligible": false,
+      "drive": {
+        "id": "1RE3jIn91-ThdYyOL5rSRWcYm8RLfxit7",
+        "url": "https://drive.google.com/file/d/1RE3jIn91-ThdYyOL5rSRWcYm8RLfxit7/view?usp=drivesdk"
+      },
+      "observations": {
+        "basis": "four sampled frames at 10/35/65/90 percent; not full audiovisual analysis",
+        "visible": "Presentador de pie en interior; imágenes en pantalla al fondo; subtítulos y CTA.",
+        "calmaUse": "optional-supporting-visuals"
+      }
+    },
+    {
+      "filename": "VID_20261016_123512_257.mp4",
+      "sha256": "c4aaac48d8bca026517fe99c0d3c9ab94cf8db158db32d1e394729edfe6a0af7",
+      "bytes": 34258656,
+      "duration": 53.101875,
+      "width": 1080,
+      "height": 1920,
+      "frameRate": "30/1",
+      "videoCodec": "hevc",
+      "audioPresent": true,
+      "streamPayloadHashes": {
+        "v": "37fd4156c16e2ec6c81b3e500cc902b302b8bf79ecfbb1071a6f8e6713872232",
+        "a": "f45c7ea85103d6ccc24abe62557da8268bb0ea8ea219b866182b3a7b10e39f74"
+      },
+      "samples": [
+        {
+          "requestedTime": 5.3102
+        },
+        {
+          "requestedTime": 18.5857
+        },
+        {
+          "requestedTime": 34.5162
+        },
+        {
+          "requestedTime": 47.7917
+        }
+      ],
+      "role": "style-reference",
+      "brollEligible": false,
+      "drive": {
+        "id": "1tJk2gC3nQBqx-LkAchPPVZ2iNyBlXp2k",
+        "url": "https://drive.google.com/file/d/1tJk2gC3nQBqx-LkAchPPVZ2iNyBlXp2k/view?usp=drivesdk"
+      },
+      "observations": {
+        "basis": "four sampled frames at 10/35/65/90 percent; not full audiovisual analysis",
+        "visible": "Presentador sentado en jardín; vegetación; subtítulos y palabras destacadas.",
+        "calmaUse": "exterior-and-composition"
+      }
+    }
+  ],
+  "samePayloadGroups": [
+    [
+      "VID_20261016_122919_008.mp4",
+      "VID_20261016_123007_459.mp4"
+    ]
+  ],
+  "userContext": "Carlos indica que estos siete vídeos son para SUES CALMA. Observados como Reels editados de referencia, no originales limpios para B-roll. No implica aprobación final de cada rasgo."
+}

@@ -83,3 +83,26 @@ Referencias no bloquean trabajo provisional; pedir 3 por estilo antes del cierre
 Bloqueos de este bloque: ninguno. Necesito de Carlos: nada ahora.
 Backend pendiente: renderer/bindings, safe zones, enforcement look/audio/outro y E2E real.
 No se avanzan fases posteriores por el hecho de fusionar sus contratos.
+
+## Referencias CALMA recibidas · 16/10/2026 (último bloque)
+
+Fase 5: 50 %, global 45 %, sin aumento por catalogación.
+Siete archivos recibidos para CALMA, identificados por revisión como Reels editados
+para referencia de estilo. 1080×1920/30 fps, duración total 363,769 s incluyendo
+un duplicado de payload: 122919_008 y 123007_459 contienen streams de vídeo/audio
+idénticos (SHA256 de contenedor diferente). Se conservan los siete originales.
+Archivos persistidos y verificados por listado/tamaño en la carpeta canónica de
+referencias Drive 147twZ2YKpU1-ZHlVgp_MNLa3kPM18KH9; IDs/hashes en
+examples/references/calma-20261016.inventory.json. No se añaden como B-roll.
+28 fotogramas revisados (10/35/65/90 %). Hoja de contacto Drive:
+https://drive.google.com/file/d/1FFeEvCg1I0RREYGRyHq3veMvUPX0JQ5f/view?usp=drivesdk
+Informe docs/SUES_CALMA_REFERENCES_20261016.md; utilidad reproducible
+scripts/references/inspect_media.py ejecutada sobre los siete y py_compile OK.
+Manifiesto validado: siete entradas, seis payloads únicos, todos verticales y
+brollEligible:false. No cambios de motor: suite 80/80 es histórica, no reejecutada.
+Observaciones parciales: composición, presentador/captions y exteriores aprovechables;
+listas/colores/comparativas sólo opcionales. No cierre estético por muestreo.
+Sin escucha, ASR, medición de cortes/zooms ni render de plantilla en este bloque.
+Siguiente acción: análisis temporal de las seis referencias únicas y luego preview
+integrado con mapa edición→fuente y renderer local; no pedir más referencias ahora.
+Coste nuevo 0 USD. Bloqueos de este bloque: ninguno. Necesito de Carlos: nada.
