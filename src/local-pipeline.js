@@ -1,0 +1,49 @@
+import {readFileSync,writeFileSync,mkdirSync,cpSync,existsSync,realpathSync} from 'node:fs';
+import {resolve,dirname,join} from 'node:path';
+import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+import {buildAutomaticDirector,validateEditorSettings} from './automatic-director.js';
+import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,wrapCaption} from './local-preview.js';
+const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
+const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
+const read=p=>JSON.parse(readFileSync(p,'utf8'));
+const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
+export function loadProject(configPath){
+ const path=realpathSync(configPath),config=read(path),base=dirname(path);
+ const local=p=>realpathSync(resolve(base,p));
+ const inputs={template:read(local(config.templatePath)),brand:read(local(config.brandKitPath)),transcript:read(local(config.transcriptPath)),camera:read(local(config.cameraPath)),visionFrames:read(local(config.visionPath)).frames,catalog:read(local(config.catalogPath)),source:config.source};
+ const fontHashes=Object.fromEntries(['OpenSans.ttf','OpenSans-Bold.ttf','OFL.txt'].map(f=>[f,createHash('sha256').update(readFileSync(join(local(config.fontDirectory),f))).digest('hex')]));
+ return {fontHashes,configPath:path,sourcePath:local(config.sourcePath),fontDirectory:local(config.fontDirectory),inputs,title:config.title??'SUES · CALMA'};
+}
+export function prepareProject(project,settings={}){
+ const options=validateEditorSettings(settings),automatic=buildAutomaticDirector({...project.inputs,settings:options}),rejections=[];
+ // Validate the unadorned base first: geometry/source errors must never be hidden.
+ const base=prepareLocalPreview({...project.inputs,segments:automatic.segments});
+ let decisions=[],plan=base;
+ for(const candidate of automatic.decisions){
+  try{
+   const next=[...decisions,candidate].sort((a,b)=>a.start-b.start||a.end-b.end);
+   plan=prepareLocalPreview({...project.inputs,segments:automatic.segments,director:{...automatic,decisions:next}});decisions=next;
+  }catch(error){rejections.push({rule:candidate.rule,start:candidate.start,end:candidate.end,reason:error.message});}
+ }
+ for(const id of Object.keys(options.captionOverrides))if(!plan.captions.some(c=>c.id===id))throw new Error(`Unknown caption: ${id}`);
+ plan.captions=plan.captions.map(c=>Object.hasOwn(options.captionOverrides,c.id)?{...c,text:options.captionOverrides[c.id].trim(),lines:wrapCaption(options.captionOverrides[c.id].trim()),source:'manual',originalText:c.text}:c);
+ const director={...automatic,decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length}};
+ plan.automaticDirector=director.audit;
+ plan.pending=plan.pending.filter(p=>p!=='automated-director-selection');
+ plan.pending.push('llm-semantic-director-and-human-review');
+ const fingerprint=createHash('sha256').update(JSON.stringify(stable({inputs:project.inputs,fontHashes:project.fontHashes??{},settings:options,engine:ENGINE_HASH}))).digest('hex');
+ return {plan,director,settings:options,fingerprint};
+}
+export function writePreparedBundle(project,prepared,outputDirectory){
+ const out=resolve(outputDirectory);
+ if(existsSync(out))throw new Error('Bundle directory must be new');
+ mkdirSync(out,{recursive:true,mode:0o700});
+ for(const [file,value]of [['manifest.json',prepared.plan],['director.json',prepared.director],['settings.json',prepared.settings]])writeFileSync(join(out,file),JSON.stringify(value,null,2)+'\n');
+ writeFileSync(join(out,'captions.ass'),buildPreviewASS(prepared.plan));
+ writeFileSync(join(out,'filter.ffscript'),buildPreviewFilter(prepared.plan));
+ cpSync(project.fontDirectory,join(out,'fonts'),{recursive:true});
+ writeFileSync(join(out,'preparation.json'),JSON.stringify({fingerprint:prepared.fingerprint,engine:'local-pipeline-v1',costUSD:0,productionReady:false},null,2)+'\n');
+ return out;
+}

@@ -19,3 +19,6 @@ outputs/
 __pycache__/
 *.py[cod]
 *.task
+
+# Machine-specific prepared project paths
+runtime-project.json

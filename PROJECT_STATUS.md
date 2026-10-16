@@ -4,14 +4,38 @@ FASE 5/10 · BRAND KIT + TEMPLATE ENGINE
 Progreso fase: 80 % (estimación técnica; estética provisional).
 Progreso global: 48 % = F1–F4 (40 %) + 80 % del peso F5 (8 %).
 Rama oficial: feat/phase-4-vision-camera.
-Base de este bloque: c22fe9f57968f8dc6e54e10902854aa5bb8c073a.
-Último hito: render semántico de cámara + tres motions dinámicos, preview real
-con dos acercamientos y cita. Selección de eventos manual, no Director automático.
-Suite: 101/101, npm run check, smoke de zoom anclado y tres motions con FFmpeg OK.
+Base de este bloque: 27c5962f1a2ba5dd1b266bbc88b3725ab61ad03d.
+Último hito: Director automático por reglas léxicas + pipeline de un comando +
+estudio web local con trabajos persistentes. Render automático real conserva75/75 palabras.
+Suite: 110/110 y npm run check. Render automático real y decodificación íntegra OK.
+Prueba API→worker→MP4 real en curso; no declarar aceptación E2E humana.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
 Necesito de Carlos: nada para seguir código; aceptación estética pendiente.
 
-## Preview y evidencias
+## Bloque automático + app local
+
+- F5 permanece80 % y global48 %: estética provisional sin aceptación nueva.
+- F7/F8 avanzan en paralelo, sin declararlas cerradas ni sumar pesos por foundations.
+- src/automatic-director.js: selección determinista por lexicón español, no LLM.
+  Índices de palabras, tiempos originales y reglas como evidencia; citas literales.
+- src/local-pipeline.js: guarda bundle, fingerprint de motor/datos/fuentes y ajustes.
+  Efectos no seguros se descartan con motivo. No ocultar fallos de la base.
+- Nuevo montaje sin corte mecánico12–13s: duración38,30s;75/75 palabras,16captions,
+  dos zooms1,08× y cita exacta «detenerte y sentir.». Original intacto.
+- src/editor-jobs.js + editor-server.js + web/: app loopback con sesión protegida,
+  catálogo de perfiles preparados, trabajos, captions editables, zoom, motions,
+  exportación, cancelación, reproductor y descarga con Range.
+- Trabajos atómicos, lock servidor/worker, idempotencia, reinicio→FAILED y reintentos
+  nuevos sin sobrescritura. No credenciales de proveedor, rutas ni comandos por HTTP.
+- Sigue cloud-first: app local es harness del worker Work, no despliegue público ni
+  obligación de render en PC. Subida nueva/ASR/visión integral no están implementados.
+- QA visual de navegador pendiente: no navegador local instalado; cloud browser no
+  alcanza loopback. Pruebas API cubren el lifecycle; no afirmar QA visual de UI.
+- Guía ejecutable: docs/SUES_LOCAL_EDITOR.md. Config: examples/projects/calma-local.example.json.
+- Comandos: npm run automatic:preview -- CONFIG NUEVO_DIR --render;
+  npm run editor -- CONFIG runtime/editor-jobs 4173. No coste externo nuevo.
+
+## Preview anterior y evidencias
 
 - 37,30 s, H.264 1080×1920/30fps + AAC; plan37,31 s (-0,01 s).
 - Base composition 1,40×; dos zooms relativos 1,08× y 1,06× con rampas suaves.
@@ -92,20 +116,17 @@ MediaPipe1.1.1 no reejecutado: tráfico inesperado a play.googleapis.com fue
 rechazado por auto-review; no se evita ese bloqueo. ASR histórico0,0039 USD,
 no repetido. No nuevos modelos/servicios. Seguridad/hosting de producción pendientes.
 
-Corte técnico [12,13) heredado del POC omite3 palabras; no es selección semántica
-final. No material propio B-roll seleccionado, soundtrack/SFX, relight ni logo final.
+El preview semántico anterior conservaba el corte técnico [12,13); el nuevo
+pipeline automático lo retira y conserva todas las palabras. No material propio B-roll seleccionado, soundtrack/SFX, relight ni logo final.
 Color natural = identidad de fuente. F6–F10 siguen foundations integradas, no
-fases cerradas. No UI/backend persistente ni E2E aprobado.
+fases cerradas. Hay UI/backend local persistente; no despliegue público ni E2E humano aprobado.
 
 ## Siguiente acción exacta
 
-Leer maestro + este estado + informe semántico. Conectar selección automática
-Director desde transcript usando los contratos y renderer ya validados; mantener
-los límites de plantilla. Después ampliar bindings de motions con medios y audio,
-y validar recursos propios de naturaleza/retiros cuando estén disponibles.
-No pedir nuevos Reels ni repetir ASR/MediaPipe por defecto. Cerrar estética antes
-de cerrar F5. Bloqueos de este bloque: ninguno. Necesito de Carlos: nada ahora.
+Completar smoke real API→plan→ajustes→worker→Range→auditoría y guardar evidencias.
+Continuar audio opcional con recursos propios si cabe sin costes nuevos; completar
+pantallas y empaquetado. No repetir ASR/MediaPipe por defecto ni usar referencias
+como B-roll propio. Aceptación estética pendiente antes de cerrarF5/F9. No pedir
+nuevos Reels. Necesito de Carlos: nada para seguir código.
 
-Históricos: docs/archive/PROJECT_STATUS_BEFORE_SEMANTIC_CALMA_20261017.md y
-PROJECT_STATUS_BEFORE_LOCAL_CALMA_20261016.md. Evidencias anteriores siguen en
-SUES_CALMA_LOCAL_PREVIEW.md y CAMERA_PROFILES_VALIDATION.md.
+Histórico anterior: docs/archive/PROJECT_STATUS_BEFORE_AUTOMATIC_EDITOR_20261017.md.

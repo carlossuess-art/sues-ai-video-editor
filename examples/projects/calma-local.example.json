@@ -1,0 +1,17 @@
+{
+  "templatePath": "../../examples/templates/sues-calma.template.json",
+  "brandKitPath": "../../examples/brand-kit.sues.json",
+  "transcriptPath": "../../runtime/poc/transcript.json",
+  "cameraPath": "../../runtime/calma/camera.json",
+  "source": {
+    "duration": 38.31,
+    "width": 1080,
+    "height": 1920,
+    "sha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a"
+  },
+  "visionPath": "../../examples/vision/poc001.mediapipe.json",
+  "catalogPath": "../../examples/motions/catalog.sample.json",
+  "title": "Carlos \u00b7 CALMA autom\u00e1tico",
+  "sourcePath": "../../runtime/poc/original.mp4",
+  "fontDirectory": "../../runtime/calma/preview/fonts"
+}
