@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "template": "SUES_CALMA_POC",
+  "source": {"url": "https://example.com/replace-with-ingested-video.mp4", "duration": 45},
+  "segments": [{"in":0,"out":12},{"in":13,"out":45}],
+  "texts": [
+    {"role":"title","text":"SUES HOLISTICS","start":0,"length":3},
+    {"role":"caption","text":"Texto de prueba · revisar sincronización","start":5,"length":3},
+    {"role":"outro","text":"Vuelve a ti · Sues Holistics","start":41,"length":3}
+  ],
+  "originalVolume": 1,
+  "output": {"width":1080,"height":1920,"fps":30,"format":"mp4"}
+}
