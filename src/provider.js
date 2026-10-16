@@ -10,7 +10,7 @@ export class ShotstackStage {
   }
   async request(service,path,{method='GET',body}={}) {
     if(!['edit','ingest'].includes(service)) throw new Error('Servicio bloqueado');
-    const r=await this.fetch(`${BASE}/${service}/stage/${path}`,{method,redirect:'error',signal:AbortSignal.timeout(30000),headers:{'x-api-key':this.key,'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
+    const r=await this.fetch(`${BASE}/${service}/stage/${path}`,{method,redirect:'error',signal:AbortSignal.timeout(120000),headers:{'x-api-key':this.key,'Content-Type':'application/json','Accept':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
     if(!r.ok) throw new Error(`Shotstack ${service}: HTTP ${r.status}. No se reenvía el POST automáticamente.`);
     if(r.status===204) return null;
     return r.json();
@@ -21,7 +21,7 @@ export class ShotstackStage {
     if(!u.hostname.endsWith('.amazonaws.com') || !u.hostname.includes('shotstack-ingest-api-stage')) throw new Error('Upload URL fuera de Ingest stage');
     const size=statSync(file).size;
     if(size<=0||size>250*1024*1024) throw new Error('Vídeo vacío o superior a 250 MiB');
-    const r=await this.fetch(url,{method:'PUT',redirect:'error',body:createReadStream(file),duplex:'half',signal:AbortSignal.timeout(300000)});
+    const r=await this.fetch(url,{method:'PUT',redirect:'error',headers:{'Content-Length':String(size)},body:createReadStream(file),duplex:'half',signal:AbortSignal.timeout(300000)});
     if(!r.ok) throw new Error(`Upload: HTTP ${r.status}`);
   }
   source(id) {return this.request('ingest',`sources/${encodeURIComponent(id)}`);}

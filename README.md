@@ -64,8 +64,9 @@ comprobarse, revisión manual antes de continuar. Tras un cierre forzado puede q
 
 ## Límites de esta entrega
 
-18 pruebas offline pasan; el primer render real está pendiente de credencial/vídeo.
-Los clientes remotos están implementados pero aún no contrastados con una cuenta real.
+19 pruebas offline pasan. Primer render real completado el 16/10/2026: 37,3 s,
+1080×1920/30fps, Sandbox con marca de agua y coste 0 USD. Original/resultado archivados
+en Drive y fuente Ingest eliminada. Ver `docs/POC_RESULTS_001.md`.
 El corte 12–13 s es un marcador mecánico para comprobar el montaje, no una decisión
 semántica. La plantilla definitiva, ASR, seguimiento de ojos y Director IA pertenecen
 al resto del roadmap. No se ha desplegado una nueva web.
