@@ -1,8 +1,8 @@
 # Estado técnico · 16/10/2026
 
-FASE 3/10 · TRANSCRIPCIÓN + SEGMENTACIÓN + SUBTÍTULOS · REVISIÓN FINAL
-Progreso fase: 90 %.
-Progreso global: 24 % = Fase 1 (5 %) + Fase 2 (10 %) + 90 % de Fase 3 (9 %).
+FASE 3/10 · TRANSCRIPCIÓN + SEGMENTACIÓN + SUBTÍTULOS · COMPLETADA
+Progreso fase: 100 %.
+Progreso global: 25 % = Fase 1 (5 %) + Fase 2 (10 %) + Fase 3 (10 %).
 Rama activa: feat/phase-3-transcript-captions.
 Último hito: ASR real → Transcript v1 → 14 captions editables → primer render
 subtitulado Sandbox descargado, verificado técnicamente y archivado; fuente eliminada.
@@ -26,16 +26,16 @@ subtitulado Sandbox descargado, verificado técnicamente y archivado; fuente eli
 - Fuentes Ingest nuevas eliminadas después de archivo y ausencia en listado verificada.
 - Fase 4 NO iniciada; sin producción, CapCut, Lovable ni compras del agente.
 
-## Referencia y calidad pendientes
+## Referencia y validación de Carlos
 
 Carlos confirmó que grabó «Te enseñaron a mirar…». El guion archivado
 «Debajo de mi nombre…» era otra versión y no permite validar precisión/WER.
 No se reemplazó el texto ASR por aquella referencia. Se preservó respuesta raw.
-Pendiente revisar escuchando el vídeo: transcripción literal completa y sincronía
-percibida, especialmente palabras inciertas y alrededor del corte mecánico 12–13 s.
-No certificar Fase 3 completa hasta corregir/revisar cualquier diferencia.
-Palabras ASR como «Construistes», «escribe» y frase final requieren revisión;
-no corregirlas por intuición sin contrastar audio.
+Carlos revisó el vídeo y validó los subtítulos por bloques y su alineación aproximada
+con el inicio/final de cada frase el 16/10/2026. Esta aceptación cierra el criterio de
+Fase 3 para captions por bloques. No certifica precisión forense ni palabra a palabra.
+La revisión fina de marcas inciertas se hará al implementar resaltado/karaoke por
+palabra. Mantener raw y marcas timingUncertain; no corregir palabras por intuición.
 
 ## Costes y credenciales
 
@@ -83,10 +83,10 @@ no corregirlas por intuición sin contrastar audio.
 
 ## Siguiente acción exacta
 
-Carlos revisa el MP4 subtitulado y confirma/corrige texto y sincronía.
-Aplicar correcciones mediante transcript/captions editables, sin repetir ASR de pago.
-Cualquier nuevo render debe revisarse como otra ejecución; no reenviar el job CLEANED.
-Cerrar Fase 3 sólo al superar esta revisión. No iniciar Fase 4 aún.
-Bloqueos técnicos: ninguno. Pendiente de calidad: revisión humana de audio/texto.
-Necesito de Carlos: ver el vídeo y señalar frases incorrectas o desfases.
-Leer este archivo y el Doc maestro antes de continuar; reutilizar repo y rama.
+Siguiente fase prevista: FASE 4/10 · Visión: cara, ojos, reencuadre, zoom y safe zones.
+No iniciada en este bloque. Leer Doc maestro y este estado antes de comenzar.
+La precisión palabra a palabra se revisará cuando se implemente ese estilo; no bloquea
+el cierre de captions por bloques aceptado por Carlos. Mantener los datos ASR originales.
+Bloqueos: ninguno. Necesito de Carlos: nada para cerrar Fase 3.
+Coste adicional del cierre: 0 USD. Sin nueva llamada ASR, render ni modificación de medios.
+Tests vigentes: 36/36 del commit de implementación; no repetidos por cambio documental.

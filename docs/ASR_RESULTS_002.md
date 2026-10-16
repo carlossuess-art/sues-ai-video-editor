@@ -63,3 +63,13 @@ Auditoría: https://drive.google.com/file/d/1qsAAzLTD0hIVZWmBJSjmK6FJWOVuiHpC/vi
 
 Fase 3 al 90 %, global 24 %. Para cerrar: revisar literalidad/sincronía completa y
 corregir manualmente si procede. Fase 4 no iniciada.
+
+## Aceptación de Carlos · 16/10/2026
+
+Carlos validó el texto y la alineación aproximada de los subtítulos por bloques:
+las frases aparecen aproximadamente desde el inicio hasta el final de su locución.
+La revisión fina se pospone hasta implementar el estilo palabra a palabra.
+Esta aceptación cierra Fase 3 al 100 %, global 25 %; no equivale a certificar cada
+timestamp puntual ni exactitud de karaoke. Mantener raw y timingUncertain.
+Sin cambios en medios, nuevas llamadas o renders. Coste adicional 0 USD.
+Fase 4 prevista como siguiente bloque; no iniciada.
