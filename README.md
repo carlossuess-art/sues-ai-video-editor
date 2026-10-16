@@ -73,3 +73,9 @@ al resto del roadmap. No se ha desplegado una nueva web.
 
 Ver `docs/POC_PHASE_2.md`, `docs/ARCHITECTURE.md`, `docs/PROVIDER_RESEARCH.md` y
 `docs/VIDEO_EDIT_PLAN.md` para criterios, costes, contrato y siguientes pasos.
+
+## Estado actual de Fase 3
+
+Primer ASR real y render subtitulado archivados. 36 tests aprobados.
+Fase 3 al 90 %: falta revisión humana del texto completo y sincronía auditiva.
+Ver PROJECT_STATUS.md y docs/ASR_RESULTS_002.md; no repetir ASR de pago.

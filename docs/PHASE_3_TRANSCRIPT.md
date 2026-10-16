@@ -134,3 +134,19 @@ timestamp_granularities[]=word. Tarifa publicada de whisper-1: 0,006 USD/min.
 Para el audio preparado de 38,34 s, el coste estimado sería aproximadamente 0,0038 USD.
 No se ejecutó la llamada ni se autorizó gasto. whisper-1 tiene retirada anunciada para
 26/02/2027, por lo que cualquier uso será detrás del adaptador ASR y no una dependencia rígida.
+
+## Respuesta real y marcas puntuales · 16/10/2026
+
+Whisper puede devolver start=end para algunas palabras. Transcript v1 conserva ese
+valor sin inventar duración y exige timingUncertain=true para aceptar una marca puntual.
+La respuesta raw se archiva sin cambios. Una marca puntual sólo se incluye si pertenece
+al intervalo de fuente conservado (inicio incluido, final excluido); no genera por sí
+sola un clip de duración cero. Un caption sin intervalo positivo falla para revisión.
+La segmentación se separa siempre al cambiar de segmento de fuente, incluso sin pausa.
+La puntuación de text sólo se aplica a words si todos los tokens coinciden léxicamente;
+no se sustituyen palabras por el guion de referencia. No hay karaoke palabra a palabra
+ni precisión auditiva validada para marcas inciertas.
+
+La referencia previa «Debajo de mi nombre…» pertenece a otra versión: Carlos confirmó
+que grabó «Te enseñaron a mirar…». No usar la referencia antigua para calcular WER.
+Suite tras regresiones de respuesta real: 36/36 aprobados.

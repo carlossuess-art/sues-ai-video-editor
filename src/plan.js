@@ -53,7 +53,7 @@ export function buildEdit(p) {
   // Each text gets its own track: intentional overlaps never share a track.
   const tracks=p.texts.map(t=>({clips:[{
     asset:{type:'rich-text',text:t.text,font:{family:'Open Sans',size:t.role==='title'?64:48,color:'#ffffff',weight:'600'},background:{color:'#101820',opacity:0.8,padding:16},align:{horizontal:'center',vertical:'middle'}},
-    start:t.start,length:t.length,fit:'none',width:840,height:240,position:'center',offset:{x:0,y:t.role==='title'?0.28:-0.27}
+    start:t.start,length:t.length,fit:'none',width:840,height:t.role==='outro'?160:240,position:'center',offset:{x:0,y:t.role==='title'?0.28:t.role==='outro'?-0.40:-0.27}
   }]}));
   tracks.push({clips});
   if(p.music) tracks.push({clips:[{asset:{type:'audio',src:p.music.url,volume:p.music.volume},start:0,length:cursor}]});

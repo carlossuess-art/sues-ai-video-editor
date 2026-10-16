@@ -10,7 +10,7 @@ export function validateTranscript(t) {
   let lastStart = -1;
   for (const [i,w] of t.words.entries()) {
     assert(clean(w.text).length > 0 && clean(w.text).length <= 80, `Transcript: word ${i} sin texto válido`);
-    assert(num(w.start) && num(w.end) && w.start >= 0 && w.end > w.start && w.end <= t.sourceDuration + 1e-6, `Transcript: word ${i} fuera de rango`);
+    assert(num(w.start) && num(w.end) && w.start >= 0 && (w.end > w.start || (w.end === w.start && w.timingUncertain === true)) && w.end <= t.sourceDuration + 1e-6, `Transcript: word ${i} fuera de rango`);
     assert(w.start >= lastStart - 1e-6, `Transcript: words desordenadas en ${i}`);
     if (w.confidence !== undefined) assert(num(w.confidence) && w.confidence >= 0 && w.confidence <= 1, `Transcript: confidence inválida en ${i}`);
     lastStart = w.start;
@@ -29,7 +29,8 @@ export function mapWordsToTimeline(transcript, segments) {
     for (const [wi,w] of transcript.words.entries()) {
       const start = Math.max(w.start, s.in);
       const end = Math.min(w.end, s.out);
-      if (end <= start) continue;
+      const point = w.start === w.end && w.timingUncertain === true;
+      if (point ? !(w.start >= s.in && w.start < s.out) : end <= start) continue;
       const clipped = start !== w.start || end !== w.end;
       // A cut through a spoken word must not display the complete word as a caption.
       // Future semantic cutting should avoid this situation; for now fail safe by omitting it.
@@ -60,6 +61,7 @@ export function segmentWords(words,{maxWords=8,maxChars=42,maxDuration=4.5,gapBr
   const flush=()=>{
     if(!current.length) return;
     const start=current[0].start,end=current.at(-1).end;
+    assert(end > start, 'Caption sin intervalo temporal: revisar marcas inciertas');
     out.push({
       id:`seg-${String(out.length+1).padStart(3,'0')}`,
       text:clean(current.map(w=>w.text).join(' ')),
@@ -79,7 +81,8 @@ export function segmentWords(words,{maxWords=8,maxChars=42,maxDuration=4.5,gapBr
       current.length+1>maxWords ||
       proposed.length>maxChars ||
       w.end-current[0].start>maxDuration ||
-      (prev && w.start-prev.end>gapBreak)
+      (prev && w.start-prev.end>gapBreak) ||
+      (prev && prev.sourceSegmentIndex !== w.sourceSegmentIndex)
     );
     if(wouldOverflow) flush();
     current.push({...w,text});
