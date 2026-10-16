@@ -137,5 +137,137 @@
         "replaceable": true
       }
     ]
+  },
+  {
+    "version": "1.0",
+    "id": "CHECK_GREEN_01",
+    "type": "badge",
+    "renderMode": "dynamic",
+    "tags": [
+      "check",
+      "positive",
+      "yes-no"
+    ],
+    "trigger": {
+      "semanticReasons": [
+        "correct",
+        "approved",
+        "positive"
+      ],
+      "minDuration": 0.4
+    },
+    "layers": [
+      {
+        "id": "check",
+        "kind": "icon",
+        "start": 0,
+        "duration": 0.9,
+        "replaceable": false
+      },
+      {
+        "id": "positive-plin",
+        "kind": "audio",
+        "start": 0.05,
+        "duration": 0.3,
+        "replaceable": false
+      }
+    ]
+  },
+  {
+    "version": "1.0",
+    "id": "CROSS_RED_01",
+    "type": "badge",
+    "renderMode": "dynamic",
+    "tags": [
+      "cross",
+      "negative",
+      "yes-no"
+    ],
+    "trigger": {
+      "semanticReasons": [
+        "wrong",
+        "rejected",
+        "negative"
+      ],
+      "minDuration": 0.4
+    },
+    "layers": [
+      {
+        "id": "cross",
+        "kind": "icon",
+        "start": 0,
+        "duration": 0.9,
+        "replaceable": false
+      },
+      {
+        "id": "negative-hit",
+        "kind": "audio",
+        "start": 0.05,
+        "duration": 0.3,
+        "replaceable": false
+      }
+    ]
+  },
+  {
+    "version": "1.0",
+    "id": "STRIKE_TEXT_01",
+    "type": "overlay",
+    "renderMode": "dynamic",
+    "tags": [
+      "strike",
+      "negative",
+      "correction"
+    ],
+    "trigger": {
+      "semanticReasons": [
+        "wrong",
+        "myth",
+        "correction"
+      ],
+      "minDuration": 0.6
+    },
+    "layers": [
+      {
+        "id": "text",
+        "kind": "text",
+        "start": 0,
+        "duration": 1.4,
+        "replaceable": true
+      },
+      {
+        "id": "strike",
+        "kind": "shape",
+        "start": 0.35,
+        "duration": 1.05,
+        "replaceable": false
+      }
+    ]
+  },
+  {
+    "version": "1.0",
+    "id": "DIVIDER_LINE_01",
+    "type": "overlay",
+    "renderMode": "dynamic",
+    "tags": [
+      "divider",
+      "compare",
+      "split"
+    ],
+    "trigger": {
+      "semanticReasons": [
+        "comparison",
+        "before-after"
+      ],
+      "minDuration": 1
+    },
+    "layers": [
+      {
+        "id": "divider",
+        "kind": "shape",
+        "start": 0,
+        "duration": 2,
+        "replaceable": false
+      }
+    ]
   }
 ]
