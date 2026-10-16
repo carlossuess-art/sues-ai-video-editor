@@ -1,0 +1,49 @@
+{
+  "version": "1.0",
+  "id": "SUES_CALMA",
+  "pacing": "slow",
+  "cuts": {
+    "minShot": 2.2,
+    "maxShot": 7
+  },
+  "camera": {
+    "baseZoom": 1.04,
+    "maxZoom": 1.18,
+    "zoomReasons": [
+      "emphasis",
+      "revelation",
+      "emotional-turn"
+    ]
+  },
+  "captions": {
+    "mode": "blocks"
+  },
+  "transitions": {
+    "allowed": [
+      "cut",
+      "soft-fade",
+      "subtle-punch"
+    ]
+  },
+  "motion": {
+    "allowed": [
+      "blurred-resource",
+      "numbered-list",
+      "quote-card"
+    ]
+  },
+  "look": {
+    "blackWhite": "semantic",
+    "relight": "semantic"
+  },
+  "audio": {
+    "families": [
+      "calma-expansion",
+      "shadow-tension"
+    ]
+  },
+  "constraints": {
+    "semanticZoomOnly": true,
+    "respectSafeZones": true
+  }
+}
