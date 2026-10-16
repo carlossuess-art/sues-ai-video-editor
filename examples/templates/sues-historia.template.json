@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "id": "SUES_HISTORIA",
+  "pacing": "medium",
+  "cuts": {
+    "minShot": 1.8,
+    "maxShot": 6.5
+  },
+  "camera": {
+    "baseZoom": 1.04,
+    "maxZoom": 1.22,
+    "zoomReasons": [
+      "emphasis",
+      "revelation",
+      "emotional-turn"
+    ]
+  },
+  "captions": {
+    "mode": "clean"
+  },
+  "transitions": {
+    "allowed": [
+      "cut",
+      "soft-fade",
+      "blur"
+    ]
+  },
+  "motion": {
+    "allowed": [
+      "blurred-resource",
+      "quote-card",
+      "numbered-list"
+    ]
+  },
+  "look": {
+    "blackWhite": "semantic",
+    "relight": "semantic"
+  },
+  "audio": {
+    "families": [
+      "calma-expansion",
+      "shadow-tension",
+      "impact-reveal"
+    ]
+  },
+  "constraints": {
+    "semanticZoomOnly": true,
+    "respectSafeZones": true
+  }
+}
