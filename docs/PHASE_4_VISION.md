@@ -39,3 +39,22 @@ Integrar un detector real de cara/ojos sobre un vídeo de prueba, normalizar sus
 al contrato actual y generar un `Reframe Plan` real. Después, conectar esos keyframes
 al adaptador de render y validar visualmente que la cara no salta y que la línea de ojos
 permanece estable.
+
+
+## Detector candidato para POC real
+
+Candidato preferido: **MediaPipe Face Landmarker (Python)** detrás de un adaptador propio.
+
+Motivos:
+- modo VIDEO para frames decodificados;
+- salida de malla facial densa (478 landmarks), suficiente para ojos, bbox y futuras máscaras;
+- tracking interno en modo vídeo para reducir inferencias repetidas;
+- paquete local `mediapipe`; no requiere API de pago por vídeo;
+- OpenCV puede suministrar los frames y timestamps.
+
+Documentación oficial:
+https://developers.google.com/edge/mediapipe/solutions/vision/face_landmarker/python
+
+Estado: decisión de POC, todavía NO integrado ni validado sobre el vídeo real. El siguiente
+bloque necesita checkout completo, instalar/validar MediaPipe + OpenCV + modelo, ejecutar
+sobre vídeo y comparar el track resultante con el contrato JavaScript actual.
