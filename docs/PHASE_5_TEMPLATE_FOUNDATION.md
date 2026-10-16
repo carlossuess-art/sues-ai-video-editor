@@ -24,3 +24,11 @@ Fase 5 completada ni sustituye la validación visual posterior.
 5. Render de prueba y aprobación de Carlos.
 
 No se hacen renders, compras ni dependencias nuevas en este foundation.
+
+## Avance posterior: SUES_CALMA provisional
+
+Foundation integrada en la rama oficial; ahora extensión cinematic-nature-retreat
+y selector B-roll ejecutable en seco. Ver `SUES_CALMA_PROVISIONAL.md`. Carlos
+autoriza definir mejor después y unificar marca mediante kit compartido. Las tres
+referencias siguen siendo gate de cierre estético, no de implementación provisional.
+80/80 tests y CLI en seco; todavía sin validación visual ni render de plantilla.

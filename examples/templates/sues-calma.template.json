@@ -21,8 +21,7 @@
   "transitions": {
     "allowed": [
       "cut",
-      "soft-fade",
-      "subtle-punch"
+      "soft-fade"
     ]
   },
   "motion": {
@@ -33,8 +32,8 @@
     ]
   },
   "look": {
-    "blackWhite": "semantic",
-    "relight": "semantic"
+    "blackWhite": "optional",
+    "relight": "optional"
   },
   "audio": {
     "families": [
@@ -45,5 +44,34 @@
   "constraints": {
     "semanticZoomOnly": true,
     "respectSafeZones": true
+  },
+  "visualStyle": {
+    "version": "1.0",
+    "status": "provisional",
+    "direction": "cinematic-nature-retreat",
+    "referenceMood": "Documental cinematográfico de naturaleza y exteriores; inspiración National Geographic, sin usar identidad ni material de esa marca.",
+    "sources": [
+      "nature",
+      "exterior",
+      "retreat"
+    ],
+    "colorTreatment": "natural",
+    "cameraMovement": "slow",
+    "voice": "original",
+    "captions": "discreet",
+    "brandMode": "shared-kit",
+    "broll": {
+      "minShot": 2.5,
+      "maxShot": 6,
+      "maxCoverage": 0.4,
+      "minPresenterGap": 3,
+      "openingPresenterSeconds": 2,
+      "closingPresenterSeconds": 3,
+      "layout": "full-frame",
+      "selection": "semantic-only",
+      "allowSourceAudio": false,
+      "reuseAssets": false,
+      "fallback": "presenter"
+    }
   }
 }

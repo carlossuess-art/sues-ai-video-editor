@@ -1,0 +1,10 @@
+{
+  "templatePath": "examples/templates/sues-calma.template.json",
+  "brandKitPath": "examples/brand-kit.sues.json",
+  "duration": 38.31,
+  "slots": [
+    {"start": 5, "end": 9, "reason": "Ejemplo sintético: metáfora de naturaleza", "tags": ["nature", "water"]},
+    {"start": 17, "end": 21, "reason": "Ejemplo sintético: experiencia en retiro", "tags": ["retreat", "connection"]}
+  ],
+  "assets": []
+}

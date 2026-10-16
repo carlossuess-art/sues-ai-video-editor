@@ -1,0 +1,126 @@
+{
+  "policy": {
+    "templateId": "SUES_CALMA",
+    "brandKitId": "sues-holistics-v1",
+    "pacing": "slow",
+    "visualStyle": {
+      "version": "1.0",
+      "status": "provisional",
+      "direction": "cinematic-nature-retreat",
+      "referenceMood": "Documental cinematográfico de naturaleza y exteriores; inspiración National Geographic, sin usar identidad ni material de esa marca.",
+      "sources": [
+        "nature",
+        "exterior",
+        "retreat"
+      ],
+      "colorTreatment": "natural",
+      "cameraMovement": "slow",
+      "voice": "original",
+      "captions": "discreet",
+      "brandMode": "shared-kit",
+      "broll": {
+        "minShot": 2.5,
+        "maxShot": 6,
+        "maxCoverage": 0.4,
+        "minPresenterGap": 3,
+        "openingPresenterSeconds": 2,
+        "closingPresenterSeconds": 3,
+        "layout": "full-frame",
+        "selection": "semantic-only",
+        "allowSourceAudio": false,
+        "reuseAssets": false,
+        "fallback": "presenter"
+      }
+    },
+    "cuts": {
+      "minShot": 2.2,
+      "maxShot": 7
+    },
+    "camera": {
+      "baseZoom": 1.04,
+      "maxZoom": 1.18,
+      "zoomReasons": [
+        "emphasis",
+        "revelation",
+        "emotional-turn"
+      ]
+    },
+    "captions": {
+      "maxLines": 2,
+      "maxCharsPerLine": 26,
+      "safeZone": "captions",
+      "mode": "blocks",
+      "font": "Open Sans",
+      "color": "#FFFFFF",
+      "accent": "#D7B56D"
+    },
+    "transitions": [
+      "cut",
+      "soft-fade"
+    ],
+    "motions": [
+      "blurred-resource",
+      "numbered-list",
+      "quote-card"
+    ],
+    "look": {
+      "blackWhite": "optional",
+      "relight": "optional"
+    },
+    "audio": {
+      "families": [
+        "calma-expansion",
+        "shadow-tension"
+      ]
+    },
+    "outro": {
+      "text": "Vuelve a ti · Sues Holistics",
+      "duration": 3
+    },
+    "constraints": {
+      "semanticZoomOnly": true,
+      "respectSafeZones": true
+    }
+  },
+  "plan": {
+    "version": "1.0",
+    "templateId": "SUES_CALMA",
+    "brandKitId": "sues-holistics-v1",
+    "timeSpace": "edit-timeline",
+    "duration": 38.31,
+    "decisions": [
+      {
+        "start": 5,
+        "end": 9,
+        "reason": "Ejemplo sintético: metáfora de naturaleza",
+        "tags": [
+          "nature",
+          "water"
+        ],
+        "type": "keep-presenter",
+        "fallback": "no-matching-footage"
+      },
+      {
+        "start": 17,
+        "end": 21,
+        "reason": "Ejemplo sintético: experiencia en retiro",
+        "tags": [
+          "retreat",
+          "connection"
+        ],
+        "type": "keep-presenter",
+        "fallback": "no-matching-footage"
+      }
+    ],
+    "coverage": 0,
+    "defaultVisual": "presenter",
+    "originalVoice": true,
+    "renderReady": false,
+    "pending": [
+      "verify-media-and-portrait-fit",
+      "map-edit-time-to-source",
+      "renderer-and-safe-zones",
+      "visual-review"
+    ]
+  }
+}

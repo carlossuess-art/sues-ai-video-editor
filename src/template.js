@@ -1,3 +1,4 @@
+import {validateCinematicStyle} from './cinematic-style.js';
 import {validateBrandKit} from './brand-kit.js';
 const assert=(ok,msg)=>{if(!ok)throw new Error(msg);};
 const num=x=>typeof x==='number'&&Number.isFinite(x);
@@ -20,6 +21,7 @@ export function validateTemplate(t,brand){
   assert(Array.isArray(t.audio?.families),'Template: audio families');
   assert(t.constraints?.semanticZoomOnly===true,'Template: semanticZoomOnly obligatorio');
   assert(t.constraints?.respectSafeZones===true,'Template: safe zones obligatorias');
+  if(t.visualStyle!==undefined)validateCinematicStyle(t.visualStyle);
   return true;
 }
 
@@ -27,10 +29,12 @@ export function compileTemplatePolicy(t,brand){
   validateTemplate(t,brand);
   return Object.freeze({
     templateId:t.id,
+    brandKitId:brand.id,
     pacing:t.pacing,
+    ...(t.visualStyle?{visualStyle:structuredClone(t.visualStyle)}:{}),
     cuts:{...t.cuts},
     camera:{...t.camera},
-    captions:{...t.captions,font:brand.fonts.primary,color:brand.colors.text,accent:brand.colors.accent},
+    captions:{...brand.captions,...t.captions,font:brand.fonts.primary,color:brand.colors.text,accent:brand.colors.accent},
     transitions:[...t.transitions.allowed],
     motions:[...t.motion.allowed],
     look:{...t.look},

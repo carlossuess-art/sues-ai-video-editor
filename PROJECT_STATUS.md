@@ -1,12 +1,12 @@
 # Estado técnico · 16/10/2026
 
 FASE 5/10 · BRAND KIT + TEMPLATE ENGINE
-Progreso fase: 40 % (estimación técnica; estética sin cerrar).
-Progreso global: 44 % = Fases 1–4 (40 %) + 40 % del peso de Fase 5 (4 %).
+Progreso fase: 50 % (plantilla provisional ejecutable en seco; estética sin cerrar).
+Progreso global: 45 % = Fases 1–4 (40 %) + 50 % del peso de Fase 5 (5 %).
 Rama oficial: feat/phase-4-vision-camera.
-Último hito: Fase 4 completa para POC_001; foundations F5→F10 integradas en orden
-con dos padres, revisión de diff y suite tras cada merge; preflight cruzado añadido.
-Suite final: 72/72 tests; npm run check cubre todos los JS/MJS de src/scripts.
+Último hito: SUES_CALMA provisional cinematográfica (naturaleza/exteriores/retiros),
+compilación con BrandKit compartido y selector determinista de B-roll con fallback.
+Suite final: 80/80 tests; npm run check y CLI template:calma ejecutados.
 Coste externo nuevo: 0 USD. Ningún servicio de pago ejecutado.
 Trazabilidad completa: docs/FOUNDATIONS_INTEGRATION_RESULT.md.
 Código/auditoría: examples/foundation-preflight.sample.json (renderReady:false).
@@ -71,11 +71,15 @@ Safe zones disponibles; resolución de conflictos de overlays vendrá con planti
 Foundations ya integradas. Preflight conecta aliases de motion y distingue zoom
 semántico relativo del encuadre fijo; rechaza combinado >1,60× y tiempos inválidos.
 quote-card sin resolver explícitamente. No hay renderer de motions ni E2E aprobado.
-Siguiente: revisar 3 Reels SUES_CALMA, concretar tokens/layout, resolver motion
-pendiente y bindings/safe zones antes de un preview integrado local.
-No cerrar estética de estilos sin 3 Reels por estilo y validación propia de esa fase.
-Bloqueo para cierre estético F5: referencias suficientes de SUES_CALMA.
-Necesito de Carlos: 3 Reels del estilo antes de cerrar estética; pueden reutilizarse
-las referencias prioritarias si encajan. No se necesita vídeo nuevo ni API key.
-Backend pendiente: mapeo de tiempo, enforcement look/audio/outro y preview integrado.
+SUES_CALMA provisional ya implementada por autorización posterior de Carlos:
+cinematográfica de naturaleza/exteriores/retiros, estética a afinar después.
+Comando: npm run template:calma -- examples/broll/calma-dry-run.input.json runtime/templates/sues-calma.plan.json
+Contratos y resultado: docs/SUES_CALMA_PROVISIONAL.md; examples/broll/calma-dry-run.output.json.
+BrandKit compartido resuelve fuentes, colores, captions y outro; logo pendiente de definir.
+No hay assets adicionales reales seleccionados ni render visual de esta plantilla.
+Siguiente: mapa de tiempos edición/fuente y aplicación local de decisiones con
+fallback de presentador, sin repetir análisis ni usar APIs de pago.
+Referencias no bloquean trabajo provisional; pedir 3 por estilo antes del cierre estético.
+Bloqueos de este bloque: ninguno. Necesito de Carlos: nada ahora.
+Backend pendiente: renderer/bindings, safe zones, enforcement look/audio/outro y E2E real.
 No se avanzan fases posteriores por el hecho de fusionar sus contratos.

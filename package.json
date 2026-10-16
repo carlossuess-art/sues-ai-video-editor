@@ -11,7 +11,8 @@
     "dry-run": "node src/cli.js prepare examples/plan.json --out runtime/demo",
     "poc": "node --env-file-if-exists=.env src/cli.js",
     "check": "node scripts/check.mjs",
-    "reframe": "node scripts/vision/build_reframe.mjs"
+    "reframe": "node scripts/vision/build_reframe.mjs",
+    "template:calma": "node scripts/templates/prepare_cinematic.mjs"
   },
   "dependencies": {
     "ajv": "^8.17.1"
