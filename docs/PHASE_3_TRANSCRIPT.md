@@ -100,3 +100,37 @@ El módulo nuevo tiene 6 pruebas dedicadas:
 
 Estas 6 pruebas se ejecutaron fuera de GitHub y pasaron 6/6 antes de publicar los archivos.
 La suite completa del repo debe volver a ejecutarse antes del primer render de Fase 3.
+
+
+## Dry run con POC_001 real · sin ASR de pago
+
+Se reutilizó el vídeo original de 38,310156 s y el plan real de Fase 2 ([0,12) + [13,38,31)).
+El texto conocido del guion se alineó de forma aproximada con pausas del audio únicamente para
+probar la geometría temporal; NO se considera transcripción ASR ni validación de precisión.
+
+Resultados:
+- audio de prueba extraído a MP3 mono 16 kHz / 48 kbps: 230.528 bytes, 38,34 s;
+- muy por debajo del límite de 25 MB del endpoint de transcripción;
+- 57 palabras de referencia;
+- timeline de salida 37,31 s;
+- 11 captions compilados tras omitir palabras atravesadas por el corte mecánico;
+- el corte 12–13 s atraviesa habla, confirmando que futuros cortes deben respetar fronteras
+  de palabra/frase;
+- coste remoto: 0 USD.
+
+Pruebas locales de módulos de Fase 3 actualmente disponibles en repo:
+- transcript/segmentación: 6;
+- normalización ASR: 5;
+- compilador offline de captions: 2.
+Total nuevo validado de forma aislada: 13/13. La suite completa del repositorio debe ejecutarse
+de nuevo en un checkout con dependencias antes de cerrar la fase.
+
+## Coste estimado de la prueba ASR controlada
+
+La documentación oficial consultada el 16/10/2026 limita archivo a 25 MB y establece que los
+timestamps por palabra requieren actualmente whisper-1 con verbose_json y
+timestamp_granularities[]=word. Tarifa publicada de whisper-1: 0,006 USD/min.
+
+Para el audio preparado de 38,34 s, el coste estimado sería aproximadamente 0,0038 USD.
+No se ejecutó la llamada ni se autorizó gasto. whisper-1 tiene retirada anunciada para
+26/02/2027, por lo que cualquier uso será detrás del adaptador ASR y no una dependencia rígida.
