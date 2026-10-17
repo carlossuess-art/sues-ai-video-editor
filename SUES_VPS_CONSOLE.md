@@ -44,6 +44,27 @@ el sistema operativo. No asumir que el puerto65529 pertenece al editor.
 
 ## Siguiente paso ejecutable
 
+### Código: siguiente bloque en segundo plano
+
+Captura08:21 confirma DEPENDENCIAS PREPARADAS/CORRECCIÓN TERMINADA: la reparación
+del registro final sí terminó. El mensaje de error anterior queda en el log histórico.
+
+scripts/deploy/prepare-source.sh prueba acceso existente HTTPS ySSH al repositorio
+privado,20s por transporte. No añade hostkeys, claves ni credenciales. Si no puede
+comprobar acceso deja PENDIENTE; puede ser autenticación, red, hostkey o permiso.
+Si funciona, descarga snapshot eb441c712c9a6edd07c0d41b344adfdf0275c95d en directorio
+nuevo bajo /opt/sues-video-setup, comprueba SHA y prepara dependencias npm del lock
+con installscripts/audit desactivados. Ejecuta check+tests de Node secuenciales
+con la imagenruntime en contenedor temporal0,5CPU/1GiB, sin puertos ni montajes del
+host ajenos al nuevo snapshot. Usuario1000; npmcache/tests temporales en tmpfs.
+No monta credencialesSSH/GitHub dentro del contenedor. El código de la aplicación
+corresponde al hito133pruebas; el snapshot fija también la corrección de metadatos.
+No se clona una rama flotante ni se actualizan otros proyectos.
+
+Log codigo.log/estado-codigo.txt separados; fuente-directorio.txt/fuente-commit.txt
+se escriben sólo si instalación y comprobaciones pasan. No arranca app, no restaura
+vídeos/fonts/cámara y no configura HTTPS. Bloque preparado; ejecución pendiente.
+
 ### Resultado recibido y corrección · capturas08:18 del17/10
 
 La imagen sues-video-runtime:20261017 se construyó. El contenedor temporal imprimió

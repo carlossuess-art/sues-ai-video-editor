@@ -11,18 +11,27 @@ Suite: 133/133 y npm run check (src/scripts/web); Python compile OK.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
-Necesito de Carlos: ejecutar corrección final de registro VPS y devolver estado/log;
+Necesito de Carlos: ejecutar preparación de código VPS y devolver estado/log;
 aceptación estética pendiente. El trabajo de código puede continuar.
 
 ## Hostinger · procedimiento vigente de consola
 
+- Captura08:21 confirmaDEPENDENCIAS PREPARADAS yCORRECCIÓN TERMINADA. El ERROR
+  anterior permanece enlog histórico; la reparación sí terminó. Imagenruntime lista.
+- Siguiente bloque scripts/deploy/prepare-source.sh: pruebaaccesos existentesHTTPS/
+  SSH(sin alta dehostkeys ni credenciales nuevas), timeout20scadauno. Si hayacceso,
+  fetchsnapshot fijoeb441c712c9a6edd07c0d41b344adfdf0275c95d, verificacommit,
+  npmci sin installscripts/audit, check ytests secuenciales encontenedor limitado
+  0,5CPU/1GiB. Sin puertos ni app arrancada. Si fallaacceso, estadoPENDIENTE sin
+  pedir ni imprimir secretos; no atribuir automáticamente el fallo a contraseñas.
+  Logs/estado separados delruntime, snapshot en directorio nuevo, sin sobrescribir.
 - Capturas08:18: build de sues-video-runtime:20261017 terminado y prueba de filtros/
   miniH264/AAC OK; Node22.23.3,npm10.9.9,Python3.11.2,FFmpeg/ffprobe5.1.9,
   fc-scan presentes dentro deimagen. Fallo posterior sólo al registrar etiqueta
   local node:22-bookworm-slim ausente. EstadoERROR no significa fallo debuild/smoke.
 - Corregido registro de huella base para que sea opcional: ausencia se declara en
   base-provenance-status.txt y base-digests.json=[], sin inventar digest ni repetir
-  descarga. Pendiente aplicar reparación deestado con imagen ya creada. No app/HTTPS.
+  descarga. Reparación deestado confirmada enVPS. No app/HTTPS.
 - Capturas actuales recibidas17/10: srv1841004 Ubuntu24.04.4/x86_64,1CPU,
   RAM3,8GiB/~3,1disponible, swap0, disco40Glibres; Docker29.6.2/Compose5.3.1,
   Python3.12.3. Node/npm/FFmpeg/ffprobe/gh ausentes delhost. WhatsApp yCaddy activos,
@@ -31,7 +40,7 @@ aceptación estética pendiente. El trabajo de código puede continuar.
   fontconfig, sin paquetes enhost/puertos/reinicios. nohup/log/PID/estado persistente,
   flock, mínimo5GiB, verificación temporal sinred y miniH264/AAC. Bash-n OK; noDocker
   enentorno local; build/smoke deimagen acreditados por capturasCarlos. Editor aún
-  no desplegado. Corrección final deestado pendiente enservidor.
+  no desplegado. Corrección final deestado confirmada porCarlos.
 - Carlos pide bloques completos para pegar en la consola web; descargas y tareas
   largas en segundo plano con nohup, log y consulta de estado. No depender del
   acceso directo del asistente. Esta instrucción sustituye el bloqueo de acceso.
