@@ -11,7 +11,23 @@ Suite: 133/133 y npm run check (src/scripts/web); Python compile OK.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
-Necesito de Carlos: nada para seguir código; aceptación estética pendiente.
+Necesito de Carlos: salida del inventario actual para preparar el instalador VPS;
+aceptación estética pendiente. El trabajo de código puede continuar.
+
+## Hostinger · procedimiento vigente de consola
+
+- Carlos pide bloques completos para pegar en la consola web; descargas y tareas
+  largas en segundo plano con nohup, log y consulta de estado. No depender del
+  acceso directo del asistente. Esta instrucción sustituye el bloqueo de acceso.
+- Recuperado contexto previo: Ubuntu24.04.4/x86_64, Docker+Caddy; WhatsApp en
+  /opt/sues-whatsapp/compose.yml, Caddy80/443 y conector127.0.0.1:3001. Inventario
+  del28/09: Git/curl/rsync presentes; Node/npm/Nginx/Certbot ausentes delhost.
+- Detalle histórico y fechas enSUES_VPS_CONSOLE.md. No son comprobación actual.
+  scripts/deploy/inspect-vps.sh permite actualizarlo sin instalaciones/reinicios,
+  config/secretos ni cambios en WhatsApp. No se ejecutó en el VPS desde aquí.
+- Se preparará despliegue separado tras conocer capacidad/puertos actuales y vía
+  autenticada para fuente privada/assets. Ninguna instalación o publicación hecha.
+- Cambio de procedimiento documentado; F5=80%, global48%, sin cierre adicional.
 
 ## Revisión editorial · hito vigente
 
