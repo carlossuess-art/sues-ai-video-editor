@@ -11,8 +11,21 @@ Suite: 133/133 y npm run check (src/scripts/web); Python compile OK.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
-Necesito de Carlos: ejecutar el bloque único de servicio en consola y devolver sólo
-estado-servicio.txt; sin acceso VPS directo en esta sesión. No se ha desplegado.
+Necesito de Carlos: confirmar vía de subida privada desde móvil al VPS.
+Estado observado: PENDIENTE MEDIOS; app no iniciada.
+
+## VPS · ejecución confirmada18/10 01:26
+
+- CapturaCarlos muestra PENDIENTE MEDIOS y «No iniciado»: correcciónGit supera
+  comprobaciónfuente/runtime y llega al guard dearchivos; no servicio arrancado.
+- Drive conectado confirma los tres archivos privados, sólo permisoowner:
+  original96.942.857bytes, transcript8.364bytes, ZIPfuentes156.915bytes.
+  No cambiar permisos ni publicar vídeo. Necesaria transferenciaautenticadaVPS.
+- No acceso directoVPS operativo; buscar vía desubida desde móvil antes de pedir
+  instalaciones nuevas. No repetir runtime/npm/ASR/visión ni tocarWA/Caddy.
+- Nuevo kernel6.8.0-147 visible enbanner; causa/momento no comprobados porasistente.
+- F5=80%,global48%, costeexternonuevo0. Siguiente: restaurar los tresarchivos
+  privados, extraer sólofuentes/licencia, doctor/arranque, luego API/preview/export.
 
 ## Corrección ownershipGit · captura23:01 del17/10
 
