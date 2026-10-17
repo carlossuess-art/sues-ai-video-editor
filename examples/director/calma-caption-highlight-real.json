@@ -1,0 +1,153 @@
+{
+  "version": "1.0",
+  "templateId": "SUES_CALMA",
+  "timeSpace": "edit-timeline",
+  "selection": "offline-lexical-baseline-with-user-review-v1",
+  "decisions": [
+    {
+      "type": "motion",
+      "start": 2.0399999618530273,
+      "end": 4.579999923706055,
+      "reason": "Frase elegida por usuario: seg-001",
+      "rule": "user-caption-quote-v1",
+      "params": {
+        "motionId": "QUOTE_CARD_01",
+        "bindings": {
+          "quote": "Te enseñaron a mirar,"
+        },
+        "semanticReason": "reflection"
+      },
+      "evidence": {
+        "method": "user-caption-selection",
+        "captionId": "seg-001",
+        "sourceWordIndexes": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "captionStart": 2.0399999618530273,
+        "captionEnd": 4.579999923706055,
+        "displayEnd": 4.579999923706055,
+        "textOrigin": "user-edited-caption",
+        "originalText": "Te enseñaron a mirar,"
+      }
+    },
+    {
+      "type": "zoom",
+      "start": 15.0600004196167,
+      "end": 17.460000419616698,
+      "reason": "Coincidencia léxica en locución: detenerte, sentir.",
+      "rule": "calma-lexical-v1",
+      "params": {
+        "scale": 1.07,
+        "ramp": 1,
+        "reason": "emphasis"
+      },
+      "evidence": {
+        "text": "detenerte y sentir.",
+        "start": 15.0600004196167,
+        "end": 15.979999542236328,
+        "sourceWordIndexes": [
+          34,
+          35,
+          36
+        ],
+        "hits": [
+          {
+            "wordIndex": 34,
+            "kind": "emphasis",
+            "token": "detenerte"
+          },
+          {
+            "wordIndex": 36,
+            "kind": "emphasis",
+            "token": "sentir."
+          }
+        ],
+        "score": 22.7,
+        "uncertainWordIndexes": [
+          36
+        ],
+        "method": "spanish-lexicon-not-llm",
+        "timing": "existing-word-timestamps"
+      }
+    },
+    {
+      "type": "zoom",
+      "start": 24.559999465942383,
+      "end": 26.95999946594238,
+      "reason": "Coincidencia léxica en locución: temores,, culpa,",
+      "rule": "calma-lexical-v1",
+      "params": {
+        "scale": 1.07,
+        "ramp": 1,
+        "reason": "emotional-turn"
+      },
+      "evidence": {
+        "text": "temores, eres culpa,",
+        "start": 24.559999465942383,
+        "end": 25.719999313354492,
+        "sourceWordIndexes": [
+          51,
+          52,
+          53
+        ],
+        "hits": [
+          {
+            "wordIndex": 51,
+            "kind": "emotional-turn",
+            "token": "temores,"
+          },
+          {
+            "wordIndex": 53,
+            "kind": "emotional-turn",
+            "token": "culpa,"
+          }
+        ],
+        "score": 19.7,
+        "uncertainWordIndexes": [],
+        "method": "spanish-lexicon-not-llm",
+        "timing": "existing-word-timestamps"
+      }
+    }
+  ],
+  "segments": [
+    {
+      "in": 0,
+      "out": 38.31
+    }
+  ],
+  "audit": {
+    "method": "deterministic Spanish lexical baseline; not LLM semantic understanding",
+    "sourceWords": 75,
+    "mappedWords": 75,
+    "omittedWords": 0,
+    "cutsRemoved": 0,
+    "externalCostUSD": 0,
+    "candidates": 49,
+    "uncertainWordIndexes": [
+      11,
+      24,
+      26,
+      28,
+      36,
+      45,
+      63,
+      71
+    ],
+    "settings": {
+      "zoomIntensity": 0.75,
+      "motions": true,
+      "captionOverrides": {
+        "seg-001": "Te enseñaron a mirar,"
+      },
+      "highlightCaptions": [
+        "seg-001"
+      ]
+    },
+    "rejections": [],
+    "acceptedEvents": 3,
+    "manualHighlights": 1
+  }
+}

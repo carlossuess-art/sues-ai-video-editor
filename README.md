@@ -11,7 +11,7 @@ Leer primero este documento y `PROJECT_STATUS.md` para continuar.
 ## Estado ejecutable actual
 
 Leer PROJECT_STATUS.md antes de cambiar el proyecto. F5 estética provisional;
-no declarar V1 ni aceptación humana. Suite129 tests. Sólo CALMA tiene renderer
+no declarar V1 ni aceptación humana. Suite133 tests. Sólo CALMA tiene renderer
 integrado; otros estilos conservan contratos iniciales.
 
 Comprobación previa sin render ni llamadas de pago: `npm run editor:doctor -- CONFIG`.
@@ -44,6 +44,10 @@ tras comprobar MP4, auditoría, hash/tamaño/duración y fuente/bundle intactos.
 Los MP4 nuevos y sus auditorías se archivan en objetos privados por trabajo.
 Si falla el guardado se reintenta sin repetir el render; tras reinicio se pueden
 recuperar renders completos. [Almacén privado](docs/SUES_PRIVATE_STORAGE.md).
+
+Los captions permiten seleccionar hasta3frases como citas, respetando rostro y
+zonas seguras. Guarda/deshaz hasta10ajustes sin reanalizar medios ni sobrescribir
+versiones. [Revisión editorial](docs/SUES_EDITORIAL_REVIEW.md).
 
 ## Ruta histórica: POC cloud de Fase2
 

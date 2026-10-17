@@ -1,0 +1,66 @@
+{
+  "version": "1.0",
+  "jobId": "47fb22a7-c698-4ddb-85fb-49cd077c2dca",
+  "state": "DONE",
+  "summary": {
+    "duration": 38.31,
+    "sourceWords": 75,
+    "mappedWords": 75,
+    "omittedWords": 0,
+    "captions": 16,
+    "zooms": 2,
+    "motions": 1,
+    "manualHighlights": 1,
+    "rejections": [],
+    "externalCostUSD": 0,
+    "productionReady": false
+  },
+  "fingerprint": "e234a8d9391dbeb1d3871086a6d80da141304307d9fa6beecd1438f96ae8bc20",
+  "renderAttempts": 1,
+  "range": {
+    "status": 206,
+    "bytes": 1024
+  },
+  "audit": {
+    "version": "1.0",
+    "sourceSha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a",
+    "sourcePreserved": true,
+    "durationPlanned": 38.31,
+    "durationEncoded": 38.3,
+    "output": "preview.mp4",
+    "outputSha256": "450da24730969b3617c6a2ed3626f1d66fcb7fcc2ceab8c998999c24000ad349",
+    "bytes": 18568845,
+    "video": {
+      "codec": "h264",
+      "width": 1080,
+      "height": 1920,
+      "fps": "30/1"
+    },
+    "audioPresent": true,
+    "backgroundAudio": null,
+    "broll": [],
+    "captions": 16,
+    "font": {
+      "family": "Open Sans",
+      "regularSha256": "47cbab19bc5dc3527772ac056a31bfc0a964c3d34867a857bb44c2bbd8acd7e4",
+      "boldSha256": "f805aa580f0d37bf6ea265c74758387b7ef5fcfeeb9bed713304d0481ed603a8"
+    },
+    "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "fullDecode": "pass",
+    "productionReady": false,
+    "externalCostUSD": 0
+  },
+  "browserVisualQA": "not performed: browser cannot reach worker loopback",
+  "humanAcceptance": false,
+  "externalCostUSD": 0,
+  "localPrivateArchive": true,
+  "editorialTest": "API simulates selecting first caption; no human approval",
+  "engineEquivalence": {
+    "latestFingerprint": "6ce085bc3fbe20c0bdfbf492315336dd3e7482a79480e6c765c9aa5a3cdbc009",
+    "manifest": "identical",
+    "ass": "byte-identical",
+    "filter": "byte-identical"
+  },
+  "videoDriveId": "1puywRV66cfHXio6uitaADPGqGPfSSHA5",
+  "libraryFileId": "libfile_5b2f7cdf3c288191989af4aa96b6f0b3"
+}

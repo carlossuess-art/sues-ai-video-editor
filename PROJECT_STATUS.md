@@ -4,16 +4,45 @@ FASE 5/10 · BRAND KIT + TEMPLATE ENGINE
 Progreso fase: 80 % (estimación técnica; estética provisional).
 Progreso global: 48 % = F1–F4 (40 %) + 80 % del peso F5 (8 %).
 Rama oficial: feat/phase-4-vision-camera.
-Base de este bloque: 7fc8f31030fd0d2b50e8b9174d60ca79bce633a7.
-Último hito: progreso real de FFmpeg, etapas comprobación/guardado, salud privada
-y doctor sin render. Flujo real2MP4+archivo+reinicio+descarga validado.
-Suite: 129/129 y npm run check (src/scripts/web); Python compile OK.
+Base de este bloque: acbb8d5471cce1972c886ba9331379f8477dd35d.
+Último hito: selección de citas desde captions, deshacer hasta10ajustes y guardado
+idempotente. Prueba con vídeo realCarlos38,30s/75palabras/1cita elegida víaAPI completada.
+Suite: 133/133 y npm run check (src/scripts/web); Python compile OK.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
 Necesito de Carlos: nada para seguir código; aceptación estética pendiente.
 
-## Progreso y diagnóstico · hito vigente
+## Revisión editorial · hito vigente
+
+- highlightCaptions: hasta3IDs únicos del propio montaje, orden canónico, sin planes
+  libres/paths/tipos arbitrarios. Se usa el texto actual del caption, incluidos edits,
+  marcando origen usuario-editado vs transcript y conservando índices/tiempos fuente.
+- Selección explícita reemplaza citas automáticas; zooms se mantienen. Interruptor
+  motions las desactiva sin perder selección. Caption próximo a inicio/outro, texto
+  que no cabe o geometría insegura rechaza ajuste entero; no se oculta una orden de
+  usuario descartándola. La versión anterior siguePREVIEW_READY intacta.
+- Botón Destacar por caption y límite3enUI. POST.../undo y control Deshacer restauran
+  hasta10ajustes guardados como revisión nueva, sin tocar bundles previos ni lanzar
+  análisis/render. POSTsettings con mismofingerprint no añade revisiones redundantes.
+- 133/133tests+check; APIundo y rechazo de highlight inválido comprobados. No QA visual
+  de navegador, no aceptación humana. Edición representada mediante petición de prueba.
+- Vídeo realCarlos:38,30s/75palabras/16captions/2zoom1,07×/cita del primer caption
+  «Te enseñaron a mirar,». Requestsimula selección, no elección o aceptación deCarlos.
+  MP4H2641080×1920/30,AAC;18.568.845bytes; decode/hashfuente intactos,1intento yRange206.
+  SHA450da24730969b3617c6a2ed3626f1d66fcb7fcc2ceab8c998999c24000ad349.
+- Guardado privado validado. Frame3,2s revisado: cita por encima del rostro y caption
+  inferior; sin escucha completa. Tras endurecer mensajes/orden settings se comparó
+  manifest idéntico yASS/filtro byte idénticos con código vigente.
+- Entrega prueba: https://drive.google.com/file/d/1puywRV66cfHXio6uitaADPGqGPfSSHA5/view?usp=drivesdk
+  Chatlibfile_5b2f7cdf3c288191989af4aa96b6f0b3. No sustituye automáticamente la entrega
+  automática anterior. Plan/auditoría enexamples/director/calma-caption-highlight-real.json
+  yexamples/preview/caption-highlight-real.audit.json. GuíaSUES_EDITORIAL_REVIEW.md.
+- Coste externo nuevo0USD, sinASR/visión/LLM/Lovable ni servicios nuevos. F5sigue80%,
+  global48%; avancesF8. Bloqueo de despliegue: administraciónVPS no callable y destino
+  cloud/HTTPS/autorización pendiente. Supabaseactivo es delOráculo: no se toca.
+
+## Progreso y diagnóstico · hito anterior
 
 - src/render-progress.js lee sólo64KiB finales del reporte generado por FFmpeg;
   rechaza symlinks/valores no finitos y tolera ausencia/lecturas parciales.
@@ -234,14 +263,14 @@ fases cerradas. Hay UI/backend local persistente; no despliegue público ni E2E 
 
 ## Siguiente acción exacta
 
-Leer maestro + estado + SUES_PRIVATE_STORAGE.md y SUES_RENDER_PROGRESS.md. Backend,
-cola, archivo y recuperación local están integrados. Para ejecutar despliegue real
-hace falta administraciónVPS callable y revisión del destino existente; no crear
-suscripciones ni mezclar la base del Oráculo. Supabase nuevo requiere decisión de
-organización/proyecto/coste y autorización específica si añade costes.
+Leer maestro + estado + SUES_EDITORIAL_REVIEW.md. Rama oficial con cola/archivo/
+recuperación/progreso/doctor/citas elegibles/undo integrados y evidencia real. El
+siguiente paso de alojamiento necesita acceso operativo a administraciónVPS y
+revisar destino/seguridad; no publicar el harness local como servicio terminado.
+Hostinger tiene9servidores registrados pero sóloAIBuilder callables en esta sesión.
+No SSH/API manual para sustituir tools ausentes. Supabaseactivo corresponde alOráculo,
+no hay proyectoeditor identificado; no crear ni aceptar costes sin decisión concreta.
 
-Pendientes técnicos: HTTPS/auth/aislamiento del alojamiento, storage remoto duradero,
-leases/fencing si hay réplicas y QA visual real de UI/PWA. El almacén actual es disco
-privadoWork, no cloud remoto ni durable ante pérdida del host. Queda DirectorIA
-semántico y estética/B-roll/música propios; respetar bloqueoMediaPipe previo.
-F5 sigue80%,global48%; no declarar aprobaciónV1. Costes nuevos0USD.
+Pendientes: HTTPS/auth/aislamiento/almacenamiento duradero remoto yQA visual/PWA real;
+DirectorIA semántico y estética/B-roll/música propios. Respetar bloqueoMediaPipe y
+no repetirASR/modelos pagados por defecto. F5sigue80%,global48%; no declararV1.

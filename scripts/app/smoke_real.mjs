@@ -1,14 +1,14 @@
 import {resolve,join} from 'node:path';
 import {writeFileSync} from 'node:fs';
 import {createEditorServer} from '../../src/editor-server.js';
-const [config,directory]=process.argv.slice(2);
-if(!config||!directory){console.error('Usage: node scripts/app/smoke_real.mjs project.json NEW_JOB_DIRECTORY');process.exit(1);}
+const [config,directory,mode]=process.argv.slice(2);
+if(!config||!directory||(mode&&mode!=='--highlight-first')){console.error('Usage: node scripts/app/smoke_real.mjs project.json NEW_JOB_DIRECTORY [--highlight-first]');process.exit(1);}
 const app=createEditorServer({directory:resolve(directory),profiles:{calma:resolve(config)}});
 try{
  const launch=await app.listen(),base=launch.split('/#')[0],session=await fetch(base+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}}),cookie=session.headers.get('set-cookie').split(';')[0];
  const request=async(path,method='GET',body)=>{const response=await fetch(base+'/api/'+path,{method,headers:{Cookie:cookie,'X-Sues-Request':'editor','Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();if(!response.ok)throw new Error(JSON.stringify(value));return value;};
  let job=await request('jobs','POST',{profileId:'calma'});const plan=await request('jobs/'+job.id+'/plan');
- job=await request('jobs/'+job.id,'PATCH',{settings:{zoomIntensity:.75,motions:true,captionOverrides:{[plan.manifest.captions[0].id]:plan.manifest.captions[0].text}}});
+ job=await request('jobs/'+job.id,'PATCH',{settings:{zoomIntensity:.75,motions:true,captionOverrides:{[plan.manifest.captions[0].id]:plan.manifest.captions[0].text},...(mode==='--highlight-first'?{highlightCaptions:[plan.manifest.captions[0].id]}:{})}});
  const fingerprint=job.fingerprint;
  job=await request('jobs/'+job.id+'/render','POST',{});console.log(JSON.stringify({id:job.id,state:job.state,summary:job.summary}));
  const duplicate=await request('jobs/'+job.id+'/render','POST',{});if(duplicate.attempt!==1)throw new Error('Duplicate render');

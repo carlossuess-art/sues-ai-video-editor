@@ -22,3 +22,11 @@ test('restart recovers a valid completed render before publication without launc
   jobs=new EditorJobs({directory,profiles:f.profiles,renderer});await until(()=>jobs.get(job.id).state==='DONE');assert.equal(jobs.get(job.id).attempt,1);assert.equal(jobs.get(job.id).history.filter(h=>h.state==='RENDERING').length,1);assert.equal(jobs.children.size,0);
  }finally{await jobs.close();rmSync(f.dir,{recursive:true,force:true});}
 });
+test('saved editorial adjustments undo across restart and repeated identical saves keep the same bundle',async()=>{
+ const f=fixture(),directory=join(f.dir,'jobs'),renderer=worker(f);let jobs=new EditorJobs({directory,profiles:f.profiles,renderer});
+ try{
+  const created=jobs.create('test'),initial=jobs.get(created.id).fingerprint;assert.equal(jobs.adjust(created.id,created.settings).revision,1);
+  jobs.adjust(created.id,{zoomIntensity:.5,motions:false});const second=jobs.get(created.id).fingerprint;jobs.adjust(created.id,{zoomIntensity:.25,motions:true});assert.equal(jobs.get(created.id).revision,3);
+  await jobs.close();jobs=new EditorJobs({directory,profiles:f.profiles,renderer});assert.ok(jobs.view(jobs.get(created.id)).canUndo);jobs.undo(created.id);assert.equal(jobs.get(created.id).fingerprint,second);jobs.undo(created.id);assert.equal(jobs.get(created.id).fingerprint,initial);assert.equal(jobs.view(jobs.get(created.id)).canUndo,false);assert.throws(()=>jobs.undo(created.id),/No saved/);assert.equal(jobs.get(created.id).attempt,undefined);
+ }finally{await jobs.close();rmSync(f.dir,{recursive:true,force:true});}
+});

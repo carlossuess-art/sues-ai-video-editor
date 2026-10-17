@@ -147,3 +147,10 @@ comprobación de integridad y guardado privado;100% sóloDONE. Sidebar muestra c
 de procesamiento/cola/guardado. GET/api/health es privado y no ejecuta diagnóstico
 pesado; npm run editor:doctor -- CONFIG verifica dependencias/medios/fuentes sin
 render. Ver SUES_RENDER_PROGRESS.md. Última suite129tests.
+
+
+Revisión editorial: highlightCaptions acepta hasta3IDs de captions para citas de
+usuario (sustituyen las citas automáticas, mantienen zooms). No se aceptan citas
+inseguras silenciosamente; falla el ajuste conservando versión previa. Undo privado
+POST/api/jobs/:id/undo restaura hasta10ajustes como revisiones nuevas. Guardar el mismo
+fingerprint no duplica bundles. GuíaSUES_EDITORIAL_REVIEW.md; suite133tests.

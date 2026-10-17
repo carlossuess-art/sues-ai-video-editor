@@ -32,8 +32,10 @@ test('HTTP app protects sessions, origins and paths; persists edits and forbids 
   const job=await create.json();assert.equal(job.state,'PREVIEW_READY');
   assert.throws(()=>new EditorJobs({directory,profiles:f.profiles}),/busy/);
   const bad=await fetch(url+'/api/jobs/'+job.id,{method:'PATCH',headers,body:JSON.stringify({settings:{zoomIntensity:2}})});assert.equal(bad.status,400);
+  const invalidHighlight=await fetch(url+'/api/jobs/'+job.id,{method:'PATCH',headers,body:JSON.stringify({settings:{highlightCaptions:['seg-999']}})});assert.equal(invalidHighlight.status,400);assert.equal(app.jobs.get(job.id).revision,1);
   const good=await fetch(url+'/api/jobs/'+job.id,{method:'PATCH',headers,body:JSON.stringify({settings:{zoomIntensity:0,motions:false,captionOverrides:{'seg-001':'Puedes sentir.'}}})});assert.equal(good.status,200);
   const plan=await (await fetch(url+'/api/jobs/'+job.id+'/plan',{headers})).json();assert.equal(plan.manifest.captions[0].text,'Puedes sentir.');assert.equal(plan.director.decisions.length,0);
+  const undone=await fetch(url+'/api/jobs/'+job.id+'/undo',{method:'POST',headers,body:'{}'});assert.equal(undone.status,200);const restored=await undone.json();assert.equal(restored.settings.zoomIntensity,1);assert.equal(restored.canUndo,false);
   assert.equal((await fetch(url+'/api/jobs/'+job.id+'/media',{headers})).status,409);
   const cancelled=await (await fetch(url+'/api/jobs/'+job.id+'/cancel',{method:'POST',headers,body:'{}'})).json();assert.equal(cancelled.state,'CANCELLED');
   await app.close();const restarted=new EditorJobs({directory,profiles:f.profiles});assert.equal(restarted.get(job.id).state,'CANCELLED');await restarted.close();

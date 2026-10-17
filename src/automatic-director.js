@@ -9,8 +9,8 @@ const LEXICON=new Map([
 ]);
 export function validateEditorSettings(settings={}){
  assert(settings&&typeof settings==='object'&&!Array.isArray(settings),'settings object');
- assert(Object.keys(settings).every(k=>['zoomIntensity','motions','captionOverrides'].includes(k)),'unknown setting');
- const value={zoomIntensity:1,motions:true,captionOverrides:{},...settings};
+ assert(Object.keys(settings).every(k=>['zoomIntensity','motions','captionOverrides','highlightCaptions'].includes(k)),'unknown setting');
+ const value={zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
  assert(Number.isFinite(value.zoomIntensity)&&value.zoomIntensity>=0&&value.zoomIntensity<=1,'zoomIntensity 0..1');
  assert(typeof value.motions==='boolean','motions boolean');
  assert(value.captionOverrides&&typeof value.captionOverrides==='object'&&!Array.isArray(value.captionOverrides),'captionOverrides object');
@@ -19,6 +19,8 @@ export function validateEditorSettings(settings={}){
   assert(/^seg-\d{3,}$/.test(id),'caption id');
   assert(typeof text==='string'&&text.trim().length>0&&text.length<=52&&!/[\x00-\x1f\x7f]/.test(text),'caption override text');
  }
+ assert(Array.isArray(value.highlightCaptions)&&value.highlightCaptions.length<=3&&value.highlightCaptions.every(id=>typeof id==='string'&&/^seg-\d{3,}$/.test(id))&&new Set(value.highlightCaptions).size===value.highlightCaptions.length,'highlightCaptions: up to3 unique caption ids');
+ value.highlightCaptions=[...value.highlightCaptions].sort();
  return structuredClone(value);
 }
 // Offline, deterministic Spanish lexical baseline. Transcript content is data,

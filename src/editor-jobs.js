@@ -34,7 +34,7 @@ export class EditorJobs{
  save(job){const dir=join(this.directory,job.id),tmp=join(dir,'.job-'+randomUUID()+'.json');mkdirSync(dir,{recursive:true,mode:0o700});writeFileSync(tmp,JSON.stringify(job,null,2)+'\n',{mode:0o600});renameSync(tmp,join(dir,'job.json'));}
  transition(job,state){if(!canTransition(job.state,state))throw new Error(`Invalid transition ${job.state} -> ${state}`);job.state=state;job.updatedAt=now();job.history.push({state,at:job.updatedAt});this.save(job);}
  get(id){this.dir(id);return this.jobs.get(id);}
- view(job){return {id:job.id,profileId:job.profileId,title:job.title,state:job.state,progress:renderProgress(join(this.dir(job.id),'render-'+(job.attempt??1),'ffmpeg-progress.txt'),job.summary?.duration,job.state),storageReady:!!job.artifact,queuePosition:job.state==='QUEUED'?this.queued().findIndex(j=>j.id===job.id)+1:null,createdAt:job.createdAt,updatedAt:job.updatedAt,settings:job.settings,summary:job.summary,fingerprint:job.fingerprint,error:job.error??null,cancelRequested:job.cancelRequested??false,attempt:job.attempt??0,history:job.history};}
+ view(job){return {id:job.id,profileId:job.profileId,title:job.title,state:job.state,revision:job.revision??0,canUndo:job.state==='PREVIEW_READY'&&(job.undo?.length??0)>0,progress:renderProgress(join(this.dir(job.id),'render-'+(job.attempt??1),'ffmpeg-progress.txt'),job.summary?.duration,job.state),storageReady:!!job.artifact,queuePosition:job.state==='QUEUED'?this.queued().findIndex(j=>j.id===job.id)+1:null,createdAt:job.createdAt,updatedAt:job.updatedAt,settings:job.settings,summary:job.summary,fingerprint:job.fingerprint,error:job.error??null,cancelRequested:job.cancelRequested??false,attempt:job.attempt??0,history:job.history};}
  health(){return {version:'1.0',mode:'local-worker',status:this.closing?'stopping':'available',queue:{rendering:this.children.size,waiting:this.queued().length,saving:this.publishing.size,capacity:this.maxQueued},storage:{provider:'private-local',remote:false},dependencyReadiness:'use-editor-doctor'};}
  list(){return [...this.jobs.values()].map(j=>this.view(j)).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));}
  create(profileId,settings={}){
@@ -44,14 +44,16 @@ export class EditorJobs{
   try{writePreparedBundle(project,prepared,join(this.dir(id),'bundle-1'));job.bundle='bundle-1';job.bundleDigest=bundleDigest(join(this.dir(id),job.bundle));job.revision=1;job.summary=this.summary(prepared);this.transition(job,'PLANNED');this.transition(job,'PREVIEW_READY');return this.view(job);}
   catch(error){job.error=error.message;this.transition(job,'FAILED');throw error;}
  }
- summary(p){return {duration:p.plan.duration,sourceWords:p.director.audit.sourceWords,mappedWords:p.director.audit.mappedWords,omittedWords:p.director.audit.omittedWords,captions:p.plan.captions.length,zooms:p.plan.semantic.zooms.length,motions:p.plan.semantic.motions.length,rejections:p.director.audit.rejections,externalCostUSD:0,productionReady:false};}
+ summary(p){return {duration:p.plan.duration,sourceWords:p.director.audit.sourceWords,mappedWords:p.director.audit.mappedWords,omittedWords:p.director.audit.omittedWords,captions:p.plan.captions.length,zooms:p.plan.semantic.zooms.length,motions:p.plan.semantic.motions.length,manualHighlights:p.director.audit.manualHighlights??0,rejections:p.director.audit.rejections,externalCostUSD:0,productionReady:false};}
  plan(id){const job=this.get(id),bundle=join(this.dir(id),job.bundle);return {manifest:JSON.parse(readFileSync(join(bundle,'manifest.json'),'utf8')),director:JSON.parse(readFileSync(join(bundle,'director.json'),'utf8'))};}
- adjust(id,settings){
+ adjust(id,settings,{recordHistory=true}={}){
   const job=this.get(id);if(job.state!=='PREVIEW_READY')throw new Error('Adjustments require PREVIEW_READY; duplicate completed jobs to adjust');
   const project=loadProject(this.profiles[job.profileId]),prepared=prepareProject(project,settings);
+  if(prepared.fingerprint===job.fingerprint){if(bundleDigest(join(this.dir(id),job.bundle))!==job.bundleDigest)throw new Error('Prepared bundle changed; create a new job');return this.view(job);}
+  const prior=structuredClone(job.settings);
   this.transition(job,'ADJUSTING');
   try{
-   const revision=job.revision+1,bundle='bundle-'+revision;writePreparedBundle(project,prepared,join(this.dir(id),bundle));job.revision=revision;job.bundle=bundle;job.bundleDigest=bundleDigest(join(this.dir(id),bundle));job.settings=prepared.settings;job.fingerprint=prepared.fingerprint;job.summary=this.summary(prepared);this.transition(job,'PREVIEW_READY');return this.view(job);
+   const revision=job.revision+1,bundle='bundle-'+revision;writePreparedBundle(project,prepared,join(this.dir(id),bundle));job.revision=revision;job.bundle=bundle;job.bundleDigest=bundleDigest(join(this.dir(id),bundle));job.settings=prepared.settings;job.fingerprint=prepared.fingerprint;job.summary=this.summary(prepared);if(recordHistory)job.undo=[...(job.undo??[]),prior].slice(-10);this.transition(job,'PREVIEW_READY');return this.view(job);
   }catch(error){job.error=error.message;this.transition(job,'FAILED');throw error;}
  }
  acquireLock(name='worker.lock'){
@@ -64,6 +66,7 @@ export class EditorJobs{
    throw new Error('Worker busy');
   }
  }
+ undo(id){const job=this.get(id);if(job.state!=='PREVIEW_READY'||!job.undo?.length)throw new Error('No saved adjustment to undo');const history=[...job.undo],settings=history.pop();this.adjust(id,settings,{recordHistory:false});job.undo=history;this.save(job);return this.view(job);}
  queued(){return [...this.jobs.values()].filter(j=>j.state==='QUEUED').sort((a,b)=>a.queueOrder-b.queueOrder||a.id.localeCompare(b.id));}
  validatePrepared(job){
   const project=loadProject(this.profiles[job.profileId]),prepared=prepareProject(project,job.settings);

@@ -50,7 +50,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|render|cancel|media|audit))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|render|cancel|media|audit|undo))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
@@ -58,6 +58,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(action==='plan'&&req.method==='GET')return json(res,200,jobs.plan(id));
     if(action==='audit'&&req.method==='GET')return json(res,200,await jobs.audit(id));
     if(action==='render'&&req.method==='POST')return json(res,202,jobs.render(id));
+    if(action==='undo'&&req.method==='POST')return json(res,200,jobs.undo(id));
     if(action==='cancel'&&req.method==='POST')return json(res,202,jobs.cancel(id));
     if(action==='media'&&['GET','HEAD'].includes(req.method)){
      const file=await jobs.media(id),size=statSync(file).size;let range;

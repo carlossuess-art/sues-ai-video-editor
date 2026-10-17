@@ -48,3 +48,9 @@ encolaFIFO, conserva idempotencia enQUEUED/RENDERING/DONE y exponequeuePosition.
 PREVIEW_READY/FAILED→QUEUED→RENDERING;QUEUED también permiteFAILED/CANCELLED.
 Límite16pendientes, un worker y cancelación antes de despacho sin intento. Ver
 SUES_RENDER_QUEUE.md para persistencia y validación de resultados.
+
+
+Almacenamiento: RENDERING→PUBLISHING→DONE/PUBLISH_FAILED. POSTrender enPUBLISH_FAILED
+reintenta archivo sin otro render. Preview exponecanUndo/revision; POST.../undo sólo
+PREVIEW_READY, conserva bundles e historial. highlightCaptions permitehasta3IDs de
+captions del trabajo, sin planes/arbitrary motions enviados por cliente.

@@ -42,3 +42,16 @@ test('small nonzero zoom intensity remains usable above template minimum',()=>{
  const d=buildAutomaticDirector({...fixture(),settings:{zoomIntensity:.25,motions:false}});
  const zoom=d.decisions.find(e=>e.type==='zoom');assert.ok(zoom);assert.ok(zoom.params.scale>=1.04&&zoom.params.scale<1.08);
 });
+test('user-selected quotes use caption evidence and edited text, replacing automatic motion choices',()=>{
+ const project={inputs:fixture()},base=prepareProject(project),c=base.plan.captions[0],text='Puedes sentir.';
+ const p=prepareProject(project,{highlightCaptions:[c.id],captionOverrides:{[c.id]:text}}),quotes=p.director.decisions.filter(d=>d.type==='motion');
+ assert.equal(quotes.length,1);assert.equal(quotes[0].params.bindings.quote,text);assert.equal(quotes[0].rule,'user-caption-quote-v1');assert.deepEqual(quotes[0].evidence.sourceWordIndexes,c.wordIndexes);assert.equal(quotes[0].evidence.textOrigin,'user-edited-caption');assert.equal(p.director.audit.omittedWords,0);assert.equal(p.plan.captions[0].start,c.start);
+});
+test('manual highlights reject unknown, duplicate, excessive and unsafe choices instead of silently discarding',()=>{
+ for(const highlightCaptions of [['seg-001','seg-001'],['seg-001','seg-002','seg-003','seg-004'],['../file']])assert.throws(()=>validateEditorSettings({highlightCaptions}));
+ const project={inputs:fixture()};assert.throws(()=>prepareProject(project,{highlightCaptions:['seg-999']}),/Unknown highlight/);
+ const c=prepareProject(project).plan.captions[0];project.inputs.visionFrames.forEach(f=>{f.faces[0].y=0;f.faces[0].height=1500;});assert.throws(()=>prepareProject(project,{highlightCaptions:[c.id]}),/frase.*segura/);
+});
+test('motions switch disables retained manual selections without losing their settings',()=>{
+ const project={inputs:fixture()},id=prepareProject(project).plan.captions[0].id,p=prepareProject(project,{highlightCaptions:[id],motions:false});assert.equal(p.director.decisions.filter(d=>d.type==='motion').length,0);assert.deepEqual(p.settings.highlightCaptions,[id]);
+});

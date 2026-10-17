@@ -22,21 +22,32 @@ export function loadProject(configPath){
 }
 export function prepareProject(project,settings={}){
  const options=validateEditorSettings(settings),automatic=buildAutomaticDirector({...project.inputs,settings:options}),rejections=[];
- // Validate the unadorned base first: geometry/source errors must never be hidden.
  const base=prepareLocalPreview({...project.inputs,segments:automatic.segments});
+ for(const id of Object.keys(options.captionOverrides))if(!base.captions.some(c=>c.id===id))throw new Error(`Unknown caption: ${id}`);
+ const editedCaptions=base.captions.map(c=>Object.hasOwn(options.captionOverrides,c.id)?{...c,text:options.captionOverrides[c.id].trim(),lines:wrapCaption(options.captionOverrides[c.id].trim()),source:'manual',originalText:c.text}:c);
+ const manual=[];
+ for(const id of options.highlightCaptions){
+  const c=editedCaptions.find(c=>c.id===id);if(!c)throw new Error(`Unknown highlight caption: ${id}`);
+  if(!options.motions)continue;
+  const cutoff=base.duration-base.policy.outro.duration,end=Math.min(cutoff,Math.max(c.end,c.start+2.2));
+  if(c.start<2||c.end>cutoff||end-c.start<1.5||end-c.start>6)throw new Error(`La frase de ${c.start.toFixed(1)} s está demasiado cerca del inicio o del cierre para destacarla.`);
+  manual.push({type:'motion',start:c.start,end,reason:`Frase elegida por usuario: ${id}`,rule:'user-caption-quote-v1',params:{motionId:'QUOTE_CARD_01',bindings:{quote:c.text},semanticReason:'reflection'},evidence:{method:'user-caption-selection',captionId:id,sourceWordIndexes:c.wordIndexes,captionStart:c.start,captionEnd:c.end,displayEnd:end,textOrigin:c.source==='manual'?'user-edited-caption':'transcript-caption',originalText:c.originalText??c.text}});
+ }
+ const candidates=[...automatic.decisions.filter(d=>!manual.length||d.type!=='motion'),...manual].sort((a,b)=>a.start-b.start||a.end-b.end);
  let decisions=[],plan=base;
- for(const candidate of automatic.decisions){
+ for(const candidate of candidates){
   try{
    const next=[...decisions,candidate].sort((a,b)=>a.start-b.start||a.end-b.end);
    plan=prepareLocalPreview({...project.inputs,segments:automatic.segments,director:{...automatic,decisions:next}});decisions=next;
-  }catch(error){rejections.push({rule:candidate.rule,start:candidate.start,end:candidate.end,reason:error.message});}
+  }catch(error){
+   if(candidate.rule==='user-caption-quote-v1')throw new Error(`La frase de ${candidate.start.toFixed(1)} s no cabe de forma segura con estos ajustes. Elige otra frase.`);
+   rejections.push({rule:candidate.rule,start:candidate.start,end:candidate.end,reason:error.message});
+  }
  }
- for(const id of Object.keys(options.captionOverrides))if(!plan.captions.some(c=>c.id===id))throw new Error(`Unknown caption: ${id}`);
- plan.captions=plan.captions.map(c=>Object.hasOwn(options.captionOverrides,c.id)?{...c,text:options.captionOverrides[c.id].trim(),lines:wrapCaption(options.captionOverrides[c.id].trim()),source:'manual',originalText:c.text}:c);
- const director={...automatic,decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length}};
+ plan.captions=editedCaptions;
+ const director={...automatic,...(manual.length?{selection:'offline-lexical-baseline-with-user-review-v1'}:{}),decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length,manualHighlights:manual.length}};
  plan.automaticDirector=director.audit;
- plan.pending=plan.pending.filter(p=>p!=='automated-director-selection');
- plan.pending.push('llm-semantic-director-and-human-review');
+ plan.pending=plan.pending.filter(p=>p!=='automated-director-selection');plan.pending.push('llm-semantic-director-and-human-review');
  const fingerprint=createHash('sha256').update(JSON.stringify(stable({inputs:project.inputs,boundHashes:project.boundHashes??{},fontHashes:project.fontHashes??{},settings:options,engine:ENGINE_HASH}))).digest('hex');
  return {plan,director,settings:options,fingerprint};
 }
