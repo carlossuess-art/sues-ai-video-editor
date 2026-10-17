@@ -11,8 +11,11 @@ Leer primero este documento y `PROJECT_STATUS.md` para continuar.
 ## Estado ejecutable actual
 
 Leer PROJECT_STATUS.md antes de cambiar el proyecto. F5 estética provisional;
-no declarar V1 ni aceptación humana. Suite125 tests. Sólo CALMA tiene renderer
+no declarar V1 ni aceptación humana. Suite129 tests. Sólo CALMA tiene renderer
 integrado; otros estilos conservan contratos iniciales.
+
+Comprobación previa sin render ni llamadas de pago: `npm run editor:doctor -- CONFIG`.
+La app muestra progreso real de codificación y distingue comprobación/guardado.
 
 Con medios y análisis previamente preparados:
 

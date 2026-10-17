@@ -89,7 +89,7 @@ def render(source, bundle, output):
         command += ['-filter_complex_threads', '1', '-filter_complex_script', 'filter.ffscript', '-map', '[video]']
         if audio:
             command += ['-map', '[mixed-audio]' if music else '[audio]']
-        command += ['-c:v', 'libx264', '-threads', '2', '-preset', 'veryfast', '-crf', '22', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-map_metadata', '-1', '-movflags', '+faststart', '-y', str(temporary)]
+        command += ['-c:v', 'libx264', '-threads', '2', '-preset', 'veryfast', '-crf', '22', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-map_metadata', '-1', '-movflags', '+faststart', '-progress', str(output.parent / 'ffmpeg-progress.txt'), '-nostats', '-y', str(temporary)]
         with (bundle / 'render.log').open('w') as log:
             subprocess.run(command, cwd=bundle, stdout=log, stderr=subprocess.STDOUT, check=True)
         result = probe(temporary)

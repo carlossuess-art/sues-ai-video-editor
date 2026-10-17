@@ -19,7 +19,8 @@
     "preview:smoke": "node scripts/templates/smoke_local_preview.mjs",
     "semantic:smoke": "node scripts/templates/smoke_semantic.mjs",
     "automatic:preview": "node scripts/templates/automatic_preview.mjs",
-    "editor": "node scripts/app/start.mjs"
+    "editor": "node scripts/app/start.mjs",
+    "editor:doctor": "node scripts/app/doctor.mjs"
   },
   "dependencies": {
     "ajv": "^8.17.1"

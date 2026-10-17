@@ -140,3 +140,10 @@ Actualización de cola: la segunda exportación entra enQUEUED, con posición y
 cancelación, en lugar de rechazar por worker ocupado. Pendientes sobreviven al
 cierre. Resultado119tests y smoke real de2exportaciones en serie en
 [Cola y worker](SUES_RENDER_QUEUE.md). No sustituye despliegue cloud ni QA visual.
+
+
+Estado operativo posterior: exportación muestra porcentaje obtenido de FFmpeg,
+comprobación de integridad y guardado privado;100% sóloDONE. Sidebar muestra conteos
+de procesamiento/cola/guardado. GET/api/health es privado y no ejecuta diagnóstico
+pesado; npm run editor:doctor -- CONFIG verifica dependencias/medios/fuentes sin
+render. Ver SUES_RENDER_PROGRESS.md. Última suite129tests.

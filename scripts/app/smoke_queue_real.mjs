@@ -1,5 +1,6 @@
+import {parseRenderProgress} from '../../src/render-progress.js';
 import {resolve,join} from 'node:path';
-import {mkdirSync,writeFileSync,existsSync} from 'node:fs';
+import {mkdirSync,writeFileSync,existsSync,readFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import assert from 'node:assert/strict';
 import {createEditorServer} from '../../src/editor-server.js';
@@ -20,9 +21,9 @@ try{
  assert.equal((await call('jobs/'+a.id+'/render','POST',{})).state,'RENDERING');
  const queued=await call('jobs/'+b.id+'/render','POST',{});assert.equal(queued.state,'QUEUED');assert.equal(queued.queuePosition,1);assert.equal((await call('jobs/'+b.id+'/render','POST',{})).attempt,0);
  console.log(JSON.stringify({first:a.id,second:b.id,secondState:queued.state}));
- const deadline=Date.now()+180000;let jobs;
- do{jobs=await call('jobs');assert.ok(!jobs.some(j=>j.state==='FAILED'),JSON.stringify(jobs));if(jobs.every(j=>j.state==='DONE'))break;assert.ok(Date.now()<deadline,'Queue timeout');await new Promise(r=>setTimeout(r,500));}while(true);
- const records=[];for(const job of jobs){const audit=await call('jobs/'+job.id+'/audit');assert.equal(audit.fullDecode,'pass');assert.equal(audit.sourcePreserved,true);assert.equal(job.attempt,1);const response=await fetch(url+'/api/jobs/'+job.id+'/media',{headers:{Cookie:cookie,Range:'bytes=0-1023'}});assert.equal(response.status,206);assert.equal((await response.arrayBuffer()).byteLength,1024);records.push({id:job.id,state:job.state,attempts:job.attempt,queueOrder:app.jobs.get(job.id).queueOrder,history:job.history,audit,rangeStatus:206});}
+ const deadline=Date.now()+180000,observed=[];let jobs;
+ do{jobs=await call('jobs');for(const j of jobs)observed.push({id:j.id,state:j.state,progress:j.progress});assert.ok(!jobs.some(j=>j.state==='FAILED'),JSON.stringify(jobs));if(jobs.every(j=>j.state==='DONE'))break;assert.ok(Date.now()<deadline,'Queue timeout');await new Promise(r=>setTimeout(r,500));}while(true);
+ const records=[];for(const job of jobs){const audit=await call('jobs/'+job.id+'/audit');assert.equal(audit.fullDecode,'pass');assert.equal(audit.sourcePreserved,true);assert.equal(job.attempt,1);const response=await fetch(url+'/api/jobs/'+job.id+'/media',{headers:{Cookie:cookie,Range:'bytes=0-1023'}});assert.equal(response.status,206);assert.equal((await response.arrayBuffer()).byteLength,1024);const encoderReport=parseRenderProgress(readFileSync(join(root,'jobs',job.id,'render-1','ffmpeg-progress.txt'),'utf8'),duration);assert.equal(encoderReport.stage,'verifying');assert.equal(encoderReport.percent,99);assert.equal(job.progress.percent,100);records.push({encoderReport,observedProgress:observed.filter(o=>o.id===job.id),id:job.id,state:job.state,attempts:job.attempt,queueOrder:app.jobs.get(job.id).queueOrder,history:job.history,audit,rangeStatus:206});}
  const first=records.find(j=>j.id===a.id),second=records.find(j=>j.id===b.id);assert.ok(first.history.find(h=>h.state==='DONE').at<=second.history.find(h=>h.state==='RENDERING').at);
  const result={version:'1.0',fixture:'synthetic blue + gated440Hz; not Carlos voice',externalCostUSD:0,serial:true,duplicateSubmission:'no extra render',records,browserVisualQA:false,humanAcceptance:false};write('queue-smoke-result.json',result);console.log(JSON.stringify({pass:true,jobs:records.map(j=>({id:j.id,state:j.state,bytes:j.audit.bytes})),sourcePreserved:true}));
 }finally{await app.close();}

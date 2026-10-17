@@ -1,0 +1,74 @@
+{
+  "version": "1.0",
+  "readyForLocalPreview": true,
+  "checks": [
+    {
+      "name": "node",
+      "status": "pass",
+      "details": "24.19.0"
+    },
+    {
+      "name": "python",
+      "status": "pass",
+      "details": "Python 3.12.14"
+    },
+    {
+      "name": "ffmpeg",
+      "status": "pass",
+      "details": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers"
+    },
+    {
+      "name": "ffprobe",
+      "status": "pass",
+      "details": "ffprobe version 6.1.1-3ubuntu5 Copyright (c) 2007-2023 the FFmpeg developers"
+    },
+    {
+      "name": "project-data-and-source-hash",
+      "status": "pass",
+      "details": {
+        "sourceHashVerified": true
+      }
+    },
+    {
+      "name": "plan-and-captions",
+      "status": "pass",
+      "details": {
+        "duration": 38.31,
+        "captions": 16,
+        "omittedWords": 0
+      }
+    },
+    {
+      "name": "video-and-original-audio",
+      "status": "pass",
+      "details": {
+        "width": 1080,
+        "height": 1920,
+        "duration": 38.310156,
+        "audio": true
+      }
+    },
+    {
+      "name": "font-family-and-license",
+      "status": "pass",
+      "details": "Open Sans400/700 + SIL OFL"
+    },
+    {
+      "name": "required-render-filters",
+      "status": "pass",
+      "details": [
+        "ass",
+        "crop",
+        "scale",
+        "fps",
+        "concat",
+        "perspective"
+      ]
+    }
+  ],
+  "externalCostUSD": 0,
+  "renderExecuted": false,
+  "asrExecuted": false,
+  "visionExecuted": false,
+  "cloudDeployment": false
+}

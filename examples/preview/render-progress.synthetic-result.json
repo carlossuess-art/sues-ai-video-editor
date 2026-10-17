@@ -1,0 +1,629 @@
+{
+  "version": "1.0",
+  "fixture": "synthetic blue + gated440Hz; not Carlos voice",
+  "encodingShaUnchanged": true,
+  "records": [
+    {
+      "encoderReport": {
+        "stage": "verifying",
+        "percent": 99,
+        "processedSeconds": 11.989333,
+        "frame": 360,
+        "speed": 3.21
+      },
+      "observedProgress": [
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "QUEUED",
+          "progress": {
+            "stage": "queued",
+            "percent": 0
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "QUEUED",
+          "progress": {
+            "stage": "queued",
+            "percent": 0
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "QUEUED",
+          "progress": {
+            "stage": "queued",
+            "percent": 0
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "QUEUED",
+          "progress": {
+            "stage": "queued",
+            "percent": 0
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "QUEUED",
+          "progress": {
+            "stage": "queued",
+            "percent": 0
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "QUEUED",
+          "progress": {
+            "stage": "queued",
+            "percent": 0
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "QUEUED",
+          "progress": {
+            "stage": "queued",
+            "percent": 0
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "QUEUED",
+          "progress": {
+            "stage": "queued",
+            "percent": 0
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "QUEUED",
+          "progress": {
+            "stage": "queued",
+            "percent": 0
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "QUEUED",
+          "progress": {
+            "stage": "queued",
+            "percent": 0
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "QUEUED",
+          "progress": {
+            "stage": "queued",
+            "percent": 0
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "QUEUED",
+          "progress": {
+            "stage": "queued",
+            "percent": 0
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 0,
+            "processedSeconds": 0,
+            "frame": 0,
+            "speed": null
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 0,
+            "processedSeconds": 0,
+            "frame": 0,
+            "speed": null
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 0,
+            "processedSeconds": 0,
+            "frame": 0,
+            "speed": null
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 7,
+            "processedSeconds": 0.938667,
+            "frame": 13,
+            "speed": 1.62
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 18,
+            "processedSeconds": 2.261333,
+            "frame": 52,
+            "speed": 1.62
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 29,
+            "processedSeconds": 3.562667,
+            "frame": 91,
+            "speed": 2.25
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 46,
+            "processedSeconds": 5.589333,
+            "frame": 152,
+            "speed": 2.66
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 63,
+            "processedSeconds": 7.637333,
+            "frame": 214,
+            "speed": 2.93
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 81,
+            "processedSeconds": 9.792,
+            "frame": 278,
+            "speed": 3.15
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "verifying",
+            "percent": 99,
+            "processedSeconds": 11.989333,
+            "frame": 360,
+            "speed": 3.21
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "verifying",
+            "percent": 99,
+            "processedSeconds": 11.989333,
+            "frame": 360,
+            "speed": 3.21
+          }
+        },
+        {
+          "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        }
+      ],
+      "id": "0c2e38d1-9981-4c9b-a562-1eb8480689ad",
+      "state": "DONE",
+      "attempts": 1,
+      "queueOrder": 2,
+      "history": [
+        {
+          "state": "DRAFT",
+          "at": "2026-10-17T05:21:02.623Z"
+        },
+        {
+          "state": "UPLOADED",
+          "at": "2026-10-17T05:21:02.624Z"
+        },
+        {
+          "state": "ANALYZING",
+          "at": "2026-10-17T05:21:02.624Z"
+        },
+        {
+          "state": "PLANNED",
+          "at": "2026-10-17T05:21:02.632Z"
+        },
+        {
+          "state": "PREVIEW_READY",
+          "at": "2026-10-17T05:21:02.632Z"
+        },
+        {
+          "state": "QUEUED",
+          "at": "2026-10-17T05:21:02.684Z"
+        },
+        {
+          "state": "RENDERING",
+          "at": "2026-10-17T05:21:25.924Z"
+        },
+        {
+          "state": "PUBLISHING",
+          "at": "2026-10-17T05:21:31.589Z"
+        },
+        {
+          "state": "DONE",
+          "at": "2026-10-17T05:21:31.605Z"
+        }
+      ],
+      "audit": {
+        "version": "1.0",
+        "sourceSha256": "b3511988ba754149051ab96d815c25372964ca423db6d5e89abd3099fff471b6",
+        "sourcePreserved": true,
+        "durationPlanned": 12,
+        "durationEncoded": 12,
+        "output": "preview.mp4",
+        "outputSha256": "27381ccab4ab2a43dea049e957305b4ae822661657001beed9e5d13dcbd3d22c",
+        "bytes": 130823,
+        "video": {
+          "codec": "h264",
+          "width": 1080,
+          "height": 1920,
+          "fps": "30/1"
+        },
+        "audioPresent": true,
+        "backgroundAudio": null,
+        "broll": [],
+        "captions": 1,
+        "font": {
+          "family": "Open Sans",
+          "regularSha256": "47cbab19bc5dc3527772ac056a31bfc0a964c3d34867a857bb44c2bbd8acd7e4",
+          "boldSha256": "f805aa580f0d37bf6ea265c74758387b7ef5fcfeeb9bed713304d0481ed603a8"
+        },
+        "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+        "fullDecode": "pass",
+        "productionReady": false,
+        "externalCostUSD": 0
+      },
+      "rangeStatus": 206
+    },
+    {
+      "encoderReport": {
+        "stage": "verifying",
+        "percent": 99,
+        "processedSeconds": 11.989333,
+        "frame": 360,
+        "speed": 3.38
+      },
+      "observedProgress": [
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 0,
+            "processedSeconds": 0,
+            "frame": 0,
+            "speed": null
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 0,
+            "processedSeconds": 0,
+            "frame": 0,
+            "speed": null
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 0,
+            "processedSeconds": 0,
+            "frame": 0,
+            "speed": null
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 10,
+            "processedSeconds": 1.216,
+            "frame": 21,
+            "speed": 2.17
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 25,
+            "processedSeconds": 3.072,
+            "frame": 77,
+            "speed": 2.86
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 41,
+            "processedSeconds": 4.970667,
+            "frame": 134,
+            "speed": 3.15
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 56,
+            "processedSeconds": 6.784,
+            "frame": 188,
+            "speed": 3.27
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "rendering",
+            "percent": 70,
+            "processedSeconds": 8.469333,
+            "frame": 239,
+            "speed": 3.29
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "verifying",
+            "percent": 99,
+            "processedSeconds": 11.989333,
+            "frame": 360,
+            "speed": 3.38
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "verifying",
+            "percent": 99,
+            "processedSeconds": 11.989333,
+            "frame": 360,
+            "speed": 3.38
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "verifying",
+            "percent": 99,
+            "processedSeconds": 11.989333,
+            "frame": 360,
+            "speed": 3.38
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "RENDERING",
+          "progress": {
+            "stage": "verifying",
+            "percent": 99,
+            "processedSeconds": 11.989333,
+            "frame": 360,
+            "speed": 3.38
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        },
+        {
+          "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+          "state": "DONE",
+          "progress": {
+            "stage": "complete",
+            "percent": 100
+          }
+        }
+      ],
+      "id": "a47170ee-40b0-409a-abb5-e8b1bc4a6353",
+      "state": "DONE",
+      "attempts": 1,
+      "queueOrder": 1,
+      "history": [
+        {
+          "state": "DRAFT",
+          "at": "2026-10-17T05:21:02.587Z"
+        },
+        {
+          "state": "UPLOADED",
+          "at": "2026-10-17T05:21:02.589Z"
+        },
+        {
+          "state": "ANALYZING",
+          "at": "2026-10-17T05:21:02.590Z"
+        },
+        {
+          "state": "PLANNED",
+          "at": "2026-10-17T05:21:02.602Z"
+        },
+        {
+          "state": "PREVIEW_READY",
+          "at": "2026-10-17T05:21:02.602Z"
+        },
+        {
+          "state": "QUEUED",
+          "at": "2026-10-17T05:21:02.647Z"
+        },
+        {
+          "state": "RENDERING",
+          "at": "2026-10-17T05:21:02.654Z"
+        },
+        {
+          "state": "PUBLISHING",
+          "at": "2026-10-17T05:21:25.890Z"
+        },
+        {
+          "state": "DONE",
+          "at": "2026-10-17T05:21:25.913Z"
+        }
+      ],
+      "audit": {
+        "version": "1.0",
+        "sourceSha256": "b3511988ba754149051ab96d815c25372964ca423db6d5e89abd3099fff471b6",
+        "sourcePreserved": true,
+        "durationPlanned": 12,
+        "durationEncoded": 12,
+        "output": "preview.mp4",
+        "outputSha256": "27381ccab4ab2a43dea049e957305b4ae822661657001beed9e5d13dcbd3d22c",
+        "bytes": 130823,
+        "video": {
+          "codec": "h264",
+          "width": 1080,
+          "height": 1920,
+          "fps": "30/1"
+        },
+        "audioPresent": true,
+        "backgroundAudio": null,
+        "broll": [],
+        "captions": 1,
+        "font": {
+          "family": "Open Sans",
+          "regularSha256": "47cbab19bc5dc3527772ac056a31bfc0a964c3d34867a857bb44c2bbd8acd7e4",
+          "boldSha256": "f805aa580f0d37bf6ea265c74758387b7ef5fcfeeb9bed713304d0481ed603a8"
+        },
+        "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+        "fullDecode": "pass",
+        "productionReady": false,
+        "externalCostUSD": 0
+      },
+      "rangeStatus": 206
+    }
+  ],
+  "externalCostUSD": 0,
+  "browserVisualQA": false,
+  "humanAcceptance": false
+}

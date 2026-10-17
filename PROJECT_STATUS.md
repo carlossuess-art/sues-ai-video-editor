@@ -4,16 +4,40 @@ FASE 5/10 · BRAND KIT + TEMPLATE ENGINE
 Progreso fase: 80 % (estimación técnica; estética provisional).
 Progreso global: 48 % = F1–F4 (40 %) + 80 % del peso F5 (8 %).
 Rama oficial: feat/phase-4-vision-camera.
-Base de este bloque: 40ca9e24ca87b4e619378814529db79e63df30c6.
-Último hito: objetos privados, guardado reintentable sin otro render y recuperación
-de exportaciones tras reinicio. Dos MP4 reales servidos después de retirar temporales.
-Suite: 125/125 y npm run check (src/scripts/web); Python compile OK.
+Base de este bloque: 7fc8f31030fd0d2b50e8b9174d60ca79bce633a7.
+Último hito: progreso real de FFmpeg, etapas comprobación/guardado, salud privada
+y doctor sin render. Flujo real2MP4+archivo+reinicio+descarga validado.
+Suite: 129/129 y npm run check (src/scripts/web); Python compile OK.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
 Necesito de Carlos: nada para seguir código; aceptación estética pendiente.
 
-## Almacén privado y recuperación · hito vigente
+## Progreso y diagnóstico · hito vigente
+
+- src/render-progress.js lee sólo64KiB finales del reporte generado por FFmpeg;
+  rechaza symlinks/valores no finitos y tolera ausencia/lecturas parciales.
+- API expone porcentaje/tiempo/frame/speed reales, nunca una animación simulada.
+  progress=end significa comprobar, tope99%; PUBLISHING/PUBLISH_FAILED guardado99%;
+  sóloDONE100%. Cola0%; error/cancelación no dan un porcentaje de éxito.
+- UIprogressbar accesible, texto de comprobación y conteos de cola/proceso/guardado.
+  GET/api/health protegido por sesión/origen, sin paths/tokens ni comandos pesados;
+  muestra estado del coordinador, no garantiza dependencias o desplieguecloud.
+- npm run editor:doctor -- CONFIG: Node/Python/FFmpeg/ffprobe, fuente/hash/rotación/
+  audio, plan/captions, OpenSans400/700/licencia y filtros necesarios. Pasa con el
+  proyecto realCarlos38,31s/16captions/0palabras omitidas; no render/ASR/visión nuevos.
+- 129/129 tests+check/Python compile. Smoke real2MP4: reportes360frames, tiempo11,989333s,
+  estadosqueued/rendering/verifying/complete observados;100% trasDONE. SHA de vídeo
+  idéntico al fixture previo: el reporte no cambia bytes de codificación.
+- Recuperación privada tras retirar temporales sintéticos y reiniciar vuelve a pasar;
+  no se reexporta el vídeoCarlos. Evidencia render-progress.synthetic-result.json y
+  editor-doctor.real-result.json enexamples/preview. GuíaSUES_RENDER_PROGRESS.md.
+- Supabase leído sólo en metadatos: planfree, activo dedicado al Oráculo yBoards
+  inactivo. No se identifica proyectoeditor; no se mezclan tablas/buckets ni se crea
+  proyecto/se acepta coste. HostingerVPS/hosting sigue sin tools callables.
+- Coste externo nuevo0USD. F5 estética80%,global48%; avancesF8 no cierranF9 niV1.
+
+## Almacén privado y recuperación · hito anterior
 
 - src/private-storage.js: objetos SHA256 por ámbito técnico owner/project, copias
   por bloques, creación exclusiva, deduplicación, modo700/600, límite256MiB por objeto.
@@ -210,11 +234,14 @@ fases cerradas. Hay UI/backend local persistente; no despliegue público ni E2E 
 
 ## Siguiente acción exacta
 
-Leer maestro + estado + SUES_PRIVATE_STORAGE.md. Continuar app existente. Siguiente
-bloque: progreso real de FFmpeg visible en app y diagnósticos, sin inferencia nueva.
-Para despliegue falta acceso callable de administraciónVPS, revisión de destino y
-HTTPS/autorización; no tratar el harness loopback como web pública ya terminada.
+Leer maestro + estado + SUES_PRIVATE_STORAGE.md y SUES_RENDER_PROGRESS.md. Backend,
+cola, archivo y recuperación local están integrados. Para ejecutar despliegue real
+hace falta administraciónVPS callable y revisión del destino existente; no crear
+suscripciones ni mezclar la base del Oráculo. Supabase nuevo requiere decisión de
+organización/proyecto/coste y autorización específica si añade costes.
 
-F5 sigue80%,global48%; estética/QA visual pendientes antes de cerrarF5/F9. Director
-sigue léxico. No repetir MediaPipe1.1.1 bloqueado ni ASR de pago por defecto. Recursos
-propios deB-roll/música sin seleccionar. No suscripciones ni compras nuevas.
+Pendientes técnicos: HTTPS/auth/aislamiento del alojamiento, storage remoto duradero,
+leases/fencing si hay réplicas y QA visual real de UI/PWA. El almacén actual es disco
+privadoWork, no cloud remoto ni durable ante pérdida del host. Queda DirectorIA
+semántico y estética/B-roll/música propios; respetar bloqueoMediaPipe previo.
+F5 sigue80%,global48%; no declarar aprobaciónV1. Costes nuevos0USD.

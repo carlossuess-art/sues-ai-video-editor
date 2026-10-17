@@ -39,6 +39,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     const cookie=/(?:^|;\s*)sues_session=([^;]+)/.exec(req.headers.cookie??'')?.[1];
     if(!eq(cookie,token))return json(res,401,{error:'Session required'});
     if(!['GET','HEAD'].includes(req.method)&&req.headers['x-sues-request']!=='editor')return json(res,403,{error:'Request header required'});
+    if(path==='/api/health'&&req.method==='GET')return json(res,200,jobs.health());
     if(path==='/api/design'&&req.method==='GET'){
      const id=url.searchParams.get('profileId');if(!Object.hasOwn(profiles,id))return json(res,404,{error:'Unknown profile'});
      const project=loadProject(profiles[id]),{brand,template,catalog}=project.inputs;

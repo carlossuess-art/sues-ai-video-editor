@@ -78,3 +78,10 @@ manual, ni se modifican dominios/VPS/cuentas. El código queda preparado y proba
 el alojamiento real necesita la conexión de administración operativa y revisión
 del destino, además de HTTPS/autorización/almacenamiento duradero. No se pide una
 suscripción nueva para resolverlo.
+
+
+Comprobación de alternativaSupabase17/10: lecturas de metadatos confirmaron planfree,
+un proyectoBoards inactivo y otro activo dedicado al Oráculo. No se identifica uno
+para el editor. No se reutiliza el proyecto del Oráculo, no se alteran tablas/buckets,
+no se crean proyectos ni se aceptan costes. Sigue pendiente elegir/proveer destino
+cloud adecuado cuando esté operativo el acceso de administración.

@@ -1,3 +1,4 @@
+import {renderProgress} from './render-progress.js';
 import {LocalPrivateStorage} from './private-storage.js';
 import {mkdirSync,readdirSync,readFileSync,writeFileSync,renameSync,openSync,closeSync,unlinkSync} from 'node:fs';
 import {join,resolve} from 'node:path';
@@ -33,7 +34,8 @@ export class EditorJobs{
  save(job){const dir=join(this.directory,job.id),tmp=join(dir,'.job-'+randomUUID()+'.json');mkdirSync(dir,{recursive:true,mode:0o700});writeFileSync(tmp,JSON.stringify(job,null,2)+'\n',{mode:0o600});renameSync(tmp,join(dir,'job.json'));}
  transition(job,state){if(!canTransition(job.state,state))throw new Error(`Invalid transition ${job.state} -> ${state}`);job.state=state;job.updatedAt=now();job.history.push({state,at:job.updatedAt});this.save(job);}
  get(id){this.dir(id);return this.jobs.get(id);}
- view(job){return {id:job.id,profileId:job.profileId,title:job.title,state:job.state,storageReady:!!job.artifact,queuePosition:job.state==='QUEUED'?this.queued().findIndex(j=>j.id===job.id)+1:null,createdAt:job.createdAt,updatedAt:job.updatedAt,settings:job.settings,summary:job.summary,fingerprint:job.fingerprint,error:job.error??null,cancelRequested:job.cancelRequested??false,attempt:job.attempt??0,history:job.history};}
+ view(job){return {id:job.id,profileId:job.profileId,title:job.title,state:job.state,progress:renderProgress(join(this.dir(job.id),'render-'+(job.attempt??1),'ffmpeg-progress.txt'),job.summary?.duration,job.state),storageReady:!!job.artifact,queuePosition:job.state==='QUEUED'?this.queued().findIndex(j=>j.id===job.id)+1:null,createdAt:job.createdAt,updatedAt:job.updatedAt,settings:job.settings,summary:job.summary,fingerprint:job.fingerprint,error:job.error??null,cancelRequested:job.cancelRequested??false,attempt:job.attempt??0,history:job.history};}
+ health(){return {version:'1.0',mode:'local-worker',status:this.closing?'stopping':'available',queue:{rendering:this.children.size,waiting:this.queued().length,saving:this.publishing.size,capacity:this.maxQueued},storage:{provider:'private-local',remote:false},dependencyReadiness:'use-editor-doctor'};}
  list(){return [...this.jobs.values()].map(j=>this.view(j)).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));}
  create(profileId,settings={}){
   if(!Object.hasOwn(this.profiles,profileId))throw new Error('Unknown profile');
