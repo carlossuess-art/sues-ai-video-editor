@@ -14,6 +14,20 @@ Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/comp
 Necesito de Carlos: ejecutar el bloque único de servicio en consola y devolver sólo
 estado-servicio.txt; sin acceso VPS directo en esta sesión. No se ha desplegado.
 
+## Corrección ownershipGit · captura23:01 del17/10
+
+- EjecuciónVPS observada: launcherSHA256OK; preparación falla al comprobar HEAD
+  en fuente.BJjpga/source por «detected dubious ownership». No llegó a medios,
+  doctor o arranque. No prueba de fallo de runtime/npm; no reinstalar.
+- Causa: prepare-source dejó código con UID1000 para runtime, y root comprueba
+  HEAD. Corregido a git -c safe.directory="$SUES_SOURCE" sólo en esa invocación;
+  conserva comprobación deSHA. Sin configuraciónGitglobal ni excepción comodín.
+- PruebaBash exige opción específica; pruebaGitreal reproduce rechazo con hook
+  GIT_TEST_ASSUME_DIFFERENT_OWNER y verifica HEAD y gitconfig intacto.
+- Suite137/137+check+bash-n en desarrollo. VPS: reparación pendiente deejecutar.
+  F5=80%,global48%, costeexternonuevo0. Siguiente: relanzar releasecorregida con
+  dependencias existentes y devolver estado-servicio.txt; medios/HTTPS pendientes.
+
 ## Arranque aislado · bloque vigente17/10 noche
 
 - Base verificada bec11220ee45a2d233d4be281c0ea34e0b648188; instrucciones/maestro

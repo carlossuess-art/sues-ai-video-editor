@@ -14,7 +14,7 @@ SUES_SOURCE=$(cat "$SUES_DIR/fuente-directorio.txt")
 SUES_SOURCE_SHA=$(cat "$SUES_DIR/fuente-commit.txt")
 case "$SUES_SOURCE" in "$SUES_DIR"/fuente.*/source) ;; *) echo 'Ruta de fuente inesperada'; exit 1;; esac
 test ! -L "$SUES_SOURCE"
-test "$(git -C "$SUES_SOURCE" rev-parse HEAD)" = "$SUES_SOURCE_SHA"
+test "$(git -c safe.directory="$SUES_SOURCE" -C "$SUES_SOURCE" rev-parse HEAD)" = "$SUES_SOURCE_SHA"
 test -f "$SUES_SOURCE/node_modules/ajv/package.json"
 cmp "$SUES_SOURCE/package-lock.json" "$SUES_RELEASE/package-lock.json"
 docker image inspect sues-video-runtime:20261017 >/dev/null

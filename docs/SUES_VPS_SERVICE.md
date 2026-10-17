@@ -85,3 +85,15 @@ Siguiente: ejecutar bloque en consola, leer estado-servicio.txt, restaurar medio
 mínimos faltantes y comprobar API→ajuste→render→Range en VPS. Después, con el
 host/proxy observado, conectar dominioHTTPS sin interrumpir WhatsApp. Subida y
 análisis de cualquier vídeo nuevo siguen pendientes; no declarar V1.
+
+## Corrección tras ejecución real · 23:01
+
+CapturaVPS acredita launcherSHAOK y falloGit «dubious ownership» en el checkout
+fuente.BJjpga/source antes de validar medios. El checkout es deUID1000 por diseño;
+root necesita confianza explícita sólo para ese comando. Se añade
+`git -c safe.directory="$SUES_SOURCE" -C "$SUES_SOURCE" rev-parse HEAD`.
+No `git config --global`, wildcard ni cambio depropietario. Se conserva checkSHA.
+PruebaGitreal con hookoficial GIT_TEST_ASSUME_DIFFERENT_OWNER reproduce rechazo
+sin excepción y éxito con excepción exacta; configglobalintacta. FixtureBash exige
+esaopción. Suite137/137+check+bash-n; reparaciónVPS todavía pendiente. No se
+reinstala runtime/npm ni se cambia WA/Caddy. Relanzar launcher fijado acommitnuevo.

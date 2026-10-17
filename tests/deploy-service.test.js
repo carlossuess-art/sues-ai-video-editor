@@ -11,11 +11,29 @@ test('deployment stops at missing private assets, reuses dependencies and never 
   const sha='a'.repeat(40);writeFileSync(join(setup,'fuente-directorio.txt'),source);writeFileSync(join(setup,'fuente-commit.txt'),sha);
   writeFileSync(source+'/node_modules/ajv/package.json','{}');writeFileSync(source+'/package-lock.json','{}');writeFileSync(release+'/package-lock.json','{}');
   writeFileSync(release+'/examples/projects/calma-local.example.json',readFileSync('examples/projects/calma-local.example.json'));
-  for(const [name,script] of Object.entries({git:`echo ${sha}`,docker:'if [ "$1 $2" = "image inspect" ]; then exit 0; fi\nif [ "$1 $2" = "container inspect" ]; then exit 1; fi\necho UNEXPECTED_DOCKER_RUN >&2; exit 90',chown:'exit 0'}))writeFileSync(join(bin,name),'#!/bin/bash\n'+script+'\n',{mode:0o755});
+  for(const [name,script] of Object.entries({git:`[ "$1" = "-c" ] && [ "$2" = "safe.directory=${source}" ] || exit 91\necho ${sha}`,docker:'if [ "$1 $2" = "image inspect" ]; then exit 0; fi\nif [ "$1 $2" = "container inspect" ]; then exit 1; fi\necho UNEXPECTED_DOCKER_RUN >&2; exit 90',chown:'exit 0'}))writeFileSync(join(bin,name),'#!/bin/bash\n'+script+'\n',{mode:0o755});
   const script=readFileSync('scripts/deploy/prepare-service.sh','utf8').replaceAll('/opt/sues-video-setup',setup);writeFileSync(release+'/scripts/deploy/prepare-service.sh',script);
   const result=spawnSync('bash',[release+'/scripts/deploy/prepare-service.sh',setup],{encoding:'utf8',env:{...process.env,PATH:bin+':'+process.env.PATH}});
   assert.equal(result.status,0,result.stderr);assert.match(readFileSync(setup+'/estado-servicio.txt','utf8'),/PENDIENTE MEDIOS/);assert.match(result.stdout,/PENDIENTE: original.mp4/);
   assert.equal(readFileSync(source+'/package-lock.json','utf8'),'{}');assert.ok(!result.stderr.includes('UNEXPECTED_DOCKER_RUN'));
   const config=JSON.parse(readFileSync(setup+'/editor/project.json'));assert.equal(config.sourcePath,'/state/media/original.mp4');assert.equal(config.templatePath,'/app/examples/templates/sues-calma.template.json');
+ }finally{rmSync(root,{recursive:true,force:true});}
+});
+
+
+test('per-invocation safe.directory handles the actual cross-owner Git repository without changing global config',()=>{
+ const root=mkdtempSync(join(tmpdir(),'sues-git-owner-')),source=join(root,'source'),config=join(root,'gitconfig');
+ try{
+  mkdirSync(source);writeFileSync(config,'# Existing operator configuration\n');
+  const env={...process.env,GIT_CONFIG_GLOBAL:config,GIT_CONFIG_NOSYSTEM:'1'};
+  const run=args=>spawnSync('git',args,{encoding:'utf8',env});
+  assert.equal(run(['init','-q',source]).status,0);
+  assert.equal(run(['-C',source,'-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','--allow-empty','-qm','fixture']).status,0);
+  const expected=run(['-C',source,'rev-parse','HEAD']).stdout.trim();
+  // Git's own test hook reproduces ownership rejection without privileged chown.
+  env.GIT_TEST_ASSUME_DIFFERENT_OWNER='1';
+  const blocked=run(['-C',source,'rev-parse','HEAD']);assert.notEqual(blocked.status,0);assert.match(blocked.stderr,/dubious ownership/);
+  const checked=run(['-c','safe.directory='+source,'-C',source,'rev-parse','HEAD']);assert.equal(checked.status,0,checked.stderr);assert.equal(checked.stdout.trim(),expected);
+  assert.equal(readFileSync(config,'utf8'),'# Existing operator configuration\n');
  }finally{rmSync(root,{recursive:true,force:true});}
 });
