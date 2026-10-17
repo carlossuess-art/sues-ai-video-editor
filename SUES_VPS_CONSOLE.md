@@ -44,6 +44,22 @@ el sistema operativo. No asumir que el puerto65529 pertenece al editor.
 
 ## Siguiente paso ejecutable
 
+### Vía vigente: repositorio público y descarga sin login
+
+Carlos autoriza cambiar el repositorio a público y acepta copia/origen del código.
+Se revisaron10ramas/92commits/301blobs sin detectar secretos reales, con la única
+coincidencia enURLAWS deejemploShotstack caducada2023. Ver informe
+docs/PUBLIC_REPOSITORY_REVIEW.md para alcance ylimitaciones.
+
+Cambio aPUBLIC aplicado en navegadorGitHub tras reautenticaciónMobile segura;
+UI yAPIlo confirman. Descarga anónima del scriptf603380... validada conSHA256
+e486f754fe0321239ef7da40dc09a6b5a32f778d33e2650701d7e434322916c5.
+start-public-source.sh permite reanudar preparación pornohup sin loginGH enVPS.
+Las instrucciones deautorizaciónCLI anteriores quedan comoalternativa histórica,
+ya no son necesarias enel flujo vigente. No se borra el binariogh ni se cambia
+ningún archivo decredenciales o configuración deotrosproyectos. Se mantiene
+elruntimeya construido. Pendienteejecución del descargador porCarlos.
+
 ### Acceso pendiente y autorización web · captura08:43
 
 El primer bloque de fuente dejó PENDIENTE y logvacío: no se comprobó acceso con

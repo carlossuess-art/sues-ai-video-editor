@@ -11,11 +11,23 @@ Suite: 133/133 y npm run check (src/scripts/web); Python compile OK.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
-Necesito de Carlos: descargar GitHub CLI y autorizar acceso web desde el VPS;
+Necesito de Carlos: pegar el descargador público enVPS y devolver estado/log;
 aceptación estética pendiente. El trabajo de código puede continuar.
 
 ## Hostinger · procedimiento vigente de consola
 
+- Cambio de estrategia autorizado08:51–08:52: código público y descarga anónima,
+  sin preocupación porcopias/origen. No se añade licencia ni se abren app/VPS/Drive.
+- Revisión:10ramas/92commits/91árboles/301blobs(1.574.928bytes), sin erroreslectura;
+  no credenciales reales detectadas. SóloURLfirmada deejemploShotstack caducada2023.
+  Actions0runs. Informe docs/PUBLIC_REPOSITORY_REVIEW.md con alcance ylimitaciones.
+- VisibilidadPUBLIC confirmada enUI yAPIGitHub. Cambio realizado enajustes de sesión
+  carlossuess-art tras aprobaciónsudoGitHubMobile mediantebrowserAuth seguro.
+  DescargaHTTPS anónima de prepare-source.sh ySHA256 verificados; GitHubCLI enVPS
+  ya no necesita autorización para este flujo. No se abren app/VPS/Drive.
+- scripts/deploy/start-public-source.sh preparado desde snapshotf603380... para
+  prepare-source.sh; SHA256 ynohup. Runtime listo;
+  fuente/app/HTTPS pendientes. F5=80%, global48%.
 - Captura08:43: estado-codigoPENDIENTE, codigo.log vacío. No se pudo comprobar acceso
   existente al repo privado; no hay código descargado por ese bloque. Runtime listo.
 - Preparado GitHub CLIoficial2.102.0/Linuxamd64, descargaHTTPS directa ySHA256 fijado
