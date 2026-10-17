@@ -61,3 +61,26 @@ test('worker exports once, serves byte ranges, and records render cancellation a
 test('changing source bytes invalidates a prepared fingerprint, and configured source SHA is enforced',()=>{
  const f=fixture();try{const before=prepareProject(loadProject(f.profiles.test)).fingerprint;writeFileSync(join(f.dir,'source.mp4'),'different source bytes');const after=prepareProject(loadProject(f.profiles.test)).fingerprint;assert.notEqual(after,before);const config=JSON.parse(readFileSync(f.profiles.test));config.source.sha256='0'.repeat(64);writeFileSync(f.profiles.test,JSON.stringify(config));assert.throws(()=>loadProject(f.profiles.test),/SHA256 mismatch/);}finally{rmSync(f.dir,{recursive:true,force:true});}
 });
+
+test('HTTPS proxy mode pins canonical origin and issues Secure cookies without trusting forwarded headers',async()=>{
+ const directory=mkdtempSync(join(tmpdir(),'sues-proxy-'));
+ const app=createEditorServer({directory,profiles:{},publicOrigin:'https://editor.example.com'});
+ try{
+  assert.ok((await app.listen()).startsWith('https://editor.example.com/#'));
+  const request=(headers={})=>new Promise((r,j)=>{
+   const req=http.request({host:'127.0.0.1',port:app.server.address().port,path:'/api/session',method:'POST',headers:{Host:'editor.example.com',Authorization:'Bearer '+app.token,...headers}},res=>{res.resume();res.on('end',()=>r({status:res.statusCode,cookie:res.headers['set-cookie']?.[0]}));});req.on('error',j);req.end();
+  });
+  const session=await request({Origin:'https://editor.example.com'});assert.equal(session.status,200);assert.match(session.cookie,/; Secure/);assert.match(session.cookie,/HttpOnly/);
+  assert.equal((await request({Origin:'http://editor.example.com'})).status,403);
+  assert.equal((await request({Host:'evil.example','X-Forwarded-Host':'editor.example.com','X-Forwarded-Proto':'https'})).status,403);
+  assert.equal((await request({Origin:'https://evil.example','X-Forwarded-Proto':'https'})).status,403);
+ }finally{await app.close();rmSync(directory,{recursive:true,force:true});}
+});
+
+test('invalid public origins fail before acquiring the jobs directory',async()=>{
+ const directory=mkdtempSync(join(tmpdir(),'sues-origin-'));
+ try{
+  for(const publicOrigin of ['http://editor.example.com','https://editor.example.com/','https://user:pass@editor.example.com','https://editor.example.com/path','https://editor.example.com#key'])assert.throws(()=>createEditorServer({directory,profiles:{},publicOrigin}),/Canonical HTTPS/);
+  const jobs=new EditorJobs({directory,profiles:{}});await jobs.close();
+ }finally{rmSync(directory,{recursive:true,force:true});}
+});

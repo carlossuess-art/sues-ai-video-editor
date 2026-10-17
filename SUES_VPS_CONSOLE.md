@@ -6,6 +6,18 @@ en segundo plano con `nohup`, un log y una forma de consultar su estado. No
 depender de dar acceso directo al asistente. Buscar antes el trabajo de otros
 chats y reutilizar la infraestructura ya instalada.
 
+## Siguiente bloque vigente · servicio aislado
+
+Carlos confirma «Código preparado y comprobado»: fuente informada, no arranque.
+Ver [SUES_VPS_SERVICE.md](docs/SUES_VPS_SERVICE.md). El nuevo launcher recupera una
+release fija y reutiliza runtime/node_modules; no repite instalaciones. Comprueba
+los marcadores de fuenteVPS antes de usarlos. Si faltan original/transcript/fonts,
+registra PENDIENTE MEDIOS y no arranca. Cámara sin inferencia desde datos existentes.
+Con medios/doctorOK prepara contenedor sólo127.0.0.1:3010, privado y limitado.
+HTTPS todavía pendiente; Caddy/WhatsApp sin cambios. Nunca publicar token/medios.
+Bloque de consola único con nohup/log/flock. Consulta:
+`cat /opt/sues-video-setup/estado-servicio.txt`.
+
 ## Inventario histórico recuperado
 
 Fuente: búsqueda de contexto de conversaciones, realizada el 17/10/2026.

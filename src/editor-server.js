@@ -21,7 +21,13 @@ async function body(req){
  const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>65536)throw new Error('Request too large');chunks.push(chunk);}
  const value=JSON.parse(Buffer.concat(chunks).toString());if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin}){
+ let origin;
+ if(publicOrigin){
+  const parsed=new URL(publicOrigin);
+  if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.pathname!=='/'||parsed.search||parsed.hash||parsed.origin!==publicOrigin)throw new Error('Canonical HTTPS origin required');
+  origin=parsed.origin;
+ }
  const jobs=new EditorJobs({directory,profiles,renderer,storage});let expectedHost;
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
  const server=http.createServer(async(req,res)=>{
@@ -29,11 +35,11 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
   res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
   try{
    if(req.headers.host!==expectedHost)return json(res,403,{error:'Host rejected'});
-   if(req.headers.origin&&req.headers.origin!==`http://${expectedHost}`)return json(res,403,{error:'Origin rejected'});
-   const url=new URL(req.url,`http://${expectedHost}`),path=url.pathname;
+   if(req.headers.origin&&req.headers.origin!==origin)return json(res,403,{error:'Origin rejected'});
+   const url=new URL(req.url,origin),path=url.pathname;
    if(path==='/api/session'&&req.method==='POST'){
     if(!eq(req.headers.authorization,`Bearer ${token}`))return json(res,401,{error:'Session required'});
-    res.setHeader('Set-Cookie',`sues_session=${token}; HttpOnly; SameSite=Strict; Path=/`);return json(res,200,{ok:true});
+    res.setHeader('Set-Cookie',`sues_session=${token}; HttpOnly; SameSite=Strict; Path=/${publicOrigin?'; Secure':''}`);return json(res,200,{ok:true});
    }
    if(path.startsWith('/api/')){
     const cookie=/(?:^|;\s*)sues_session=([^;]+)/.exec(req.headers.cookie??'')?.[1];
@@ -76,5 +82,5 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
   }catch(error){if(res.headersSent)return res.destroy();const safe=/not found|Unknown profile/i.test(error.message)?404:/busy|ready|changed|transition|owned|Adjustments|queue full|closing/.test(error.message)?409:400;json(res,safe,{error:error.code?'No se pudo acceder al recurso local configurado':error.message.replaceAll(directory,'[local]')});}
  });
  server.requestTimeout=10000;server.headersTimeout=10000;
- return {jobs,server,token,async listen(){await new Promise((r,j)=>{server.once('error',j);server.listen(port,'127.0.0.1',r);});expectedHost=`127.0.0.1:${server.address().port}`;return `http://${expectedHost}/#${token}`;},async close(){await jobs.close();server.closeIdleConnections();await new Promise(r=>server.close(r));}};
+ return {jobs,server,token,async listen(){await new Promise((r,j)=>{server.once('error',j);server.listen(port,'127.0.0.1',r);});origin??=`http://127.0.0.1:${server.address().port}`;expectedHost=new URL(origin).host;return `${origin}/#${token}`;},async close(){await jobs.close();server.closeIdleConnections();await new Promise(r=>server.close(r));}};
 }

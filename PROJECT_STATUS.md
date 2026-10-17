@@ -11,8 +11,32 @@ Suite: 133/133 y npm run check (src/scripts/web); Python compile OK.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
-Necesito de Carlos: pegar el descargador público enVPS y devolver estado/log;
-aceptación estética pendiente. El trabajo de código puede continuar.
+Necesito de Carlos: ejecutar el bloque único de servicio en consola y devolver sólo
+estado-servicio.txt; sin acceso VPS directo en esta sesión. No se ha desplegado.
+
+## Arranque aislado · bloque vigente17/10 noche
+
+- Base verificada bec11220ee45a2d233d4be281c0ea34e0b648188; instrucciones/maestro
+  recuperados antes de cambiar. Fuente preparada confirmada verbalmente porCarlos;
+  HEAD realVPS/medios/servicio aún no observados. CreatorClub/SFX aplazados.
+- prepare-service.sh verifica fuente-directorio/commit/HEAD, reutiliza node_modules
+  con package-lock idéntico, runtime existente; sin npmci/build/reinstalación.
+  start-public-service.sh recupera release fija separada con nohup/flock/log/estado.
+- Mínimo: original/transcript/OpenSans400/700/OFL privados; cámara desde visión
+  existente sin inferencia. PENDIENTE MEDIOS impide arrancar una app incompleta.
+- Servicio preparado: loopback3010, usuario1000,0,5CPU/1GiB, rootfs/código readonly,
+  estado privado persistente, restartunless-stopped y logs rotados. No Caddy/WA/DNS.
+  Contenedor o puerto existentes se conservan. Doctor previo sin render/ASR/modelos.
+- SoporteHTTPS explícito de operadorúnico: Host/Origin fijados, cookieSecure;
+  X-Forwarded-* no concede confianza. Bind sigue127.0.0.1. HTTPS no configurado.
+  Token persistente enarchivo privado; URL privada fuera del log. No multiusuario.
+- Validado desarrollo:136/136tests+npmruncheck+bash-n. Incluye pruebaHTTP de origen/
+  cookieSecure y fixtureBash de medios ausentes con Docker/Git simulados.
+  NoDocker disponible aquí; no se afirma ejecución ni servicioVPS comprobado.
+- Coste externo nuevo0; F5=80%,global48%. Guía docs/SUES_VPS_SERVICE.md.
+- Siguiente exacto: bloque consola→estado-servicio.txt→restauración mínima privada→
+  doctor/arranque→API/preview/ajuste/exportaciónVPS→HTTPS con proxy observado.
+  Subida/análisis de vídeo nuevo y aceptación estética/V1 siguen pendientes.
 
 ## Hostinger · procedimiento vigente de consola
 
