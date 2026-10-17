@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fetch a pinned source snapshot using existing VPS credentials only.
+# Fetch a pinned source snapshot using existing or explicitly authorized CLI credentials.
 set -Eeuo pipefail
 umask 077
 SUES_DIR=${1:-/opt/sues-video-setup}
@@ -22,9 +22,16 @@ echo 'COMPROBANDO ACCESO AL REPOSITORIO PRIVADO' >"$SUES_DIR/estado-codigo.txt"
 docker image inspect sues-video-runtime:20261017 >/dev/null
 export GIT_TERMINAL_PROMPT=0
 export GIT_SSH_COMMAND='ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=5'
+SUES_GIT=(git -c credential.interactive=false)
+if [ -x "$SUES_DIR/tools/gh" ]; then
+  export GH_CONFIG_DIR="$SUES_DIR/github-auth"
+  if "$SUES_DIR/tools/gh" auth status --hostname github.com >/dev/null 2>&1; then
+    SUES_GIT+=(-c credential.helper= -c "credential.helper=!\"$SUES_DIR/tools/gh\" auth git-credential")
+  fi
+fi
 SUES_URL=''
 for sues_url in https://github.com/carlossuess-art/sues-ai-video-editor.git git@github.com:carlossuess-art/sues-ai-video-editor.git; do
-  if timeout 20 git -c credential.interactive=false ls-remote --exit-code "$sues_url" refs/heads/feat/phase-4-vision-camera >/dev/null 2>&1; then
+  if timeout 20 "${SUES_GIT[@]}" ls-remote --exit-code "$sues_url" refs/heads/feat/phase-4-vision-camera >/dev/null 2>&1; then
     SUES_URL=$sues_url
     break
   fi
@@ -34,7 +41,7 @@ echo 'DESCARGANDO CODIGO' >"$SUES_DIR/estado-codigo.txt"
 SUES_RUN=$(mktemp -d "$SUES_DIR/fuente.XXXXXX")
 git init -q "$SUES_RUN/source"
 git -C "$SUES_RUN/source" remote add origin "$SUES_URL"
-timeout 180 git -C "$SUES_RUN/source" -c credential.interactive=false fetch --quiet --depth 1 origin "$SUES_SHA"
+timeout 180 "${SUES_GIT[@]}" -C "$SUES_RUN/source" fetch --quiet --depth 1 origin "$SUES_SHA"
 git -C "$SUES_RUN/source" -c advice.detachedHead=false checkout --quiet --detach "$SUES_SHA"
 test "$(git -C "$SUES_RUN/source" rev-parse HEAD)" = "$SUES_SHA"
 chown -R 1000:1000 "$SUES_RUN/source"

@@ -44,6 +44,31 @@ el sistema operativo. No asumir que el puerto65529 pertenece al editor.
 
 ## Siguiente paso ejecutable
 
+### Acceso pendiente y autorización web · captura08:43
+
+El primer bloque de fuente dejó PENDIENTE y logvacío: no se comprobó acceso con
+credenciales existentes y no comenzó la descarga del código. No se determina si
+la causa exacta fue credencial, permiso, red o comprobación dehostSSH.
+
+prepare-github-cli.sh descarga el binario oficial gh2.102.0/Linuxamd64 y compara
+SHA256bb766f710eef8ede859c18578c72c327597cd4c8a85b06001b1f3843c6019386
+publicado enAPIreleaseCLI. Se instala únicamente en tools/gh bajo el directorio
+privado; no apt, servicios, SSHkeys ni loginautomático. Estado/log separados.
+
+Carlos ejecuta authlogin --hostnamegithub.com --git-protocolhttps --web desde
+terminal interactivo. Config en /opt/sues-video-setup/github-auth (0700/umask077).
+GIT_CONFIG_GLOBAL apunta a github-auth/gitconfig durante login para aislar cualquier
+configuración automática y conservar la configuraciónGit deotros proyectos. Si no
+hay gestor de credenciales, gh puede guardar el token enarchivo privado; no se
+imprime ni se envía alchat. La autorización se realiza sólo en GitHub, con la cuenta
+carlossuess-art. No solicitar contraseñas/tokens enchat ni ocultar permisosOAuth.
+
+Tras autorizar se recupera prepare-source.sh del commit deeste bloque mediante
+ghapi autenticado, base64decode y bash-n, y se ejecuta por nohup. La versión nueva
+usa helpergh explícito porinvocación deGit y resetea otroshelpers sólo enesa
+invocación. No monta el directorioauth en el contenedor de npm/tests.
+Descarga/login/fuente pendientes deCarlos; no se afirma autenticación ni despliegue.
+
 ### Código: siguiente bloque en segundo plano
 
 Captura08:21 confirma DEPENDENCIAS PREPARADAS/CORRECCIÓN TERMINADA: la reparación

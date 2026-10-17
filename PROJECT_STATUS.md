@@ -11,11 +11,20 @@ Suite: 133/133 y npm run check (src/scripts/web); Python compile OK.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
-Necesito de Carlos: ejecutar preparación de código VPS y devolver estado/log;
+Necesito de Carlos: descargar GitHub CLI y autorizar acceso web desde el VPS;
 aceptación estética pendiente. El trabajo de código puede continuar.
 
 ## Hostinger · procedimiento vigente de consola
 
+- Captura08:43: estado-codigoPENDIENTE, codigo.log vacío. No se pudo comprobar acceso
+  existente al repo privado; no hay código descargado por ese bloque. Runtime listo.
+- Preparado GitHub CLIoficial2.102.0/Linuxamd64, descargaHTTPS directa ySHA256 fijado
+  bb766f710eef8ede859c18578c72c327597cd4c8a85b06001b1f3843c6019386 (APIrelease).
+  Sólo binario en/opt/sues-video-setup/tools/gh; sin apt ni acceso automático. Login
+  webinteractivo porCarlos, config privada github-auth, GIT_CONFIG_GLOBAL aislado.
+  prepare-source.sh soporta helpergh porinvocación, sin tocar gitconfigglobal real
+  ni pasar tokens/montar credenciales dentro del contenedor. Implementación pendiente
+  de ejecución enVPS. Laautorizaciónweb requiere intervención deCarlos.
 - Captura08:21 confirmaDEPENDENCIAS PREPARADAS yCORRECCIÓN TERMINADA. El ERROR
   anterior permanece enlog histórico; la reparación sí terminó. Imagenruntime lista.
 - Siguiente bloque scripts/deploy/prepare-source.sh: pruebaaccesos existentesHTTPS/
