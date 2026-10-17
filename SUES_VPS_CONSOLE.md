@@ -28,6 +28,20 @@ instalado Cobalt/FFmpeg/faster-whisper: constaban propuestas, sin prueba de inst
 Las propuestas históricas de Python/FastAPI no sustituyen la implementación
 vigente del editor en Node + worker Python/FFmpeg.
 
+## Inventario actual recibido · 17/10/2026
+
+Fuente: capturas de Carlos del informe ejecutado aproximadamente06:00–06:04UTC.
+Host srv1841004, Ubuntu24.04.4 LTS x86_64, kernel6.8.0-136-generic. 1CPU,
+RAM3,8GiB/~3,1GiB disponible, swap0, disco48G con40G libres. Git2.43.0,
+curl8.5.0, rsync3.2.7, Python3.12.3; Docker29.6.2 y Composev5.3.1.
+Node/npm/FFmpeg/ffprobe/gh no instalados en el host.
+
+Activos: sues-whatsapp-whatsapp-connector-1 (127.0.0.1:3001, Up2days) y
+sues-whatsapp-caddy-1 (caddy:2.10-alpine, 80/443, Up2months). Red
+sues-whatsapp_default. Otros listeners:22, DNSlocal53 y127.0.0.1:65529.
+El banner indica reinicio pendiente; este procedimiento no reinicia ni actualiza
+el sistema operativo. No asumir que el puerto65529 pertenece al editor.
+
 ## Siguiente paso ejecutable
 
 `scripts/deploy/inspect-vps.sh` hace una lectura breve del inventario actual sin
@@ -35,8 +49,25 @@ instalar, descargar, reiniciar ni cambiar aplicaciones. No imprime variables de
 entorno, configuración Compose/Caddy, volúmenes, credenciales ni argumentos de
 procesos. Se puede pegar directamente su contenido en la consola.
 
-Con la salida se preparará un instalador específico en segundo plano, con
-directorio propio del editor y log/PID. Todavía no existe un despliegue del editor
+Con esa salida se ha preparado `scripts/deploy/prepare-runtime.sh`: construye
+`sues-video-runtime:20261017` desde la imagen oficial Node22/Bookworm-slim, con
+Python3, FFmpeg/ffprobe, fontconfig y certificados dentro de la imagen. No instala
+paquetes en el host, no publica puertos y no cambia Caddy/WhatsApp.
+
+Lanzar con nohup y log/PID en `/opt/sues-video-setup`; guarda `estado.txt` con
+éxito/error y huellas de imagen/base. Bloqueo flock evita construcciones simultáneas
+del mismo script. El bloque pegable entrega el script por stdin de nohup y añade
+salida al log (`>>`) sin sobrescribirlo. No necesita conservar variables de sesión.
+Exige5GiB libres antes de construir. La comprobación temporal usa usuario node,
+sin red, raíz de solo lectura,0,5CPU/768MiB y tmpfs32MiB: Node22+, hashlib,
+fontconfig, filtrosASS/perspective/audio y mini codificación/decodificación H264/AAC.
+La construcción de Docker usa los recursos normales del daemon; no se afirma que
+esté limitada a0,5CPU. No descarga modelos, vídeos ni credenciales.
+
+Sintaxis Bash verificada aquí; Docker no está disponible en este entorno, por lo
+que construcción y comprobación del contenedor quedan pendientes de la ejecución
+del bloque por Carlos. Las133pruebas de aplicación siguen siendo las del hito previo.
+Este paso prepara dependencias; todavía no existe un despliegue del editor
 en este VPS. El acceso al repositorio privado y a los vídeos/fonts persistidos
 debe resolverse con un mecanismo autenticado real, sin URLs inventadas ni tokens
 pegados en el chat. La aplicación actual escucha en loopback y requiere trabajo

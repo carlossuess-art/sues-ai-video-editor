@@ -11,11 +11,19 @@ Suite: 133/133 y npm run check (src/scripts/web); Python compile OK.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
-Necesito de Carlos: salida del inventario actual para preparar el instalador VPS;
+Necesito de Carlos: ejecutar preparación de dependencias VPS y devolver estado/log;
 aceptación estética pendiente. El trabajo de código puede continuar.
 
 ## Hostinger · procedimiento vigente de consola
 
+- Capturas actuales recibidas17/10: srv1841004 Ubuntu24.04.4/x86_64,1CPU,
+  RAM3,8GiB/~3,1disponible, swap0, disco40Glibres; Docker29.6.2/Compose5.3.1,
+  Python3.12.3. Node/npm/FFmpeg/ffprobe/gh ausentes delhost. WhatsApp yCaddy activos,
+  red sues-whatsapp_default, puertos3001/80/443 coinciden con el histórico.
+- Preparado scripts/deploy/prepare-runtime.sh: imagen aisladaNode22+Python+FFmpeg+
+  fontconfig, sin paquetes enhost/puertos/reinicios. nohup/log/PID/estado persistente,
+  flock, mínimo5GiB, verificación temporal sinred y miniH264/AAC. Bash-n OK; noDocker
+  enentorno local, build/smoke deimagen pendientes deCarlos. Todavía no desplegado.
 - Carlos pide bloques completos para pegar en la consola web; descargas y tareas
   largas en segundo plano con nohup, log y consulta de estado. No depender del
   acceso directo del asistente. Esta instrucción sustituye el bloqueo de acceso.
@@ -25,8 +33,8 @@ aceptación estética pendiente. El trabajo de código puede continuar.
 - Detalle histórico y fechas enSUES_VPS_CONSOLE.md. No son comprobación actual.
   scripts/deploy/inspect-vps.sh permite actualizarlo sin instalaciones/reinicios,
   config/secretos ni cambios en WhatsApp. No se ejecutó en el VPS desde aquí.
-- Se preparará despliegue separado tras conocer capacidad/puertos actuales y vía
-  autenticada para fuente privada/assets. Ninguna instalación o publicación hecha.
+- Capacidad/puertos recibidos; falta preparar dependencias y vía autenticada para
+  fuente privada/assets antes del despliegue separado. Ninguna publicación hecha.
 - Cambio de procedimiento documentado; F5=80%, global48%, sin cierre adicional.
 
 ## Revisión editorial · hito vigente
