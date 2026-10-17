@@ -4,16 +4,40 @@ FASE 5/10 · BRAND KIT + TEMPLATE ENGINE
 Progreso fase: 80 % (estimación técnica; estética provisional).
 Progreso global: 48 % = F1–F4 (40 %) + 80 % del peso F5 (8 %).
 Rama oficial: feat/phase-4-vision-camera.
-Base de este bloque: c390c3c7c5d3d7207f2b064cd7ac10c462e26e07.
-Último hito: cola FIFO persistente integrada en app, contrato de worker local y
-validación independiente de artefactos. Dos exportaciones FFmpeg reales en serie OK.
-Suite: 119/119 y npm run check (src/scripts/web); Python compile OK.
+Base de este bloque: 40ca9e24ca87b4e619378814529db79e63df30c6.
+Último hito: objetos privados, guardado reintentable sin otro render y recuperación
+de exportaciones tras reinicio. Dos MP4 reales servidos después de retirar temporales.
+Suite: 125/125 y npm run check (src/scripts/web); Python compile OK.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
 Necesito de Carlos: nada para seguir código; aceptación estética pendiente.
 
-## Cola y worker · bloque vigente
+## Almacén privado y recuperación · hito vigente
+
+- src/private-storage.js: objetos SHA256 por ámbito técnico owner/project, copias
+  por bloques, creación exclusiva, deduplicación, modo700/600, límite256MiB por objeto.
+  Rechaza escapes, symlinks, scopes ajenos y hash/tamaño/tipo/permisos alterados.
+- Backend local usa owner local-session y project UUIDdel job. No autenticación
+  multiusuario, cifrado en reposo ni almacenamiento cloud remoto. No URLs públicas.
+- RENDERING→PUBLISHING→DONE sólo tras archivar/verificar MP4+auditoría. Descarga/auditoría
+  resuelven referencias privadas. DONE legacy mantiene ruta previa sin migración ciega.
+- PUBLISH_FAILED permite reintentar guardado con mismo intento, sin FFmpeg/ASR/visión.
+  UI tiene estado de guardado y botón específico. Render inválido sigueFAILED.
+- Reinicio adopta render completo si request, job, fingerprint/digest, rutas, fuente,
+  MP4 y auditoría concuerdan; archiva sin nuevo worker. Incompleto quedaFAILED.
+- 125/125 tests; smoke real2MP4 sintéticos130.823bytes, archivados, temporales retirados
+  sólo en fixture, servidor reiniciado y descargaRange206/auditorías con hashes
+  originales. Cero renders adicionales. Fuente sintética intacta; no nuevo vídeoCarlos.
+- Evidencia examples/preview/storage-recovery.synthetic-result.json; guía
+  docs/SUES_PRIVATE_STORAGE.md; script scripts/app/smoke_storage_recovery.mjs.
+- Hostinger:9servidores registrados, pero no hay toolsVPS/hosting expuestas/callables.
+  SóloAIBuilder. No se cambió configuración, VPS, DNS ni permisos. No se hacefallback
+  por SSH/API manual para evitar la capacidad ausente. Despliegue no ejecutado.
+- Coste externo nuevo0USD; F5 sigue80%,global48%, avancesF8 sin cerrar fases.
+  Almacén disco de Work persiste ante reinicio de app, no ante pérdida del host.
+
+## Cola y worker · bloque anterior
 
 - src/editor-jobs.js añade QUEUED persistente, orden monotónico y posición pública.
   Un worker activo, hasta16 en espera; límite configurable por operador1..100.
@@ -186,14 +210,11 @@ fases cerradas. Hay UI/backend local persistente; no despliegue público ni E2E 
 
 ## Siguiente acción exacta
 
-Leer maestro + este estado + docs/SUES_RENDER_QUEUE.md y SUES_LOCAL_EDITOR.md.
-Continuar desde esta rama, sin proyecto nuevo. Hay cola local persistente + contrato
-worker; queda adaptar a cola/almacenamiento privado cloud y HTTPS/auth/aislamiento.
-Locks valen para un host/PID namespace compartido, no para réplicas distribuidas.
-No publicar el servidor loopback con un túnel como si fuera producto cloud terminado.
+Leer maestro + estado + SUES_PRIVATE_STORAGE.md. Continuar app existente. Siguiente
+bloque: progreso real de FFmpeg visible en app y diagnósticos, sin inferencia nueva.
+Para despliegue falta acceso callable de administraciónVPS, revisión de destino y
+HTTPS/autorización; no tratar el harness loopback como web pública ya terminada.
 
-F5 sigue80%,global48%; avancesF7/F8 sin cierre. Aceptación estética y QA visual de app
-pendientes antes de cerrarF5/F9. Director sigue léxico, no comprensión semántica IA.
-No repetir MediaPipe1.1.1 bloqueado ni ASR de pago por defecto. Recursos propios de
-B-roll/música siguen sin seleccionar. Se puede continuar sin coste con adaptadores,
-contratos de storage/cola y seguridad del worker. Necesito de Carlos: nada ahora.
+F5 sigue80%,global48%; estética/QA visual pendientes antes de cerrarF5/F9. Director
+sigue léxico. No repetir MediaPipe1.1.1 bloqueado ni ASR de pago por defecto. Recursos
+propios deB-roll/música sin seleccionar. No suscripciones ni compras nuevas.

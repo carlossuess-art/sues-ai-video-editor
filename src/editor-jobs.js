@@ -1,33 +1,39 @@
+import {LocalPrivateStorage} from './private-storage.js';
 import {mkdirSync,readdirSync,readFileSync,writeFileSync,renameSync,openSync,closeSync,unlinkSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {randomUUID} from 'node:crypto';
-import {bundleDigest,startLocalRender,validateRenderResult} from './render-worker.js';
+import {bundleDigest,startLocalRender,validateRenderResult,validateRenderRequest} from './render-worker.js';
 import {loadProject,prepareProject,writePreparedBundle,RENDER_SCRIPT,fileSha256} from './local-pipeline.js';
 import {buildPreviewASS,buildPreviewFilter} from './local-preview.js';
 import {canTransition} from './app-contract.js';
 const ID=/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
 const now=()=>new Date().toISOString();
 export class EditorJobs{
- constructor({directory,profiles,renderer=RENDER_SCRIPT,maxQueued=16,autoStart=true}){
+ constructor({directory,profiles,renderer=RENDER_SCRIPT,maxQueued=16,autoStart=true,storage}){
   if(!Number.isInteger(maxQueued)||maxQueued<1||maxQueued>100)throw new Error('maxQueued 1..100');
   this.maxQueued=maxQueued;this.autoStart=autoStart;this.closing=false;this.retryTimer=null;
   this.directory=resolve(directory);this.profiles=profiles;this.renderer=renderer;this.children=new Map();this.jobs=new Map();
   mkdirSync(this.directory,{recursive:true,mode:0o700});
   this.storeLock=this.acquireLock('store.lock');
+  this.storage=storage??new LocalPrivateStorage({directory:join(this.directory,'private-objects')});this.publishing=new Set();const recover=[];
   for(const id of readdirSync(this.directory).filter(id=>ID.test(id))){
    const job=JSON.parse(readFileSync(join(this.directory,id,'job.json'),'utf8'));this.jobs.set(id,job);
+   if(['PUBLISHING','RENDERING'].includes(job.state)){
+    try{validateRenderResult(this.requestFor(job));if(job.state==='RENDERING')this.transition(job,'PUBLISHING');recover.push(job);continue;}catch(error){if(job.state==='PUBLISHING'){job.error='Guardado interrumpido: '+error.message;this.transition(job,'PUBLISH_FAILED');continue;}}
+   }
    if(['ANALYZING','PLANNED','ADJUSTING','RENDERING'].includes(job.state)){
     job.state='FAILED';job.error='El worker se interrumpió. Puedes volver a exportar.';job.history.push({state:'FAILED',at:now(),reason:'worker-restart'});this.save(job);
    }
   }
   this.nextQueueOrder=Math.max(0,...[...this.jobs.values()].map(j=>j.queueOrder??0))+1;
+  for(const job of recover)setImmediate(()=>this.publish(job));
   if(autoStart)setImmediate(()=>this.drain());
  }
  dir(id){if(!ID.test(id)||!this.jobs.has(id))throw new Error('Job not found');return join(this.directory,id);}
  save(job){const dir=join(this.directory,job.id),tmp=join(dir,'.job-'+randomUUID()+'.json');mkdirSync(dir,{recursive:true,mode:0o700});writeFileSync(tmp,JSON.stringify(job,null,2)+'\n',{mode:0o600});renameSync(tmp,join(dir,'job.json'));}
  transition(job,state){if(!canTransition(job.state,state))throw new Error(`Invalid transition ${job.state} -> ${state}`);job.state=state;job.updatedAt=now();job.history.push({state,at:job.updatedAt});this.save(job);}
  get(id){this.dir(id);return this.jobs.get(id);}
- view(job){return {id:job.id,profileId:job.profileId,title:job.title,state:job.state,queuePosition:job.state==='QUEUED'?this.queued().findIndex(j=>j.id===job.id)+1:null,createdAt:job.createdAt,updatedAt:job.updatedAt,settings:job.settings,summary:job.summary,fingerprint:job.fingerprint,error:job.error??null,cancelRequested:job.cancelRequested??false,attempt:job.attempt??0,history:job.history};}
+ view(job){return {id:job.id,profileId:job.profileId,title:job.title,state:job.state,storageReady:!!job.artifact,queuePosition:job.state==='QUEUED'?this.queued().findIndex(j=>j.id===job.id)+1:null,createdAt:job.createdAt,updatedAt:job.updatedAt,settings:job.settings,summary:job.summary,fingerprint:job.fingerprint,error:job.error??null,cancelRequested:job.cancelRequested??false,attempt:job.attempt??0,history:job.history};}
  list(){return [...this.jobs.values()].map(j=>this.view(j)).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));}
  create(profileId,settings={}){
   if(!Object.hasOwn(this.profiles,profileId))throw new Error('Unknown profile');
@@ -72,7 +78,8 @@ export class EditorJobs{
  }
  render(id){
   if(this.closing)throw new Error('Worker is closing');
-  const job=this.get(id);if(['QUEUED','RENDERING','DONE'].includes(job.state))return this.view(job);
+  const job=this.get(id);if(['QUEUED','RENDERING','PUBLISHING','DONE'].includes(job.state))return this.view(job);
+  if(job.state==='PUBLISH_FAILED'){this.publish(job);return this.view(job);}
   if(!['PREVIEW_READY','FAILED'].includes(job.state)||!job.bundle)throw new Error('Job is not ready to render');
   if(this.queued().length>=this.maxQueued)throw new Error('Render queue full');
   this.validatePrepared(job);job.queueOrder=this.nextQueueOrder++;job.enqueuedAt=now();job.cancelRequested=false;delete job.error;
@@ -101,7 +108,7 @@ export class EditorJobs{
     if(!this.children.has(id))return;this.children.delete(id);try{unlinkSync(lock);}catch{}
     if(job.cancelRequested){job.error='Exportación cancelada';this.transition(job,'CANCELLED');}
     else{
-     try{if(code!==0||error)throw new Error('Exportación fallida; consulta el registro local del trabajo');validateRenderResult(request);this.transition(job,'DONE');}
+     try{if(code!==0||error)throw new Error('Exportación fallida; consulta el registro local del trabajo');validateRenderResult(request);this.publish(job);return;}
      catch(failure){job.error=failure.message;this.transition(job,'FAILED');}
     }
     setImmediate(()=>this.drain());
@@ -118,7 +125,30 @@ export class EditorJobs{
   }
   if(job.state!=='CANCELLED')this.transition(job,'CANCELLED');return this.view(job);
  }
- media(id){const job=this.get(id);if(job.state!=='DONE')throw new Error('Video not ready');return join(this.dir(id),job.output);}
- audit(id){const p=this.media(id);return JSON.parse(readFileSync(p.replace(/\.mp4$/,'.audit.json'),'utf8'));}
- async close(){this.closing=true;clearTimeout(this.retryTimer);const waits=[];for(const [id,child]of this.children){waits.push(new Promise(r=>child.once('close',r)));this.cancel(id);}await Promise.all(waits);if(this.storeLock){unlinkSync(this.storeLock);this.storeLock=null;}}
+ storageContext(job){return {ownerId:'local-session',projectId:job.id};}
+ requestFor(job){
+  if(!Number.isInteger(job.attempt)||job.attempt<1||!/^bundle-\d+$/.test(job.bundle))throw new Error('Missing render provenance');
+  const root=this.dir(job.id),request=JSON.parse(readFileSync(join(root,'render-'+job.attempt,'render-request.json'),'utf8'));validateRenderRequest(request);
+  const project=loadProject(this.profiles[job.profileId]);
+  if(request.jobId!==job.id||request.attempt!==job.attempt||request.fingerprint!==job.fingerprint||request.bundleDigest!==job.bundleDigest||request.bundle!==join(root,job.bundle)||request.output!==join(root,'render-'+job.attempt,'preview.mp4')||request.source!==project.sourcePath||request.sourceSha256!==project.boundHashes.source||request.duration!==job.summary.duration)throw new Error('Render provenance mismatch');
+  return request;
+ }
+ async publish(job){
+  if(this.publishing.has(job.id)||this.closing)return;
+  this.publishing.add(job.id);
+  try{
+   if(job.state!=='PUBLISHING')this.transition(job,'PUBLISHING');
+   const request=this.requestFor(job),audit=validateRenderResult(request),context=this.storageContext(job);
+   const video=await this.storage.put(request.output,context,{mediaType:'video/mp4'});
+   if(video.key!=='sha256:'+audit.outputSha256||video.bytes!==audit.bytes)throw new Error('Stored video differs from render audit');
+   await this.storage.resolve(video,context);
+   const auditObject=await this.storage.put(request.output.replace(/\.mp4$/,'.audit.json'),context,{mediaType:'application/json'}),auditPath=await this.storage.resolve(auditObject,context);
+   if(JSON.stringify(JSON.parse(readFileSync(auditPath,'utf8')))!==JSON.stringify(audit))throw new Error('Stored audit differs from validated audit');
+   job.artifact=video;job.auditArtifact=auditObject;delete job.error;this.transition(job,'DONE');
+  }catch(error){job.error='Guardado pendiente: '+error.message;this.transition(job,'PUBLISH_FAILED');}
+  finally{this.publishing.delete(job.id);setImmediate(()=>this.drain());}
+ }
+ async media(id){const job=this.get(id);if(job.state!=='DONE')throw new Error('Video not ready');if(job.artifact)return this.storage.resolve(job.artifact,this.storageContext(job));return join(this.dir(id),job.output);}
+ async audit(id){const job=this.get(id);if(job.state!=='DONE')throw new Error('Video not ready');const path=job.auditArtifact?await this.storage.resolve(job.auditArtifact,this.storageContext(job)):(await this.media(id)).replace(/\.mp4$/,'.audit.json');return JSON.parse(readFileSync(path,'utf8'));}
+ async close(){this.closing=true;clearTimeout(this.retryTimer);const waits=[];for(const [id,child]of this.children){waits.push(new Promise(r=>child.once('close',r)));this.cancel(id);}await Promise.all(waits);while(this.publishing.size)await new Promise(r=>setTimeout(r,10));if(this.storeLock){unlinkSync(this.storeLock);this.storeLock=null;}}
 }

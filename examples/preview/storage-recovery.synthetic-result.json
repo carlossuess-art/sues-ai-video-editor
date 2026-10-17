@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "fixture": "synthetic blue + gated440Hz; not Carlos voice",
+  "afterServerRestart": true,
+  "servedWithoutRuntimeRenderFiles": true,
+  "newRenderAttempts": 0,
+  "externalCostUSD": 0,
+  "records": [
+    {
+      "id": "b2dc2ea4-a38b-46ed-84c5-1e430a5fde44",
+      "state": "DONE",
+      "storageReady": true,
+      "renderDirectoryRemoved": true,
+      "attempts": 1,
+      "rangeStatus": 206,
+      "bytes": 130823,
+      "outputSha256": "27381ccab4ab2a43dea049e957305b4ae822661657001beed9e5d13dcbd3d22c"
+    },
+    {
+      "id": "a8b71f17-6b05-4fae-8f83-c25c2a7ab08f",
+      "state": "DONE",
+      "storageReady": true,
+      "renderDirectoryRemoved": true,
+      "attempts": 1,
+      "rangeStatus": 206,
+      "bytes": 130823,
+      "outputSha256": "27381ccab4ab2a43dea049e957305b4ae822661657001beed9e5d13dcbd3d22c"
+    }
+  ],
+  "browserVisualQA": false,
+  "humanAcceptance": false
+}

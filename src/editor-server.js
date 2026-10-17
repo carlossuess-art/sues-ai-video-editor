@@ -21,8 +21,8 @@ async function body(req){
  const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>65536)throw new Error('Request too large');chunks.push(chunk);}
  const value=JSON.parse(Buffer.concat(chunks).toString());if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer}){
- const jobs=new EditorJobs({directory,profiles,renderer});let expectedHost;
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage}){
+ const jobs=new EditorJobs({directory,profiles,renderer,storage});let expectedHost;
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
  const server=http.createServer(async(req,res)=>{
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Cross-Origin-Resource-Policy','same-origin');
@@ -55,11 +55,11 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
     if(!action&&req.method==='PATCH')return json(res,200,jobs.adjust(id,(await body(req)).settings));
     if(action==='plan'&&req.method==='GET')return json(res,200,jobs.plan(id));
-    if(action==='audit'&&req.method==='GET')return json(res,200,jobs.audit(id));
+    if(action==='audit'&&req.method==='GET')return json(res,200,await jobs.audit(id));
     if(action==='render'&&req.method==='POST')return json(res,202,jobs.render(id));
     if(action==='cancel'&&req.method==='POST')return json(res,202,jobs.cancel(id));
     if(action==='media'&&['GET','HEAD'].includes(req.method)){
-     const file=jobs.media(id),size=statSync(file).size;let range;
+     const file=await jobs.media(id),size=statSync(file).size;let range;
      try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
      res.setHeader('Content-Type','video/mp4');res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);
      if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);

@@ -17,6 +17,6 @@ try{
  job=await request('jobs/'+job.id);if(job.state!=='DONE'||job.fingerprint!==fingerprint)throw new Error('Unexpected final state');
  const audit=await request('jobs/'+job.id+'/audit');if(!audit.sourcePreserved||audit.fullDecode!=='pass'||!audit.audioPresent)throw new Error('Invalid render audit');
  const media=await fetch(base+'/api/jobs/'+job.id+'/media',{headers:{Cookie:cookie,Range:'bytes=0-1023'}});const bytes=Buffer.from(await media.arrayBuffer());if(media.status!==206||bytes.length!==1024||bytes.toString('ascii',4,8)!=='ftyp')throw new Error('MP4 range delivery failed');
- const result={version:'1.0',jobId:job.id,state:job.state,summary:job.summary,fingerprint,renderAttempts:job.attempt,range:{status:media.status,bytes:bytes.length},audit,video:app.jobs.media(job.id),browserVisualQA:'not performed: browser cannot reach worker loopback',humanAcceptance:false,externalCostUSD:0};
+ const result={version:'1.0',jobId:job.id,state:job.state,summary:job.summary,fingerprint,renderAttempts:job.attempt,range:{status:media.status,bytes:bytes.length},audit,video:await app.jobs.media(job.id),browserVisualQA:'not performed: browser cannot reach worker loopback',humanAcceptance:false,externalCostUSD:0};
  writeFileSync(join(resolve(directory),'real-smoke-result.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));
 }catch(e){console.error(e.message);process.exitCode=1;}finally{await app.close();}

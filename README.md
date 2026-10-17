@@ -11,7 +11,7 @@ Leer primero este documento y `PROJECT_STATUS.md` para continuar.
 ## Estado ejecutable actual
 
 Leer PROJECT_STATUS.md antes de cambiar el proyecto. F5 estética provisional;
-no declarar V1 ni aceptación humana. Suite119 tests. Sólo CALMA tiene renderer
+no declarar V1 ni aceptación humana. Suite125 tests. Sólo CALMA tiene renderer
 integrado; otros estilos conservan contratos iniciales.
 
 Con medios y análisis previamente preparados:
@@ -37,6 +37,10 @@ La exportación admite una cola persistente FIFO (un worker activo y hasta16 en
 espera). La UI muestra posición y permite cancelar. Un resultado sólo pasa aDONE
 tras comprobar MP4, auditoría, hash/tamaño/duración y fuente/bundle intactos.
 [Cola y contrato del worker](docs/SUES_RENDER_QUEUE.md).
+
+Los MP4 nuevos y sus auditorías se archivan en objetos privados por trabajo.
+Si falla el guardado se reintenta sin repetir el render; tras reinicio se pueden
+recuperar renders completos. [Almacén privado](docs/SUES_PRIVATE_STORAGE.md).
 
 ## Ruta histórica: POC cloud de Fase2
 

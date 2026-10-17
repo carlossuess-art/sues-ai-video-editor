@@ -1,3 +1,4 @@
+import {worker} from './helpers/render-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {writeFileSync,readFileSync,rmSync} from 'node:fs';
@@ -6,17 +7,6 @@ import {fixture} from './helpers/editor-fixture.js';
 import {EditorJobs} from '../src/editor-jobs.js';
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 async function until(test){const end=Date.now()+6000;while(!test()){if(Date.now()>end)throw new Error('Queue did not settle');await delay(20);}}
-function worker(f,{badFirst=false}={}){
- const script=join(f.dir,'worker.py');writeFileSync(script,`import pathlib,sys,time,json,hashlib
-p=pathlib.Path(sys.argv[sys.argv.index('--out')+1]);s=pathlib.Path(sys.argv[sys.argv.index('--source')+1]);time.sleep(.15)
-marker=p.parents[2]/'first-seen'
-bad=${badFirst?'True':'False'} and not marker.exists()
-marker.write_text('seen')
-p.write_bytes(b'0000ftyp89')
-audit={'version':'1.0','sourcePreserved':True,'fullDecode':'pass','sourceSha256':hashlib.sha256(s.read_bytes()).hexdigest(),'outputSha256':('0'*64 if bad else hashlib.sha256(p.read_bytes()).hexdigest()),'bytes':10,'video':{'codec':'h264','width':1080,'height':1920,'fps':'30/1'},'durationEncoded':24,'audioPresent':True}
-p.with_suffix('.audit.json').write_text(json.dumps(audit))
-`);return script;
-}
 test('FIFO queue survives shutdown, restores order, executes once and ignores repeated submission',async()=>{
  const f=fixture(),directory=join(f.dir,'jobs'),renderer=worker(f);let jobs=new EditorJobs({directory,profiles:f.profiles,renderer,autoStart:false});
  try{
@@ -38,7 +28,7 @@ test('zero exit with mismatched artifact audit fails closed and queue continues 
  const f=fixture(),jobs=new EditorJobs({directory:join(f.dir,'jobs'),profiles:f.profiles,renderer:worker(f,{badFirst:true})});
  try{
   const a=jobs.create('test'),b=jobs.create('test');jobs.render(a.id);jobs.render(b.id);await until(()=>jobs.get(b.id).state==='DONE');
-  assert.equal(jobs.get(a.id).state,'FAILED');assert.match(jobs.get(a.id).error,/checksum/);assert.equal(jobs.get(a.id).attempt,1);assert.throws(()=>jobs.media(a.id),/not ready/);
+  assert.equal(jobs.get(a.id).state,'FAILED');assert.match(jobs.get(a.id).error,/checksum/);assert.equal(jobs.get(a.id).attempt,1);await assert.rejects(jobs.media(a.id),/not ready/);
  }finally{await jobs.close();rmSync(f.dir,{recursive:true,force:true});}
 });
 test('tampered queued bundle is rejected before launch while following job proceeds',async()=>{

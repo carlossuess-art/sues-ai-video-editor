@@ -46,7 +46,7 @@ test('worker exports once, serves byte ranges, and records render cancellation a
   const launch=await app.listen(),url=launch.split('/#')[0],session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}}),headers={Cookie:session.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor'};
   const job=app.jobs.create('test');assert.equal(app.jobs.render(job.id).attempt,1);assert.equal(app.jobs.render(job.id).attempt,1);
   const second=app.jobs.create('test');assert.equal(app.jobs.render(second.id).state,'QUEUED');assert.equal(app.jobs.render(second.id).queuePosition,1);
-  await new Promise((r,j)=>{const child=app.jobs.children.get(job.id);child.once('close',code=>code===0?r():j(new Error('fixture worker failed')));});assert.equal(app.jobs.get(job.id).state,'DONE');assert.equal(app.jobs.render(job.id).attempt,1);
+  await new Promise((r,j)=>{const child=app.jobs.children.get(job.id);child.once('close',code=>code===0?r():j(new Error('fixture worker failed')));});while(app.jobs.get(job.id).state==='PUBLISHING')await new Promise(r=>setTimeout(r,10));assert.equal(app.jobs.get(job.id).state,'DONE');assert.equal(app.jobs.render(job.id).attempt,1);
   let response=await fetch(url+'/api/jobs/'+job.id+'/media',{headers:{...headers,Range:'bytes=2-5'}});assert.equal(response.status,206);assert.equal(await response.text(),'00ft');
   response=await fetch(url+'/api/jobs/'+job.id+'/media',{headers:{...headers,Range:'bytes=99-'}});assert.equal(response.status,416);
   app.jobs.render(second.id);const child=app.jobs.children.get(second.id);app.jobs.cancel(second.id);if(child)await new Promise(r=>child.once('close',r));assert.equal(app.jobs.get(second.id).state,'CANCELLED');
