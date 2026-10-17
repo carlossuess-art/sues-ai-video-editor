@@ -44,6 +44,21 @@ el sistema operativo. No asumir que el puerto65529 pertenece al editor.
 
 ## Siguiente paso ejecutable
 
+### Resultado recibido y corrección · capturas08:18 del17/10
+
+La imagen sues-video-runtime:20261017 se construyó. El contenedor temporal imprimió
+Nodev22.23.3/npm10.9.9/Python3.11.2/FFmpeg yffprobe5.1.9-0+deb12u1/fc-scan;
+«Filtros y prueba H264/AAC: OK». Después falló `docker image inspect` de la etiqueta
+base node:22-bookworm-slim no presente en el almacén local. El ERROR es posterior
+a la comprobación funcional, no exige reconstruir o descargar otra vez.
+
+prepare-runtime.sh ahora trata esos metadatos de la base como opcionales. Si la
+etiqueta no está disponible, base-digests.json=[] y base-provenance-status.txt lo
+declara explícitamente; no se inventa un digest. La huella de la imagen final sí
+sigue siendo obligatoria. Se entrega reparación con comprobación de imagen final,
+sin build/pull, para guardar este resultado y corregir estado.txt. Pendiente
+ejecución/resultado de esa reparación; la aplicación sigue sin desplegar.
+
 `scripts/deploy/inspect-vps.sh` hace una lectura breve del inventario actual sin
 instalar, descargar, reiniciar ni cambiar aplicaciones. No imprime variables de
 entorno, configuración Compose/Caddy, volúmenes, credenciales ni argumentos de

@@ -62,5 +62,13 @@ docker run --rm --network none --read-only --cap-drop ALL \
   echo "Filtros y prueba corta H264/AAC: OK"
 '
 docker image inspect "$SUES_IMAGE" --format '{{.Id}}' >"$SUES_SETUP_DIR/imagen-id.txt"
-docker image inspect node:22-bookworm-slim --format '{{json .RepoDigests}}' >"$SUES_SETUP_DIR/base-digests.json"
+if docker image inspect node:22-bookworm-slim --format '{{json .RepoDigests}}' >"$SUES_SETUP_DIR/base-digests.tmp" 2>/dev/null; then
+  mv "$SUES_SETUP_DIR/base-digests.tmp" "$SUES_SETUP_DIR/base-digests.json"
+  printf 'available\n' >"$SUES_SETUP_DIR/base-provenance-status.txt"
+else
+  rm -f "$SUES_SETUP_DIR/base-digests.tmp"
+  printf '[]\n' >"$SUES_SETUP_DIR/base-digests.json"
+  printf 'unavailable: base tag absent from local image store\n' >"$SUES_SETUP_DIR/base-provenance-status.txt"
+  echo 'Aviso: etiqueta base ausente del almacén local; huella base no recuperada.'
+fi
 printf '\nDEPENDENCIAS PREPARADAS. El editor todavía no está desplegado.\n'
