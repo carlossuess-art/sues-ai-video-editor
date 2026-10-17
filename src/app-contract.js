@@ -3,7 +3,7 @@ const num=x=>typeof x==='number'&&Number.isFinite(x);
 
 export const APP_JOB_STATES=Object.freeze([
   'DRAFT','UPLOADED','ANALYZING','PLANNED','PREVIEW_READY',
-  'ADJUSTING','RENDERING','DONE','FAILED','CANCELLED'
+  'ADJUSTING','QUEUED','RENDERING','DONE','FAILED','CANCELLED'
 ]);
 
 export function validateCreateEditRequest(r){
@@ -31,10 +31,11 @@ export function canTransition(from,to){
     UPLOADED:['ANALYZING','CANCELLED','FAILED'],
     ANALYZING:['PLANNED','FAILED'],
     PLANNED:['PREVIEW_READY','FAILED'],
-    PREVIEW_READY:['ADJUSTING','RENDERING','CANCELLED'],
+    PREVIEW_READY:['ADJUSTING','QUEUED','RENDERING','CANCELLED'],
     ADJUSTING:['PREVIEW_READY','RENDERING','CANCELLED','FAILED'],
+    QUEUED:['RENDERING','FAILED','CANCELLED'],
     RENDERING:['DONE','FAILED','CANCELLED'],
-    FAILED:['ANALYZING','RENDERING','CANCELLED'],
+    FAILED:['ANALYZING','QUEUED','RENDERING','CANCELLED'],
     DONE:[],CANCELLED:[]
   };
   return allowed[from]?.includes(to)??false;

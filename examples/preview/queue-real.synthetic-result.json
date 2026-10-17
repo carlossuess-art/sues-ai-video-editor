@@ -1,0 +1,151 @@
+{
+  "version": "1.0",
+  "fixture": "synthetic blue + gated440Hz; not Carlos voice",
+  "externalCostUSD": 0,
+  "serial": true,
+  "duplicateSubmission": "no extra render",
+  "records": [
+    {
+      "id": "7d57962d-212c-47a4-bb5c-b4328937454f",
+      "state": "DONE",
+      "attempts": 1,
+      "queueOrder": 2,
+      "history": [
+        {
+          "state": "DRAFT",
+          "at": "2026-10-17T05:08:31.441Z"
+        },
+        {
+          "state": "UPLOADED",
+          "at": "2026-10-17T05:08:31.442Z"
+        },
+        {
+          "state": "ANALYZING",
+          "at": "2026-10-17T05:08:31.442Z"
+        },
+        {
+          "state": "PLANNED",
+          "at": "2026-10-17T05:08:31.447Z"
+        },
+        {
+          "state": "PREVIEW_READY",
+          "at": "2026-10-17T05:08:31.447Z"
+        },
+        {
+          "state": "QUEUED",
+          "at": "2026-10-17T05:08:31.502Z"
+        },
+        {
+          "state": "RENDERING",
+          "at": "2026-10-17T05:08:37.505Z"
+        },
+        {
+          "state": "DONE",
+          "at": "2026-10-17T05:08:42.390Z"
+        }
+      ],
+      "audit": {
+        "version": "1.0",
+        "sourceSha256": "b3511988ba754149051ab96d815c25372964ca423db6d5e89abd3099fff471b6",
+        "sourcePreserved": true,
+        "durationPlanned": 12,
+        "durationEncoded": 12,
+        "output": "preview.mp4",
+        "outputSha256": "27381ccab4ab2a43dea049e957305b4ae822661657001beed9e5d13dcbd3d22c",
+        "bytes": 130823,
+        "video": {
+          "codec": "h264",
+          "width": 1080,
+          "height": 1920,
+          "fps": "30/1"
+        },
+        "audioPresent": true,
+        "backgroundAudio": null,
+        "broll": [],
+        "captions": 1,
+        "font": {
+          "family": "Open Sans",
+          "regularSha256": "47cbab19bc5dc3527772ac056a31bfc0a964c3d34867a857bb44c2bbd8acd7e4",
+          "boldSha256": "f805aa580f0d37bf6ea265c74758387b7ef5fcfeeb9bed713304d0481ed603a8"
+        },
+        "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+        "fullDecode": "pass",
+        "productionReady": false,
+        "externalCostUSD": 0
+      },
+      "rangeStatus": 206
+    },
+    {
+      "id": "c9c0b7a1-92cf-4d3c-942a-ee03c9ded683",
+      "state": "DONE",
+      "attempts": 1,
+      "queueOrder": 1,
+      "history": [
+        {
+          "state": "DRAFT",
+          "at": "2026-10-17T05:08:31.407Z"
+        },
+        {
+          "state": "UPLOADED",
+          "at": "2026-10-17T05:08:31.408Z"
+        },
+        {
+          "state": "ANALYZING",
+          "at": "2026-10-17T05:08:31.408Z"
+        },
+        {
+          "state": "PLANNED",
+          "at": "2026-10-17T05:08:31.420Z"
+        },
+        {
+          "state": "PREVIEW_READY",
+          "at": "2026-10-17T05:08:31.421Z"
+        },
+        {
+          "state": "QUEUED",
+          "at": "2026-10-17T05:08:31.460Z"
+        },
+        {
+          "state": "RENDERING",
+          "at": "2026-10-17T05:08:31.468Z"
+        },
+        {
+          "state": "DONE",
+          "at": "2026-10-17T05:08:37.497Z"
+        }
+      ],
+      "audit": {
+        "version": "1.0",
+        "sourceSha256": "b3511988ba754149051ab96d815c25372964ca423db6d5e89abd3099fff471b6",
+        "sourcePreserved": true,
+        "durationPlanned": 12,
+        "durationEncoded": 12,
+        "output": "preview.mp4",
+        "outputSha256": "27381ccab4ab2a43dea049e957305b4ae822661657001beed9e5d13dcbd3d22c",
+        "bytes": 130823,
+        "video": {
+          "codec": "h264",
+          "width": 1080,
+          "height": 1920,
+          "fps": "30/1"
+        },
+        "audioPresent": true,
+        "backgroundAudio": null,
+        "broll": [],
+        "captions": 1,
+        "font": {
+          "family": "Open Sans",
+          "regularSha256": "47cbab19bc5dc3527772ac056a31bfc0a964c3d34867a857bb44c2bbd8acd7e4",
+          "boldSha256": "f805aa580f0d37bf6ea265c74758387b7ef5fcfeeb9bed713304d0481ed603a8"
+        },
+        "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+        "fullDecode": "pass",
+        "productionReady": false,
+        "externalCostUSD": 0
+      },
+      "rangeStatus": 206
+    }
+  ],
+  "browserVisualQA": false,
+  "humanAcceptance": false
+}

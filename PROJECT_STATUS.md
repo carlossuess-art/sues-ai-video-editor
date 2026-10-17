@@ -4,14 +4,47 @@ FASE 5/10 · BRAND KIT + TEMPLATE ENGINE
 Progreso fase: 80 % (estimación técnica; estética provisional).
 Progreso global: 48 % = F1–F4 (40 %) + 80 % del peso F5 (8 %).
 Rama oficial: feat/phase-4-vision-camera.
-Base de este bloque: 27c5962f1a2ba5dd1b266bbc88b3725ab61ad03d.
-Último hito: Director automático por reglas léxicas + pipeline de un comando +
-estudio web local con trabajos persistentes. Render automático real conserva75/75 palabras.
-Suite: 114/114 y npm run check (src/scripts/web); Python compile OK.
+Base de este bloque: c390c3c7c5d3d7207f2b064cd7ac10c462e26e07.
+Último hito: cola FIFO persistente integrada en app, contrato de worker local y
+validación independiente de artefactos. Dos exportaciones FFmpeg reales en serie OK.
+Suite: 119/119 y npm run check (src/scripts/web); Python compile OK.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
 Necesito de Carlos: nada para seguir código; aceptación estética pendiente.
+
+## Cola y worker · bloque vigente
+
+- src/editor-jobs.js añade QUEUED persistente, orden monotónico y posición pública.
+  Un worker activo, hasta16 en espera; límite configurable por operador1..100.
+- Repetir POST en QUEUED/RENDERING/DONE no añade tarea ni intento. Cola llena rechaza
+  sin modificar el trabajo. En espera no se permiten ajustes: crear otra versión.
+- Cancelar QUEUED no lanza proceso. Cancelar activo espera salida del grupo antes de
+  dejar pasar al siguiente. Al cerrar servidor se conservan pendientes; se reanudan
+  en orden al abrir. Activo cancelado en cierre normal; crash activo→FAILED y reintento
+  sólo explícito. Si worker anterior aún vive, lock impide ejecutar otro en paralelo.
+- src/render-worker.js separa contrato version1 local-ffmpeg: job/attempt/fingerprint,
+  hashes fuente/bundle, rutas locales y duración. Descriptor privado por intento;
+  no URLs, credenciales ni proveedor pagado. No es servicio remoto desplegado.
+- Bundles tienen digest de manifest/director/settings/preparation/ASS/filtro y3archivos
+  de fuentes/licencia. Se revalida al encolar, al despachar y después del worker.
+  Migración legacy sólo si manifest, ASS, filtro y fuentes coinciden con preparación.
+- DONE exige fuente intacta/fullDecode/audio, firma MP4, tamaño/hash y H2641080×1920/30,
+  duración dentro1frame. Node verifica contrato/hash; fullDecode procede del renderer
+  Python (que sí decodifica íntegro). No equivale a aprobación audiovisual humana.
+- Si falla worker/artefacto o cambia bundle/fuente durante espera, FAILED sin retry
+  automático; la cola continúa. No se cambia el renderer, ASR, visión ni selección.
+- UI muestra posición, admite cancelar pendiente y hace polling de QUEUED/RENDERING.
+  La revisión visual de navegador sigue pendiente; no se afirma despliegue o UI QA.
+- 119/119 tests y check completos. Cinco pruebas nuevas cubren FIFO/reinicio, límites,
+  cancelación pendiente/activa, checksum erróneo y bundle alterado. Lifecycle sintético.
+- Smoke API/FFmpeg real con fixture azul+440Hz de12s: dos trabajosDONE, un intento
+  cada uno, sin solapamiento, dos descargasRange206/1024bytes y fullDecode/sourcePreserved.
+  Cada MP4 sintético130.823bytes; no es otro montaje de Carlos ni requiere aceptación.
+  Evidencia examples/preview/queue-real.synthetic-result.json y script
+  scripts/app/smoke_queue_real.mjs. Guía docs/SUES_RENDER_QUEUE.md.
+- Coste externo nuevo0USD. Sin servicios, compras, ASR, visión o modelos nuevos.
+  Sigue siendo un worker local en Work; no replica/cola distribuida ni hosting público.
 
 ## Bloque automático + app local
 
@@ -153,19 +186,14 @@ fases cerradas. Hay UI/backend local persistente; no despliegue público ni E2E 
 
 ## Siguiente acción exacta
 
-Leer maestro + este estado + docs/SUES_LOCAL_EDITOR.md. Código actual en rama oficial,
-checkpoint anteriorad281377f7dc2d7dc404d2132925b2b70824665e; este bloque añade audio,
-vistas de consulta/PWA shell y evidencias reales. No crear proyecto nuevo.
+Leer maestro + este estado + docs/SUES_RENDER_QUEUE.md y SUES_LOCAL_EDITOR.md.
+Continuar desde esta rama, sin proyecto nuevo. Hay cola local persistente + contrato
+worker; queda adaptar a cola/almacenamiento privado cloud y HTTPS/auth/aislamiento.
+Locks valen para un host/PID namespace compartido, no para réplicas distribuidas.
+No publicar el servidor loopback con un túnel como si fuera producto cloud terminado.
 
-Antes de cerrarF5/F9 hace falta aceptación estética de Carlos (no solicitada mientras
-duerme). Para producto cloud: implementar cola/worker desplegado y almacenamiento
-privado duradero, HTTPS/autenticación/aislamiento, ingesta y análisis de vídeos nuevos.
-Respetar bloqueo MediaPipe1.1.1; no repetir tráfico rechazado ni llamadas pagadas ASR
-por defecto. Director léxico no sustituye el Director IA semántico completo.
-
-Se puede seguir sin coste con implementación de interfaz de proveedor/workers,
-pruebas de contrato y optimización editorial offline. No lanzar servicios o compras
-nuevos sin autorización concreta. B-roll y música propios: carpetas vacías, no pedir
-más Reels ni tratar referencias como recursos propios. Necesito de Carlos: nada ahora.
-
-Histórico anterior: docs/archive/PROJECT_STATUS_BEFORE_AUTOMATIC_EDITOR_20261017.md.
+F5 sigue80%,global48%; avancesF7/F8 sin cierre. Aceptación estética y QA visual de app
+pendientes antes de cerrarF5/F9. Director sigue léxico, no comprensión semántica IA.
+No repetir MediaPipe1.1.1 bloqueado ni ASR de pago por defecto. Recursos propios de
+B-roll/música siguen sin seleccionar. Se puede continuar sin coste con adaptadores,
+contratos de storage/cola y seguridad del worker. Necesito de Carlos: nada ahora.

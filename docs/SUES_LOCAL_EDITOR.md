@@ -80,7 +80,7 @@ El token de arranque no se guarda en Git ni se envía al navegador dentro del HT
 
 Cada trabajo tiene UUID, journal de estados, snapshots atómicos y bundles
 inmutables por revisión. Un solo servidor posee el directorio; un solo worker
-exporta a la vez, con lock de proceso. Repetir render duranteRENDERING/DONE es
+exporta a la vez, con lock de proceso. Repetir render duranteQUEUED/RENDERING/DONE es
 idempotente. Cada reintento fallido usa un directorio nuevo; no pisa vídeos previos.
 Cancelar termina el grupo del worker y FFmpeg, y espera su salida antes de marcar
 CANCELLED. Al reiniciar, un trabajo interrumpido pasa aFAILED y permite reintento;
@@ -134,3 +134,9 @@ repetido; fuente intacta,1080×1920/30fps,AAC y decodificación íntegra. La cor
 posterior del fingerprint añadió hashes de bytes de medios: plan idéntico y grafo/
 ASS byte idénticos al render verificados. Suite114 tests y check del frontend incluidos.
 Revisión visual de frames de vídeo hecha; no QA visual del navegador ni aceptaciónV1.
+
+
+Actualización de cola: la segunda exportación entra enQUEUED, con posición y
+cancelación, en lugar de rechazar por worker ocupado. Pendientes sobreviven al
+cierre. Resultado119tests y smoke real de2exportaciones en serie en
+[Cola y worker](SUES_RENDER_QUEUE.md). No sustituye despliegue cloud ni QA visual.

@@ -41,3 +41,10 @@ para shell inicial y después continuar desde GitHub.
 - autenticación;
 - ajustes visuales interactivos;
 - despliegue.
+
+
+Actualización17/10/2026: backend local añadeQUEUED a la máquina de estados. POSTrender
+encolaFIFO, conserva idempotencia enQUEUED/RENDERING/DONE y exponequeuePosition.
+PREVIEW_READY/FAILED→QUEUED→RENDERING;QUEUED también permiteFAILED/CANCELLED.
+Límite16pendientes, un worker y cancelación antes de despacho sin intento. Ver
+SUES_RENDER_QUEUE.md para persistencia y validación de resultados.
