@@ -1,0 +1,99 @@
+{
+  "kind": "full-voice-layered-motion-adaptation",
+  "date": "2026-10-18",
+  "implementationBase": "dd34bea32a9d937fe566388aed9ceb2a8d5181b7",
+  "sourceSha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a",
+  "sourcePreserved": true,
+  "outputSha256": "5edf0f89c5ce7f8d61fbf55dfd4be6087af380fdcc2532cbe2a20d68ab04b543",
+  "duration": 38.3,
+  "bytes": 16246450,
+  "fullDecode": "pass",
+  "sourceWords": 75,
+  "mappedWords": 75,
+  "omittedWords": 0,
+  "captions": 31,
+  "graphics": [
+    {
+      "type": "grid",
+      "start": 13.619999885559082,
+      "end": 16.27999954223633,
+      "voiceCues": {
+        "heading": 13.619999885559082,
+        "body": [
+          14.819999694824219,
+          15.399999618530273
+        ],
+        "left": null,
+        "right": null
+      },
+      "replacedCaptionIds": [
+        "seg-013",
+        "seg-014",
+        "seg-015"
+      ]
+    },
+    {
+      "type": "secret",
+      "start": 17.68000030517578,
+      "end": 19.8,
+      "voiceCues": {
+        "heading": null,
+        "body": [],
+        "left": null,
+        "right": null
+      },
+      "replacedCaptionIds": []
+    },
+    {
+      "type": "compare",
+      "start": 23.600000381469727,
+      "end": 27.560000228881837,
+      "voiceCues": {
+        "heading": null,
+        "body": [],
+        "left": 23.600000381469727,
+        "right": 25.219999313354492
+      },
+      "replacedCaptionIds": [
+        "seg-022",
+        "seg-023",
+        "seg-024"
+      ]
+    }
+  ],
+  "transitions": 3,
+  "voiceIncluded": true,
+  "newInference": false,
+  "editorialSelection": "explicit-recipe-not-LLM-director",
+  "humanAcceptance": false,
+  "visualDirectionAccepted": {
+    "scope": "previous-17s-motion-showcase-only",
+    "quote": "Esto está muy bien",
+    "artifactSha256": "93932620c6666b9498a1ed98f75ad029aed9028b51087d2246a4ee4738ac7a87"
+  },
+  "qaFramesSeconds": [
+    3.5,
+    6.4,
+    13.9,
+    15.25,
+    15.8,
+    16.45,
+    18.65,
+    19.9,
+    24.8,
+    26.3,
+    27.65,
+    32.7
+  ],
+  "audioMaxDBFS": -9.3,
+  "fullListeningPerformed": false,
+  "testsPassed": 182,
+  "libraryFileId": "libfile_1d85a7902d0481919f5fc28f6060b288",
+  "externalCostUSD": 0,
+  "pending": [
+    "real-body-occlusion",
+    "SFX",
+    "full-montage-human-review",
+    "browser-PWA-and-deployment"
+  ]
+}

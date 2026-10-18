@@ -133,3 +133,15 @@ Anton y Allerta Stencil son las fuentes libres usadas para el sello; no afirmar
 que Allerta sea Arial Black. Futhark usa Noto Sans Runic, Unicode sin transliterar.
 Las tres escenas son recreaciones por capas de la especificación del usuario;
 la muestra17s lleva música, sin voz, y no es el Reel final ni aceptación de F6.
+
+## Dirección visual aceptada · 18/10/2026, 19:57 Europe/Madrid
+
+Carlos valora SUES_MOTIONS_MONTSERRAT_CAPAS (SHA93932620c6666b9498a1ed98f75ad029aed9028b51087d2246a4ee4738ac7a87):
+«Ahora sí que ya empiezo a ver esto ya en otra historia. Esto está muy bien».
+Acepta la dirección visual de los tres motions; no equivale a aprobar el montaje
+completo, la oclusión corporal, el audio o cerrar F6/V1. Autoriza continuar.
+Adaptación con voz: scripts/templates/prepare_voice_motion_scene.mjs. Rangos de
+subtítulos elegibles desde app, entradas de copia literal ligadas a cues existentes;
+se preservan tiempos inciertos, sin inferencia nueva. Sólo se suprimen captions
+inferiores de un rango cuando el gráfico reproduce todos sus tokens en orden.
+Iconos originales de mirada/corazón para adaptar el lenguaje visual al contenido.

@@ -1,3 +1,35 @@
+# Estado vigente · motions con voz completa · 18/10/2026
+
+Carlos aprueba la dirección visual de la muestra17s: «Esto está muy bien».
+La valoración se liga al SHA93932620c6666b9498a1ed98f75ad029aed9028b51087d2246a4ee4738ac7a87;
+no se traslada a una aprobación del montaje completo, audio u oclusiones.
+Base del bloque: dd34bea32a9d937fe566388aed9ceb2a8d5181b7.
+
+Nuevo vídeo SUES_VIDEO_COMPLETO_MOTIONS_V1.mp4:38,30s/1080×1920/30,H264/AAC,
+voz íntegra y música propia con ducking,75/75palabras,31grupos,3motions y3salidas.
+Papel documental13,62–16,28s: «pero nadie te / enseñó a detenerte / y sentir».
+Neón17,68–19,80s: «SILENCIO». Esquema23,60–27,56s: «Todos tus temores /
+eres culpa, eres temblores». Iconos propios de mirada/corazón, sin stock nuevo.
+Entradas de copia literal vinculadas a cues de voz existentes. Se preservan los
+intervalos inciertos del ASR anterior; no análisis ni corrección inferida nueva.
+Captions inferiores se suprimen sólo si el gráfico reproduce todo el rango de
+tokens en orden; en caso contrario se conservan. App permite elegir el último
+subtítulo del bloque y los nuevos iconos. Fin con margen hasta la siguiente frase.
+
+182/182tests, check y diffcheckPASS. Receta final reproduce ASS/filtro/PNG de
+la versión renderizada. Original intacto y fullDecodePASS; audio pico−9,3dBFS,
+sin escucha humana completa. QA12fotogramas para composición/transiciones/texto.
+MP4:16.246.450bytes,SHA5edf0f89c5ce7f8d61fbf55dfd4be6087af380fdcc2532cbe2a20d68ab04b543.
+Library libfile_1d85a7902d0481919f5fc28f6060b288. Receta reproducible:
+scripts/templates/prepare_voice_motion_scene.mjs. Evidencia sin rutas privadas:
+examples/preview/full-voice-motions.result.json.
+
+F6 sigue abierta: faltan oclusión corporal real, SFX y revisión de este montaje.
+No V1 global ni nuevo porcentaje; no QA navegador/PWA/despliegueVPS. Coste nuevo0USD.
+
+---
+## Registro anterior
+
 # Estado vigente · tipografía y tres motions · 18/10/2026
 
 Base: 7caa556cce9dca228ca100c142d066d03ab83923. Carlos fija Montserrat Bold,

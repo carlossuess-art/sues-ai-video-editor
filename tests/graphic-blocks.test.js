@@ -18,3 +18,14 @@ test('global transitions include the composited captions and leave the voice/aud
  const disabled=prepareProject(project,{motions:false,graphicCards:[{captionId:id,type:'grid'}],transitions:[{captionId:id,type:'warm'}]});assert.deepEqual(disabled.plan.graphics,[]);assert.deepEqual(disabled.plan.globalTransitions,[]);
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });
+test('voice-bound card ranges replace captions only when every spoken token is represented',()=>{
+ const f=fixture();try{
+  const project=loadProject(f.profiles.test),base=prepareProject(project),[first,second]=base.plan.captions;
+  const card={captionId:first.id,endCaptionId:second.id,type:'grid',heading:first.text,bodyLines:[second.text],icons:['eye','heart']};
+  const p=prepareProject(project,{graphicCards:[card],transitions:[{captionId:first.id,type:'radialBurst',phase:'exit'}]}),g=p.plan.graphics[0];
+  assert.deepEqual(g.replacedCaptionIds,[first.id,second.id]);assert.equal(g.voiceCues.heading,first.wordCues[0].start);assert.equal(g.voiceCues.body[0],second.wordCues[0].start);
+  assert.ok(g.end>=second.end&&g.end<=base.plan.captions[2].start);assert.equal(p.plan.globalTransitions[0].start,g.end-.2);
+  const modified=prepareProject(project,{graphicCards:[{...card,heading:'Una idea diferente'}]});assert.deepEqual(modified.plan.graphics[0].replacedCaptionIds,[]);assert.equal(modified.plan.graphics[0].voiceCues.heading,null);
+  assert.throws(()=>prepareProject(project,{graphicCards:[{...card,captionId:second.id,endCaptionId:first.id}]}),/invalid card range/);
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
+});

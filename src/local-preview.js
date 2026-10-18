@@ -92,7 +92,7 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   const event=(layer,start,end,style,text)=>{out+=`Dialogue: ${layer},${timestamp(start)},${timestamp(end)},${style},,0,0,0,,${text}\n`;};
   for(const c of plan.captions){
     const white=assColor((plan.graphics??[]).some(g=>g.type!=='secret'&&c.start>=g.start-1e-6&&c.end<=g.end+1e-6)?plan.renderColors.dark:plan.policy.captions.color);
-    const focus=c.source!=='manual'&&(plan.semantic?.motions??[]).find(m=>m.backgroundTreatment&&c.start>=m.start-1e-6&&c.end<=m.end+1e-6&&c.wordIndexes.every(index=>(m.evidence?.sourceWordIndexes??[]).includes(index)));if(focus||(plan.graphics??[]).some(g=>g.captionId===c.id&&g.text===c.text))continue;
+    const focus=c.source!=='manual'&&(plan.semantic?.motions??[]).find(m=>m.backgroundTreatment&&c.start>=m.start-1e-6&&c.end<=m.end+1e-6&&c.wordIndexes.every(index=>(m.evidence?.sourceWordIndexes??[]).includes(index)));if(focus||(plan.graphics??[]).some(g=>g.replacedCaptionIds?.includes(c.id)||!g.heading&&!g.bodyLines&&g.type!=='compare'&&g.captionId===c.id&&g.text===c.text))continue;
     const hierarchy=hierarchyLayout(c,plan.policy.captions,plan.layout.caption);
     const p=plan.policy.captions,b=plan.layout.caption,normalSize=fitCaptionSize(c.lines,p);
     const normalRows=c.lines.map((text,i)=>({text,size:normalSize,x:(b.left+b.right)/2,y:(b.top+b.bottom)/2+(i-(c.lines.length-1)/2)*normalSize*1.1,role:'companion'}));

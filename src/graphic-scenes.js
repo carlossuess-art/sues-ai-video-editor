@@ -6,8 +6,8 @@ import {circlePath,LINE_ART,strokeDrawing} from './motion-drawings.js';
 export function drawEditorialScenes(plan,event,safeText,assColor){
  for(const g of plan.graphics??[]){
   const start=g.start,end=g.end,d=end-start,ms=Math.round(d*1000),p=plan.policy.captions,dark='#1A1A1A',red='#FF0000',pink='#FF9999';
-  const shape=(path,x,y,color,{layer=-3,at=start,extra='',stroke=0,alpha='00',blur=0,until=end}={})=>event(layer,at,until,'Outro',`{${extra.includes('\\move(')?'':`\\pos(${x},${y})`}\\an7\\p1\\bord0\\shad0\\1c${assColor(color)}&\\3c${assColor(color)}&\\1a&H${alpha}&\\3a&H${alpha}&\\blur${blur}\\fad(120,160)${extra}}${stroke?strokeDrawing(path,stroke*2):path}`);
-  const label=(text,x,y,size,{at=start,role='normal',italic=false,color=dark,extra='',layer=-1,escape=true}={})=>event(layer,at,end,'Caption',`{${extra.includes('\\move(')?'':`\\pos(${x},${y})`}${typefaceTags(p,role,italic)}\\fs${size}\\fscx100\\fsp-2\\i${italic?1:0}\\b${role.startsWith('stamp')?0:role.startsWith('keyword')?800:700}\\bord0\\shad0\\1c${assColor(color)}&\\fad(120,160)${extra}}${escape?safeText(text):text}`);
+  const shape=(path,x,y,color,{layer=-3,at=start,extra='',stroke=0,alpha='00',blur=0,until=end}={})=>at<Math.min(until,end)&&event(layer,at,Math.min(until,end),'Outro',`{${extra.includes('\\move(')?'':`\\pos(${x},${y})`}\\an7\\p1\\bord0\\shad0\\1c${assColor(color)}&\\3c${assColor(color)}&\\1a&H${alpha}&\\3a&H${alpha}&\\blur${blur}\\fad(120,160)${extra}}${stroke?strokeDrawing(path,stroke*2):path}`);
+  const label=(text,x,y,size,{at=start,role='normal',italic=false,color=dark,extra='',layer=-1,escape=true}={})=>at<end&&event(layer,at,end,'Caption',`{${extra.includes('\\move(')?'':`\\pos(${x},${y})`}${typefaceTags(p,role,italic)}\\fs${size}\\fscx100\\fsp-2\\i${italic?1:0}\\b${role.startsWith('stamp')?0:role.startsWith('keyword')?800:700}\\bord0\\shad0\\1c${assColor(color)}&\\fad(120,160)${extra}}${escape?safeText(text):text}`);
   const icon=(name,x,y,at)=>{
    const path=LINE_ART[name];if(!path)return;
    shape(path,x,y,dark,{at,stroke:4.5,extra:`\\fscx115\\fscy115\\move(${x},${y+30},${x},${y},0,200)\\blur12\\t(0,200,\\blur0)`});
@@ -64,22 +64,23 @@ export function drawEditorialScenes(plan,event,safeText,assColor){
    if(heading){
     const prefix=heading.endsWith(' de')?heading.slice(0,-3):heading;
     const content=heading.endsWith(' de')?`${safeText(prefix)} {\\1c${assColor('#7A7A7A')}&\\t(600,1000,\\1c${assColor(dark)}&)}de`:safeText(heading);
-    label(content,510,680,headerSize,{at:start+.1,italic:true,escape:false,extra:'\\blur10\\t(0,200,\\blur0)'});
+    label(content,510,680,headerSize,{at:g.voiceCues?.heading??start+.1,italic:true,escape:false,extra:'\\blur10\\t(0,200,\\blur0)'});
    }
-   body.forEach((line,i)=>reveal(line,510,820+i*145,fitCaptionSize([line],{...p,fontSize:160},780),start+.65+i*.35));
+   body.forEach((line,i)=>reveal(line,510,820+i*145,fitCaptionSize([line],{...p,fontSize:160},780),g.voiceCues?.body?.[i]??start+.65+i*.35));
    if(g.icons?.length){icon(g.icons[0],210,1120,start+.7);icon(g.icons[1],650,1120,start+1.02);}
   }else{
    const split=text=>{const words=text.split(/\s+/),lines=[''];for(const w of words){if((lines.at(-1)+' '+w).trim().length>14&&lines.at(-1))lines.push(w);else lines[lines.length-1]=(lines.at(-1)+' '+w).trim();}return lines;};
+   const leftAt=g.voiceCues?.left??start+.1,rightAt=g.voiceCues?.right??start+1.1;
    const leftLines=split(g.left),rightLines=split(g.right),font=fitCaptionSize([...leftLines,...rightLines],{...p,fontRole:'italic',fontSize:180},470),x=110;
-   leftLines.forEach((line,i)=>label(line,x,780+i*font*.9,font,{at:start+.1,italic:true,extra:'\\an4\\blur10\\t(0,250,\\blur0)'}));
-   rightLines.forEach((line,i)=>label(line,x,1160+i*font*.9,font,{at:start+1.1,italic:true,extra:'\\an4\\blur10\\t(0,250,\\blur0)'}));
-   if(g.icons?.length){icon(g.icons[0],670,665,start+.1);icon(g.icons[1],690,1060,start+1.1);}
+   leftLines.forEach((line,i)=>label(line,x,780+(i-(leftLines.length-1)/2)*font*.9,font,{at:leftAt,italic:true,extra:'\\an4\\blur10\\t(0,250,\\blur0)'}));
+   rightLines.forEach((line,i)=>label(line,x,1160+(i-(rightLines.length-1)/2)*font*.9,font,{at:rightAt,italic:true,extra:'\\an4\\blur10\\t(0,250,\\blur0)'}));
+   if(g.icons?.length){icon(g.icons[0],670,665,leftAt);icon(g.icons[1],690,1060,rightAt);}
    else{shape(circlePath(785,780,75),0,0,dark,{stroke:4,at:start+.1});shape(circlePath(785,1160,75),0,0,dark,{stroke:4,at:start+1.1});}
    // Progressive masks reveal the actual curved strokes, followed by arrowheads.
-   shape('m 310 650 b 410 350 710 355 820 590',0,0,dark,{stroke:9,at:start+.5,extra:'\\clip(200,250,220,680)\\t(0,430,\\clip(200,250,900,680))'});
-   shape('m 787 566 l 822 604 849 552 818 569',0,0,dark,{at:start+.88});
-   shape('m 310 1310 b 410 1600 710 1600 820 1340',0,0,dark,{stroke:9,at:start+1.6,extra:'\\clip(200,1280,220,1700)\\t(0,430,\\clip(200,1280,900,1700))'});
-   shape('m 786 1368 l 823 1326 848 1378 817 1361',0,0,dark,{at:start+1.98});
+   shape('m 310 650 b 410 350 710 355 820 590',0,0,dark,{stroke:9,at:leftAt+.4,extra:'\\clip(200,250,220,680)\\t(0,430,\\clip(200,250,900,680))'});
+   shape('m 787 566 l 822 604 849 552 818 569',0,0,dark,{at:leftAt+.78});
+   shape('m 310 1310 b 410 1600 710 1600 820 1340',0,0,dark,{stroke:9,at:rightAt+.4,extra:'\\clip(200,1280,220,1700)\\t(0,430,\\clip(200,1280,900,1700))'});
+   shape('m 786 1368 l 823 1326 848 1378 817 1361',0,0,dark,{at:rightAt+.78});
   }
  }
 }
