@@ -1,3 +1,4 @@
+import {captionHierarchy} from './caption-hierarchy.js';
 import {fontFiles,resolveFontDirectory} from './font-kits.js';
 import {readFileSync,writeFileSync,mkdirSync,cpSync,existsSync,realpathSync,openSync,readSync,closeSync} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
@@ -7,7 +8,7 @@ import {buildAutomaticDirector,validateEditorSettings} from './automatic-directo
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
-const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
+const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
 export function fileSha256(path){const fd=openSync(path,'r'),hash=createHash('sha256'),buffer=Buffer.allocUnsafe(1024*1024);try{let size;while((size=readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,size));return hash.digest('hex');}finally{closeSync(fd);}}
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
@@ -48,7 +49,7 @@ export function prepareProject(project,settings={}){
   }
  }
  const emphasis=new Set(decisions.flatMap(d=>(d.evidence?.hits??[]).map(h=>h.wordIndex)));
- plan.captions=editedCaptions.map(c=>({...c,emphasisWordIndexes:c.source==='manual'?[]:c.wordIndexes.filter(i=>emphasis.has(i))}));
+ plan.captions=captionHierarchy(editedCaptions.map(c=>({...c,emphasisWordIndexes:c.source==='manual'?[]:c.wordIndexes.filter(i=>emphasis.has(i))})),inputs.transcript.words,plan.policy.captions);
  const director={...automatic,...(manual.length?{selection:'offline-lexical-baseline-with-user-review-v1'}:{}),decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length,manualHighlights:manual.length}};
  plan.automaticDirector=director.audit;
  plan.pending=plan.pending.filter(p=>p!=='automated-director-selection');plan.pending.push('llm-semantic-director-and-human-review');

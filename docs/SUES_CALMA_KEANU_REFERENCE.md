@@ -5,6 +5,45 @@ Carlos confirma como referencia principal el Reel sobre Keanu Reeves de deckeanu
 sobre la síntesis anterior de siete referencias. El objetivo es trasladar su
 lenguaje visual a CALMA con ritmo más pausado y música ambiental.
 
+## Ajuste solicitado: jerarquía de palabras · 18/10/2026
+
+Esta revisión sustituye el acento plano de la primera prueba por dos niveles:
+importante en blanco, excepcional en oro metálico. El término principal usa
+144 px y sus acompañantes 72 px; con texto antes y después, 128/64 px. La relación
+es exactamente 2:1 dentro del grupo. El texto ordinario mantiene el ajuste previo.
+Se conserva orden, puntuación y tiempos originales. Las comas separan grupos para
+no arrastrar el principio de la siguiente frase debajo de una palabra anterior.
+
+La selección es editorial y determinista: una palabra por frase delimitada por
+puntuación, pesos de conceptos en la plantilla y exclusión de palabras funcionales.
+En esta prueba se reservan reconocer, sentir, silencio y avanzar para el nivel
+excepcional. No es comprensión semántica automática ni implica que esos términos
+sean siempre los más importantes en cualquier vídeo. Una corrección manual no
+hereda un énfasis cuya correspondencia con el transcript ya no está verificada.
+
+El metal combina nueve bandas de oro oscuro, reflejos crema y una unión más oscura,
+compuestas dentro de los glifos sobre una sola sombra/contorno. Es un acabado
+estático con reflejos; no se presenta como metal 3D ni como un brillo animado. Si
+una palabra larga no permite conservar legibilidad y relación 2:1, el renderer
+usa el grupo normal. No estrecha ni corta la palabra para fingir el cumplimiento.
+
+Revisados de nuevo 44,9 s («tienes en el / BANCO») y 52,6 s («para comprar /
+LIBERTAD»): muestran acompañamiento pequeño, palabra dominante y recursos flotantes.
+Esos ejemplos usan verde y amarillo brillantes; el oro metálico es la adaptación
+solicitada por Carlos, no un material idéntico extraído de esos frames.
+
+La familia original sigue sin identificar. Inter sigue siendo una aproximación.
+Recortes de personas/objetos, composición gráfica por concepto y cambios de color
+en toda la escena no están reproducidos en esta prueba. El análisis completo de
+esos recursos y su integración siguen pendientes; no se da por cerrada la estética.
+
+Prueba final V3:31 grupos/75 tokens,38,30s,1080×1920/30fps, voz AAC y cama ambiental
+original. Render real desde subida a la API, worker y entrega privada Range206;
+un intento por trabajo. Original intacto y decodificación completa correcta.
+Revisados ocho frames de énfasis y comparación exacta del ASS/filtro renderizados
+con el código final. 156/156 tests secuenciales y check. Probado en Work, no nuevo
+despliegue a VPS. Aceptación estética y escucha humana completa pendientes.
+
 ## Observado y medido
 
 Principal:64,20s/1080×1920; secundaria:91,467s. Revisadas hojas de16 y8 fotogramas

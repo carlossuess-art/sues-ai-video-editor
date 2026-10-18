@@ -5,14 +5,38 @@ Progreso fase: 80 % (estimación técnica; estética provisional).
 Progreso global: 48 % = F1–F4 (40 %) + 80 % del peso F5 (8 %).
 Rama oficial: feat/phase-4-vision-camera.
 Base de este bloque: acbb8d5471cce1972c886ba9331379f8477dd35d.
-Último hito: CALMA adaptada a la referencia principal de Keanu y secundaria Reel2.
-Nueva prueba real con30grupos cortos, Inter, foco desenfocado y ambiente original.
-Suite vigente:151/151 secuencial y npm run check; Bash/Python correctos.
+Último hito: jerarquía de palabra importante 2:1 y excepcional en oro metálico.
+Prueba CALMA con grupos separados por comas, Inter aproximada y ambiente original.
+Suite vigente:156/156 secuencial y npm run check; estética pendiente de revisión.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
 Necesito de Carlos: revisión de la nueva prueba estética; VPS/HTTPS esperan acceso operativo.
 Estado VPS observado: PENDIENTE MEDIOS, no iniciado; app/render probados en Work.
+
+## Jerarquía de palabras · 18/10/2026
+
+- Carlos pide término importante al doble de tamaño, excepcional además con color
+  y aspecto metálico. Fuente original aún no identificada; Inter aproximada.
+- Plantilla y motor: importante blanco144/acompañantes72 px; tres posiciones128/64.
+  Ratio2:1, orden conservado, zonas seguras y fallback normal si no cabe legible.
+- Oro de nueve bandas con luces/sombras dentro del glifo, una sola sombra/contorno.
+  Acabado estático; sin afirmar brillo animado ni metal3D.
+- Selección por frase con reglas editoriales/pesos en plantilla; no modelo semántico.
+  Reconocer/sentir/silencio/avanzar excepcionales en este perfil. Texto manual no
+  recibe correspondencias inventadas. Foco literal previo sigue teniendo prioridad.
+- Separación por comas evita mezclar dos cláusulas. Se mantienen todos los tokens
+  y tiempos; ASR incierto permanece unido a un intervalo real.
+- Referencia revisada44,9/52,6s: BANCO/LIBERTAD con acompañantes y objetos flotantes.
+  Recursos flotantes, recortes y cambios cromáticos globales siguen pendientes.
+- Prueba final API/upload/worker/Range206:31grupos,75/75tokens,38,30s,2zooms/1foco.
+  MP4 18.364.118bytes, SHA514f85c5fbb4e7b015a8c3794db5b6a5506085fe50ff53fff5f248456d407dda.
+  Original intacto, fullDecodePASS, AAC, Inter verificado. QA8frames sin recortes
+  o solapamiento facial observados en las muestras. ASS/filtro idénticos al código.
+  Vídeo SUES_CALMA_JERARQUIA_KEANU_V3.mp4; evidencia pública sin rutas privadas en
+  examples/preview/calma-hierarchy.real-result.json.
+- 156/156 tests secuenciales y check. Coste externo0. F5=80%,global48%.
+  Aplicado/probado en Work; sin despliegue nuevo a VPS ni aceptación humana.
 
 ## Referencia prioritaria Keanu · 18/10/2026
 

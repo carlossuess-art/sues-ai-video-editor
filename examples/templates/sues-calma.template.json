@@ -25,7 +25,38 @@
     "entranceMs": 180,
     "fadeMs": 60,
     "reference": "deckeanu-keanu-primary",
-    "fontIdentity": "visual-approximation-not-identified"
+    "fontIdentity": "visual-approximation-not-identified",
+    "hierarchy": {
+      "ratio": 2,
+      "selection": "editorial-phrase-rules-v1",
+      "keywordWeights": {
+        "mirar": 5,
+        "reconocer": 10,
+        "ojos": 7,
+        "ver": 5,
+        "correr": 6,
+        "luchar": 6,
+        "conseguir": 6,
+        "detenerte": 8,
+        "sentir": 10,
+        "silencio": 10,
+        "caminante": 7,
+        "voz": 7,
+        "temores": 8,
+        "culpa": 8,
+        "temblores": 8,
+        "ego": 9,
+        "avanzar": 10,
+        "mente": 9
+      },
+      "exceptionalWords": [
+        "reconocer",
+        "sentir",
+        "silencio",
+        "avanzar"
+      ],
+      "metal": "warm-gold-banded"
+    }
   },
   "transitions": {
     "allowed": [

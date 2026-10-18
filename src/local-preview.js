@@ -1,3 +1,4 @@
+import {hierarchyLayout,METALLIC_GOLD} from './caption-hierarchy.js';
 import {shortCaptionGroups} from './short-captions.js';
 import {fitCaptionSize} from './font-kits.js';
 import {prepareBackgroundAudio,backgroundAudioFilter} from './audio-mix.js';
@@ -84,6 +85,24 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   const event=(layer,start,end,style,text)=>{out+=`Dialogue: ${layer},${timestamp(start)},${timestamp(end)},${style},,0,0,0,,${text}\n`;};
   for(const c of plan.captions){
     const focus=c.source!=='manual'&&(plan.semantic?.motions??[]).find(m=>m.backgroundTreatment&&c.start>=m.start-1e-6&&c.end<=m.end+1e-6&&c.wordIndexes.every(index=>(m.evidence?.sourceWordIndexes??[]).includes(index)));if(focus)continue;
+    const hierarchy=hierarchyLayout(c,plan.policy.captions,plan.layout.caption);
+    if(hierarchy){
+      const p=plan.policy.captions,fade=p.fadeMs??60;
+      for(const row of hierarchy){
+        const style=`\\pos(${row.x},${row.y})\\fs${row.size}\\fscx${p.scaleX}\\fsp${p.tracking}\\fad(${fade},${fade})`;
+        if(row.role==='keyword'&&c.keyword.level==='exceptional'){
+          // Single outline/shadow base; opaque, mutually exclusive fill bands.
+          // No stacked outlines, no dark seams between overlapping glyphs.
+          event(1,c.start,c.end,'Caption',`{${style}\\1c${assColor(METALLIC_GOLD[0])}&}${safeText(row.text)}`);
+          const top=row.y-row.size*.65,bottom=row.y+row.size*.65;
+          for(const [i,color]of METALLIC_GOLD.entries()){
+            const y1=Math.floor(top+(bottom-top)*i/METALLIC_GOLD.length),y2=Math.floor(top+(bottom-top)*(i+1)/METALLIC_GOLD.length);
+            event(2,c.start,c.end,'Caption',`{${style}\\bord0\\shad0\\clip(0,${y1},1080,${y2})\\1c${assColor(color)}&}${safeText(row.text)}`);
+          }
+        }else event(1,c.start,c.end,'Caption',`{${style}\\1c${white}&}${safeText(row.text)}`);
+      }
+      continue;
+    }
     let wordOffset=0;const content=c.lines.map(line=>line.split(' ').map(word=>{const index=c.wordIndexes[wordOffset++],text=safeText(word);return c.emphasisWordIndexes?.includes(index)?`{\\1c${gold}&}${text}{\\1c${white}&}`:text;}).join(' ')).join('\\N');
     const b=plan.layout.caption,p=plan.policy.captions,size=fitCaptionSize(c.lines,p),fade=p.fadeMs??60,entrance=p.entranceMs??180,motion=p.mode==='short-groups'?`\\fs${size}\\fscx${p.scaleX}\\fsp${p.tracking}\\fad(${fade},${fade})\\fscy98\\t(0,${entrance},\\fscy100)`:'';event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})${motion}}${content}`);
   }
