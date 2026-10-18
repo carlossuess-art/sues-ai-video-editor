@@ -59,3 +59,16 @@ sujeto/sillón, sonido de efectos y aceptación humana. ASR/visión automáticos
 vídeos distintos, QA visual del navegador/PWA y puesta en servicio en VPS/HTTPS
 siguen pendientes. El entorno de navegador local no tiene Chromium utilizable;
 el navegador remoto no alcanza el loopback de Work. No se declara V1.
+
+## Evidencia final V5
+
+172/172 pruebas y comprobaciones de sintaxis correctas. Un ciclo real completo
+con el original de97MB y ambos recursos subidos por HTTP:38,30s,75/75palabras,
+31grupos,2zooms,3tarjetas,3transiciones y1imagen. Fuente intacta y MP4 decodificado.
+La copia se restauró con ASS/filtro idénticos y referencia a la revisión Git
+15b17cd515adb8a70e013404332258a7e831c263, limpia al crearla.
+
+QA13fotogramas, audio pico−9,27dBFS/RMS−30,27dBFS sin NaN/Inf. Sin escucha humana
+completa, navegador real o aprobación estética. Las elecciones de esta muestra
+son explícitas para ejercitar componentes; no se atribuyen a un Director LLM.
+Evidencia pública sin rutas privadas: examples/preview/general-studio.real-result.json.

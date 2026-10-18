@@ -1,3 +1,9 @@
+> Actualización transversal posterior: palabras clave editables, paletas metálicas,
+> condensada/oblicua, biblioteca de imágenes/audio, controles de música, tres
+> tarjetas y tres transiciones ya están integrados. Consulta
+> [estudio general](SUES_GENERAL_STUDIO.md). El registro que sigue describe la
+> prueba V4 anterior; sus pendientes no sustituyen el estado vigente.
+
 # Aplicación del dossier Keanu · 18/10/2026
 
 Fuente: SUES_AI_VIDEO_EDITOR_Dossier_maestro_Keanu.pdf,43p,

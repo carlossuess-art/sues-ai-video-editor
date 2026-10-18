@@ -1,13 +1,52 @@
 # Estado técnico vigente · construcción general · 18/10/2026
 
-Avance transversal F5–F10: edición de palabras clave, estilos, medios privados,
-gráficos/transiciones, revisión, copias recuperables y doctor sin medios.
-Implementación y pruebas unitarias integradas; prueba real conjunta en curso.
-CALMA provisional; tres variantes experimentales. No aceptación humana ni V1.
-La fuente de Keanu continúa sin identificar. Sin nuevo coste externo.
-Guía vigente: docs/SUES_GENERAL_STUDIO.md. Los porcentajes históricos siguientes
-no incorporan aún este bloque transversal; recalcular sólo con evidencia final.
-No hay acceso operativo al VPS; no se ha ejecutado un despliegue nuevo.
+Construcción transversal F5–F10; implementación 15b17cd515adb8a70e013404332258a7e831c263.
+Estimación técnica ponderada: 72,25 %. No es aceptación estética ni V1.
+Se conservan los 40 puntos históricos de F1–F4; ahora se contabiliza trabajo
+parcial de F6–F10 antes excluido del 48 %. No son 24,25 puntos nuevos de validación.
+
+| Fase | Estimación interna | Peso | Aportación global |
+| --- | ---: | ---: | ---: |
+| F1–F4 | Registro anterior | 40 % | 40 % |
+| F5 · plantillas | 85 % | 10 % | 8,5 % |
+| F6 · gráficos/motions | 60 % | 10 % | 6 % |
+| F7 · director | 25 % | 15 % | 3,75 % |
+| F8 · app | 70 % | 10 % | 7 % |
+| F9 · integración real | 45 % | 10 % | 4,5 % |
+| F10 · despliegue/docs | 50 % | 5 % | 2,5 % |
+
+## Resultado conjunto verificado
+
+- Palabras clave elegibles, jerarquía2:1, paletas reflectantes, oblicua/condensada;
+  CALMA provisional y tres variantes experimentales. Font Inter aproximada.
+- Subida/selección privada de imágenes y música, volumen/ducking; tres tarjetas
+  y tres transiciones globales. Revisión del plan con evidencia y tiempos inciertos.
+- Copia recuperable por versión, verificación SHA y restauración probada con
+  ASS/filtro idénticos; revisión estética humana registrable ligada a cada MP4.
+- Doctor sin medios y perfil restaurado correctos. No ASR/visión nuevos ni modelos.
+- 172/172 tests secuenciales, check, Pythoncompile, Bashsyntax y diffcheck correctos.
+- Smoke real HTTP:97MBoriginal + PNG + WAV → ajustar/deshacer → copia/restaurar
+  → variantes → worker → privado → Range206. Un render, ninguna palabra omitida.
+- MP4 V5:38,30s,1080×1920/30,H264/AAC,75/75palabras,31grupos,2zooms,
+  3tarjetas,3transiciones,1imagen;15.345.100bytes. Fuente intacta/fullDecodePASS.
+  SHA58772c780c7905b0e4819ddb1af4fcfe78dc4fcf7f43b52778f79500bd5a9a8b.
+- QA13fotogramas: contraste corregido en tarjetas claras; sin recortes observados
+  en las muestras. Audio pico−9,27/RMS−30,27dBFS,0NaN/Inf; sin escucha humana completa.
+- Copia TAR106.854.400bytes/16archivos, revisión Git exacta y árbol limpio al crear.
+  SHA7e3de59c12f6235baf5363018f45bd4dd4112ed11d6e7ee33bf34b4b151360d5.
+- Vídeo: Library libfile_cb1fb8f3fcb08191b15e8fe5399b174a;
+  Drive https://drive.google.com/file/d/1RGK8L6EsR6v0dNenBdbFSKvgeqzgmML1/view .
+  Copia: Library libfile_2db4a5b84a6c8191b4280d87d43202b0.
+- Guía docs/SUES_GENERAL_STUDIO.md; evidencia examples/preview/general-studio.real-result.json.
+  AGENTS.md conserva la instrucción de continuidad autónoma del usuario.
+
+## Pendientes reales
+
+Fuente exacta, parecido fino y segmentación del sujeto; sonido de efectos;
+Director con semántica avanzada y análisis automático de originales distintos;
+aceptación estética humana; QA de navegador/PWA (Chromium no disponible y navegador
+remoto sin acceso al loopback); VPS/HTTPS sin acceso operativo. No despliegue nuevo,
+ni cambios a WhatsApp/Caddy/DNS. Coste externo nuevo0USD. No se declara V1.
 
 ---
 ## Registro anterior (histórico)

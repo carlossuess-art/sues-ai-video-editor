@@ -1,0 +1,141 @@
+{
+  "version": "1.0",
+  "state": "DONE",
+  "summary": {
+    "duration": 38.31,
+    "styleId": "SUES_CALMA",
+    "sourceWords": 75,
+    "mappedWords": 75,
+    "omittedWords": 0,
+    "captions": 31,
+    "zooms": 2,
+    "motions": 3,
+    "transitions": 3,
+    "manualHighlights": 0,
+    "rejections": [],
+    "externalCostUSD": 0,
+    "productionReady": false
+  },
+  "audit": {
+    "version": "1.0",
+    "sourceSha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a",
+    "sourcePreserved": true,
+    "durationPlanned": 38.31,
+    "durationEncoded": 38.3,
+    "output": "preview.mp4",
+    "outputSha256": "58772c780c7905b0e4819ddb1af4fcfe78dc4fcf7f43b52778f79500bd5a9a8b",
+    "bytes": 15345100,
+    "video": {
+      "codec": "h264",
+      "width": 1080,
+      "height": 1920,
+      "fps": "30/1"
+    },
+    "audioPresent": true,
+    "backgroundAudio": {
+      "sha256": "f8e6a31e9c7b2d5e640ec88e3240e835b0adf675f028bf65c5704e27bdd69ab1",
+      "assetId": "f8e6a31e9c7b2d5e640ec88e3240e835b0adf675f028bf65c5704e27bdd69ab1",
+      "rights": "owned",
+      "gain": 0.1
+    },
+    "broll": [],
+    "captions": 31,
+    "illustrations": [
+      {
+        "assetId": "eec396bf0f3bd27a6c66916be519ac8749af19e4cd63f15e096869d59d7ec056",
+        "sha256": "eec396bf0f3bd27a6c66916be519ac8749af19e4cd63f15e096869d59d7ec056",
+        "sourceAudio": false
+      }
+    ],
+    "font": {
+      "family": "Inter",
+      "regularSha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+      "boldSha256": "288316099b1e0a47a4716d159098005eef7c0066921f34e3200393dbdb01947f"
+    },
+    "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "fullDecode": "pass",
+    "productionReady": false,
+    "externalCostUSD": 0
+  },
+  "renderAttempts": 1,
+  "range": 206,
+  "resourceUploads": {
+    "image": {
+      "id": "eec396bf0f3bd27a6c66916be519ac8749af19e4cd63f15e096869d59d7ec056",
+      "bytes": 132525
+    },
+    "music": {
+      "id": "f8e6a31e9c7b2d5e640ec88e3240e835b0adf675f028bf65c5704e27bdd69ab1",
+      "bytes": 8832044
+    }
+  },
+  "backup": {
+    "bytes": 106854400,
+    "sha256": "7e3de59c12f6235baf5363018f45bd4dd4112ed11d6e7ee33bf34b4b151360d5",
+    "restoreAudit": {
+      "valid": true,
+      "files": 16,
+      "bytes": 106831966,
+      "codeCommit": "15b17cd515adb8a70e013404332258a7e831c263",
+      "workingTreeDirty": false
+    },
+    "ASSAndFilterMatch": true
+  },
+  "variants": [
+    {
+      "styleId": "SUES_IMPACTO",
+      "words": 75,
+      "captions": 32
+    },
+    {
+      "styleId": "SUES_EXPLICA",
+      "words": 75,
+      "captions": 31
+    },
+    {
+      "styleId": "SUES_HISTORIA",
+      "words": 75,
+      "captions": 31
+    }
+  ],
+  "settingsSource": "explicit integration-test editorial choices; not automatic LLM selection",
+  "humanAcceptance": false,
+  "externalCostUSD": 0,
+  "implementationCommit": "15b17cd515adb8a70e013404332258a7e831c263",
+  "tests": {
+    "passed": 172,
+    "failed": 0,
+    "sequential": true
+  },
+  "visualQA": {
+    "method": "13 sampled frames reviewed",
+    "framesSeconds": [
+      6.15,
+      8.0,
+      9.8,
+      10.4,
+      11.1,
+      15.7,
+      17.9,
+      18.7,
+      19.15,
+      24.5,
+      25.6,
+      30.27,
+      36.5
+    ],
+    "findings": "Light cards now use dark ordinary captions; no clipping observed in these samples. Not browser QA or human aesthetic acceptance."
+  },
+  "audioQA": {
+    "peakDBFS": -9.274586,
+    "rmsDBFS": -30.267973,
+    "NaN": 0,
+    "Inf": 0,
+    "fullHumanListening": false
+  },
+  "delivery": {
+    "videoLibraryId": "libfile_cb1fb8f3fcb08191b15e8fe5399b174a",
+    "backupLibraryId": "libfile_2db4a5b84a6c8191b4280d87d43202b0",
+    "videoDriveId": "1RGK8L6EsR6v0dNenBdbFSKvgeqzgmML1"
+  }
+}
