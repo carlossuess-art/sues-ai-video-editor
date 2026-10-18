@@ -1,0 +1,92 @@
+[
+  {
+    "round": 1,
+    "finding": "Las líneas largas se solapaban temporalmente con la entrada de la siguiente",
+    "change": "Revelado con presupuesto de lectura ligado al siguiente cue, sin alterar voz",
+    "review": "Frame2: línea completa nítida antes de y sentir; se conserva",
+    "scene": "grid",
+    "proofVideoSha256": "f0ef3542446c57145888f619253188f0d798fee659a232141cc2ca58730e4d32",
+    "codeStateSha256": "1ff7ccd554d651dc7b3884940eedd1045794d157523371b450fa0408e78b3544"
+  },
+  {
+    "round": 2,
+    "finding": "Los iconos entraban antes que sus conceptos y quedaban pegados al fondo",
+    "change": "Entradas vinculadas a los cues de cada línea, sombras difusas y margen derecho",
+    "review": "Se revisan entrada y salida: el corazón acompaña sentir y la sombra mantiene contraste",
+    "scene": "grid",
+    "proofVideoSha256": "2232a816aa5f1ec197cb083af7a07213303b2d53e59b079b14a979b6e6709fcb",
+    "codeStateSha256": "5d8b23f06bd8657e850f9eae05ca5ff4ad8f355989d5380aa975b05fcbe0bf5f"
+  },
+  {
+    "round": 3,
+    "finding": "Viñeta demasiado cerrada y papel con iluminación estática",
+    "change": "Viñeta menos agresiva y luz cálida tenue con desplazamiento lento detrás de la cuadrícula",
+    "review": "Frame2 conserva contraste y grano, esquinas con más detalle y texto limpio",
+    "scene": "grid",
+    "proofVideoSha256": "25e7099fa490523b43c301480784633e260aa9759abadf03267771e5d783834b",
+    "codeStateSha256": "aad83fbc16080fa22ae35d526928be924559fee5f72ffa5e32e76184cad64012"
+  },
+  {
+    "round": 4,
+    "finding": "El título neón llegaba después de la palabra hablada",
+    "change": "Cue compartido entre imagen y sonido; revelado de SILENCIO en 240ms desde su entrada real",
+    "review": "Frame1: palabra completa estable; se comprueba que empieza dentro del cue de voz",
+    "scene": "secret",
+    "proofVideoSha256": "c779603a30c6fd3a48ad066e9a85d21d24a2d37de56852455d00619a18036bab",
+    "codeStateSha256": "9ae5c0d75c56a18e0eb4d20f965aa368613494f9c82d54b2017add2021c84544"
+  },
+  {
+    "round": 5,
+    "finding": "Sello con texto circular pequeño y luz sin caída espacial alrededor de las letras",
+    "change": "Anillo CLASSIFIED mayor, halos elípticos independientes y asentamiento leve del neón",
+    "review": "Frame1: sello más legible, halo tenue sin tapar el negro ni engordar el relleno",
+    "scene": "secret",
+    "proofVideoSha256": "3871ba2fbfbab122c29e029c733e3f6ac44440d0e6ad0eca60c697a2bc7105a1",
+    "codeStateSha256": "399e79309173a3303dbeb75ffce9c174f2efaf44ce60105c89ab507315b1cb05"
+  },
+  {
+    "round": 6,
+    "finding": "Comparativa con márgenes justos y todos los renglones con el mismo peso visual",
+    "change": "Conceptos principales en carbón, conectores menores en gris y más pequeños; iconos dentro del área segura",
+    "review": "Frame2: lectura jerárquica sin colisiones con iconos; se detecta corte vertical en flecha para siguiente ronda",
+    "scene": "compare",
+    "proofVideoSha256": "e4be613e73b0a0079fdacefd648beca84e9b9e1c5e4d5b50a4ebdfda426ed542",
+    "codeStateSha256": "b126d52990e9788b699014e2a219115ccfe059cf351d5834061907c545cd28ce"
+  },
+  {
+    "round": 7,
+    "finding": "La máscara rectangular cortaba el frente de las flechas; trazos iniciales tenían bandas de opacidad",
+    "change": "Dibujo real por tramos Bézier, línea más fina, punta posterior y fundido único por segmento",
+    "review": "Frame2: frente redondo continuo, sin corte vertical ni punteado; se conserva",
+    "scene": "compare",
+    "proofVideoSha256": "9614a07c279813148419ac9cbb4679d15a048dd17474cc4ae12d10f18d93f1c3",
+    "codeStateSha256": "86aad6e7885885b810a6b92e6c8e63d6988f6565c79e31981b03463db8085571"
+  },
+  {
+    "round": 8,
+    "finding": "El zoom mezclaba rostro/texto y las salidas mostraban doble exposición y juntas oscuras",
+    "change": "Radial desde fotograma limpio, flash acotado, flare cálido móvil, papel sostenido y curvas sin alfa por tramo",
+    "review": "Se revisan clips radial y cálido: el texto no se mezcla con el rostro y las flechas salen continuas",
+    "scene": "compare",
+    "proofVideoSha256": "5ad3a631d0b92d035127bdf65ab8bc6e3c74a050a35f6eaf62edb9d1936a8bd0",
+    "codeStateSha256": "ee73db4de17273db35f23daab4e21f8e2f2b13fb4c36043e6c4e1fa1283edc08"
+  },
+  {
+    "round": 9,
+    "finding": "Todas las familias sonoras tenían el mismo peso y el roce era más corto que el dibujo",
+    "change": "Ganancia por función, neón más suave, trazo de 360ms y cue visual/sonoro compartido",
+    "review": "Clip con voz real y señal presente; pruebasFFmpeg de ducking y preservación fuera de eventos pasan",
+    "scene": "compare",
+    "proofVideoSha256": "39aa0820c2f6c9e35d0060efeaf3657961580516700d3d24077e98f77b633ba3",
+    "codeStateSha256": "c53615880bc31229fdf4560b2a87733fe9568316b9d7dd616ae548f9f60c5605"
+  },
+  {
+    "round": 10,
+    "finding": "Cierre de marca diminuto en móvil y salida final sin negro completo",
+    "change": "Cierre legible en dos líneas, fundido después de la voz y dos fotogramas reservados al negro",
+    "review": "Montaje completo:24frames revisados, marca legible, último frame RGB0,75/75palabras,fullDecodePASS,pico-9.3dBFS",
+    "scene": "full-video",
+    "proofVideoSha256": "0b71340d273693a68d08810cb2555ffaa6c2b09bf0d91c6a3e96be212137e726",
+    "codeStateSha256": "3fd4e2efe39c6aa09e224f56a40a348271797a6d5c69a5cd87034c11a7bc0077"
+  }
+]

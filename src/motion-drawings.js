@@ -29,3 +29,5 @@ export function strokeDrawing(path,width){
  for(const p of joints.values()){for(let j=0;j<10;j++){const a=-j*2*Math.PI/10;out+=`${j?'l':'m'} ${f(p.x+Math.cos(a)*r)} ${f(p.y+Math.sin(a)*r)} `;}}
  return out;
 }
+
+export function ellipsePath(x,y,rx,ry){const kx=.55228475*rx,ky=.55228475*ry;return `m ${x-rx} ${y} b ${x-rx} ${y-ky} ${x-kx} ${y-ry} ${x} ${y-ry} b ${x+kx} ${y-ry} ${x+rx} ${y-ky} ${x+rx} ${y} b ${x+rx} ${y+ky} ${x+kx} ${y+ry} ${x} ${y+ry} b ${x-kx} ${y+ry} ${x-rx} ${y+ky} ${x-rx} ${y}`;}

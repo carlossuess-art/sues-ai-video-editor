@@ -1,0 +1,47 @@
+{
+  "kind": "ten-creative-review-rounds",
+  "implementationBase": "41d6a766eef24dec1c812ac7f0b2535dbe665ec9",
+  "rounds": 10,
+  "reviewMethod": "assistant-frame-inspection-and-technical-checks-not-human-full-playback",
+  "sourceSha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a",
+  "sourcePreserved": true,
+  "outputSha256": "0b71340d273693a68d08810cb2555ffaa6c2b09bf0d91c6a3e96be212137e726",
+  "duration": 38.3,
+  "bytes": 16116255,
+  "fullDecode": "pass",
+  "words": [
+    75,
+    75
+  ],
+  "captions": 31,
+  "graphics": 3,
+  "transitions": 3,
+  "sfx": 9,
+  "sfxGain": 0.3,
+  "audioPeakDBFS": -9.3,
+  "audioMeanDBFS": -30.3,
+  "qaFrameCount": 24,
+  "finalFrameRGBMean": [
+    0,
+    0,
+    0
+  ],
+  "finishFade": {
+    "start": 38.06333333333333,
+    "duration": 0.18,
+    "blackHold": 0.06666666666666667,
+    "reason": "closing-after-last-caption",
+    "speechEnd": 37.040000915527344
+  },
+  "testsPassed": 188,
+  "recipeReproducedASSAndFilter": true,
+  "newInference": false,
+  "externalCostUSD": 0,
+  "humanAcceptance": false,
+  "fullHumanListening": false,
+  "bodyOcclusionImplemented": false,
+  "deploymentPerformed": false,
+  "videoLibraryFileId": "libfile_db85616d76a481919bef1a89e5b783e2",
+  "reportLibraryFileId": "libfile_17631954f3388191b7c5666131933928",
+  "reviewArchiveLibraryFileId": "libfile_0656b1f4a7248191adb9e35e5a856219"
+}

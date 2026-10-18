@@ -22,7 +22,7 @@ export function prepareGraphicBlocks(cards,transitions,plan,enabled=true){
   const spoken=covered.flatMap(n=>n.text.split(/\s+/).map((text,i)=>({text,index:n.wordIndexes[i],start:n.source==='manual'?null:n.wordCues?.find(q=>q.wordIndexes.includes(n.wordIndexes[i]))?.start??null}))),findStart=phrase=>{const wanted=tokens(phrase),all=spoken.map(w=>tokens(w.text)[0]);const offset=all.findIndex((_,i)=>wanted.length&&wanted.every((v,j)=>all[i+j]===v));return offset<0?null:spoken[offset].start;};
   const copy=choice.type==='grid'&&choice.heading?[choice.heading,...(choice.bodyLines??[])]:choice.type==='compare'?[choice.left,choice.right]:choice.type==='secret'?[choice.lead??'',c.text]:[];
   const replacedCaptionIds=copy.length&&tokens(copy.join(' ')).join('|')===tokens(covered.map(n=>n.text).join(' ')).join('|')?covered.map(n=>n.id):[];
-  const voiceCues={heading:choice.heading?findStart(choice.heading):null,body:(choice.bodyLines??[]).map(findStart),left:choice.left?findStart(choice.left):null,right:choice.right?findStart(choice.right):null};
+  const voiceCues={title:findStart(c.text),heading:choice.heading?findStart(choice.heading):null,body:(choice.bodyLines??[]).map(findStart),left:choice.left?findStart(choice.left):null,right:choice.right?findStart(choice.right):null};
   return {...choice,voiceCues,replacedCaptionIds,fontSize,lines:c.lines,start:c.start,end,text:c.text,wordIndexes:c.wordIndexes,textOrigin:c.source==='manual'?'user-edited-caption':'transcript-caption',reason:'Explicit editorial card choice',scope:'full-frame-presenter-intentionally-covered'};
  });
  for(const c of graphics){assert(!graphics.some(o=>o!==c&&o.start<c.end&&o.end>c.start),'cards overlap');assert(!(plan.semantic?.motions??[]).some(m=>m.start<c.end&&m.end>c.start),'card overlaps motion');assert(!plan.selectedMedia.some(m=>m.start<c.end&&m.end>c.start),'card overlaps B-roll');}
@@ -41,12 +41,12 @@ export function globalTransitionFilters(events,base){
   const d=e.duration,fade=d/2;
   if(e.type==='radialBurst'){
    filters.push(`[${base}]split=2[global-clear${i}][global-input${i}]`);
-   filters.push(`[global-input${i}]trim=start=${e.start}:end=${e.end},setpts=PTS-STARTPTS,scale=540:960,zoompan=z='1+2*min(on/6,1)':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=540x960:fps=30,gblur=sigma=5,scale=1080:1920,format=rgba,fade=t=out:st=0.2:d=0.2:alpha=1,setpts=PTS+${e.start}/TB[global-effect${i}]`);
+   filters.push(`[global-input${i}]trim=start=${e.start}:end=${e.start+1/30},setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=${d},scale=540:960,zoompan=z='1+2*(1-pow(1-min(on/6,1),2))':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=540x960:fps=30,gblur=sigma=5,scale=1080:1920,format=rgba,fade=t=out:st=0.2:d=0.2:alpha=1,setpts=PTS+${e.start}/TB[global-effect${i}]`);
    filters.push(`[global-clear${i}][global-effect${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${e.start})*lt(t,${e.end})'[burst-composed${i}]`);
-   filters.push(`color=c=0xfffcf0:s=1080x1920:r=30:d=0.26,format=rgba,fade=t=in:st=0:d=0.04:alpha=1,fade=t=out:st=0.04:d=0.22:alpha=1,setpts=PTS+${e.start+.17}/TB[burst-flash${i}]`);
-   filters.push(`[burst-composed${i}][burst-flash${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${e.start+.17})*lt(t,${e.start+.43})'[global-composed${i}]`);
+   filters.push(`color=c=0xfffcf0:s=1080x1920:r=30:d=0.23,format=rgba,colorchannelmixer=aa=0.88,fade=t=in:st=0:d=0.033:alpha=1,fade=t=out:st=0.033:d=0.197:alpha=1,setpts=PTS+${e.start+.17}/TB[burst-flash${i}]`);
+   filters.push(`[burst-composed${i}][burst-flash${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${e.start+.17})*lt(t,${e.end})'[global-composed${i}]`);
   }else if(e.type==='warm'){
-   filters.push(`color=c=0xffe1bc:s=1080x1920:r=30:d=${d},format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='255*exp(-2*((X-240)/1000)^2-2*((Y-400)/1800)^2)',fade=t=in:st=0:d=${fade}:alpha=1,fade=t=out:st=${fade}:d=${fade}:alpha=1,setpts=PTS+${e.start}/TB[global-effect${i}]`);
+   filters.push(`color=c=0xffe1bc:s=270x480:r=30:d=${d},format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='min(235,205*exp(-2*pow((X-(35+200*T/${d}))/90,2)-2*pow((Y-145)/220,2))+45*exp(-pow((Y-145)/3,2)))',scale=1080:1920,fade=t=in:st=0:d=${fade}:alpha=1,fade=t=out:st=${fade}:d=${fade}:alpha=1,setpts=PTS+${e.start}/TB[global-effect${i}]`);
    filters.push(`[${base}][global-effect${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${e.start})*lt(t,${e.end})'[global-composed${i}]`);
   }else{
    filters.push(`[${base}]split=2[global-clear${i}][global-input${i}]`);

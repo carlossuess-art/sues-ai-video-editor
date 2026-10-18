@@ -77,3 +77,14 @@ subtítulos elegibles desde app, entradas de copia literal ligadas a cues existe
 se preservan tiempos inciertos, sin inferencia nueva. Sólo se suprimen captions
 inferiores de un rango cuando el gráfico reproduce todos sus tokens en orden.
 Iconos originales de mirada/corazón para adaptar el lenguaje visual al contenido.
+
+## Diez rondas creativas · instrucción21:03Europe/Madrid,18/10/2026
+
+Se completan10rondas con clips y fotogramas revisados; ver
+SUES_CREATIVE_REFINEMENT_10.md y examples/preview/creative-ten.iterations.json.
+La valoración positiva anterior valida estilo/motions/sonido, no la nueva entrega
+ni perfección objetiva. El motor comparte beats de neón y SFX, flechas por recorrido,
+lectura hasta siguientecue, luces suaves, salidas y cierre legible. Negro final sólo
+después del último subtítulo con margen de seguridad. No convertir clips de QA en
+aceptación humana. Cuerpo detrás de capas requiere máscara real: no disponible,
+no sustituir por caja facial ni afirmar implementado. No nuevos modelos/pago/VPS.

@@ -152,10 +152,19 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
       event(3,m.layerTimes.label.start,m.layerTimes.label.end,'Outro',`{\\clip(${b.left+120},${b.top},${b.right},${b.bottom})\\pos(${cx+55},${cy})\\1c${white}&\\fs${labelSize}\\fad(180,200)}${m.lines.map(safeText).join('\\N')}`);
     }
   }
+  if(plan.policy.outro.duration<=0)return out;
   const b=plan.layout.outro,start=plan.duration-plan.policy.outro.duration;
   const color=hex=>assColor(hex).slice(4);
-  event(0,start,plan.duration,'Outro',`{\\an7\\pos(${b.left},${b.top})\\p1\\bord0\\1c&H${color(plan.renderColors.dark)}&\\1a&H40&\\fad(250,0)}m 0 0 l ${b.right-b.left} 0 ${b.right-b.left} ${b.bottom-b.top} 0 ${b.bottom-b.top}`);
-  event(1,start,plan.duration,'Outro',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})\\fad(250,0)}${safeText(plan.policy.outro.text)}`);
+  event(0,start,plan.duration,'Outro',`{\\an7\\pos(${b.left},${b.top})\\p1\\bord0\\1c&H${color(plan.renderColors.dark)}&\\1a&H80&\\fad(220,0)}m 0 0 l ${b.right-b.left} 0 ${b.right-b.left} ${b.bottom-b.top} 0 ${b.bottom-b.top}`);
+  const parts=plan.policy.outro.text.split(' · '),cx=(b.left+b.right)/2,p=plan.policy.captions;
+  if(parts.length===2){
+    const title=fitCaptionSize([parts[0]],{...p,fontSize:88},b.right-b.left-80),signature=fitCaptionSize([parts[1].toLocaleUpperCase('es')],{...p,fontRole:'keyword',fontSize:64,tracking:4},b.right-b.left-80);
+    event(1,start,plan.duration,'Outro',`{${typefaceTags(p)}\\move(${cx},${b.top+32},${cx},${b.top+24},0,180)\\fs${title}\\1c&HFFFFFF&\\bord0\\shad1\\blur5\\t(0,180,\\blur0)\\fad(160,0)}${safeText(parts[0])}`);
+    event(1,start+.12,plan.duration,'Outro',`{${typefaceTags(p,'keyword')}\\pos(${cx},${b.bottom-20})\\fs${signature}\\fsp4\\1c${assColor(plan.policy.captions.accent)}&\\fad(160,0)}${safeText(parts[1].toLocaleUpperCase('es'))}`);
+  }else{
+    const size=fitCaptionSize([plan.policy.outro.text],{...p,fontSize:86},b.right-b.left-80);
+    event(1,start,plan.duration,'Outro',`{${typefaceTags(p)}\\pos(${cx},${(b.top+b.bottom)/2})\\fs${size}\\fad(180,0)}${safeText(plan.policy.outro.text)}`);
+  }
   return out;
 }
 
@@ -198,9 +207,10 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
     filters.push(`[focus-input${i}]trim=start=${m.start}:end=${m.end},setpts=PTS-STARTPTS,scale=270:480,gblur=sigma=${sigma},scale=1080:1920,eq=brightness=-${r.dim},format=yuva420p,fade=t=in:st=0:d=${fade}:alpha=1,fade=t=out:st=${duration-fade}:d=${fade}:alpha=1,setpts=PTS+${m.start}/TB[focus-layer${i}]`);
     filters.push(`[focus-clear${i}][focus-layer${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${m.start})*lt(t,${m.end})'[focus-composed${i}]`);base=`focus-composed${i}`;
   }
-  const paper=technicalPaperFilters(plan.graphics??[],base);filters.push(...paper.filters);base=paper.base;
-  const hasTransitions=!!plan.globalTransitions?.length;filters.push(`[${base}]ass=filename=${assFile}:fontsdir=fonts[${hasTransitions?'captioned':'video'}]`);
-  if(hasTransitions){const global=globalTransitionFilters(plan.globalTransitions,'captioned');filters.push(...global.filters,`[${global.base}]null[video]`);}
+  const paper=technicalPaperFilters(plan.graphics??[],base,plan.globalTransitions??[]);filters.push(...paper.filters);base=paper.base;
+  const hasTransitions=!!plan.globalTransitions?.length;filters.push(`[${base}]ass=filename=${assFile}:fontsdir=fonts[${hasTransitions||plan.finishFade?'captioned':'video'}]`);
+  if(hasTransitions){const global=globalTransitionFilters(plan.globalTransitions,'captioned');filters.push(...global.filters,`[${global.base}]null[${plan.finishFade?'finish-input':'video'}]`);}
+  if(plan.finishFade){const f=plan.finishFade;filters.push(`[${hasTransitions?'finish-input':'captioned'}]fade=t=out:st=${f.start}:d=${f.duration}[video]`);}
   assert(!plan.audioMix||hasAudio,'background music requires original voice track');
   filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0),{hasAudio}));
   return filters.join(';\n')+'\n';

@@ -1,3 +1,44 @@
+# Estado vigente · diez rondas de revisión creativa · 18/10/2026
+
+Carlos valora sonido con «Bien» y pide luces/entradas/salidas. A21:03Europe/Madrid
+solicita diez ciclos de revisar, pensar mejoras, aplicar y volver a revisar con
+criterio de edición creativa para redes. Se completan10rondas principales y
+correcciones internas adicionales: no se declara perfección ni aceptación nueva.
+Base:41d6a766eef24dec1c812ac7f0b2535dbe665ec9.
+
+1Revelado con presupuesto de lectura hasta siguientecue;2iconos ligados a voz y
+sombra;3papel con viñeta menos cerrada/luz tenue móvil;4neón y sonido al cue real;
+5anillo del sello legible/halo elíptico;6jerarquía y márgenes de comparativa;
+7flechas dibujadas por recorrido real sin corte rectangular;8zoom desde frame
+limpio, flash acotado y flare móvil, papel sostenido sin doble exposición;
+9gananciaSFXpor función/roce360ms;10revisión de montaje/cierre legible en2líneas,
+fundido posterior a voz y negro final. El cierre minúsculo de primera exportación
+se detecta y corrige antes de entregar. Se resuelve punteado en flechas durante
+fundido por alfa individual; curvas se sostienen y la transición sale en conjunto.
+
+SUES_RESULTADO_10_RONDAS.mp4:38,30s/1080×1920/30/H264/AAC,75/75palabras,31captions,
+3motions/3transiciones/9SFXpropios,gananciaSFX0,3/música0,1 conducking,originalintacto.
+188/188tests,check,py_compile,diffcheck;fullDecodePASS,pico−9,3/RMS−30,3dBFS.
+QA24fotogramas y clips enfocados en rondas1–9; últimosframesnegrosRGB0 verificados.
+No escucha humana completa ni playback humano ni aprobación del nuevo montaje.
+ASS/filtro idénticos reproducidos desde receta final. Diez estados de código y
+hashes de clips únicos registrados. Recorte corporal continúa pendiente: no hay
+paquetes/modelos de segmentación disponibles; no descargar modelos nuevos ni
+presentar máscara facial como corporal. Se mejora profundidad de gráficos/capas.
+
+MP4:16.116.255bytes,SHA0b71340d273693a68d08810cb2555ffaa6c2b09bf0d91c6a3e96be212137e726.
+Library vídeo libfile_db85616d76a481919bef1a89e5b783e2;
+resumen libfile_17631954f3388191b7c5666131933928;
+archivoQA libfile_0656b1f4a7248191adb9e35e5a856219 (clips seleccionados y registro).
+Ver docs/SUES_CREATIVE_REFINEMENT_10.md,examples/preview/creative-ten.*.json.
+Receta scripts/templates/prepare_creative_polish.mjs sobre proyecto con voz
+existente; render con render_local_preview.py. Clips de revisión y registro tienen
+scripts propios. F6 abierta, sin V1/porcentaje/despliegue. Coste externo0USD.
+Próximo: recorte corporal real autorizado y revisión sobre mejor toma/Director.
+
+---
+## Registro anterior
+
 # Estado vigente · estilo validado y SFX integrados · 18/10/2026
 
 Carlos confirma a20:33 que le gustan estilo/ejecución de los motions. A20:34 aclara

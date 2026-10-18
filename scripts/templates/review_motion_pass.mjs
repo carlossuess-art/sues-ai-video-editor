@@ -1,0 +1,22 @@
+import {prepareSoundEffects,renderAudioFilters} from '../../src/sound-effects.js';
+// Focused visual-review clip for one app-native scene and its real exit renderer.
+import {readFileSync,writeFileSync,mkdirSync,cpSync} from 'node:fs';
+import {resolve,join} from 'node:path';
+import {execFileSync} from 'node:child_process';
+import {loadProject,prepareProject,fileSha256} from '../../src/local-pipeline.js';
+import {buildPreviewASS} from '../../src/local-preview.js';
+import {technicalPaperFilters} from '../../src/technical-paper.js';
+import {globalTransitionFilters} from '../../src/graphic-blocks.js';
+const [config,settingsPath,scene,outputDir]=process.argv.slice(2);if(!outputDir)throw Error('Usage: PROJECT SETTINGS SCENE NEW_DIRECTORY');
+const out=resolve(outputDir);mkdirSync(out,{mode:0o700});const project=loadProject(config),settings=JSON.parse(readFileSync(settingsPath)),plan=prepareProject(project,settings).plan;
+const source=plan.graphics.find(g=>g.type===scene);if(!source)throw Error('Scene not found');const shift=.2-source.start,add=t=>t===null||t===undefined?t:t+shift;
+const g={...source,start:.2,end:add(source.end),voiceCues:{...source.voiceCues,title:add(source.voiceCues.title),heading:add(source.voiceCues.heading),body:source.voiceCues.body.map(add),left:add(source.voiceCues.left),right:add(source.voiceCues.right)}},duration=g.end+.65;
+const transitions=plan.globalTransitions.filter(t=>t.captionId===g.captionId).map(t=>({...t,start:add(t.start),end:add(t.end)}));
+const sample={...plan,duration,policy:{...plan.policy,outro:{...plan.policy.outro,duration:0}},captions:[],graphics:[g],semantic:{motions:[],zooms:[]},illustrations:[],globalTransitions:transitions};
+sample.soundEffects=prepareSoundEffects(sample,settings);sample.audioMix=null;
+writeFileSync(join(out,'scene.json'),JSON.stringify(sample,null,2)+'\n');writeFileSync(join(out,'captions.ass'),buildPreviewASS(sample));cpSync(project.fontDirectory,join(out,'fonts'),{recursive:true});
+const still=join(out,'presenter.png');execFileSync('ffmpeg',['-v','error','-ss','16.6','-i',project.sourcePath,'-frames:v','1',still]);
+const paper=technicalPaperFilters(sample.graphics,'0:v',transitions),filters=[...paper.filters,`[${paper.base}]ass=filename=captions.ass:fontsdir=fonts[captioned]`],transition=globalTransitionFilters(transitions,'captioned');filters.push(...transition.filters,`[${transition.base}]scale=540:960,format=yuv420p[video]`,`[1:a]atrim=duration=${duration},asetpts=PTS-STARTPTS[audio]`,...renderAudioFilters(sample,2));writeFileSync(join(out,'filter.ffscript'),filters.join(';\n')+'\n');
+execFileSync('ffmpeg',['-v','error','-loop','1','-framerate','30','-i',still,'-ss',String(Math.max(0,source.start-.2)),'-i',project.sourcePath,'-filter_complex_threads','1','-filter_complex_script','filter.ffscript','-map','[video]','-map',sample.soundEffects.events.length?'[mixed-audio]':'[audio]','-c:a','aac','-t',String(duration),'-c:v','libx264','-threads','2','-preset','veryfast','-crf','20',join(out,'review.mp4')],{cwd:out});
+const times=[.35,.9,Math.min(g.end-.3,2.4),g.end-.12,g.end+.25];for(const [i,t]of times.entries())execFileSync('ffmpeg',['-v','error','-ss',String(t),'-i',join(out,'review.mp4'),'-frames:v','1',join(out,`frame-${i}.png`)]);
+writeFileSync(join(out,'proof.json'),JSON.stringify({scene,duration,sha256:fileSha256(join(out,'review.mp4')),settings,sourceSha256:project.boundHashes.source},null,2)+'\n');console.log(JSON.stringify({out,scene,duration}));

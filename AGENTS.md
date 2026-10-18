@@ -93,3 +93,14 @@ conserva la mezcla previa. Son cues genéricos de la app, no enlaces recuperados
 las capas audio del catálogo ni material comercial. Recetas src/sound-effects.js.
 Persisten con ajustes/deshacer/copia y aparecen en la revisión del plan. Controles
 en app sin QA visual navegador todavía. Sonido necesita escucha/valoración humana.
+
+## Diez rondas creativas · instrucción21:03Europe/Madrid,18/10/2026
+
+Se completan10rondas con clips y fotogramas revisados; ver
+SUES_CREATIVE_REFINEMENT_10.md y examples/preview/creative-ten.iterations.json.
+La valoración positiva anterior valida estilo/motions/sonido, no la nueva entrega
+ni perfección objetiva. El motor comparte beats de neón y SFX, flechas por recorrido,
+lectura hasta siguientecue, luces suaves, salidas y cierre legible. Negro final sólo
+después del último subtítulo con margen de seguridad. No convertir clips de QA en
+aceptación humana. Cuerpo detrás de capas requiere máscara real: no disponible,
+no sustituir por caja facial ni afirmar implementado. No nuevos modelos/pago/VPS.
