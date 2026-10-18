@@ -1,5 +1,10 @@
 # Estado técnico vigente · construcción general · 18/10/2026
 
+Decisión vigente: el dossier y la referencia Keanu son la base visual de TODAS
+las plantillas; variar ritmo, intensidad y densidad según necesidad. Nuevas
+plantillas sólo cuando hagan falta. Regla detallada en AGENTS.md y guía general.
+La automatización de densidades por variante sigue pendiente del Director.
+
 Construcción transversal F5–F10; implementación 15b17cd515adb8a70e013404332258a7e831c263.
 Estimación técnica ponderada: 72,25 %. No es aceptación estética ni V1.
 Se conservan los 40 puntos históricos de F1–F4; ahora se contabiliza trabajo

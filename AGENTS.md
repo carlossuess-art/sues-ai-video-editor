@@ -17,3 +17,24 @@ Reutilizar análisis existentes. No activar consumos de pago, nuevas suscripcion
 modelos o proveedores sin autorización específica. No modificar WhatsApp, Caddy,
 DNS ni desplegar a ciegas. Una prueba técnica no equivale a aceptación humana.
 No declarar V1 por superar tests. Nunca incluir medios privados o secretos en Git.
+
+## Regla visual común · decisión de Carlos · 18/10/2026
+
+El informe de Keanu y el vídeo de referencia definen el lenguaje visual general
+para TODAS las plantillas, no sólo CALMA. Extraer de esas fuentes las decisiones
+ya analizadas; no pedir a Carlos que vuelva a definir tipografía, jerarquía,
+composición, colores, animación de texto o recursos descritos en el informe.
+Distinguir observaciones confirmadas de aproximaciones o datos no identificados.
+
+CALMA, IMPACTO, EXPLICA e HISTORIA comparten esa base. Las variantes ajustan el
+ritmo, duración e intensidad y la cantidad/densidad de transiciones, acercamientos
+y recursos según el contenido. No convertir una variante en una identidad visual
+independiente ni usar efectos por cuota sin intención narrativa. Mantener grupos
+progresivos cortos, palabra importante 2:1 y énfasis excepcional con color/material
+cuando proceda, respetando legibilidad y zonas seguras.
+
+Crear nuevas plantillas conforme aparezca una necesidad concreta que las actuales
+no resuelvan. Una plantilla nueva hereda la base común; cualquier excepción visual
+se documenta con su motivo. No hace falta definir todas las plantillas futuras
+para cerrar una primera plantilla funcional. No declarar que los efectos pendientes
+del dossier están implementados por haber fijado esta regla.

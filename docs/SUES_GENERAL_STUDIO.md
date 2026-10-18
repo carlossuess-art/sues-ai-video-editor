@@ -1,7 +1,8 @@
 # Estudio general · 18/10/2026
 
-Este bloque amplía varias fases de forma conjunta. CALMA mantiene a Keanu como
-referencia principal; Inter 4.1 es una aproximación, no la fuente identificada.
+Este bloque amplía varias fases de forma conjunta. Keanu y su dossier definen la
+base visual común de todas las plantillas; Inter 4.1 es una aproximación, no la
+fuente identificada.
 
 ## Funciones integradas
 
@@ -72,3 +73,30 @@ QA13fotogramas, audio pico−9,27dBFS/RMS−30,27dBFS sin NaN/Inf. Sin escucha h
 completa, navegador real o aprobación estética. Las elecciones de esta muestra
 son explícitas para ejercitar componentes; no se atribuyen a un Director LLM.
 Evidencia pública sin rutas privadas: examples/preview/general-studio.real-result.json.
+
+## Regla visual común · decisión de Carlos · 18/10/2026
+
+El informe de Keanu y el vídeo de referencia definen el lenguaje visual general
+para TODAS las plantillas, no sólo CALMA. Extraer de esas fuentes las decisiones
+ya analizadas; no pedir a Carlos que vuelva a definir tipografía, jerarquía,
+composición, colores, animación de texto o recursos descritos en el informe.
+Distinguir observaciones confirmadas de aproximaciones o datos no identificados.
+
+CALMA, IMPACTO, EXPLICA e HISTORIA comparten esa base. Las variantes ajustan el
+ritmo, duración e intensidad y la cantidad/densidad de transiciones, acercamientos
+y recursos según el contenido. No convertir una variante en una identidad visual
+independiente ni usar efectos por cuota sin intención narrativa. Mantener grupos
+progresivos cortos, palabra importante 2:1 y énfasis excepcional con color/material
+cuando proceda, respetando legibilidad y zonas seguras.
+
+Crear nuevas plantillas conforme aparezca una necesidad concreta que las actuales
+no resuelvan. Una plantilla nueva hereda la base común; cualquier excepción visual
+se documenta con su motivo. No hace falta definir todas las plantillas futuras
+para cerrar una primera plantilla funcional. No declarar que los efectos pendientes
+del dossier están implementados por haber fijado esta regla.
+
+Comprobación de implementación: `applyStyleVariant` en `src/style-variants.js`
+hereda la plantilla base y sus políticas; las variantes actuales cambian ritmo,
+parámetros de presentación y cámara. La densidad automática de transiciones y
+recursos por variante aún necesita integración con el Director. Elegir una
+variante no genera por sí solo transiciones que el usuario no haya seleccionado.
