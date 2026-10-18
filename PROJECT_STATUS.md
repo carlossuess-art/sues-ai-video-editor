@@ -1,3 +1,27 @@
+## Despliegue observado y activación HTTPS preparada · 19/10/2026
+
+Capturas de Carlos acreditan editor ba972d76829c53400e7a6401d5e78a1e8593f9fc
+arrancado en VPS76.13.51.232: loopback3010 devuelve200. DNS público de
+editor.suesholistics.com resuelve esa IP. WhatsApp loopback3001 devuelve401.
+Caddy actual usa reverse-proxyCLI desdewa haciawhatsapp-connector:3001, redbridge;
+compose /opt/sues-whatsapp/compose.yml. APIadmin2019 rechaza conexión; Caddyfile
+default y autosave no representan el arranque activo. No repetir ese diagnóstico.
+
+scripts/deploy/activate_https.py prepara migración acotada: Caddyhost con upstreams
+loopback3001/3010; conserva volúmenes/certificados, sustituye sólo bloqueCaddy y
+compara configuración efectiva del resto. Rechaza trabajos activos. Reutiliza imagen
+fijada porID/montajes/estado del editor con SUES_PUBLIC_ORIGIN; conserva contenedor
+previo detenido y copiaCompose0600. Verifica TLS real y respuestas200/401/401;
+intenta restaurar ambos servicios ante fallo, incluso si falla restaurarCaddy.
+No instala, no descarga modelos, no hacepull/build. Ejecutar medianteconsola deCarlos;
+no acceso remoto del agente. Cinco pruebas locales simuladas y py_compilePASS;
+Docker no disponible en Work. HTTPS todavía NO ejecutado/verificado en VPS.
+
+Activador SHA256:661a8a992117d02fd8886dbb6c65bed20f7475c6c3f3582a3c6da609d47719d4.
+Pendientes: resultado de activación, acceso navegador, material privado/preview y
+exportación real enVPS. F6/Director/segmentación conservan límites anteriores; noV1.
+
+---
 ## Último avance · oclusión por contorno manual y preparación Hostinger ·18/10/2026
 
 SUES_PRUEBA_PROFUNDIDAD.mp4,17,20s,SHA
