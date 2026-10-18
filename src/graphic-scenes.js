@@ -1,56 +1,85 @@
-import {fitCaptionSize} from './font-kits.js';
-// Authored vector scenes inspired by the reference's grid, orbital nodes and stamp.
-// Geometry and timings are reconstruction choices, not measurements of its project.
+import {fitCaptionSize,textAdvance,typefaceTags} from './font-kits.js';
+import {circlePath,LINE_ART,strokeDrawing} from './motion-drawings.js';
+
+// User-selected recreation recipe. No claim to have recovered the source project,
+// exact font identification, stock sticker, plugin or original keyframe values.
 export function drawEditorialScenes(plan,event,safeText,assColor){
- const disk=(x,y,r)=>`m ${x-r} ${y} b ${x-r} ${y-r*.5523} ${x-r*.5523} ${y-r} ${x} ${y-r} b ${x+r*.5523} ${y-r} ${x+r} ${y-r*.5523} ${x+r} ${y} b ${x+r} ${y+r*.5523} ${x+r*.5523} ${y+r} ${x} ${y+r} b ${x-r*.5523} ${y+r} ${x-r} ${y+r*.5523} ${x-r} ${y}`;
  for(const g of plan.graphics??[]){
-  const start=g.start,end=g.end,ms=Math.round((end-start)*1000),dark='#141918',paper='#E5E6E3',gold='#B59762',red='#F36050';
-  const shape=(layer,path,color,extra='',at=start)=>event(layer,at,end,'Outro',`{\\an7${extra.includes('\\move(')?'':'\\pos(0,0)'}\\p1\\bord0\\shad0\\1c${assColor(color)}&\\fad(160,180)${extra}}${path}`);
-  const label=(text,x,y,size,color,extra='',at=start)=>event(-1,at,end,'Caption',`{${extra.includes('\\move(')?'':`\\pos(${x},${y})`}\\fs${size}\\b1\\bord0\\shad0\\1c${assColor(color)}&\\fad(160,180)${extra}}${safeText(text)}`);
-  shape(-8,'m 0 0 l 1080 0 1080 1920 0 1920',g.type==='secret'?'#080C0D':paper);
+  const start=g.start,end=g.end,d=end-start,ms=Math.round(d*1000),p=plan.policy.captions,dark='#1A1A1A',red='#FF0000',pink='#FF9999';
+  const shape=(path,x,y,color,{layer=-3,at=start,extra='',stroke=0,alpha='00',blur=0,until=end}={})=>event(layer,at,until,'Outro',`{${extra.includes('\\move(')?'':`\\pos(${x},${y})`}\\an7\\p1\\bord0\\shad0\\1c${assColor(color)}&\\3c${assColor(color)}&\\1a&H${alpha}&\\3a&H${alpha}&\\blur${blur}\\fad(120,160)${extra}}${stroke?strokeDrawing(path,stroke*2):path}`);
+  const label=(text,x,y,size,{at=start,role='normal',italic=false,color=dark,extra='',layer=-1,escape=true}={})=>event(layer,at,end,'Caption',`{${extra.includes('\\move(')?'':`\\pos(${x},${y})`}${typefaceTags(p,role,italic)}\\fs${size}\\fscx100\\fsp-2\\i${italic?1:0}\\b${role.startsWith('stamp')?0:role.startsWith('keyword')?800:700}\\bord0\\shad0\\1c${assColor(color)}&\\fad(120,160)${extra}}${escape?safeText(text):text}`);
+  const icon=(name,x,y,at)=>{
+   const path=LINE_ART[name];if(!path)return;
+   shape(path,x,y,dark,{at,stroke:4.5,extra:`\\fscx115\\fscy115\\move(${x},${y+30},${x},${y},0,200)\\blur12\\t(0,200,\\blur0)`});
+  };
+  const reveal=(text,x,y,size,at,{role='normal',italic=false,color=dark}={})=>{
+   const policy={...p,fontRole:role==='keyword'?italic?'keywordItalic':'keyword':italic?'italic':undefined,scaleX:100,tracking:-2},width=textAdvance(text,policy,size);
+   let cursor=x-width/2;const delay=Math.min(.028,Math.max(.008,(end-at-.3)/Math.max(1,text.length)));
+   for(const [i,char]of [...text].entries()){
+    const w=textAdvance(char,policy,size),cx=cursor+w/2,t=at+i*delay;
+    if(t>=end-.12)break;
+    label(char,cx,y,size,{at:t,role,italic,color,extra:`\\fsp0\\move(${cx+30},${y},${cx},${y},0,220)\\blur10\\t(0,220,\\blur0)`});cursor+=w-2;
+   }
+  };
   if(g.type==='secret'){
-   // Light is concentrated around the stamp, rather than a flat pink rectangle.
-   shape(-7,disk(510,740,210),red,'\\1a&HEB&\\blur100');
-   const frame='m 155 530 l 865 530 865 536 155 536 m 155 925 l 865 925 865 931 155 931 m 155 530 l 161 530 161 590 155 590 m 859 530 l 865 530 865 590 859 590 m 155 870 l 161 870 161 931 155 931 m 859 870 l 865 870 865 931 859 931';
-   shape(-4,frame,red,'\\blur10\\1a&H80&\\fscx90\\fscy90\\t(0,280,\\fscx100\\fscy100)');
-   shape(-3,frame,red,'\\fscx90\\fscy90\\t(0,280,\\fscx100\\fscy100)');
-   
-   const titleLines=g.lines.map(line=>line.toLocaleUpperCase('es').replace(/[,.;!?]+$/,'')),size=fitCaptionSize(titleLines,{...plan.policy.captions,fontSize:Math.min(140,g.fontSize*1.5)},700);
-   titleLines.forEach((line,i)=>{
-    const y=730+(i-(titleLines.length-1)/2)*size*1.15;
-    label(line,510,y,size,red,'\\frz-4\\fscx88\\fscy88\\blur8\\1a&H70&\\t(0,300,\\fscx100\\fscy100)',start+.08);
-    label(line,510,y,size,red,'\\frz-4\\fscx88\\fscy88\\t(0,300,\\fscx100\\fscy100)',start+.08);
+   shape('m 0 0 l 1080 0 1080 1920 0 1920',0,0,'#000000',{layer:-8});
+   // Original stamp geometry, drawn with real Anton. Not an imported sticker.
+   const stampX=510,stampY=610,r=180,at=start+.06;
+   for(const glow of [true,false]){
+    for(const radius of [r,r-20])shape(circlePath(stampX,stampY,radius),0,0,red,{at,stroke:glow?9:4,alpha:glow?'90':'20',blur:glow?22:3,extra:'\\blur18\\t(0,240,\\blur2)'});
+    label('TOP SECRET',stampX,stampY,120,{at,role:'stamp',color:glow?red:pink,layer:glow?-3:-1,extra:`\\fnAnton\\i0\\fsp0\\frz-8\\blur${glow?18:10}\\t(0,240,\\blur${glow?14:0})`});
+   }
+   for(const [i,char]of [...'CLASSIFIED'].entries()){
+    const angle=(-153+i*14)*Math.PI/180,x=stampX+Math.cos(angle)*(r-47),y=stampY+Math.sin(angle)*(r-47);
+    label(char,x,y,25,{at:start+.12,role:'stampRing',color:pink,extra:`\\fnAllerta Stencil\\frz${-(angle*180/Math.PI+90)}\\fsp0\\blur5\\t(0,220,\\blur0)`});
+   }
+   const lead=g.lead??'',title=g.text.toLocaleUpperCase('es').replace(/[,.;!?]+$/,'');
+   if(lead)label(lead,510,900,100,{at:start+.16,role:'keyword',color:'#FFFFFF',extra:'\\blur8\\t(0,200,\\blur0)'});
+   const size=fitCaptionSize(g.lines.map(s=>s.toLocaleUpperCase('es')),{...p,fontRole:'keywordItalic',fontSize:112},780),when=start+Math.min(.7,d*.22);
+   const lines=g.lines.map(s=>s.toLocaleUpperCase('es').replace(/[,.;!?]+$/,''));
+   lines.forEach((line,i)=>{
+    const y=1060+(i-(lines.length-1)/2)*size*1.1;
+    label(line,510,y,size,{at:when,role:'keyword',italic:true,color:red,layer:-3,extra:'\\blur28\\bord9\\3c&H000000FF&\\3a&H60&\\1a&H70&'});
+    label(line,510,y,size,{at:when,role:'keyword',italic:true,color:red,layer:-2,extra:'\\blur10\\bord3\\3c&H000000FF&\\3a&H50&'});
+    reveal(line,510,y,size,when,{role:'keyword',italic:true,color:pink});
    });
-   label('S U E S   H O L I S T I C S',510,1005,25,'#82908A','\\fsp1',start+.28);
+   const scanY=970,scanAt=when-.08;
+   shape('m 0 0 l 145 0 145 4 0 4',0,0,red,{at:scanAt,until:scanAt+.5,blur:15,extra:'\\move(810,970,140,970,0,380)\\fad(60,180)'});
+   shape('m 0 0 l 145 0 145 3 0 3',0,0,pink,{at:scanAt,until:scanAt+.5,extra:'\\move(810,970,140,970,0,380)\\fad(60,180)'});
    continue;
   }
-  let grid='';for(let x=0;x<=1080;x+=64)grid+=`m ${x} 0 l ${x+1} 0 ${x+1} 1920 ${x} 1920 `;for(let y=0;y<=1920;y+=64)grid+=`m 0 ${y} l 1080 ${y} 1080 ${y+1} 0 ${y+1} `;
-  shape(-7,grid,'#87938C','\\1a&HD5&');
-  shape(-6,'m 0 0 l 1080 0 1080 90 0 90 m 0 1800 l 1080 1800 1080 1920 0 1920 m 0 0 l 90 0 90 1920 0 1920 m 980 0 l 1080 0 1080 1920 980 1920',dark,'\\1a&H70&\\blur95');
-  // Oversize rings leave the center clear. Parallax and offset nodes add depth.
-  for(const [i,c]of [[0,{x:830,y:-120,r:530}],[1,{x:180,y:1850,r:480}]]){
-   const move=`\\move(0,0,${i?24:-20},${i?-28:24},0,${ms})`;
-   shape(-5,disk(c.x,c.y,c.r),dark,`\\1a&HFF&\\bord7\\3c${assColor(dark)}&\\3a&HA0&${move}`);
-   const angle=i?-1.05:2.15,x=c.x+Math.cos(angle)*c.r,y=c.y+Math.sin(angle)*c.r;
-   shape(-4,disk(x+10,y+12,33),dark,`\\blur14\\1a&HB0&${move}`);
-   shape(-3,disk(x,y,30),dark,move);
-   shape(-2,disk(x-8,y-9,9),'#829088','\\1a&H90&'+move);
-  }
-  if(g.type==='compare'){
-   // A route is drawn in stages, not a static arrow placed between two labels.
-   label(g.left,510,590,g.fontSize,dark,'\\i1\\fscx97\\t(0,280,\\fscx100)',start+.1);
-   const route='m 510 710 b 710 710 710 1020 510 1020';
-   shape(-2,route,gold,`\\1a&HFF&\\bord4\\3c${assColor(gold)}&\\clip(0,0,1080,720)\\t(180,700,\\clip(0,0,1080,1030))`);
-   shape(-2,'m 491 995 l 510 1020 534 997 530 1017 510 1042 487 1018',gold,'',start+.55);
-   const lines=g.right.length>19?g.right.split(/\s+/):[g.right];
-   const output=lines.length>2?[lines.slice(0,Math.ceil(lines.length/2)).join(' '),lines.slice(Math.ceil(lines.length/2)).join(' ')]:lines;
-   output.forEach((line,i)=>label(line,510,1130+i*90,g.fontSize,'#365B4E','\\i1',start+.65+i*.1));
+  // Paper, central grid, vignette and grain are composited by technical-paper.js.
+  if(g.type==='grid'){
+   for(const [index,c]of [{x:900,y:-140,r:550},{x:80,y:1900,r:500}].entries()){
+    const rotate=`\\org(${c.x},${c.y})\\frz0\\t(0,${ms},\\frz${index?-25:25})`;
+    shape(circlePath(c.x,c.y,c.r),0,0,dark,{stroke:5,alpha:'70',blur:3,extra:rotate});
+    for(const delta of [0,.22]){
+     const a=(index?-1.02:2.02)+delta,x=c.x+Math.cos(a)*c.r,y=c.y+Math.sin(a)*c.r;
+     shape(circlePath(x+7,y+10,32),0,0,dark,{alpha:'A0',blur:14,extra:rotate});
+     shape(circlePath(x,y,30),0,0,dark,{blur:4,extra:rotate});
+    }
+   }
+   const words=g.text.split(/\s+/),last=words.pop(),heading=g.heading??words.join(' '),body=g.bodyLines??[last];
+   const headerSize=fitCaptionSize([heading||' '],{...p,fontRole:'italic',fontSize:160},780);
+   if(heading){
+    const prefix=heading.endsWith(' de')?heading.slice(0,-3):heading;
+    const content=heading.endsWith(' de')?`${safeText(prefix)} {\\1c${assColor('#7A7A7A')}&\\t(600,1000,\\1c${assColor(dark)}&)}de`:safeText(heading);
+    label(content,510,680,headerSize,{at:start+.1,italic:true,escape:false,extra:'\\blur10\\t(0,200,\\blur0)'});
+   }
+   body.forEach((line,i)=>reveal(line,510,820+i*145,fitCaptionSize([line],{...p,fontSize:160},780),start+.65+i*.35));
+   if(g.icons?.length){icon(g.icons[0],210,1120,start+.7);icon(g.icons[1],650,1120,start+1.02);}
   }else{
-   // Preserve only the selected literal words. No generic placeholder headings.
-   const words=g.text.trim().split(/\s+/),last=words.pop(),prefix=words.join(' ');
-   if(prefix)label(prefix,510,670,Math.min(72,g.fontSize),dark,'\\i1\\move(510,690,510,670,0,300)',start+.12);
-   label(last,510,840,fitCaptionSize([last],{...plan.policy.captions,fontSize:Math.min(180,g.fontSize*1.8)},740),dark,'\\i1\\fscx92\\fscy92\\t(0,350,\\fscx100\\fscy100)',start+.3);
-   shape(-2,'m 270 1010 l 750 1010 750 1013 270 1013',gold,'\\clip(270,1000,270,1030)\\t(350,800,\\clip(270,1000,750,1030))');
+   const split=text=>{const words=text.split(/\s+/),lines=[''];for(const w of words){if((lines.at(-1)+' '+w).trim().length>14&&lines.at(-1))lines.push(w);else lines[lines.length-1]=(lines.at(-1)+' '+w).trim();}return lines;};
+   const leftLines=split(g.left),rightLines=split(g.right),font=fitCaptionSize([...leftLines,...rightLines],{...p,fontRole:'italic',fontSize:180},470),x=110;
+   leftLines.forEach((line,i)=>label(line,x,780+i*font*.9,font,{at:start+.1,italic:true,extra:'\\an4\\blur10\\t(0,250,\\blur0)'}));
+   rightLines.forEach((line,i)=>label(line,x,1160+i*font*.9,font,{at:start+1.1,italic:true,extra:'\\an4\\blur10\\t(0,250,\\blur0)'}));
+   if(g.icons?.length){icon(g.icons[0],670,665,start+.1);icon(g.icons[1],690,1060,start+1.1);}
+   else{shape(circlePath(785,780,75),0,0,dark,{stroke:4,at:start+.1});shape(circlePath(785,1160,75),0,0,dark,{stroke:4,at:start+1.1});}
+   // Progressive masks reveal the actual curved strokes, followed by arrowheads.
+   shape('m 310 650 b 410 350 710 355 820 590',0,0,dark,{stroke:9,at:start+.5,extra:'\\clip(200,250,220,680)\\t(0,430,\\clip(200,250,900,680))'});
+   shape('m 787 566 l 822 604 849 552 818 569',0,0,dark,{at:start+.88});
+   shape('m 310 1310 b 410 1600 710 1600 820 1340',0,0,dark,{stroke:9,at:start+1.6,extra:'\\clip(200,1280,220,1700)\\t(0,430,\\clip(200,1280,900,1700))'});
+   shape('m 786 1368 l 823 1326 848 1378 817 1361',0,0,dark,{at:start+1.98});
   }
  }
 }

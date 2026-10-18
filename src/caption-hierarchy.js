@@ -17,13 +17,14 @@ export function hierarchyLayout(caption,policy,box){
  if(!caption.keyword)return null;
  const parts=caption.text.split(/\s+/),at=caption.keyword.displayWordIndex??caption.wordIndexes.indexOf(caption.keyword.sourceWordIndex);if(at<0||at>=parts.length||caption.keyword.displayWordIndex===undefined&&parts.length!==caption.wordIndexes.length)return null;
  const preset=keywordPreset(caption.keyword);policy={...policy,...(preset.scaleX?{scaleX:preset.scaleX}:{})};
- const before=parts.slice(0,at).join(' '),hero=parts[at],after=parts.slice(at+1).join(' '),three=!!before&&!!after;
- const desired=three?128:144,heroSize=fitCaptionSize([hero],{...policy,fontSize:desired},box.right-box.left);
+ const before=parts.slice(0,at).join(' '),hero=policy.keywordUppercase?parts[at].toLocaleUpperCase('es'):parts[at],after=parts.slice(at+1).join(' '),three=!!before&&!!after,ratio=policy.hierarchy?.ratio??2;
+ const desired=ratio===2?(three?128:144):(policy.fontSize??96)*ratio;let heroSize;
+ try{heroSize=fitCaptionSize([hero],{...policy,fontRole:preset.italic?'keywordItalic':'keyword',fontSize:desired},box.right-box.left);}catch(error){if(error.message==='Caption cannot fit at a readable size')return null;throw error;}
  // Keep the ratio exactly 2:1, including when width forces a smaller size.
  // Refuse unreadable companions rather than clipping or changing the ratio.
- if(heroSize<128)return null;
- const small=heroSize/2,cx=(box.left+box.right)/2,cy=(box.top+box.bottom)/2;
- const row=(text,size,y,role)=>({text,size,x:cx,y,role,...(role==='keyword'?{scaleX:policy.scaleX,italic:preset.italic??false}:{})});
+ if(heroSize/ratio<64)return null;
+ const small=heroSize/ratio,cx=(box.left+box.right)/2,cy=(box.top+box.bottom)/2;
+ const row=(text,size,y,role)=>({text,size,x:cx,y,role,...(role==='keyword'?{fontRole:preset.italic?'keywordItalic':'keyword',scaleX:policy.scaleX,italic:preset.italic??false}:{})});
  if(three)return [row(before,small,cy-75,'companion'),row(hero,heroSize,cy,'keyword'),row(after,small,cy+75,'companion')];
  if(before)return [row(before,small,cy-65,'companion'),row(hero,heroSize,cy+27,'keyword')];
  if(after)return [row(hero,heroSize,cy-27,'keyword'),row(after,small,cy+65,'companion')];

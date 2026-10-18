@@ -17,17 +17,17 @@
   },
   "captions": {
     "mode": "short-groups",
-    "fontSize": 96,
-    "scaleX": 94,
+    "fontSize": 112,
+    "scaleX": 100,
     "tracking": -2,
     "maxWords": 3,
     "maxDuration": 2.4,
     "entranceMs": 180,
     "fadeMs": 60,
     "reference": "deckeanu-keanu-primary",
-    "fontIdentity": "visual-approximation-not-identified",
+    "fontIdentity": "user-selected-Montserrat-typographic-specification",
     "hierarchy": {
-      "ratio": 2,
+      "ratio": 1.1666666666666667,
       "selection": "editorial-phrase-rules-v1",
       "keywordWeights": {
         "mirar": 5,
@@ -61,6 +61,31 @@
     "characterEntrance": {
       "staggerMs": 24,
       "settleMs": 130
+    },
+    "font": "Montserrat",
+    "keywordUppercase": true,
+    "shadow": {
+      "opacity": 0.65,
+      "blurPx": 15,
+      "distancePx": 5,
+      "angleDeg": -45
+    },
+    "glow": {
+      "enabled": true,
+      "intensity": 0.4,
+      "range": 35,
+      "assBlurPx": 12
+    },
+    "capcutReference": {
+      "normalSize": [
+        11,
+        12
+      ],
+      "keywordSize": [
+        13,
+        14
+      ],
+      "tracking": -2
     }
   },
   "transitions": {

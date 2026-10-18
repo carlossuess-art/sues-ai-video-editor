@@ -1,14 +1,15 @@
 import {drawEditorialScenes} from './graphic-scenes.js';
 import {fitCaptionSize} from './font-kits.js';
 export const GRAPHIC_BLOCKS=Object.freeze({grid:'Tarjeta de cuadrícula',compare:'Comparación',secret:'Idea clave sobre negro'});
-export const GLOBAL_TRANSITIONS=Object.freeze({blur:'Pulso de desenfoque',warm:'Destello cálido',radial:'Expansión radial'});
+export const GLOBAL_TRANSITIONS=Object.freeze({blur:'Pulso de desenfoque',warm:'Destello cálido',radial:'Expansión radial',radialBurst:'Salida documental'});
 const assert=(ok,msg)=>{if(!ok)throw new Error('Graphic blocks: '+msg);};
 const captionId=id=>typeof id==='string'&&/^seg-\d{3,}$/.test(id);
 const text=value=>typeof value==='string'&&value.trim().length>0&&value.length<=26&&!/[\x00-\x1f\x7f]/.test(value);
 export function validateGraphicSettings(cards=[],transitions=[]){
  assert(Array.isArray(cards)&&cards.length<=3&&Array.isArray(transitions)&&transitions.length<=3,'up to three cards and transitions');
- for(const c of cards){assert(c&&Object.keys(c).every(k=>['captionId','type','left','right'].includes(k))&&captionId(c.captionId)&&Object.hasOwn(GRAPHIC_BLOCKS,c.type),'card choice');if(c.type==='compare')assert(text(c.left)&&text(c.right),'comparison needs two short labels');}
- for(const t of transitions)assert(t&&Object.keys(t).every(k=>['captionId','type'].includes(k))&&captionId(t.captionId)&&Object.hasOwn(GLOBAL_TRANSITIONS,t.type),'transition choice');
+ for(const c of cards){assert(c&&Object.keys(c).every(k=>['captionId','type','left','right','heading','bodyLines','lead','icons'].includes(k))&&captionId(c.captionId)&&Object.hasOwn(GRAPHIC_BLOCKS,c.type),'card choice');if(c.type==='compare')assert(text(c.left)&&text(c.right),'comparison needs two short labels');}
+ for(const t of transitions)assert(t&&Object.keys(t).every(k=>['captionId','type','phase'].includes(k))&&captionId(t.captionId)&&Object.hasOwn(GLOBAL_TRANSITIONS,t.type),'transition choice');
+ for(const c of cards){if(c.heading!==undefined)assert(text(c.heading),'heading');if(c.lead!==undefined)assert(text(c.lead),'lead');if(c.bodyLines!==undefined)assert(Array.isArray(c.bodyLines)&&c.bodyLines.length>0&&c.bodyLines.length<=3&&c.bodyLines.every(text),'body lines');if(c.icons!==undefined)assert(Array.isArray(c.icons)&&c.icons.length===2&&c.icons.every(i=>['clapper','makeup','luggage','clock'].includes(i)),'icons');}for(const t of transitions)assert(t.phase===undefined||t.phase==='exit','transition phase');
  assert(new Set(cards.map(c=>c.captionId)).size===cards.length&&new Set(transitions.map(t=>t.captionId)).size===transitions.length,'duplicate event choice');
 }
 export function prepareGraphicBlocks(cards,transitions,plan,enabled=true){
@@ -20,7 +21,7 @@ export function prepareGraphicBlocks(cards,transitions,plan,enabled=true){
   return {...choice,fontSize,lines:c.lines,start:c.start,end,text:c.text,wordIndexes:c.wordIndexes,textOrigin:c.source==='manual'?'user-edited-caption':'transcript-caption',reason:'Explicit editorial card choice',scope:'full-frame-presenter-intentionally-covered'};
  });
  for(const c of graphics){assert(!graphics.some(o=>o!==c&&o.start<c.end&&o.end>c.start),'cards overlap');assert(!(plan.semantic?.motions??[]).some(m=>m.start<c.end&&m.end>c.start),'card overlaps motion');assert(!plan.selectedMedia.some(m=>m.start<c.end&&m.end>c.start),'card overlaps B-roll');}
- const effects=transitions.map(choice=>{const c=get(choice.captionId),start=c.start,end=start+.4;assert(end<=cutoff,'transition too close to closing');return {...choice,start,end,duration:.4,reason:'Explicit editorial transition choice',scope:'entire-composition-including-captions',audio:'unchanged'};});
+ const effects=transitions.map(choice=>{const c=get(choice.captionId),card=graphics.find(g=>g.captionId===choice.captionId);assert(choice.phase!=='exit'||card,'exit needs a card');const start=choice.phase==='exit'?card.end-.2:c.start,end=start+.4;assert(end<=cutoff,'transition too close to closing');return {...choice,start,end,duration:.4,reason:'Explicit editorial transition choice',scope:'entire-composition-including-captions',audio:'unchanged'};});
  for(const e of effects)assert(!effects.some(o=>o!==e&&o.start<e.end&&o.end>e.start),'transitions overlap');
  return {graphics:enabled?graphics:[],globalTransitions:enabled?effects:[]};
 }
@@ -33,7 +34,13 @@ export function globalTransitionFilters(events,base){
  const filters=[];
  for(const [i,e]of events.entries()){
   const d=e.duration,fade=d/2;
-  if(e.type==='warm'){
+  if(e.type==='radialBurst'){
+   filters.push(`[${base}]split=2[global-clear${i}][global-input${i}]`);
+   filters.push(`[global-input${i}]trim=start=${e.start}:end=${e.end},setpts=PTS-STARTPTS,scale=540:960,zoompan=z='1+2*min(on/6,1)':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=540x960:fps=30,gblur=sigma=5,scale=1080:1920,format=rgba,fade=t=out:st=0.2:d=0.2:alpha=1,setpts=PTS+${e.start}/TB[global-effect${i}]`);
+   filters.push(`[global-clear${i}][global-effect${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${e.start})*lt(t,${e.end})'[burst-composed${i}]`);
+   filters.push(`color=c=0xfffcf0:s=1080x1920:r=30:d=0.26,format=rgba,fade=t=in:st=0:d=0.04:alpha=1,fade=t=out:st=0.04:d=0.22:alpha=1,setpts=PTS+${e.start+.17}/TB[burst-flash${i}]`);
+   filters.push(`[burst-composed${i}][burst-flash${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${e.start+.17})*lt(t,${e.start+.43})'[global-composed${i}]`);
+  }else if(e.type==='warm'){
    filters.push(`color=c=0xffe1bc:s=1080x1920:r=30:d=${d},format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='255*exp(-2*((X-240)/1000)^2-2*((Y-400)/1800)^2)',fade=t=in:st=0:d=${fade}:alpha=1,fade=t=out:st=${fade}:d=${fade}:alpha=1,setpts=PTS+${e.start}/TB[global-effect${i}]`);
    filters.push(`[${base}][global-effect${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${e.start})*lt(t,${e.end})'[global-composed${i}]`);
   }else{

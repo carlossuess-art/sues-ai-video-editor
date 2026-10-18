@@ -75,7 +75,7 @@ def render(source, bundle, output):
     if expected.get('sha256') and expected['sha256'] != before:
         raise ValueError('Source SHA256 mismatch')
     expected_family = manifest['policy']['captions']['font']
-    fonts = {'Open Sans': ('OpenSans.ttf', 'OpenSans-Bold.ttf'), 'Inter': ('Inter-Regular.ttf', 'Inter-Bold.ttf')}
+    fonts = {'Open Sans': ('OpenSans.ttf', 'OpenSans-Bold.ttf'), 'Inter': ('Inter-Regular.ttf', 'Inter-Bold.ttf'), 'Montserrat': ('Montserrat-Regular.ttf', 'Montserrat-Bold.ttf')}
     if expected_family not in fonts:
         raise ValueError('Unsupported caption font family')
     font, bold_font = [bundle / 'fonts' / name for name in fonts[expected_family]]
@@ -85,6 +85,15 @@ def render(source, bundle, output):
         families = subprocess.check_output(['fc-scan', '--format', '%{family}\n', str(item)], text=True).splitlines()
         if expected_family not in families:
             raise ValueError('Font does not match the configured caption family')
+    extra_fonts = {}
+    if expected_family == 'Montserrat':
+        for name, family in [('Montserrat-ExtraBold.ttf', 'Montserrat ExtraBold'), ('Montserrat-BoldItalic.ttf', 'Montserrat'), ('Montserrat-ExtraBoldItalic.ttf', 'Montserrat ExtraBold'), ('Anton-Regular.ttf', 'Anton'), ('AllertaStencil-Regular.ttf', 'Allerta Stencil')]:
+            item = bundle / 'fonts' / name
+            if not item.is_file() or family not in subprocess.check_output(['fc-scan', '--format', '%{family}\n', str(item)], text=True).replace(',', '\n').splitlines():
+                raise ValueError('Required typographic face missing or wrong family: ' + name)
+            extra_fonts[name] = digest(item)
+        if not (bundle / 'fonts/Anton-OFL.txt').is_file() or not (bundle / 'fonts/AllertaStencil-OFL.txt').is_file():
+            raise ValueError('Anton license missing')
     has_audio_graph = '[audio]' in (bundle / 'filter.ffscript').read_text()
     if has_audio_graph != bool(audio):
         raise ValueError('Bundle audio contract does not match source')
@@ -126,7 +135,7 @@ def render(source, bundle, output):
                  'output': output.name, 'outputSha256': digest(temporary), 'bytes': temporary.stat().st_size,
                  'video': {'codec': encoded['codec_name'], 'width': encoded['width'], 'height': encoded['height'], 'fps': encoded['r_frame_rate']},
                  'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'captions': len(manifest['captions']), 'illustrations': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in illustrations],
-                 'font': {'family': expected_family, 'regularSha256': digest(font), 'boldSha256': digest(bold_font)},
+                 'font': {'family': expected_family, 'regularSha256': digest(font), 'boldSha256': digest(bold_font), 'extraFaces': extra_fonts},
                  'ffmpeg': subprocess.check_output(['ffmpeg', '-version'], text=True).splitlines()[0],
                  'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
         # Exclusive creation prevents a race from overwriting another output.

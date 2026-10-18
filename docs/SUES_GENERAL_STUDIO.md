@@ -121,3 +121,15 @@ Carlos rechaza la prueba sintética: nivel insuficiente. La estimación F6=80% y
 global75,75% de arriba queda retirada como estado vigente. Ver
 SUES_F6_VISUAL_REVIEW.md y PROJECT_STATUS.md: propuesta sobre el vídeo humano real,
 178tests, aún sin aceptación audiovisual. No avanzar por cantidad de componentes.
+
+## Tipografía y motions · decisión posterior de Carlos · 18/10/2026
+
+Prevalece sobre la regla anterior de Inter/2:1: Montserrat real Bold para texto,
+ExtraBold para mayúsculas destacadas, Bold Italic y ExtraBold Italic según rol.
+Proporción de tamaño14/12 conforme al último ajuste indicado y comunicado.
+No sintetizar negrita/cursiva. Ver assets/fonts/montserrat/sources.json y métricas
+calibradas con libass; no sustituir assEmHeight1562 por hhea sin prueba de píxeles.
+Anton y Allerta Stencil son las fuentes libres usadas para el sello; no afirmar
+que Allerta sea Arial Black. Futhark usa Noto Sans Runic, Unicode sin transliterar.
+Las tres escenas son recreaciones por capas de la especificación del usuario;
+la muestra17s lleva música, sin voz, y no es el Reel final ni aceptación de F6.

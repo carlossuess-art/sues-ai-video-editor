@@ -1,3 +1,4 @@
+import {technicalPaperFilters} from './technical-paper.js';
 import {drawGraphicBlocks,globalTransitionFilters} from './graphic-blocks.js';
 import {drawSymbolMotion} from './motion-overlays.js';
 import {keywordPreset} from './text-presets.js';
@@ -5,7 +6,7 @@ import {illustrationFilters} from './illustrations.js';
 import {captionCues,progressiveRuns} from './caption-motion.js';
 import {hierarchyLayout,METALLIC_GOLD} from './caption-hierarchy.js';
 import {shortCaptionGroups} from './short-captions.js';
-import {fitCaptionSize} from './font-kits.js';
+import {fitCaptionSize,typefaceTags} from './font-kits.js';
 import {prepareBackgroundAudio,backgroundAudioFilter} from './audio-mix.js';
 import {prepareSemanticRender,semanticZoomFilter} from './semantic-render.js';
 import {buildTimeMap,mapCameraToEdit} from './time-map.js';
@@ -87,6 +88,7 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   assert(/^[\p{L}\p{N} ._-]+$/u.test(fontFamily),'font name');
   const white=assColor(plan.policy.captions.color),gold=assColor(plan.policy.captions.accent),dark=assColor(plan.renderColors.dark);
   let out=`[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 2\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Caption,${fontFamily},${plan.policy.captions.fontSize??56},${white},${gold},&H70000000,&H90000000,-1,0,0,0,100,100,0,0,1,2,1,5,120,180,0,1\nStyle: Outro,${fontFamily},44,${gold},${gold},${dark},${dark},0,0,0,0,100,100,0,0,1,0,0,5,120,180,0,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
+  if(plan.policy.captions.font==='Montserrat')out=out.replace(',-1,0,0,0,100,100,0,0,1,2,1,5,120,180,0,1',',700,0,0,0,100,100,0,0,1,0,0,5,120,180,0,1');
   const event=(layer,start,end,style,text)=>{out+=`Dialogue: ${layer},${timestamp(start)},${timestamp(end)},${style},,0,0,0,,${text}\n`;};
   for(const c of plan.captions){
     const white=assColor((plan.graphics??[]).some(g=>g.type!=='secret'&&c.start>=g.start-1e-6&&c.end<=g.end+1e-6)?plan.renderColors.dark:plan.policy.captions.color);
@@ -100,8 +102,17 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
       for(const row of progressive??hierarchy){
         const start=row.start??c.start,end=row.end??c.end,settle=Math.round((row.settle??0)*1000);
         const entrance=row.character?`\\move(${row.x},${row.y+8},${row.x},${row.y},0,${settle})\\frz-3\\t(0,${settle},\\frz0)`:`\\pos(${row.x},${row.y})`;
-        const style=`${entrance}\\fs${row.size}\\fscx${row.scaleX??p.scaleX}\\i${row.italic?1:0}\\fsp${row.character?0:p.tracking}\\fad(${Math.min(fade,Math.round((end-start)*150))},${fade})`;
+        const style=`${entrance}${typefaceTags(p,row.role==='keyword'?'keyword':'normal',row.italic)}\\fs${row.size}\\fscx${row.scaleX??p.scaleX}\\i${row.italic?1:0}\\fsp${row.character?0:p.tracking}\\fad(${Math.min(fade,Math.round((end-start)*150))},${fade})${p.shadow?'\\bord0\\shad0':''}`;
         const preset=keywordPreset(c.keyword),palette=preset.colors;
+        if(p.shadow){
+          const s=p.shadow,dx=s.distancePx*Math.cos(s.angleDeg*Math.PI/180),dy=s.distancePx*Math.sin(s.angleDeg*Math.PI/180),alpha=Math.round((1-s.opacity)*255).toString(16).padStart(2,'0').toUpperCase();
+          const shifted=row.character?`\\move(${row.x+dx},${row.y+8+dy},${row.x+dx},${row.y+dy},0,${settle})`:`\\pos(${row.x+dx},${row.y+dy})`;
+          event(0,start,end,'Caption',`{${style.replace(entrance,shifted)}\\1c&H000000&\\1a&H${alpha}&\\blur${s.blurPx}\\bord0\\shad0}${safeText(row.text)}`);
+        }
+        if(row.role==='keyword'&&palette&&p.glow?.enabled){
+          const color={gold:'#FFD700',green:'#00FF66',cyan:'#00E5FF',blue:'#528CFF',coral:'#FF3333'}[c.keyword.style??'gold']??palette[4],alpha=Math.round((1-p.glow.intensity)*255).toString(16).padStart(2,'0').toUpperCase();
+          event(0,start,end,'Caption',`{${style}\\1c${assColor(color)}&\\1a&H${alpha}&\\blur${p.glow.assBlurPx}\\bord3\\3c${assColor(color)}&\\3a&H${alpha}&\\shad0}${safeText(row.text)}`);
+        }
         if(row.role==='keyword'&&palette){
           // Single outline/shadow base; opaque, mutually exclusive fill bands.
           // No stacked outlines, no dark seams between overlapping glyphs.
@@ -116,7 +127,9 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
       continue;
     }
     let wordOffset=0;const content=c.lines.map(line=>line.split(' ').map(word=>{const index=c.wordIndexes[wordOffset++],text=safeText(word);return c.emphasisWordIndexes?.includes(index)?`{\\1c${gold}&}${text}{\\1c${white}&}`:text;}).join(' ')).join('\\N');
-    const size=fitCaptionSize(c.lines,p),fade=p.fadeMs??60,entrance=p.entranceMs??180,motion=p.mode==='short-groups'?`\\fs${size}\\fscx${p.scaleX}\\fsp${p.tracking}\\fad(${fade},${fade})\\fscy98\\t(0,${entrance},\\fscy100)`:'';event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})${motion}}${content}`);
+    const size=fitCaptionSize(c.lines,p),fade=p.fadeMs??60,entrance=p.entranceMs??180,motion=p.mode==='short-groups'?`${typefaceTags(p)}\\fs${size}\\fscx${p.scaleX}\\fsp${p.tracking}\\fad(${fade},${fade})\\fscy98\\t(0,${entrance},\\fscy100)`:'';
+    if(p.shadow){const s=p.shadow,dx=s.distancePx*Math.cos(s.angleDeg*Math.PI/180),dy=s.distancePx*Math.sin(s.angleDeg*Math.PI/180),alpha=Math.round((1-s.opacity)*255).toString(16).padStart(2,'0').toUpperCase();event(0,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2+dx},${(b.top+b.bottom)/2+dy})${motion}\\1c&H000000&\\1a&H${alpha}&\\blur${s.blurPx}\\bord0\\shad0}${c.lines.map(safeText).join('\\N')}`);}
+    event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})${motion}}${content}`);
   }
   drawGraphicBlocks(plan,event,safeText,assColor);
   for(const m of plan.semantic?.motions??[]){
@@ -184,6 +197,7 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
     filters.push(`[focus-input${i}]trim=start=${m.start}:end=${m.end},setpts=PTS-STARTPTS,scale=270:480,gblur=sigma=${sigma},scale=1080:1920,eq=brightness=-${r.dim},format=yuva420p,fade=t=in:st=0:d=${fade}:alpha=1,fade=t=out:st=${duration-fade}:d=${fade}:alpha=1,setpts=PTS+${m.start}/TB[focus-layer${i}]`);
     filters.push(`[focus-clear${i}][focus-layer${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${m.start})*lt(t,${m.end})'[focus-composed${i}]`);base=`focus-composed${i}`;
   }
+  const paper=technicalPaperFilters(plan.graphics??[],base);filters.push(...paper.filters);base=paper.base;
   const hasTransitions=!!plan.globalTransitions?.length;filters.push(`[${base}]ass=filename=${assFile}:fontsdir=fonts[${hasTransitions?'captioned':'video'}]`);
   if(hasTransitions){const global=globalTransitionFilters(plan.globalTransitions,'captioned');filters.push(...global.filters,`[${global.base}]null[video]`);}
   assert(!plan.audioMix||hasAudio,'background music requires original voice track');

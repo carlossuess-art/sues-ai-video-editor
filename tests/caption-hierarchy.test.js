@@ -7,7 +7,7 @@ import {shortCaptionGroups} from '../src/short-captions.js';
 import {readFileSync} from 'node:fs';
 const template=JSON.parse(readFileSync('examples/templates/sues-calma.template.json'));
 const brand=JSON.parse(readFileSync('examples/brand-kit.sues.json'));
-const policy={...template.captions,font:'Inter',color:'#FFFFFF',accent:'#D7B56D'};
+const policy={...template.captions,font:'Inter',keywordUppercase:false,shadow:undefined,glow:undefined,hierarchy:{...template.captions.hierarchy,ratio:2},color:'#FFFFFF',accent:'#D7B56D'};
 test('hierarchy selects one content word per phrase and preserves all source text, timing and indexes',()=>{
  const words='Te enseñaron a mirar, pero no a reconocer.'.split(' ').map(text=>({text}));
  const captions=[{text:'a mirar,',wordIndexes:[2,3],start:1,end:2},{text:'a reconocer.',wordIndexes:[6,7],start:3,end:4}];

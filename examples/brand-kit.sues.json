@@ -3,8 +3,8 @@
   "id": "sues-holistics-v1",
   "name": "SUES Holistics",
   "fonts": {
-    "primary": "Inter",
-    "accent": "Inter"
+    "primary": "Montserrat",
+    "accent": "Montserrat"
   },
   "colors": {
     "text": "#FFFFFF",

@@ -1,0 +1,11 @@
+{
+  "displayName": "Futhark · Noto Sans Runic",
+  "family": "Noto Sans Runic",
+  "role": "optional-runic-glyphs",
+  "officialSource": "https://github.com/google/fonts/tree/main/ofl/notosansrunic",
+  "license": "SIL Open Font License 1.1",
+  "elderFutharkGlyphsVerified": "ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ",
+  "requiresUnicodeRunes": true,
+  "latinTransliteration": false,
+  "sha256": "615b6c1166a8c51816dc1536784acbf486547e3bed03dbfdd70910e10066793b"
+}

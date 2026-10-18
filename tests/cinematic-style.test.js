@@ -13,7 +13,7 @@ const plan=options=>buildCinematicBrollPlan({policy:policy(),duration:38.31,slot
 
 test('CALMA functional template compiles cinematic direction and shared brand tokens',()=>{
  const b=brand();b.id='future-shared';b.fonts.primary='Future Font';b.colors.text='#ABCDEF';b.captions.maxLines=1;b.outro.text='Cierre compartido';
- const p=compileTemplatePolicy(template(),b);
+ const source=template();delete source.captions.font;const p=compileTemplatePolicy(source,b);
  assert.equal(p.brandKitId,b.id);assert.equal(p.captions.font,b.fonts.primary);
  assert.equal(p.captions.color,b.colors.text);assert.equal(p.captions.maxLines,1);assert.equal(p.outro.text,b.outro.text);
  assert.equal(p.visualStyle.status,'functional');assert.ok(p.visualStyle.sources.includes('retreat'));
@@ -49,7 +49,7 @@ test('invalid semantic slots, overlapping times and unsafe style settings fail',
 });
 
 test('shared brand outro duration reserves enough closing presenter time',()=>{
- const b=brand();b.outro.duration=6;const p=compileTemplatePolicy(template(),b);
+ const b=brand();b.outro.duration=6;const source=template();delete source.captions.font;const p=compileTemplatePolicy(source,b);
  const result=plan({policy:p,slots:[slot(31,35)],assets:[asset()]});
  assert.equal(result.decisions[0].fallback,'presenter-bookends');
 });

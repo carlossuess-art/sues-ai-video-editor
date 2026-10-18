@@ -29,7 +29,7 @@ export function progressiveRuns(caption,rows,policy){
    for(const [i,start]of starts.entries())result.push({...row,text:parts.filter(p=>p.start<=start).map(p=>p.text).join(' '),start,end:starts[i+1]??caption.end,character:false});
    continue;
   }
-  const word=parts[0],start=word.start,glyphPolicy={...policy,scaleX:row.scaleX??policy.scaleX},width=textAdvance(word.text,glyphPolicy,row.size);
+  const word=parts[0],start=word.start,glyphPolicy={...policy,fontRole:row.fontRole,scaleX:row.scaleX??policy.scaleX},width=textAdvance(word.text,glyphPolicy,row.size);
   if(policy.characterEntrance){
    const chars=[...word.text],budget=Math.min(.32,(caption.end-start)*.4),stagger=Math.min(policy.characterEntrance.staggerMs/1000,budget/Math.max(1,chars.length-1)),settle=Math.min(policy.characterEntrance.settleMs/1000,(caption.end-start)*.3);
    let x=row.x-width/2;

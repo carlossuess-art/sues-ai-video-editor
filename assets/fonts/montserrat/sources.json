@@ -1,0 +1,59 @@
+{
+  "sources": {
+    "montserrat": "https://github.com/JulietaUla/Montserrat/tree/master/fonts/ttf",
+    "anton": "https://github.com/google/fonts/tree/main/ofl/anton",
+    "stencil": "https://github.com/google/fonts/tree/main/ofl/allertastencil"
+  },
+  "files": {
+    "Montserrat-Bold.ttf": {
+      "bytes": 454864,
+      "sha256": "bc6e854971cea46b463be6f9eef4d9cd52f51cfc1fc0dd90c9d3e6483dc0ec61",
+      "gitBlob": "a3dbde5aafb65e89eb351a2e6acd198d4e6b2f41"
+    },
+    "Montserrat-BoldItalic.ttf": {
+      "bytes": 460160,
+      "sha256": "b4c121b337aaa977d711b6f397c5b9672d720af622555f1e3f9d3b87f2983665",
+      "gitBlob": "db7650d700fcc3c4e5871f3b97b369c3a740f3d4"
+    },
+    "Montserrat-ExtraBold.ttf": {
+      "bytes": 455468,
+      "sha256": "d3ac6a843d3ba6d5cafd44cf39e437055c8aed7e261010f595f57d3c7b3e2c1b",
+      "gitBlob": "c7cb4117de098c16aa5eba4a42a93aedd585baf8"
+    },
+    "Anton-Regular.ttf": {
+      "bytes": 170812,
+      "sha256": "a4ba3a92350ebb031da0cb47630ac49eb265082ca1bc0450442f4a83ab947cab",
+      "gitBlob": "4d65707db9d8663ccfa99cd28cd3a4e0025be178"
+    },
+    "Montserrat-Regular.ttf": {
+      "bytes": 445928,
+      "sha256": "3e8abe50c44c82e2242e97d1ec8c0d385c4890cdc50447bcdb8605c81a38cfb2",
+      "gitBlob": "3ef210ab1107142c0aa19cb916ae38a5f99e86ba"
+    },
+    "OFL.txt": {
+      "bytes": 4400,
+      "sha256": "8b7141c03fa4f8d44e6345d5d4931709290f0f67875e452e95ac1fd3a027802e",
+      "gitBlob": "fe576a2ee1f96353b05d030c0b7620d525cc53a8"
+    },
+    "Anton-OFL.txt": {
+      "bytes": 4484,
+      "sha256": "ee67e6ee22790b7929f1a3769ca2801d565c64b5a9096942c1adf5596de9c9e4",
+      "gitBlob": "93feddee37145696e123ea65a6772cab09663f9e"
+    },
+    "Montserrat-ExtraBoldItalic.ttf": {
+      "bytes": 458104,
+      "sha256": "0984784ee9883389e76bf2c7ceeeda848af26535ec111109fa92e18d448a4759",
+      "gitBlob": "8d7dff3a38c0a344e9a26d712847c1f282ff38f7"
+    },
+    "AllertaStencil-OFL.txt": {
+      "bytes": 4395,
+      "sha256": "08fba9df5c9890f3ab00ee63f63e005ad93a23746f7484f5fe9501a1ad32730e",
+      "gitBlob": "b57986f290fd9661ec4d69c61b0565d478200880"
+    },
+    "AllertaStencil-Regular.ttf": {
+      "bytes": 20260,
+      "sha256": "8c504d1be20768941ab04251a389ad82d5782d647fa1c4029c811dc5bc2abd59",
+      "gitBlob": "59b5c6dd0dc9107541ae530c4e76b296d7c8b34c"
+    }
+  }
+}

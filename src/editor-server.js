@@ -1,4 +1,5 @@
 import {STYLE_VARIANTS} from './style-variants.js';
+import {fontCatalog,fontDownload} from './font-catalog.js';
 import {MediaLibrary} from './media-library.js';
 import {GRAPHIC_BLOCKS,GLOBAL_TRANSITIONS} from './graphic-blocks.js';
 import http from 'node:http';
@@ -48,6 +49,9 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     const cookie=/(?:^|;\s*)sues_session=([^;]+)/.exec(req.headers.cookie??'')?.[1];
     if(!eq(cookie,token))return json(res,401,{error:'Session required'});
     if(!['GET','HEAD'].includes(req.method)&&req.headers['x-sues-request']!=='editor')return json(res,403,{error:'Request header required'});
+    if(path==='/api/fonts'&&req.method==='GET')return json(res,200,fontCatalog());
+    const fontMatch=/^\/api\/fonts\/([a-z-]+)\/(file|license)$/.exec(path);
+    if(fontMatch&&['GET','HEAD'].includes(req.method)){const f=fontDownload(fontMatch[1],fontMatch[2]);if(!f)return json(res,404,{error:'Font not found'});const bytes=readFileSync(f.path);res.setHeader('Content-Type',f.contentType);res.setHeader('Content-Disposition',`attachment; filename="${f.filename}"`);res.setHeader('Content-Length',bytes.length);res.writeHead(200);return res.end(req.method==='HEAD'?undefined:bytes);}
     if(path==='/api/assets'&&req.method==='GET')return json(res,200,assets.list());
     if(path==='/api/assets'&&req.method==='POST'){req.setTimeout(120000);return json(res,201,await assets.receive(req,{kind:url.searchParams.get('kind'),rights:url.searchParams.get('rights'),title:url.searchParams.get('name')}));}
     const assetMatch=/^\/api\/assets\/([a-f0-9]{64})\/media$/.exec(path);

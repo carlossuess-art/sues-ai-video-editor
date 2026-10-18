@@ -1,3 +1,37 @@
+# Estado vigente · tipografía y tres motions · 18/10/2026
+
+Base: 7caa556cce9dca228ca100c142d066d03ab83923. Carlos fija Montserrat Bold,
+ExtraBold, Bold Italic y ExtraBold Italic con archivos reales, sin cursiva o
+negrita sintéticas. Sustituye Inter. Proporción vigente 14/12 según su último
+ajuste, tracking -2, sombra negra65%/blur15/desplazamiento5/-45°, glow sólo color.
+Los números de CapCut se traducen al render; no se afirma equivalencia de sliders.
+Anton para centro del sello; Allerta Stencil como alternativa libre para el anillo.
+
+Tres escenas reconstruidas por capas: papel #D9D9D9, cuadrícula7x7 con caída
+elíptica, grano/viñeta, órbitas y line-art; revelado de caracteres con blur; sello
+rojo con barrido; comparativa de maletas/reloj y flechas curvas progresivas.
+Salida radial100→300 en6fotogramas y fogonazo cálido. Copia/iconos/salida editables
+en app. Sello e iconos originales recreados, no sticker/plugin extraído del vídeo.
+
+Fuente opcional descargada: Futhark · Noto Sans Runic;24runasUnicode verificadas,
+no transliteración latina. Fuentes/licencias descargables mediante catálogo
+HTTP autenticado. LicenciasOFL y procedencia/hashes incluidos en Git.
+
+Muestra SUES_MOTIONS_MONTSERRAT_CAPAS.mp4:17s/1080×1920/30,H264/AAC,3escenas,
+música propia existente y sin voz. Copia literal suministrada por Carlos, no
+montaje semántico de su narración. Original conservado; decodificaciónPASS.
+Se verifican6roles en Fontconfig aislado y hashes; logs libass se conservan como
+observación parcial, no prueba exhaustiva de selección. QA10fotogramas.
+181/181tests, check, py_compile y diffcheck correctos. No aceptación humana.
+SHA del MP4: 93932620c6666b9498a1ed98f75ad029aed9028b51087d2246a4ee4738ac7a87.
+
+F6 sigue en revisión visual, sin porcentaje validado; no V1 ni despliegue.
+Continúan pendientes oclusión corporal real, SFX y revisión audiovisual.
+Coste externo nuevo0USD; sin modelos, ASR, proveedores ni compras nuevos.
+
+---
+## Registro anterior
+
 # Estado vigente · corrección de nivel visual F6 · 18/10/2026
 
 Carlos rechaza la muestra sintética: «Esto no es el nivel que quiero».
