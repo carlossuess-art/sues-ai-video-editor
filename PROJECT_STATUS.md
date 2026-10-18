@@ -1,3 +1,16 @@
+## Última revisión visual · 18/10/2026
+
+Carlos confirma letra y motion de la primera entrega; valoración global abierta.
+Continúa la revisión con pregunta inicial, acercamiento manual1,10× y cierre
+ESCRÍBEME. Voz y mezcla decodificadas idénticas a la versión anterior.17,20s,
+1080×1920/30fps,23grupos,1motion. SHA
+0ca33d4406b9259a7b7299d8158740d95e7d251643f3d595f037be7c424bfb3d.
+Library libfile_c097da5c9308819192c920b15578bebc, nueva versión del mismo archivo.
+Decodificación completa,10frames revisados y preparación reproducida byte a byte.
+Motor sin cambios desde191tests; script/checkPASS. Sin máscara corporal ni
+inferencia/modelos nuevos. No aceptación de la revisión ni cierre F6/V1.
+Receta: scripts/templates/refine_reviewed_raw.mjs. Ver docs/SUES_RAW_REEDIT.md.
+
 ## Última entrega · reedición de un bruto · 18/10/2026
 
 SUES_NO_ES_PEREZA_FINAL.mp4:17,20s,23grupos de frase,1motion,1salida cálida,
