@@ -29,12 +29,12 @@ export function progressiveRuns(caption,rows,policy){
    for(const [i,start]of starts.entries())result.push({...row,text:parts.filter(p=>p.start<=start).map(p=>p.text).join(' '),start,end:starts[i+1]??caption.end,character:false});
    continue;
   }
-  const word=parts[0],start=word.start,width=textAdvance(word.text,policy,row.size);
+  const word=parts[0],start=word.start,glyphPolicy={...policy,scaleX:row.scaleX??policy.scaleX},width=textAdvance(word.text,glyphPolicy,row.size);
   if(policy.characterEntrance){
    const chars=[...word.text],budget=Math.min(.32,(caption.end-start)*.4),stagger=Math.min(policy.characterEntrance.staggerMs/1000,budget/Math.max(1,chars.length-1)),settle=Math.min(policy.characterEntrance.settleMs/1000,(caption.end-start)*.3);
    let x=row.x-width/2;
    for(const [i,char]of chars.entries()){
-    const advance=textAdvance(char,policy,row.size);
+    const advance=textAdvance(char,glyphPolicy,row.size);
     result.push({...row,text:char,x:x+advance/2,start:start+i*stagger,end:caption.end,settle,character:true,sourceWordIndex:word.index});
     x+=advance+(policy.tracking??0);
    }

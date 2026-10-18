@@ -1,3 +1,4 @@
+import {keywordPreset} from './text-presets.js';
 import {fitCaptionSize} from './font-kits.js';
 const normalize=text=>text.toLocaleLowerCase('es').replace(/[^\p{L}\p{N}]/gu,'');
 const STOP=new Set('a al algo aunque con de del dime el ella en eres es esta este ha has hay la las lo los me mi no o para pero por porque que quien quién se si siempre sin su te todos tras tu tus un una y aún'.split(' '));
@@ -14,14 +15,15 @@ export function captionHierarchy(captions,words,policy){
 
 export function hierarchyLayout(caption,policy,box){
  if(!caption.keyword)return null;
- const parts=caption.text.split(/\s+/),at=caption.wordIndexes.indexOf(caption.keyword.sourceWordIndex);if(at<0||parts.length!==caption.wordIndexes.length)return null;
+ const parts=caption.text.split(/\s+/),at=caption.keyword.displayWordIndex??caption.wordIndexes.indexOf(caption.keyword.sourceWordIndex);if(at<0||at>=parts.length||caption.keyword.displayWordIndex===undefined&&parts.length!==caption.wordIndexes.length)return null;
+ const preset=keywordPreset(caption.keyword);policy={...policy,...(preset.scaleX?{scaleX:preset.scaleX}:{})};
  const before=parts.slice(0,at).join(' '),hero=parts[at],after=parts.slice(at+1).join(' '),three=!!before&&!!after;
  const desired=three?128:144,heroSize=fitCaptionSize([hero],{...policy,fontSize:desired},box.right-box.left);
  // Keep the ratio exactly 2:1, including when width forces a smaller size.
  // Refuse unreadable companions rather than clipping or changing the ratio.
  if(heroSize<128)return null;
  const small=heroSize/2,cx=(box.left+box.right)/2,cy=(box.top+box.bottom)/2;
- const row=(text,size,y,role)=>({text,size,x:cx,y,role});
+ const row=(text,size,y,role)=>({text,size,x:cx,y,role,...(role==='keyword'?{scaleX:policy.scaleX,italic:preset.italic??false}:{})});
  if(three)return [row(before,small,cy-75,'companion'),row(hero,heroSize,cy,'keyword'),row(after,small,cy+75,'companion')];
  if(before)return [row(before,small,cy-65,'companion'),row(hero,heroSize,cy+27,'keyword')];
  if(after)return [row(hero,heroSize,cy-27,'keyword'),row(after,small,cy+65,'companion')];

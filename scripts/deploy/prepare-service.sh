@@ -57,6 +57,9 @@ fi
 if [ "$SUES_MISSING" -eq 0 ]; then
  echo 'VALIDANDO CONFIGURACION Y MEDIOS' >"$SUES_DIR/estado-servicio.txt"
  docker run --rm --network none "${SUES_DOCKER[@]}" sues-video-runtime:20261017 node scripts/app/doctor.mjs /state/project.json >"$SUES_DIR/doctor-servicio.json"
+else
+ echo 'VALIDANDO SHELL, FUENTES Y HERRAMIENTAS: medios pendientes' >"$SUES_DIR/estado-servicio.txt"
+ docker run --rm --network none "${SUES_DOCKER[@]}" sues-video-runtime:20261017 node scripts/app/doctor.mjs --shell /state/project.json >"$SUES_DIR/doctor-servicio.json"
 fi
 # Generate secret locally once; never send it to stdout or Docker's environment.
 if [ ! -s "$SUES_DIR/editor/access/token" ]; then

@@ -1,3 +1,17 @@
+# Estado técnico vigente · construcción general · 18/10/2026
+
+Avance transversal F5–F10: edición de palabras clave, estilos, medios privados,
+gráficos/transiciones, revisión, copias recuperables y doctor sin medios.
+Implementación y pruebas unitarias integradas; prueba real conjunta en curso.
+CALMA provisional; tres variantes experimentales. No aceptación humana ni V1.
+La fuente de Keanu continúa sin identificar. Sin nuevo coste externo.
+Guía vigente: docs/SUES_GENERAL_STUDIO.md. Los porcentajes históricos siguientes
+no incorporan aún este bloque transversal; recalcular sólo con evidencia final.
+No hay acceso operativo al VPS; no se ha ejecutado un despliegue nuevo.
+
+---
+## Registro anterior (histórico)
+
 # Estado técnico vigente · 18/10/2026
 
 FASE 5/10 · BRAND KIT + TEMPLATE ENGINE

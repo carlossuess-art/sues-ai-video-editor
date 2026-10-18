@@ -27,6 +27,7 @@ export function projectConfig(path){
  const base=dirname(resolve(path)),config=read(path);
  for(const key of Object.keys(config))if(key.endsWith('Path')||key==='fontDirectory')config[key]=resolve(base,config[key]);
  if(config.backgroundAudio)config.backgroundAudio.localFile=resolve(base,config.backgroundAudio.localFile);
+ if(config.illustrations)config.illustrations=config.illustrations.map(a=>({...a,localFile:resolve(base,a.localFile)}));
  return config;
 }
 export function projectReady(path){
@@ -42,7 +43,7 @@ export class VideoIntake{
  constructor(directory,profiles,{probe}={}){
   this.directory=resolve(directory);this.profiles=profiles;
   this.probe=probe??(async path=>{
-   const {stdout}=await run('ffprobe',['-v','error','-show_streams','-show_format','-of','json',path],{timeout:15000,maxBuffer:1024*1024});
+   const {stdout}=await run('ffprobe',['-v','error','-protocol_whitelist','file,pipe','-format_whitelist','mov,matroska,webm','-show_streams','-show_format','-of','json',path],{timeout:15000,maxBuffer:1024*1024});
    return JSON.parse(stdout);
   });
   mkdirSync(this.directory,{recursive:true,mode:0o700});

@@ -1,0 +1,61 @@
+# Estudio general · 18/10/2026
+
+Este bloque amplía varias fases de forma conjunta. CALMA mantiene a Keanu como
+referencia principal; Inter 4.1 es una aproximación, no la fuente identificada.
+
+## Funciones integradas
+
+- Palabra clave elegida por subtítulo: normal, importante 2:1 o excepcional.
+  Blanco, oro, verde, cian, azul, coral, oblicua y condensada. El metal son nueve
+  bandas estáticas, sin afirmar reflejo animado o geometría 3D.
+- Subtítulos progresivos de 1–3 palabras. La edición manual conserva el texto
+  del usuario sin inventar alineaciones de palabras. Reagrupar invalida elecciones
+  dependientes de IDs; deshacer recupera los ajustes anteriores.
+- CALMA provisional y tres variantes experimentales: IMPACTO, EXPLICA e HISTORIA.
+  Cambian ritmo gráfico y cámara, sin cortar ni acelerar la voz. No tienen
+  aceptación estética humana.
+- Biblioteca privada de imágenes y audio, con procedencia propia/licenciada,
+  hashes, límites de tamaño y comprobación FFprobe. Selección de música, volumen,
+  ducking e imágenes con intervalos desde la app. No se heredan de otro original.
+- Tres tarjetas: cuadrícula, comparación y fondo oscuro de idea clave. Tres
+  transiciones de 400 ms: desenfoque, estela radial y luz cálida. Las tarjetas
+  cubren intencionalmente al presentador; se rechazan solapamientos incompatibles.
+  No equivalen a una reconstrucción exacta de todos los efectos de Keanu.
+- Revisión del plan con evidencia, tiempos inciertos y decisiones por reglas.
+  No se presenta como análisis semántico de un LLM.
+- Copia TAR por versión con original, análisis, fuentes, medios seleccionados,
+  ajustes y manifiesto SHA256. Hasta cuatro copias por trabajo. La restauración
+  genera un trabajo nuevo; no reanuda un render interrumpido.
+- Registro de revisión humana ligado al hash de exportación: subtítulos,
+  encuadre, audio y número de cambios. El sistema no aprueba su propia estética.
+- Doctor de arranque sin medios: verifica runtime, fuentes, plantillas y filtros.
+  No instala dependencias ni ejecuta análisis o renders. VPS/HTTPS siguen pendientes.
+
+## Prueba reproducible
+
+```sh
+node scripts/app/smoke_general_real.mjs CONFIG ORIGINAL PNG WAV NUEVO_DIRECTORIO
+```
+
+Realiza subidas HTTP privadas, edición/deshacer, revisión, copia y restauración,
+comparación exacta de ASS/filtro, preparación de las cuatro variantes y un render
+completo. Comprueba conservación del original, decodificación, audio y Range206.
+Los archivos de prueba son privados y quedan en runtime, fuera de Git.
+
+La copia incluye la revisión Git del motor: conservar esa revisión para restaurar
+con comportamiento equivalente. Verificar antes de cargar:
+
+```sh
+node scripts/backup/project.mjs --verify DIRECTORIO_EXTRAIDO
+node scripts/app/doctor.mjs DIRECTORIO_EXTRAIDO/project.json
+```
+
+No extraer archivos TAR de origen desconocido mediante este procedimiento.
+
+## Límites pendientes
+
+Identificación de la fuente, ajuste fino del parecido, segmentación real del
+sujeto/sillón, sonido de efectos y aceptación humana. ASR/visión automáticos de
+vídeos distintos, QA visual del navegador/PWA y puesta en servicio en VPS/HTTPS
+siguen pendientes. El entorno de navegador local no tiene Chromium utilizable;
+el navegador remoto no alcanza el loopback de Work. No se declara V1.

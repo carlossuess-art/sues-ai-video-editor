@@ -1,3 +1,5 @@
+import {drawGraphicBlocks,globalTransitionFilters} from './graphic-blocks.js';
+import {keywordPreset} from './text-presets.js';
 import {illustrationFilters} from './illustrations.js';
 import {captionCues,progressiveRuns} from './caption-motion.js';
 import {hierarchyLayout,METALLIC_GOLD} from './caption-hierarchy.js';
@@ -86,7 +88,8 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   let out=`[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 2\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Caption,${fontFamily},${plan.policy.captions.fontSize??56},${white},${gold},&H70000000,&H90000000,-1,0,0,0,100,100,0,0,1,2,1,5,120,180,0,1\nStyle: Outro,${fontFamily},44,${gold},${gold},${dark},${dark},0,0,0,0,100,100,0,0,1,0,0,5,120,180,0,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
   const event=(layer,start,end,style,text)=>{out+=`Dialogue: ${layer},${timestamp(start)},${timestamp(end)},${style},,0,0,0,,${text}\n`;};
   for(const c of plan.captions){
-    const focus=c.source!=='manual'&&(plan.semantic?.motions??[]).find(m=>m.backgroundTreatment&&c.start>=m.start-1e-6&&c.end<=m.end+1e-6&&c.wordIndexes.every(index=>(m.evidence?.sourceWordIndexes??[]).includes(index)));if(focus)continue;
+    const white=assColor((plan.graphics??[]).some(g=>g.type!=='secret'&&c.start>=g.start-1e-6&&c.end<=g.end+1e-6)?plan.renderColors.dark:plan.policy.captions.color);
+    const focus=c.source!=='manual'&&(plan.semantic?.motions??[]).find(m=>m.backgroundTreatment&&c.start>=m.start-1e-6&&c.end<=m.end+1e-6&&c.wordIndexes.every(index=>(m.evidence?.sourceWordIndexes??[]).includes(index)));if(focus||(plan.graphics??[]).some(g=>g.captionId===c.id&&g.text===c.text))continue;
     const hierarchy=hierarchyLayout(c,plan.policy.captions,plan.layout.caption);
     const p=plan.policy.captions,b=plan.layout.caption,normalSize=fitCaptionSize(c.lines,p);
     const normalRows=c.lines.map((text,i)=>({text,size:normalSize,x:(b.left+b.right)/2,y:(b.top+b.bottom)/2+(i-(c.lines.length-1)/2)*normalSize*1.1,role:'companion'}));
@@ -96,23 +99,25 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
       for(const row of progressive??hierarchy){
         const start=row.start??c.start,end=row.end??c.end,settle=Math.round((row.settle??0)*1000);
         const entrance=row.character?`\\move(${row.x},${row.y+8},${row.x},${row.y},0,${settle})\\frz-3\\t(0,${settle},\\frz0)`:`\\pos(${row.x},${row.y})`;
-        const style=`${entrance}\\fs${row.size}\\fscx${p.scaleX}\\fsp${row.character?0:p.tracking}\\fad(${Math.min(fade,Math.round((end-start)*150))},${fade})`;
-        if(row.role==='keyword'&&c.keyword.level==='exceptional'){
+        const style=`${entrance}\\fs${row.size}\\fscx${row.scaleX??p.scaleX}\\i${row.italic?1:0}\\fsp${row.character?0:p.tracking}\\fad(${Math.min(fade,Math.round((end-start)*150))},${fade})`;
+        const preset=keywordPreset(c.keyword),palette=preset.colors;
+        if(row.role==='keyword'&&palette){
           // Single outline/shadow base; opaque, mutually exclusive fill bands.
           // No stacked outlines, no dark seams between overlapping glyphs.
-          event(1,start,end,'Caption',`{${style}\\1c${assColor(METALLIC_GOLD[0])}&}${safeText(row.text)}`);
+          event(1,start,end,'Caption',`{${style}\\1c${assColor(palette[0])}&}${safeText(row.text)}`);
           const top=row.y-row.size*.65,bottom=row.y+row.size*.65;
-          for(const [i,color]of METALLIC_GOLD.entries()){
-            const y1=Math.floor(top+(bottom-top)*i/METALLIC_GOLD.length),y2=Math.floor(top+(bottom-top)*(i+1)/METALLIC_GOLD.length);
+          for(const [i,color]of palette.entries()){
+            const y1=Math.floor(top+(bottom-top)*i/palette.length),y2=Math.floor(top+(bottom-top)*(i+1)/palette.length);
             event(2,start,end,'Caption',`{${style}\\bord0\\shad0\\clip(0,${y1},1080,${y2})\\1c${assColor(color)}&}${safeText(row.text)}`);
           }
-        }else event(1,start,end,'Caption',`{${style}\\1c${white}&}${safeText(row.text)}`);
+        }else event(1,start,end,'Caption',`{${style}\\1c${row.role==='keyword'?assColor(preset.color):white}&}${safeText(row.text)}`);
       }
       continue;
     }
     let wordOffset=0;const content=c.lines.map(line=>line.split(' ').map(word=>{const index=c.wordIndexes[wordOffset++],text=safeText(word);return c.emphasisWordIndexes?.includes(index)?`{\\1c${gold}&}${text}{\\1c${white}&}`:text;}).join(' ')).join('\\N');
     const size=fitCaptionSize(c.lines,p),fade=p.fadeMs??60,entrance=p.entranceMs??180,motion=p.mode==='short-groups'?`\\fs${size}\\fscx${p.scaleX}\\fsp${p.tracking}\\fad(${fade},${fade})\\fscy98\\t(0,${entrance},\\fscy100)`:'';event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})${motion}}${content}`);
   }
+  drawGraphicBlocks(plan,event,safeText,assColor);
   for(const m of plan.semantic?.motions??[]){
     const b=m.box,cx=(b.left+b.right)/2,cy=(b.top+b.bottom)/2,paint=assColor(plan.renderColors.dark).slice(4);
     const goldCode=assColor(plan.policy.captions.accent).slice(4);
@@ -177,7 +182,8 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
     filters.push(`[focus-input${i}]trim=start=${m.start}:end=${m.end},setpts=PTS-STARTPTS,scale=270:480,gblur=sigma=${sigma},scale=1080:1920,eq=brightness=-${r.dim},format=yuva420p,fade=t=in:st=0:d=${fade}:alpha=1,fade=t=out:st=${duration-fade}:d=${fade}:alpha=1,setpts=PTS+${m.start}/TB[focus-layer${i}]`);
     filters.push(`[focus-clear${i}][focus-layer${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${m.start})*lt(t,${m.end})'[focus-composed${i}]`);base=`focus-composed${i}`;
   }
-  filters.push(`[${base}]ass=filename=${assFile}:fontsdir=fonts[video]`);
+  const hasTransitions=!!plan.globalTransitions?.length;filters.push(`[${base}]ass=filename=${assFile}:fontsdir=fonts[${hasTransitions?'captioned':'video'}]`);
+  if(hasTransitions){const global=globalTransitionFilters(plan.globalTransitions,'captioned');filters.push(...global.filters,`[${global.base}]null[video]`);}
   assert(!plan.audioMix||hasAudio,'background music requires original voice track');
   filters.push(...backgroundAudioFilter(plan.audioMix,1+plan.selectedMedia.length+(plan.illustrations?.length??0)));
   return filters.join(';\n')+'\n';

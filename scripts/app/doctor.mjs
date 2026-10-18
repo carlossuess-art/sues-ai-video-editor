@@ -1,19 +1,27 @@
-import {fontKit} from '../../src/font-kits.js';
+import {projectConfig} from '../../src/video-intake.js';
+import {validateTemplate} from '../../src/template.js';
+import {indexMotionLibrary} from '../../src/motion-library.js';
+import {resolveFontDirectory,fontKit} from '../../src/font-kits.js';
 import {execFileSync} from 'node:child_process';
 import {existsSync,readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {loadProject,prepareProject} from '../../src/local-pipeline.js';
-const [config]=process.argv.slice(2);if(!config){console.error('Usage: node scripts/app/doctor.mjs project.json');process.exit(1);}
+const args=process.argv.slice(2),shell=args.includes('--shell'),config=args.find(a=>a!=='--shell');if(!config){console.error('Usage: node scripts/app/doctor.mjs project.json');process.exit(1);}
 const checks=[];const check=(name,fn)=>{try{const details=fn();checks.push({name,status:'pass',details});return details;}catch(error){checks.push({name,status:'fail',error:error.code==='ENOENT'?'Required local executable/file missing':error.status!==undefined?'Local command failed; verify binary and configured input':error.message.slice(0,180)});return null;}};
 const run=(binary,args)=>execFileSync(binary,args,{encoding:'utf8',timeout:10000,maxBuffer:4*1024*1024,stdio:['ignore','pipe','pipe']});
 check('node',()=>{if(Number(process.versions.node.split('.')[0])<22)throw new Error('Node22+ required');return process.versions.node;});
-check('python',()=>run('python3',['--version']).trim());check('ffmpeg',()=>run('ffmpeg',['-version']).split('\n')[0]);check('ffprobe',()=>run('ffprobe',['-version']).split('\n')[0]);
-const project=check('project-data-and-source-hash',()=>loadProject(config)),prepared=project?check('plan-and-captions',()=>prepareProject(project)):null;
+check('tar',()=>run('tar',['--version']).split('\n')[0]);check('python',()=>run('python3',['--version']).trim());check('ffmpeg',()=>run('ffmpeg',['-version']).split('\n')[0]);check('ffprobe',()=>run('ffprobe',['-version']).split('\n')[0]);
+const project=shell?check('template-brand-and-motion-library',()=>{const c=projectConfig(config),read=p=>JSON.parse(readFileSync(p,'utf8')),template=read(c.templatePath),brand=read(c.brandKitPath);validateTemplate(template,brand);indexMotionLibrary(read(c.catalogPath));const family=template.captions.font??brand.fonts.primary;return {inputs:{template,brand},fontDirectory:resolveFontDirectory(c.fontDirectory,family)};}):check('project-data-and-source-hash',()=>loadProject(config)),prepared=!shell&&project?check('plan-and-captions',()=>prepareProject(project)):null;
+if(shell&&project){
+ check('font-family-and-license',()=>{const kit=fontKit(project.inputs.template.captions.font??project.inputs.brand.fonts.primary);for(const name of [kit.regular,kit.bold])if(!run('fc-scan',['--format','%{family}\n',join(project.fontDirectory,name)]).split('\n').includes(kit.family))throw new Error('Expected configured font family');if(!readFileSync(join(project.fontDirectory,'OFL.txt'),'utf8').includes('SIL OPEN FONT LICENSE'))throw new Error('Font license missing');return kit.family;});
+ check('required-render-filters',()=>{const filters=run('ffmpeg',['-hide_banner','-filters']),names=['ass','crop','scale','fps','concat','perspective','gblur','geq','color','overlay','fade','format','sidechaincompress','alimiter','amix'];for(const name of names)if(!new RegExp('\\s'+name+'\\s').test(filters))throw new Error('Missing filter: '+name);return names;});
+}
+
 if(project&&prepared){
  check('video-and-original-audio',()=>{const details=JSON.parse(run('ffprobe',['-v','error','-show_streams','-show_format','-of','json',project.sourcePath])),v=details.streams.find(s=>s.codec_type==='video'),audio=details.streams.some(s=>s.codec_type==='audio');if(!v||!audio)throw new Error('Source requires video and original audio');const rotation=v.side_data_list?.find(s=>s.rotation!==undefined)?.rotation??0,[width,height]=Math.abs(rotation)%180===90?[v.height,v.width]:[v.width,v.height];if(width!==project.inputs.source.width||height!==project.inputs.source.height||Math.abs(Number(details.format.duration)-project.inputs.source.duration)>.05)throw new Error('Media does not match source metadata');return {width,height,duration:Number(details.format.duration),audio:true};});
  check('font-family-and-license',()=>{const kit=fontKit(project.inputs.template.captions.font??project.inputs.brand.fonts.primary);for(const name of [kit.regular,kit.bold])if(!run('fc-scan',['--format','%{family}\n',join(project.fontDirectory,name)]).split('\n').includes(kit.family))throw new Error('Expected configured font family');if(!existsSync(join(project.fontDirectory,'OFL.txt'))||!readFileSync(join(project.fontDirectory,'OFL.txt'),'utf8').includes('SIL OPEN FONT LICENSE'))throw new Error('Font license missing');return kit.family+'400/700 + SIL OFL';});
  check('required-render-filters',()=>{const filters=run('ffmpeg',['-hide_banner','-filters']),names=['ass','crop','scale','fps','concat',...(prepared.plan.semantic.zooms.length?['perspective']:[]),...(prepared.plan.audioMix?['sidechaincompress','alimiter']:[])];for(const name of names)if(!new RegExp('\\s'+name+'\\s').test(filters))throw new Error('Missing filter: '+name);return names;});
 }
 // Never print the loaded config, paths, tokens or complete transcript as diagnostics.
-for(const item of checks)if(item.name==='project-data-and-source-hash'&&item.status==='pass')item.details={sourceHashVerified:true};else if(item.name==='plan-and-captions'&&item.status==='pass')item.details={duration:item.details.plan.duration,captions:item.details.plan.captions.length,omittedWords:item.details.director.audit.omittedWords};
-const ok=checks.every(c=>c.status==='pass');console.log(JSON.stringify({version:'1.0',readyForLocalPreview:ok,checks,externalCostUSD:0,renderExecuted:false,asrExecuted:false,visionExecuted:false,cloudDeployment:false},null,2));process.exitCode=ok?0:1;
+for(const item of checks)if(item.name==='template-brand-and-motion-library'&&item.status==='pass')item.details={templateVerified:true,mediaRequired:false};else if(item.name==='project-data-and-source-hash'&&item.status==='pass')item.details={sourceHashVerified:true};else if(item.name==='plan-and-captions'&&item.status==='pass')item.details={duration:item.details.plan.duration,captions:item.details.plan.captions.length,omittedWords:item.details.director.audit.omittedWords};
+const ok=checks.every(c=>c.status==='pass');console.log(JSON.stringify({version:'1.0',mode:shell?'shell':'prepared-project',readyForShell:ok,readyForLocalPreview:ok&&!shell,checks,externalCostUSD:0,renderExecuted:false,asrExecuted:false,visionExecuted:false,cloudDeployment:false},null,2));process.exitCode=ok?0:1;

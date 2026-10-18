@@ -7,16 +7,16 @@ const overlaps=(a,b)=>Math.min(a.right,b.right)>Math.max(a.left,b.left)&&Math.mi
 export function prepareIllustrations(items=[],plan,visionFrames=[]){
  assert(Array.isArray(items)&&items.length<=6,'at most six resources');
  if(!items.length)return [];
- const track=stabilizeFaceTrack(buildFaceTrack(visionFrames)),ids=new Set();
- return items.map(item=>{
-  assert(typeof item.assetId==='string'&&/^[a-z0-9-]{1,80}$/.test(item.assetId)&&!ids.has(item.assetId),'unique asset id');ids.add(item.assetId);
+ const track=stabilizeFaceTrack(buildFaceTrack(visionFrames));
+ return items.map((item,index)=>{
+  assert(typeof item.assetId==='string'&&/^[a-z0-9-]{1,80}$/.test(item.assetId),'asset id');
   assert(['owned','licensed'].includes(item.rights)&&item.role==='illustration','rights and illustration role required');
   assert(item.sourceSha256===plan.source.sha256&&/^[a-f0-9]{64}$/.test(item.sourceSha256),'resource must be bound to this source');
   assert(item.timeSpace==='edit-timeline'&&Number.isFinite(item.start)&&Number.isFinite(item.end)&&item.start>=0&&item.end>item.start&&item.end<=plan.duration,'time bounds');
   assert(typeof item.localFile==='string'&&item.localFile.startsWith('/')&&/^[a-f0-9]{64}$/.test(item.sha256),'verified local asset');
   const b=item.box;assert(b&&['left','right','top','bottom'].every(k=>Number.isInteger(b[k]))&&b.left>=120&&b.right<=900&&b.top>=120&&b.bottom<=1100&&b.right>b.left&&b.bottom>b.top,'safe resource box');
   assert(Number.isFinite(item.featherPx)&&item.featherPx>=20&&item.featherPx<=(b.bottom-b.top)/2&&Number.isFinite(item.fadeSeconds)&&item.fadeSeconds>=.1&&item.fadeSeconds<=Math.min(.5,(item.end-item.start)/3),'mask/fade bounds');
-  assert(!(plan.semantic?.motions??[]).some(m=>m.start<item.end&&m.end>item.start),'resource overlaps motion card');
+  assert(![...(plan.semantic?.motions??[]),...(plan.graphics??[])].some(m=>m.start<item.end&&m.end>item.start),'resource overlaps motion card');
   assert(!plan.selectedMedia.some(m=>m.start<item.end&&m.end>item.start),'resource overlaps full-frame B-roll');
   // Same crop, source time and eye-centered zoom as the presenter. The image's
   // entire rectangle is checked, including areas that will become transparent.
@@ -29,7 +29,7 @@ export function prepareIllustrations(items=[],plan,visionFrames=[]){
    assert(!overlaps(b,{left:x(face.x),right:x(face.x+face.width),top:y(face.y),bottom:y(face.y+face.height)}),'resource overlaps sampled face');
   }
   assert(!items.some(other=>other!==item&&other.start<item.end&&other.end>item.start&&overlaps(b,other.box)),'resources overlap');
-  return {...item,kind:'still-image',fit:'cover',mask:'soft-bottom',sourceAudio:false};
+  return {...item,instanceId:'illustration-'+(index+1),kind:'still-image',fit:'cover',mask:'soft-bottom',sourceAudio:false};
  });
 }
 

@@ -19,9 +19,11 @@ Leer primero este documento y `PROJECT_STATUS.md` para continuar.
 
 ## Estado ejecutable actual
 
-Leer PROJECT_STATUS.md antes de cambiar el proyecto. F5 estética provisional;
-no declarar V1 ni aceptación humana. Suite133 tests. Sólo CALMA tiene renderer
-integrado; otros estilos conservan contratos iniciales.
+Leer PROJECT_STATUS.md antes de cambiar el proyecto. CALMA es provisional;
+IMPACTO, EXPLICA e HISTORIA son variantes experimentales ejecutables. Edición de
+palabras clave, medios privados, gráficos/transiciones y copia recuperable están
+integrados. [Funciones y límites](docs/SUES_GENERAL_STUDIO.md). No declarar V1
+ni aceptación humana por superar pruebas técnicas.
 
 Comprobación previa sin render ni llamadas de pago: `npm run editor:doctor -- CONFIG`.
 La app muestra progreso real de codificación y distingue comprobación/guardado.
@@ -41,7 +43,7 @@ prueba real; el corte técnico del POC no se aplica al Director automático.
 
 El estudio escucha sólo loopback, no proporciona una URL pública ni ingesta de
 nuevos vídeos con ASR/visión. La UI incluye montaje, ajustes, plantillas, Brand Kit
- y catálogo de motions; estas tres últimas son vistas de consulta. Manifest/SW
+ y catálogo de motions; las plantillas permiten elegir variantes. Manifest/SW
 preparan el shell PWA; instalación/QA visual en navegador aún pendientes. El SW
 no cachea medios ni API. No ejecutar nuevos servicios de pago por defecto.
 

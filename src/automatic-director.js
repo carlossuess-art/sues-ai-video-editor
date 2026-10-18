@@ -1,3 +1,6 @@
+import {STYLE_VARIANTS} from './style-variants.js';
+import {validateGraphicSettings} from './graphic-blocks.js';
+import {validateKeywordOverrides} from './text-presets.js';
 import {validateTranscript,mapWordsToTimeline} from './transcript.js';
 import {compileTemplatePolicy} from './template.js';
 const assert=(ok,msg)=>{if(!ok)throw new Error(`Automatic director: ${msg}`);};
@@ -9,10 +12,18 @@ const LEXICON=new Map([
 ]);
 export function validateEditorSettings(settings={}){
  assert(settings&&typeof settings==='object'&&!Array.isArray(settings),'settings object');
- assert(Object.keys(settings).every(k=>['zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords'].includes(k)),'unknown setting');
- const value={captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ assert(Object.keys(settings).every(k=>['zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','profileImages','styleId'].includes(k)),'unknown setting');
+ const value={styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
  assert(Number.isFinite(value.zoomIntensity)&&value.zoomIntensity>=0&&value.zoomIntensity<=1,'zoomIntensity 0..1');
  assert([1,2,3].includes(value.captionWords),'captionWords 1, 2 or 3');
+ assert(Object.hasOwn(STYLE_VARIANTS,value.styleId),'style id');
+ assert(value.musicAssetId===null||typeof value.musicAssetId==='string'&&/^[a-f0-9]{64}$/.test(value.musicAssetId),'music asset id');
+ assert(typeof value.profileImages==='boolean'&&Array.isArray(value.imageEvents)&&value.imageEvents.length<=6,'image settings');
+ for(const e of value.imageEvents)assert(e&&Object.keys(e).every(k=>['assetId','start','end'].includes(k))&&typeof e.assetId==='string'&&/^[a-f0-9]{64}$/.test(e.assetId)&&Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.start>=0&&e.end-e.start>=.6&&e.end-e.start<=8,'image event invalid');
+ validateGraphicSettings(value.graphicCards,value.transitions);
+ assert(!value.graphicCards.length||!value.highlightCaptions.length,'Elige citas destacadas o tarjetas gráficas en esta versión, no ambas.');
+ value.keywordOverrides=validateKeywordOverrides(value.keywordOverrides);
+ assert(typeof value.musicEnabled==='boolean'&&typeof value.duckMusic==='boolean'&&(value.musicGain===null||Number.isFinite(value.musicGain)&&value.musicGain>=0&&value.musicGain<=.18),'music settings invalid');
  assert(typeof value.motions==='boolean','motions boolean');
  assert(value.captionOverrides&&typeof value.captionOverrides==='object'&&!Array.isArray(value.captionOverrides),'captionOverrides object');
  assert(Object.keys(value.captionOverrides).length<=500,'too many overrides');
@@ -28,14 +39,14 @@ export function validateEditorSettings(settings={}){
 // never instructions. No model calls, factual rewriting, periodic effects or cuts.
 export function buildAutomaticDirector({transcript,template,brand,camera,settings={}}){
  validateTranscript(transcript);const policy=compileTemplatePolicy(template,brand),options=validateEditorSettings(settings);
- assert(template.id==='SUES_CALMA','only visually implemented CALMA is enabled');
+ assert(Object.hasOwn(STYLE_VARIANTS,template.id),'style renderer unavailable');
  const segments=[{in:0,out:transcript.sourceDuration}];
  const mapped=mapWordsToTimeline(transcript,segments);
  assert(mapped.words.length===transcript.words.length,'speech preservation');
  const cutoff=transcript.sourceDuration-Math.max(3,policy.outro.duration),candidates=[];
  const maxBase=Math.max(...camera.keyframes.map(k=>k.zoom));
  assert(Number.isFinite(maxBase)&&maxBase>=1&&maxBase<=1.6,'camera zoom');
- const target=Math.max(policy.camera.baseZoom,1.08);
+ const target=policy.camera.targetZoom??Math.max(policy.camera.baseZoom,1.08);
  const scale=Math.min(options.zoomIntensity===0?1:policy.camera.baseZoom+(target-policy.camera.baseZoom)*options.zoomIntensity,policy.camera.maxZoom,1.6/maxBase);
  const permitted=policy.camera.zoomReasons;
  for(let i=0;i<transcript.words.length;i++){

@@ -1,3 +1,6 @@
+import {STYLE_VARIANTS} from './style-variants.js';
+import {MediaLibrary} from './media-library.js';
+import {GRAPHIC_BLOCKS,GLOBAL_TRANSITIONS} from './graphic-blocks.js';
 import http from 'node:http';
 import {readFileSync,statSync,createReadStream} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
@@ -21,14 +24,14 @@ async function body(req,maxBytes=65536){
  const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>maxBytes)throw new Error('Request too large');chunks.push(chunk);}
  const value=JSON.parse(Buffer.concat(chunks).toString());if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
   if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.pathname!=='/'||parsed.search||parsed.hash||parsed.origin!==publicOrigin)throw new Error('Canonical HTTPS origin required');
   origin=parsed.origin;
  }
- const jobs=new EditorJobs({directory,profiles,renderer,storage});let intake;try{intake=new VideoIntake(join(directory,'uploads'),profiles,{probe:intakeProbe});}catch(error){void jobs.close();throw error;}let expectedHost;
+ const jobs=new EditorJobs({directory,profiles,renderer,storage});let intake,assets;try{assets=new MediaLibrary(join(directory,'assets'),{probe:assetProbe});jobs.assetResolver=(id,kind)=>assets.resolve(id,kind);intake=new VideoIntake(join(directory,'uploads'),profiles,{probe:intakeProbe});}catch(error){void jobs.close();throw error;}let expectedHost;
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
  const server=http.createServer(async(req,res)=>{
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Cross-Origin-Resource-Policy','same-origin');
@@ -45,6 +48,13 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     const cookie=/(?:^|;\s*)sues_session=([^;]+)/.exec(req.headers.cookie??'')?.[1];
     if(!eq(cookie,token))return json(res,401,{error:'Session required'});
     if(!['GET','HEAD'].includes(req.method)&&req.headers['x-sues-request']!=='editor')return json(res,403,{error:'Request header required'});
+    if(path==='/api/assets'&&req.method==='GET')return json(res,200,assets.list());
+    if(path==='/api/assets'&&req.method==='POST'){req.setTimeout(120000);return json(res,201,await assets.receive(req,{kind:url.searchParams.get('kind'),rights:url.searchParams.get('rights'),title:url.searchParams.get('name')}));}
+    const assetMatch=/^\/api\/assets\/([a-f0-9]{64})\/media$/.exec(path);
+    if(assetMatch&&['GET','HEAD'].includes(req.method)){
+     const a=assets.resolve(assetMatch[1]),size=a.bytes;let range;try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
+     res.setHeader('Content-Type',a.mimeType);res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();const stream=createReadStream(a.localFile,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
+    }
     if(path==='/api/uploads'&&req.method==='GET')return json(res,200,intake.list());
     const analysisMatch=/^\/api\/uploads\/([a-f0-9]{64})\/analysis$/.exec(path);
     if(analysisMatch&&req.method==='POST'){if(jobs.list().some(j=>j.profileId==='upload-'+analysisMatch[1]))throw new Error('Analysis owned by existing jobs; restore original assets');return json(res,200,intake.importAnalysis(analysisMatch[1],await body(req,2*1024*1024)));}
@@ -53,18 +63,25 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/design'&&req.method==='GET'){
      const id=url.searchParams.get('profileId');if(!Object.hasOwn(profiles,id))return json(res,404,{error:'Unknown profile'});
      const config=projectConfig(profiles[id]),read=p=>JSON.parse(readFileSync(p,'utf8')),brand=read(config.brandKitPath),template=read(config.templatePath),catalog=read(config.catalogPath);
-     return json(res,200,{brand,template,styles:['SUES_CALMA','SUES_IMPACTO','SUES_EXPLICA','SUES_HISTORIA'].map(id=>({id,available:id==='SUES_CALMA'})),motions:catalog.map(m=>({id:m.id,type:m.type,tags:m.tags,minDuration:m.trigger.minDuration,reasons:m.trigger.semanticReasons,rendered:RENDERED_MOTIONS.includes(m.id),allowedInTemplate:template.motion.allowed.map(a=>MOTION_ALIASES[a]??a).includes(m.id)}))});
+     return json(res,200,{brand,template,graphicBlocks:GRAPHIC_BLOCKS,transitions:GLOBAL_TRANSITIONS,styles:Object.entries(STYLE_VARIANTS).map(([id,v])=>({id,available:true,status:v.status,pacing:v.pacing})),motions:catalog.map(m=>({id:m.id,type:m.type,tags:m.tags,minDuration:m.trigger.minDuration,reasons:m.trigger.semanticReasons,rendered:RENDERED_MOTIONS.includes(m.id),allowedInTemplate:template.motion.allowed.map(a=>MOTION_ALIASES[a]??a).includes(m.id)}))});
     }
     if(path==='/api/profiles'&&req.method==='GET')return json(res,200,Object.keys(profiles).map(id=>({id,title:id,template:'SUES_CALMA',mode:'existing-transcript-and-vision',ready:projectReady(profiles[id])})));
     if(path==='/api/jobs'&&req.method==='GET')return json(res,200,jobs.list());
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|render|cancel|media|audit|undo))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|media|audit|undo))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
     if(!action&&req.method==='PATCH')return json(res,200,jobs.adjust(id,(await body(req)).settings));
+    if(action==='acceptance'&&req.method==='POST')return json(res,200,await jobs.recordReview(id,await body(req)));
+    if(action==='backup'&&req.method==='POST')return json(res,201,await jobs.backup(id));
+    if(action==='backup'&&['GET','HEAD'].includes(req.method)){
+     const file=jobs.backupMedia(id),size=statSync(file).size;let range;try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
+     res.setHeader('Content-Type','application/x-tar');res.setHeader('Content-Disposition','attachment; filename="SUES_PROYECTO.tar"');res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();const stream=createReadStream(file,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
+    }
+    if(action==='review'&&req.method==='GET')return json(res,200,jobs.review(id));
     if(action==='plan'&&req.method==='GET')return json(res,200,jobs.plan(id));
     if(action==='audit'&&req.method==='GET')return json(res,200,await jobs.audit(id));
     if(action==='render'&&req.method==='POST')return json(res,202,jobs.render(id));
@@ -86,5 +103,5 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
   }catch(error){if(res.headersSent)return res.destroy();const safe=/not found|Unknown profile/i.test(error.message)?404:/busy|ready|changed|transition|owned|Adjustments|queue full|closing/.test(error.message)?409:400;json(res,safe,{error:error.code?'No se pudo acceder al recurso local configurado':error.message.replaceAll(directory,'[local]')});}
  });
  server.requestTimeout=900000;server.headersTimeout=10000;
- return {jobs,server,token,async listen(){await new Promise((r,j)=>{server.once('error',j);server.listen(port,'127.0.0.1',r);});origin??=`http://127.0.0.1:${server.address().port}`;expectedHost=new URL(origin).host;return `${origin}/#${token}`;},async close(){await jobs.close();server.closeIdleConnections();await new Promise(r=>server.close(r));}};
+ return {jobs,server,token,async listen(){await new Promise((r,j)=>{server.once('error',j);server.listen(port,'127.0.0.1',r);});origin??=`http://127.0.0.1:${server.address().port}`;expectedHost=new URL(origin).host;return `${origin}/#${token}`;},async close(){jobs.closing=true;server.closeIdleConnections();await new Promise(r=>server.close(r));await jobs.close();}};
 }
