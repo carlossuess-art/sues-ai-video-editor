@@ -1,3 +1,13 @@
+## Última entrega · reedición de un bruto · 18/10/2026
+
+SUES_NO_ES_PEREZA_FINAL.mp4:17,20s,23grupos de frase,1motion,1salida cálida,
+2SFX y música propia. Montaje editorial explícito desde toma interior limpia,
+original intacto. Biblioteca libfile_c097da5c9308819192c920b15578bebc,
+SHA ceebd8d3a95535c46a195707d6d946124d5e1ad2d75d36bd60b86e47914ea60f.
+191tests/check/fullDecodePASS. Tiempos recuperados por frase, inciertos, sin ASR
+nuevo ni nuevos modelos; no karaoke inventado. Presets amarillo/rojo planos.
+Leer docs/SUES_RAW_REEDIT.md. No aceptación humana nueva ni V1. Cuerpo sin máscara.
+
 # Estado vigente · diez rondas de revisión creativa · 18/10/2026
 
 Carlos valora sonido con «Bien» y pide luces/entradas/salidas. A21:03Europe/Madrid

@@ -13,7 +13,7 @@ export function captionCues(caption,mappedWords){
 }
 
 export function progressiveRuns(caption,rows,policy){
- if(!policy.progressive||caption.source==='manual'||!caption.wordCues?.length)return null;
+ if(!policy.progressive||caption.source==='manual'||caption.timingGranularity==='phrase'||!caption.wordCues?.length)return null;
  // Coalesce a final display interval shorter than 160 ms with its preceding
  // real cue. Raw wordCues remain untouched; no ASR timestamp is rewritten.
  if(caption.end-caption.start<.16)return null;

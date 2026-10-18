@@ -1,5 +1,7 @@
 export const TEXT_PRESETS=Object.freeze({
  white:{name:'Blanco',color:'#FFFFFF'},
+ yellow:{name:'Amarillo',color:'#FFE45E'},
+ red:{name:'Rojo',color:'#FF7777'},
  gold:{name:'Oro',colors:['#876024','#B98A39','#E4BE70','#FFF0C0','#FFFBE8','#BF9346','#795321','#C99F50','#F1D695']},
  green:{name:'Verde',colors:['#176638','#40BE64','#B1FF9D','#F1FFE9','#83FA77','#279D47','#155C2D','#55D667','#D0FFC4']},
  cyan:{name:'Cian',colors:['#176376','#36C0DA','#B2F6FF','#F1FEFF','#67E2F0','#258AA9','#174D67','#57CADD','#D4FAFF']},

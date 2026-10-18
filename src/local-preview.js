@@ -110,8 +110,8 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
           const shifted=row.character?`\\move(${row.x+dx},${row.y+8+dy},${row.x+dx},${row.y+dy},0,${settle})`:`\\pos(${row.x+dx},${row.y+dy})`;
           event(0,start,end,'Caption',`{${style.replace(entrance,shifted)}\\1c&H000000&\\1a&H${alpha}&\\blur${s.blurPx}\\bord0\\shad0}${safeText(row.text)}`);
         }
-        if(row.role==='keyword'&&palette&&p.glow?.enabled){
-          const color={gold:'#FFD700',green:'#00FF66',cyan:'#00E5FF',blue:'#528CFF',coral:'#FF3333'}[c.keyword.style??'gold']??palette[4],alpha=Math.round((1-p.glow.intensity)*255).toString(16).padStart(2,'0').toUpperCase();
+        if(row.role==='keyword'&&(palette||preset.color!=='#FFFFFF')&&p.glow?.enabled){
+          const color={gold:'#FFD700',green:'#00FF66',cyan:'#00E5FF',blue:'#528CFF',coral:'#FF3333'}[c.keyword.style??'gold']??palette?.[4]??preset.color,alpha=Math.round((1-p.glow.intensity)*255).toString(16).padStart(2,'0').toUpperCase();
           event(0,start,end,'Caption',`{${style}\\1c${assColor(color)}&\\1a&H${alpha}&\\blur${p.glow.assBlurPx}\\bord3\\3c${assColor(color)}&\\3a&H${alpha}&\\shad0}${safeText(row.text)}`);
         }
         if(row.role==='keyword'&&palette){
