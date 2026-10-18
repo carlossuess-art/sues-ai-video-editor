@@ -1,3 +1,4 @@
+import {renderAudioFilters} from './sound-effects.js';
 import {technicalPaperFilters} from './technical-paper.js';
 import {drawGraphicBlocks,globalTransitionFilters} from './graphic-blocks.js';
 import {drawSymbolMotion} from './motion-overlays.js';
@@ -7,7 +8,7 @@ import {captionCues,progressiveRuns} from './caption-motion.js';
 import {hierarchyLayout,METALLIC_GOLD} from './caption-hierarchy.js';
 import {shortCaptionGroups} from './short-captions.js';
 import {fitCaptionSize,typefaceTags} from './font-kits.js';
-import {prepareBackgroundAudio,backgroundAudioFilter} from './audio-mix.js';
+import {prepareBackgroundAudio} from './audio-mix.js';
 import {prepareSemanticRender,semanticZoomFilter} from './semantic-render.js';
 import {buildTimeMap,mapCameraToEdit} from './time-map.js';
 import {mapWordsToTimeline,segmentWords} from './transcript.js';
@@ -201,6 +202,6 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   const hasTransitions=!!plan.globalTransitions?.length;filters.push(`[${base}]ass=filename=${assFile}:fontsdir=fonts[${hasTransitions?'captioned':'video'}]`);
   if(hasTransitions){const global=globalTransitionFilters(plan.globalTransitions,'captioned');filters.push(...global.filters,`[${global.base}]null[video]`);}
   assert(!plan.audioMix||hasAudio,'background music requires original voice track');
-  filters.push(...backgroundAudioFilter(plan.audioMix,1+plan.selectedMedia.length+(plan.illustrations?.length??0)));
+  filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0),{hasAudio}));
   return filters.join(';\n')+'\n';
 }

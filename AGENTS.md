@@ -77,3 +77,19 @@ subtítulos elegibles desde app, entradas de copia literal ligadas a cues existe
 se preservan tiempos inciertos, sin inferencia nueva. Sólo se suprimen captions
 inferiores de un rango cuando el gráfico reproduce todos sus tokens en orden.
 Iconos originales de mirada/corazón para adaptar el lenguaje visual al contenido.
+
+## Estilo aceptado y sonido · 18/10/2026, 20:33–20:34 Europe/Madrid
+
+Carlos confirma que le gusta el estilo y la ejecución de los motion graphics.
+Aclara que la toma de prueba está mal grabada/leyendo en el coche y dificulta
+conectar con la esencia del discurso. No usar esa toma como evaluación final del
+criterio creativo ni atribuir a un Director automático las elecciones de la receta.
+Autoriza continuar con lo pendiente; no significa cierre de F6 o V1.
+
+SFX propios por síntesis determinista local: whoosh, impacto, neón y roce de flecha.
+Activación explícita sfxEnabled (false por defecto) y volumen sfxGain0..0,7.
+Ducking sobre el bus de efectos y limitador sin autoganancia; desactivar efectos
+conserva la mezcla previa. Son cues genéricos de la app, no enlaces recuperados de
+las capas audio del catálogo ni material comercial. Recetas src/sound-effects.js.
+Persisten con ajustes/deshacer/copia y aparecen en la revisión del plan. Controles
+en app sin QA visual navegador todavía. Sonido necesita escucha/valoración humana.

@@ -1,0 +1,27 @@
+// Add app-native SFX to an existing verified render without re-encoding video.
+import {readFileSync,writeFileSync,existsSync} from 'node:fs';
+import {resolve,join} from 'node:path';
+import {execFileSync} from 'node:child_process';
+import {loadProject,prepareProject,fileSha256} from '../../src/local-pipeline.js';
+import {buildPreviewASS,buildPreviewFilter} from '../../src/local-preview.js';
+import {prepareSoundEffects,renderAudioFilters} from '../../src/sound-effects.js';
+const [config,bundlePath,previousPath,outputPath]=process.argv.slice(2);if(!outputPath)throw Error('Usage: PROJECT BASE_BUNDLE VERIFIED_RENDER NEW_OUTPUT');
+const bundle=resolve(bundlePath),previous=resolve(previousPath),output=resolve(outputPath),auditPath=output.replace(/\.mp4$/,'.audit.json');
+if(!output.endsWith('.mp4')||existsSync(output)||existsSync(auditPath))throw Error('New MP4 and audit paths required');
+const project=loadProject(config),settings=JSON.parse(readFileSync(join(bundle,'..','settings.json'))),prepared=prepareProject(project,{...settings,sfxEnabled:true,sfxGain:.35}),plan=prepared.plan;
+const previousAudit=JSON.parse(readFileSync(previous.replace(/\.mp4$/,'.audit.json')));
+if(fileSha256(previous)!==previousAudit.outputSha256||project.boundHashes.source!==previousAudit.sourceSha256)throw Error('Previous render/source identity mismatch');
+const noSfx={...plan,soundEffects:prepareSoundEffects(plan,{sfxEnabled:false})};
+if(buildPreviewASS(plan)!==readFileSync(join(bundle,'captions.ass'),'utf8')||buildPreviewFilter(noSfx)!==readFileSync(join(bundle,'filter.ffscript'),'utf8'))throw Error('Visual or base audio recipe changed: render the full project instead');
+const filters=[],spans=plan.timeMap.spans;if(spans.length>1)filters.push(`[0:a]asplit=${spans.length}${spans.map((_,i)=>`[sa${i}]`).join('')}`);
+for(const s of spans)filters.push(`[${spans.length>1?'sa'+s.index:'0:a'}]atrim=start=${s.sourceIn}:end=${s.sourceOut},asetpts=PTS-${s.sourceIn}/TB,aresample=48000:async=1:first_pts=0[a${s.index}]`);
+filters.push(`${spans.map(s=>`[a${s.index}]`).join('')}concat=n=${spans.length}:v=0:a=1[audio]`,...renderAudioFilters(plan,1));
+const graph=output+'.audio.ffscript';writeFileSync(graph,filters.join(';\n')+'\n',{flag:'wx'});
+const args=['-v','error','-threads','2','-i',project.sourcePath];if(plan.audioMix)args.push('-i',plan.audioMix.localFile);const videoIndex=plan.audioMix?2:1;args.push('-i',previous,'-filter_complex_threads','1','-filter_complex_script',graph,'-map',`${videoIndex}:v:0`,'-map','[mixed-audio]','-c:v','copy','-c:a','aac','-b:a','128k','-t',String(plan.duration),'-map_metadata','-1','-movflags','+faststart','-n',output);execFileSync('ffmpeg',args);
+execFileSync('ffmpeg',['-v','error','-i',output,'-f','null','-']);
+const videoHash=p=>execFileSync('ffmpeg',['-v','error','-i',p,'-map','0:v:0','-c:v','copy','-f','streamhash','-hash','sha256','-'],{encoding:'utf8'}).trim();
+const beforeVideo=videoHash(previous),afterVideo=videoHash(output);if(beforeVideo!==afterVideo||fileSha256(project.sourcePath)!==project.boundHashes.source)throw Error('Video/original changed');
+const encoded=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-of','json',output],{encoding:'utf8'})).streams;
+const video=encoded.find(s=>s.codec_type==='video'),audio=encoded.find(s=>s.codec_type==='audio');if(!audio||Math.abs(Number(video.duration)-plan.duration)>1/30+.001)throw Error('Output duration/audio invalid');
+const audit={durationEncoded:Number(video.duration),audioDurationEncoded:Number(audio.duration),sourceSha256:project.boundHashes.source,sourcePreserved:true,previousOutputSha256:previousAudit.outputSha256,outputSha256:fileSha256(output),duration:plan.duration,fullDecode:'pass',videoPacketStreamUnchanged:true,videoPacketStreamHash:afterVideo,voice:'original continuous timeline',music:'existing owned track with existing ducking',soundEffects:plan.soundEffects,fullHumanListening:false,externalCostUSD:0};
+writeFileSync(auditPath,JSON.stringify(audit,null,2)+'\n',{flag:'wx'});writeFileSync(output+'.settings.json',JSON.stringify(prepared.settings,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(audit));

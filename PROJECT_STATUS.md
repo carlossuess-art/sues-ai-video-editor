@@ -1,3 +1,39 @@
+# Estado vigente · estilo validado y SFX integrados · 18/10/2026
+
+Carlos confirma a20:33 que le gustan estilo/ejecución de los motions. A20:34 aclara
+las limitaciones de su toma en el coche y autoriza continuar. Validación del estilo;
+no aprobación global de coherencia, Director automático, sonido o segmentación.
+Base del bloque: d25f52e2bca901dbdb2e32b4c831b29316fa589e.
+
+SFX originales por síntesis local determinista: whoosh, impacto, neón y roce.
+Opt-in por ajustes persistidos, volumen independiente0..70%, ducking con voz y
+limitador sin autoganancia. No activar por defecto en proyectos anteriores.
+Eventos ligados a entradas, barrido, flechas y salidas; revisión muestra su origen.
+No descargas/modelos/stock/proveedores ni compras. La capa de audio original de
+cada asset del catálogo sigue sin binding; estos son cues genéricos separados.
+
+SUES_VIDEO_MOTIONS_SONIDO.mp4:38,30s,voz original/música existente,9eventosSFX.
+Remix sobre render verificado con vídeo copiado sin recodificar: hash de paquetes
+idéntico. Script rechaza cambios de ASS/filtro base/original/hash de render previo.
+Original intacto/fullDecodePASS. Audio38,268s, pico−9,3dBFS/RMS−30,3dBFS.
+185/185tests, check, py_compile y diffcheckPASS. PruebaFFmpeg real de4presets:
+señal presente, muestras fuera de eventos sin alterar y energía atenuada con voz.
+Se corrigió busSFX inicial silencioso con cama de silencio de duración fija; la
+prueba de energía evita regresión. Borrador silencioso descartado, no entregado.
+No escucha humana completa ni aceptación sonora. Sin cambio visual de montaje.
+SHA MP4 c00a80e14cb9d4e59d146d99e7622327f8cf120fb0251fceda6c35a8b575a7cc.
+Library libfile_f4fdc281e8dc8191ab189ad7e6d8b465. Evidencia pública sin rutas privadas:
+examples/preview/motion-sound.result.json. Receta scripts/templates/remix_motion_sound.mjs;
+primero generar la base con prepare_voice_motion_scene.mjs y renderizar normalmente.
+
+F6 abierta: oclusión corporal real, escucha/afinación de sonido y revisión sobre
+mejor toma. Director LLM, QA navegador/PWA y despliegue siguen pendientes. No V1,
+porcentaje nuevo, nuevos modelos o gasto externo. Próximo bloque: revisar capacidad
+local de oclusión sin consumos; no inferir máscara corporal de una caja de rostro.
+
+---
+## Registro anterior
+
 # Estado vigente · motions con voz completa · 18/10/2026
 
 Carlos aprueba la dirección visual de la muestra17s: «Esto está muy bien».

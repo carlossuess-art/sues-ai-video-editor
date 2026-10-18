@@ -1,0 +1,95 @@
+{
+  "durationEncoded": 38.3,
+  "audioDurationEncoded": 38.268,
+  "sourceSha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a",
+  "sourcePreserved": true,
+  "previousOutputSha256": "5edf0f89c5ce7f8d61fbf55dfd4be6087af380fdcc2532cbe2a20d68ab04b543",
+  "outputSha256": "c00a80e14cb9d4e59d146d99e7622327f8cf120fb0251fceda6c35a8b575a7cc",
+  "duration": 38.31,
+  "fullDecode": "pass",
+  "videoPacketStreamUnchanged": true,
+  "videoPacketStreamHash": "0,v,SHA256=0bad8f95b889b14912f67c73536819097f582c5e4611dc77fffa17fa0597eeb1",
+  "voice": "original continuous timeline",
+  "music": "existing owned track with existing ducking",
+  "soundEffects": {
+    "enabled": true,
+    "gain": 0.35,
+    "events": [
+      {
+        "preset": "whoosh",
+        "start": 13.56,
+        "duration": 0.36,
+        "reason": "graphic-entry",
+        "provenance": "original-procedural-sues-v1"
+      },
+      {
+        "preset": "whoosh",
+        "start": 16.08,
+        "duration": 0.36,
+        "reason": "transition",
+        "provenance": "original-procedural-sues-v1"
+      },
+      {
+        "preset": "impact",
+        "start": 17.62,
+        "duration": 0.22,
+        "reason": "graphic-entry",
+        "provenance": "original-procedural-sues-v1"
+      },
+      {
+        "preset": "neon",
+        "start": 18.1464,
+        "duration": 0.3,
+        "reason": "neon-reveal",
+        "provenance": "original-procedural-sues-v1"
+      },
+      {
+        "preset": "whoosh",
+        "start": 19.6,
+        "duration": 0.36,
+        "reason": "transition",
+        "provenance": "original-procedural-sues-v1"
+      },
+      {
+        "preset": "whoosh",
+        "start": 23.54,
+        "duration": 0.36,
+        "reason": "graphic-entry",
+        "provenance": "original-procedural-sues-v1"
+      },
+      {
+        "preset": "draw",
+        "start": 24,
+        "duration": 0.18,
+        "reason": "arrow-draw",
+        "provenance": "original-procedural-sues-v1"
+      },
+      {
+        "preset": "draw",
+        "start": 25.619999,
+        "duration": 0.18,
+        "reason": "arrow-draw",
+        "provenance": "original-procedural-sues-v1"
+      },
+      {
+        "preset": "whoosh",
+        "start": 27.36,
+        "duration": 0.36,
+        "reason": "transition",
+        "provenance": "original-procedural-sues-v1"
+      }
+    ],
+    "ducking": true,
+    "recipeVersion": "sues-original-sfx-v1",
+    "humanListeningAccepted": false
+  },
+  "fullHumanListening": false,
+  "externalCostUSD": 0,
+  "libraryFileId": "libfile_f4fdc281e8dc8191ab189ad7e6d8b465",
+  "testsPassed": 185,
+  "audioPeakDBFS": -9.3,
+  "audioMeanDBFS": -30.3,
+  "implementationBase": "d25f52e2bca901dbdb2e32b4c831b29316fa589e",
+  "browserQA": false,
+  "humanSoundAcceptance": false
+}
