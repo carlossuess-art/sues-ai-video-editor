@@ -1,3 +1,7 @@
+> CALMA · 18/10/2026: referencia prioritaria Keanu/deckeanu, grupos de1–3 palabras,
+> Inter como aproximación visual, foco desenfocado y nueva prueba con música ambiental.
+> [Estado y límites](docs/SUES_CALMA_KEANU_REFERENCE.md). Aceptación estética y VPS pendientes.
+
 > Actualización 18/10/2026: el estudio admite subida privada desde la app y recuperación
 > de análisis existentes. Dos ciclos reales CALMA por HTTP comprobados en Work.
 > [Guía de subida y límites](docs/SUES_VIDEO_UPLOAD.md). VPS/HTTPS y análisis automático

@@ -8,6 +8,7 @@ export function validateCinematicStyle(style){
   assert(Array.isArray(style.sources)&&style.sources.length>0&&style.sources.every(x=>FOOTAGE_SOURCES.includes(x)),'sources');
   assert(style.colorTreatment==='natural'&&style.cameraMovement==='slow','look');
   assert(style.voice==='original'&&style.captions==='discreet'&&style.brandMode==='shared-kit','voice/captions/brand');
+  if(style.resourceTreatment!==undefined){const r=style.resourceTreatment;assert(r.type==='blurred-focus'&&r.scope==='literal-text-card-only','resource treatment');assert(finite(r.sigma)&&r.sigma>=8&&r.sigma<=24&&finite(r.dim)&&r.dim>=0&&r.dim<=.2&&finite(r.fadeSeconds)&&r.fadeSeconds>=.25&&r.fadeSeconds<=.6,'resource treatment values');}
   const b=style.broll;
   assert(b&&finite(b.minShot)&&finite(b.maxShot)&&b.minShot>0&&b.maxShot>=b.minShot,'shot duration');
   assert(finite(b.maxCoverage)&&b.maxCoverage>0&&b.maxCoverage<=.5,'coverage');

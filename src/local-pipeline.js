@@ -1,3 +1,4 @@
+import {fontFiles,resolveFontDirectory} from './font-kits.js';
 import {readFileSync,writeFileSync,mkdirSync,cpSync,existsSync,realpathSync,openSync,readSync,closeSync} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
 import {createHash} from 'node:crypto';
@@ -6,7 +7,7 @@ import {buildAutomaticDirector,validateEditorSettings} from './automatic-directo
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
-const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
+const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
 export function fileSha256(path){const fd=openSync(path,'r'),hash=createHash('sha256'),buffer=Buffer.allocUnsafe(1024*1024);try{let size;while((size=readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,size));return hash.digest('hex');}finally{closeSync(fd);}}
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
@@ -17,14 +18,16 @@ export function loadProject(configPath){
  const sourcePath=local(config.sourcePath),sourceSha256=fileSha256(sourcePath);
  if(config.source?.sha256&&config.source.sha256!==sourceSha256)throw new Error('Source SHA256 mismatch');
  const boundHashes={source:sourceSha256,...(inputs.backgroundAudio?{backgroundAudio:fileSha256(inputs.backgroundAudio.localFile)}:{})};
- const fontHashes=Object.fromEntries(['OpenSans.ttf','OpenSans-Bold.ttf','OFL.txt'].map(f=>[f,createHash('sha256').update(readFileSync(join(local(config.fontDirectory),f))).digest('hex')]));
- return {boundHashes,fontHashes,configPath:path,sourcePath,fontDirectory:local(config.fontDirectory),inputs,title:config.title??'SUES · CALMA'};
+ const family=inputs.template.captions.font??inputs.brand.fonts.primary,fontDirectory=resolveFontDirectory(resolve(base,config.fontDirectory),family);
+ const fontHashes=Object.fromEntries(fontFiles(family).map(f=>[f,createHash('sha256').update(readFileSync(join(fontDirectory,f))).digest('hex')]));
+ return {boundHashes,fontHashes,configPath:path,sourcePath,fontDirectory,inputs,title:config.title??'SUES · CALMA'};
 }
 export function prepareProject(project,settings={}){
- const options=validateEditorSettings(settings),automatic=buildAutomaticDirector({...project.inputs,settings:options}),rejections=[];
- const base=prepareLocalPreview({...project.inputs,segments:automatic.segments});
+ const options=validateEditorSettings(settings),inputs={...project.inputs,template:structuredClone(project.inputs.template)};if(inputs.template.captions.mode==='short-groups')inputs.template.captions.maxWords=options.captionWords;
+ const automatic=buildAutomaticDirector({...inputs,settings:options}),rejections=[];
+ const base=prepareLocalPreview({...inputs,segments:automatic.segments});
  for(const id of Object.keys(options.captionOverrides))if(!base.captions.some(c=>c.id===id))throw new Error(`Unknown caption: ${id}`);
- const editedCaptions=base.captions.map(c=>Object.hasOwn(options.captionOverrides,c.id)?{...c,text:options.captionOverrides[c.id].trim(),lines:wrapCaption(options.captionOverrides[c.id].trim()),source:'manual',originalText:c.text}:c);
+ const editedCaptions=base.captions.map(c=>Object.hasOwn(options.captionOverrides,c.id)?{...c,text:options.captionOverrides[c.id].trim(),lines:wrapCaption(options.captionOverrides[c.id].trim(),base.policy.captions.maxCharsPerLine),source:'manual',originalText:c.text}:c);
  const manual=[];
  for(const id of options.highlightCaptions){
   const c=editedCaptions.find(c=>c.id===id);if(!c)throw new Error(`Unknown highlight caption: ${id}`);
@@ -38,13 +41,14 @@ export function prepareProject(project,settings={}){
  for(const candidate of candidates){
   try{
    const next=[...decisions,candidate].sort((a,b)=>a.start-b.start||a.end-b.end);
-   plan=prepareLocalPreview({...project.inputs,segments:automatic.segments,director:{...automatic,decisions:next}});decisions=next;
+   plan=prepareLocalPreview({...inputs,segments:automatic.segments,director:{...automatic,decisions:next}});decisions=next;
   }catch(error){
    if(candidate.rule==='user-caption-quote-v1')throw new Error(`La frase de ${candidate.start.toFixed(1)} s no cabe de forma segura con estos ajustes. Elige otra frase.`);
    rejections.push({rule:candidate.rule,start:candidate.start,end:candidate.end,reason:error.message});
   }
  }
- plan.captions=editedCaptions;
+ const emphasis=new Set(decisions.flatMap(d=>(d.evidence?.hits??[]).map(h=>h.wordIndex)));
+ plan.captions=editedCaptions.map(c=>({...c,emphasisWordIndexes:c.source==='manual'?[]:c.wordIndexes.filter(i=>emphasis.has(i))}));
  const director={...automatic,...(manual.length?{selection:'offline-lexical-baseline-with-user-review-v1'}:{}),decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length,manualHighlights:manual.length}};
  plan.automaticDirector=director.audit;
  plan.pending=plan.pending.filter(p=>p!=='automated-director-selection');plan.pending.push('llm-semantic-director-and-human-review');

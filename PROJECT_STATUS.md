@@ -1,18 +1,48 @@
-# Estado técnico vigente · 17/10/2026
+# Estado técnico vigente · 18/10/2026
 
 FASE 5/10 · BRAND KIT + TEMPLATE ENGINE
 Progreso fase: 80 % (estimación técnica; estética provisional).
 Progreso global: 48 % = F1–F4 (40 %) + 80 % del peso F5 (8 %).
 Rama oficial: feat/phase-4-vision-camera.
 Base de este bloque: acbb8d5471cce1972c886ba9331379f8477dd35d.
-Último hito: subida privada desde la app y recuperación del análisis por HTTP.
-Dos ciclos reales CALMA completos, incluido un arranque sin medios precargados.
-Suite vigente: 145/145 y npm run check; sintaxis Bash correcta.
+Último hito: CALMA adaptada a la referencia principal de Keanu y secundaria Reel2.
+Nueva prueba real con30grupos cortos, Inter, foco desenfocado y ambiente original.
+Suite vigente:151/151 secuencial y npm run check; Bash/Python correctos.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
-Necesito de Carlos ahora: nada; ejecución de release y acceso HTTPS quedan pendientes de acceso VPS.
-Estado observado: PENDIENTE MEDIOS; app no iniciada.
+Necesito de Carlos: revisión de la nueva prueba estética; VPS/HTTPS esperan acceso operativo.
+Estado VPS observado: PENDIENTE MEDIOS, no iniciado; app/render probados en Work.
+
+## Referencia prioritaria Keanu · 18/10/2026
+
+- Carlos confirma Reel de deckeanu sobre Keanu Reeves como referencia principal,
+  Sues_Reel2_May_V1.mov como secundaria; las siete referencias previas bajan de prioridad.
+- «Video1.mp4» recuperado y revisado64,2s; secundaria91,467s. Contactos16/8frames,
+  scene-score completo y OCR4fps (ruidoso; no fuente de tiempos). No nuevo ASR/visión.
+- Kit compartido pasa a Inter4.1 oficial/OFL como aproximación visual, sin afirmar
+  identificación exacta. CALMA usa grupos1–3, blancos/bold/compactos, métricas para
+  ajuste de anchura, entrada suave y palabras con evidencia en dorado SUES.
+- UI permite1/2/3 palabras; evita aplicar ediciones de IDs viejos tras reagrupar;
+  undo restaura agrupación y texto. Tiempos inciertos se agrupan con un token real,
+  sin fabricar duración individual. No se cambia la voz o el ritmo de habla.
+- Cita literal con fondo blur/dim y fades350ms; evita duplicar debajo el subtítulo
+  equivalente. Una corrección manual no se oculta por la cita del transcript.
+  Es variante de QUOTE_CARD_01; compositor de imágenes/vídeo BLURRED_RESOURCE pendiente.
+- Cama ambiental original46s creada offline, sin samples/modelos/compras, mezclada
+  al perfil de prueba a0,16 con duck/fades/limitador. Música privada fuera de Git;
+  partitura y generador reproducibles. Selector de pista/volumen UI pendiente.
+- Nuevo render real desde API/upload/worker/storage/Range206:38,30s,75/75palabras,
+  30grupos,2zoom,1foco;18.198.492bytes. SHA
+  20abb19a75e4f7e20ac884c58ee3534d736b313f9c4e0f17c1e6e7172aad5299.
+  Original intacto/fullDecode/audio AAC. ASS/filtro vigentes idénticos al render.
+- QA8frames y detalle de acento dorado. Audio pico−9,28/RMS−29dBFS sin NaN/Inf;
+  sin escucha completa ni aceptación estética humana/navegador/PWA/VPS.
+- 151/151 tests secuenciales+check+Bash/Python. Guía docs/SUES_CALMA_KEANU_REFERENCE.md,
+  ADN examples/references/calma-keanu-priority.dna.json y evidencia
+  examples/preview/calma-keanu.real-result.json. F5=80%,global48%,coste nuevo0.
+- Próximo: revisión estética deCarlos, ajuste fino y recursos propios integrados.
+  Despliegue/HTTPS y análisis automático de otros vídeos siguen pendientes; no V1.
 
 ## Subida desde la app · 18/10/2026
 
@@ -410,16 +440,17 @@ fases cerradas. Hay UI/backend local persistente; no despliegue público ni E2E 
 
 ## Siguiente acción exacta
 
-1. Ejecutar la release fija de este bloque en VPS mediante el launcher existente.
-   El shell ya puede arrancar sin vídeo o análisis privados precargados.
-2. Comprobar estado y conectar HTTPS protegido tras inspeccionar el proxy real.
-   No abrir loopback 3010 directamente a Internet ni modificar WhatsApp/Caddy a ciegas.
-3. Desde la app: subir el original y, si falta su análisis, seleccionar el JSON
-   privado de recuperación. Probar CALMA → ajustes → exportación en VPS.
-4. Integrar el análisis automático autorizado de vídeos distintos y completar QA
-   de navegador/PWA y aceptación audiovisual con Carlos.
+1. Revisar SUES_CALMA_REFERENCIA_KEANU_V2.mp4 con Carlos, partiendo de la referencia
+   Keanu/deckeanu y la secundaria Reel2. Afinar letra, agrupación, foco y música
+   sin volver a la síntesis anterior de siete referencias como prioridad.
+2. Integrar recursos propios/licenciados para las tarjetas de imágenes/vídeos y
+   B-roll de naturaleza/retiros. El foco actual sólo tiene cita literal de texto.
+3. Cuando exista acceso VPS, lanzar release fija y comprobar shell/HTTPS protegido;
+   subir el original, recuperar su análisis si falta y exportar allí. No modificar
+   WhatsApp/Caddy a ciegas ni abrir loopback3010 directamente a Internet.
+4. Integrar análisis automático autorizado de otros vídeos y completar QA de
+   navegador/PWA y aceptación audiovisual integral.
 
-Bloqueo de ejecución: no hay acceso directo VPS en esta sesión. Código y pruebas
-se completan en Work; no equivalen a despliegue. No reinstalar runtime/npm ni
-repetir ASR/MediaPipe por defecto. Supabase del Oráculo permanece separado.
-Fase 5 sigue al 80 %, global 48 %; no declarar V1 hasta aceptación integral.
+Código, renders y pruebas en Work no equivalen a despliegue. No reinstalar runtime
+ni repetir ASR/MediaPipe por defecto. Supabase del Oráculo permanece separado.
+Fase5 sigue al80%, global48%; aceptación estética y V1 todavía pendientes.

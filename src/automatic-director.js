@@ -9,9 +9,10 @@ const LEXICON=new Map([
 ]);
 export function validateEditorSettings(settings={}){
  assert(settings&&typeof settings==='object'&&!Array.isArray(settings),'settings object');
- assert(Object.keys(settings).every(k=>['zoomIntensity','motions','captionOverrides','highlightCaptions'].includes(k)),'unknown setting');
- const value={zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ assert(Object.keys(settings).every(k=>['zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords'].includes(k)),'unknown setting');
+ const value={captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
  assert(Number.isFinite(value.zoomIntensity)&&value.zoomIntensity>=0&&value.zoomIntensity<=1,'zoomIntensity 0..1');
+ assert([1,2,3].includes(value.captionWords),'captionWords 1, 2 or 3');
  assert(typeof value.motions==='boolean','motions boolean');
  assert(value.captionOverrides&&typeof value.captionOverrides==='object'&&!Array.isArray(value.captionOverrides),'captionOverrides object');
  assert(Object.keys(value.captionOverrides).length<=500,'too many overrides');

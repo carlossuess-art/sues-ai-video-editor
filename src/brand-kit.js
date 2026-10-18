@@ -6,9 +6,9 @@ export const DEFAULT_BRAND_KIT=Object.freeze({
   version:'1.0',
   id:'sues-holistics-v1',
   name:'SUES Holistics',
-  fonts:{primary:'Open Sans',accent:'Open Sans'},
+  fonts:{primary:'Inter',accent:'Inter'},
   colors:{text:'#FFFFFF',accent:'#D7B56D',dark:'#101820',danger:'#C94A37',success:'#4FA36C'},
-  captions:{maxLines:2,maxCharsPerLine:26,safeZone:'captions'},
+  captions:{maxLines:2,maxCharsPerLine:22,safeZone:'captions'},
   outro:{text:'Vuelve a ti · Sues Holistics',duration:3}
 });
 

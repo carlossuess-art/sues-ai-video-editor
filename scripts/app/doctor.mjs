@@ -1,3 +1,4 @@
+import {fontKit} from '../../src/font-kits.js';
 import {execFileSync} from 'node:child_process';
 import {existsSync,readFileSync} from 'node:fs';
 import {join} from 'node:path';
@@ -10,7 +11,7 @@ check('python',()=>run('python3',['--version']).trim());check('ffmpeg',()=>run('
 const project=check('project-data-and-source-hash',()=>loadProject(config)),prepared=project?check('plan-and-captions',()=>prepareProject(project)):null;
 if(project&&prepared){
  check('video-and-original-audio',()=>{const details=JSON.parse(run('ffprobe',['-v','error','-show_streams','-show_format','-of','json',project.sourcePath])),v=details.streams.find(s=>s.codec_type==='video'),audio=details.streams.some(s=>s.codec_type==='audio');if(!v||!audio)throw new Error('Source requires video and original audio');const rotation=v.side_data_list?.find(s=>s.rotation!==undefined)?.rotation??0,[width,height]=Math.abs(rotation)%180===90?[v.height,v.width]:[v.width,v.height];if(width!==project.inputs.source.width||height!==project.inputs.source.height||Math.abs(Number(details.format.duration)-project.inputs.source.duration)>.05)throw new Error('Media does not match source metadata');return {width,height,duration:Number(details.format.duration),audio:true};});
- check('font-family-and-license',()=>{for(const name of ['OpenSans.ttf','OpenSans-Bold.ttf'])if(!run('fc-scan',['--format','%{family}\n',join(project.fontDirectory,name)]).split('\n').includes('Open Sans'))throw new Error('Expected Open Sans regular/bold');if(!existsSync(join(project.fontDirectory,'OFL.txt'))||!readFileSync(join(project.fontDirectory,'OFL.txt'),'utf8').includes('SIL OPEN FONT LICENSE'))throw new Error('Font license missing');return 'Open Sans400/700 + SIL OFL';});
+ check('font-family-and-license',()=>{const kit=fontKit(project.inputs.template.captions.font??project.inputs.brand.fonts.primary);for(const name of [kit.regular,kit.bold])if(!run('fc-scan',['--format','%{family}\n',join(project.fontDirectory,name)]).split('\n').includes(kit.family))throw new Error('Expected configured font family');if(!existsSync(join(project.fontDirectory,'OFL.txt'))||!readFileSync(join(project.fontDirectory,'OFL.txt'),'utf8').includes('SIL OPEN FONT LICENSE'))throw new Error('Font license missing');return kit.family+'400/700 + SIL OFL';});
  check('required-render-filters',()=>{const filters=run('ffmpeg',['-hide_banner','-filters']),names=['ass','crop','scale','fps','concat',...(prepared.plan.semantic.zooms.length?['perspective']:[]),...(prepared.plan.audioMix?['sidechaincompress','alimiter']:[])];for(const name of names)if(!new RegExp('\\s'+name+'\\s').test(filters))throw new Error('Missing filter: '+name);return names;});
 }
 // Never print the loaded config, paths, tokens or complete transcript as diagnostics.

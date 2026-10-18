@@ -33,7 +33,7 @@ chmod 700 "$SUES_DIR/editor" "$SUES_DIR/editor/media" "$SUES_DIR/editor/media/fo
 python3 - "$SUES_SOURCE" "$SUES_RELEASE" "$SUES_DIR" <<'PY'
 import json,pathlib,sys
 old,release,setup=map(pathlib.Path,sys.argv[1:]); media=setup/'editor/media'
-for name,legacy in [('original.mp4','runtime/poc/original.mp4'),('transcript.json','runtime/poc/transcript.json'),('camera.json','runtime/calma/camera.json'),('fonts/OpenSans.ttf','runtime/calma/preview/fonts/OpenSans.ttf'),('fonts/OpenSans-Bold.ttf','runtime/calma/preview/fonts/OpenSans-Bold.ttf'),('fonts/OFL.txt','runtime/calma/preview/fonts/OFL.txt')]:
+for name,legacy in [('original.mp4','runtime/poc/original.mp4'),('transcript.json','runtime/poc/transcript.json'),('camera.json','runtime/calma/camera.json')]:
     # Report presence only. No implicit copies/deletion of previous media.
     if not (media/name).is_file(): print('PENDIENTE:',name, '(posible copia previa presente)' if (old/legacy).is_file() else '')
 config=setup/'editor/project.json'
@@ -41,12 +41,12 @@ if not config.exists():
     data=json.loads((release/'examples/projects/calma-local.example.json').read_text())
     for key in ('templatePath','brandKitPath','visionPath','catalogPath'):
         data[key]='/app/'+str((release/'examples/projects'/data[key]).resolve().relative_to(release))
-    data.update(sourcePath='/state/media/original.mp4',transcriptPath='/state/media/transcript.json',cameraPath='/state/media/camera.json',fontDirectory='/app/assets/fonts')
+    data.update(sourcePath='/state/media/original.mp4',transcriptPath='/state/media/transcript.json',cameraPath='/state/media/camera.json',fontDirectory='/app/assets/fonts/inter')
     config.write_text(json.dumps(data,indent=2)+'\n');config.chmod(0o600)
 PY
 chown 1000:1000 "$SUES_DIR/editor/project.json"
 SUES_MISSING=0
-for sues_file in original.mp4 transcript.json fonts/OpenSans.ttf fonts/OpenSans-Bold.ttf fonts/OFL.txt; do
+for sues_file in original.mp4 transcript.json; do
  if [ ! -s "$SUES_DIR/editor/media/$sues_file" ] || [ -L "$SUES_DIR/editor/media/$sues_file" ]; then SUES_MISSING=1; fi
 done
 # Only application checkout/dependencies and private editor state enter the container.

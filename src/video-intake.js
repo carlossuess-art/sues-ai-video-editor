@@ -8,6 +8,7 @@ import {createHash,randomUUID} from 'node:crypto';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {fileURLToPath} from 'node:url';
+import {fontFiles,resolveFontDirectory} from './font-kits.js';
 import {validateTranscript} from './transcript.js';
 import {loadProject,prepareProject,fileSha256} from './local-pipeline.js';
 
@@ -30,8 +31,8 @@ export function projectConfig(path){
 }
 export function projectReady(path){
  try{
-  const c=projectConfig(path);
-  return ['sourcePath','transcriptPath','cameraPath','visionPath','templatePath','brandKitPath','catalogPath'].every(k=>regular(c[k]))&&FONT_FILES.every(f=>regular(join(c.fontDirectory,f)));
+  const c=projectConfig(path),template=read(c.templatePath),brand=read(c.brandKitPath),family=template.captions.font??brand.fonts.primary,fontDirectory=resolveFontDirectory(c.fontDirectory,family);
+  return ['sourcePath','transcriptPath','cameraPath','visionPath','templatePath','brandKitPath','catalogPath'].every(k=>regular(c[k]))&&fontFiles(family).every(f=>regular(join(fontDirectory,f)));
  }catch{return false;}
 }
 

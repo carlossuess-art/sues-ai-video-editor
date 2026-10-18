@@ -48,6 +48,7 @@ export class EditorJobs{
  plan(id){const job=this.get(id),bundle=join(this.dir(id),job.bundle);return {manifest:JSON.parse(readFileSync(join(bundle,'manifest.json'),'utf8')),director:JSON.parse(readFileSync(join(bundle,'director.json'),'utf8'))};}
  adjust(id,settings,{recordHistory=true}={}){
   const job=this.get(id);if(job.state!=='PREVIEW_READY')throw new Error('Adjustments require PREVIEW_READY; duplicate completed jobs to adjust');
+  if(recordHistory&&settings.captionWords!==undefined&&settings.captionWords!==(job.settings.captionWords??3)&&(Object.keys(settings.captionOverrides??{}).length||(settings.highlightCaptions??[]).length))throw new Error('Changing caption groups requires resetting caption edits and highlights');
   const project=loadProject(this.profiles[job.profileId]),prepared=prepareProject(project,settings);
   if(prepared.fingerprint===job.fingerprint){if(bundleDigest(join(this.dir(id),job.bundle))!==job.bundleDigest)throw new Error('Prepared bundle changed; create a new job');return this.view(job);}
   const prior=structuredClone(job.settings);

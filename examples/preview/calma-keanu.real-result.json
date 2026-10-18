@@ -1,0 +1,91 @@
+{
+  "version": "1.0",
+  "state": "DONE",
+  "upload": {
+    "bytes": 96942857,
+    "sourcePreloaded": false,
+    "matchedAnalysis": true,
+    "analysisRestored": false,
+    "packagedFonts": false
+  },
+  "summary": {
+    "duration": 38.31,
+    "sourceWords": 75,
+    "mappedWords": 75,
+    "omittedWords": 0,
+    "captions": 30,
+    "zooms": 2,
+    "motions": 1,
+    "manualHighlights": 0,
+    "rejections": [],
+    "externalCostUSD": 0,
+    "productionReady": false
+  },
+  "renderAttempts": 1,
+  "range": {
+    "status": 206,
+    "bytes": 1024
+  },
+  "audit": {
+    "version": "1.0",
+    "sourceSha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a",
+    "sourcePreserved": true,
+    "durationPlanned": 38.31,
+    "durationEncoded": 38.3,
+    "output": "preview.mp4",
+    "outputSha256": "20abb19a75e4f7e20ac884c58ee3534d736b313f9c4e0f17c1e6e7172aad5299",
+    "bytes": 18198492,
+    "video": {
+      "codec": "h264",
+      "width": 1080,
+      "height": 1920,
+      "fps": "30/1"
+    },
+    "audioPresent": true,
+    "backgroundAudio": {
+      "sha256": "f8e6a31e9c7b2d5e640ec88e3240e835b0adf675f028bf65c5704e27bdd69ab1",
+      "assetId": "sues-original-ambient-pad-v1",
+      "rights": "owned",
+      "gain": 0.16
+    },
+    "broll": [],
+    "captions": 30,
+    "font": {
+      "family": "Inter",
+      "regularSha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+      "boldSha256": "288316099b1e0a47a4716d159098005eef7c0066921f34e3200393dbdb01947f"
+    },
+    "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "fullDecode": "pass",
+    "productionReady": false,
+    "externalCostUSD": 0
+  },
+  "externalCostUSD": 0,
+  "humanAcceptance": false,
+  "visualReview": {
+    "sampleTimes": [
+      3,
+      6.3,
+      12.5,
+      15.5,
+      16.2,
+      25.5,
+      33,
+      36.5
+    ],
+    "result": "short readable captions and gold highlights; timed blurred text focus; no duplicated automatic caption under matching focus text",
+    "humanAcceptance": false
+  },
+  "audioReview": {
+    "peakDb": -9.276889,
+    "rmsDb": -28.999343,
+    "nan": 0,
+    "inf": 0,
+    "humanListeningAcceptance": false
+  },
+  "latestCodeRenderedAssets": {
+    "ASSIdentical": true,
+    "filterIdentical": true,
+    "note": "fresh preparation after manual-caption protection gives identical render graphs for this automatic example"
+  }
+}

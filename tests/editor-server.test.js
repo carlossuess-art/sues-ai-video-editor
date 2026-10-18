@@ -26,7 +26,7 @@ test('HTTP app protects sessions, origins and paths; persists edits and forbids 
   assert.equal((await fetch(url+'/api/jobs',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:'{}'})).status,403);
   const health=await (await fetch(url+'/api/health',{headers})).json();assert.equal(health.mode,'local-worker');assert.equal(health.queue.waiting,0);assert.equal(health.storage.remote,false);
   const create=await fetch(url+'/api/jobs',{method:'POST',headers,body:JSON.stringify({profileId:'test'})});assert.equal(create.status,201);
-  const design=await (await fetch(url+'/api/design?profileId=test',{headers})).json();assert.equal(design.styles.filter(s=>s.available).length,1);assert.equal(design.motions.filter(m=>m.rendered).length,3);assert.equal(design.brand.fonts.primary,'Open Sans');
+  const design=await (await fetch(url+'/api/design?profileId=test',{headers})).json();assert.equal(design.styles.filter(s=>s.available).length,1);assert.equal(design.motions.filter(m=>m.rendered).length,3);assert.equal(design.brand.fonts.primary,'Inter');
   const manifest=await (await fetch(url+'/manifest.webmanifest')).json();assert.equal(manifest.display,'standalone');
   const worker=await (await fetch(url+'/sw.js')).text();assert.ok(!worker.includes("cache.add('/api/"));
   const job=await create.json();assert.equal(job.state,'PREVIEW_READY');

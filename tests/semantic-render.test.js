@@ -34,7 +34,7 @@ test('rejects combined zoom above 1.60, head clipping and events hidden by B-rol
 });
 test('registered quote binds literal text and chooses a safe box; missing binding fails',()=>{
  const p=prepareSemanticRender(input([motion('QUOTE_CARD_01',{quote:'Vuelve a ti.'})]));
- assert.equal(p.motions[0].box.top,200);assert.equal(p.motions[0].instance.layers[1].content,'Vuelve a ti.');
+ assert.equal(p.motions[0].box.top,650);assert.equal(p.motions[0].backgroundTreatment.presenterOccludedIntentionally,true);assert.equal(p.motions[0].instance.layers[1].content,'Vuelve a ti.');
  assert.throws(()=>prepareSemanticRender(input([motion('QUOTE_CARD_01',{})])),/binding/);
  assert.throws(()=>prepareSemanticRender(input([motion('QUOTE_CARD_01',{quote:''})])),/motion text/);
 });

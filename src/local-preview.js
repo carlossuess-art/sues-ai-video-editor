@@ -1,3 +1,5 @@
+import {shortCaptionGroups} from './short-captions.js';
+import {fitCaptionSize} from './font-kits.js';
 import {prepareBackgroundAudio,backgroundAudioFilter} from './audio-mix.js';
 import {prepareSemanticRender,semanticZoomFilter} from './semantic-render.js';
 import {buildTimeMap,mapCameraToEdit} from './time-map.js';
@@ -49,7 +51,7 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
   assert(timeMap.duration>policy.outro.duration,'duration shorter than outro');
   const mapped=mapWordsToTimeline(transcript,segments);
   // Conservative blocks fit shared-kit line limits. No invented karaoke timings.
-  const blocks=segmentWords(mapped.words,{maxWords:6,maxChars:policy.captions.maxCharsPerLine*policy.captions.maxLines-10,maxDuration:4.5});
+  const blocks=policy.captions.mode==='short-groups'?shortCaptionGroups(mapped.words,{maxWords:policy.captions.maxWords,maxChars:policy.captions.maxCharsPerLine,maxDuration:policy.captions.maxDuration}):segmentWords(mapped.words,{maxWords:6,maxChars:policy.captions.maxCharsPerLine*policy.captions.maxLines-10,maxDuration:4.5});
   const captions=blocks.map(b=>({...b,lines:wrapCaption(b.text,policy.captions.maxCharsPerLine,policy.captions.maxLines)}));
   for(const [key,box]of Object.entries(PREVIEW_LAYOUT)){
     assert(validateSafePlacement(box,key==='caption'?PORTRAIT_SAFE_ZONES.captions:PORTRAIT_SAFE_ZONES.content),'safe layout');
@@ -78,15 +80,21 @@ const timestamp=time=>{
 export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   assert(/^[\p{L}\p{N} ._-]+$/u.test(fontFamily),'font name');
   const white=assColor(plan.policy.captions.color),gold=assColor(plan.policy.captions.accent),dark=assColor(plan.renderColors.dark);
-  let out=`[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 2\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Caption,${fontFamily},56,${white},${gold},&H70000000,&H90000000,-1,0,0,0,100,100,0,0,1,2,1,5,120,180,0,1\nStyle: Outro,${fontFamily},44,${gold},${gold},${dark},${dark},0,0,0,0,100,100,0,0,1,0,0,5,120,180,0,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
+  let out=`[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 2\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Caption,${fontFamily},${plan.policy.captions.fontSize??56},${white},${gold},&H70000000,&H90000000,-1,0,0,0,100,100,0,0,1,2,1,5,120,180,0,1\nStyle: Outro,${fontFamily},44,${gold},${gold},${dark},${dark},0,0,0,0,100,100,0,0,1,0,0,5,120,180,0,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
   const event=(layer,start,end,style,text)=>{out+=`Dialogue: ${layer},${timestamp(start)},${timestamp(end)},${style},,0,0,0,,${text}\n`;};
   for(const c of plan.captions){
-    const b=plan.layout.caption;event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})}${c.lines.map(safeText).join('\\N')}`);
+    const focus=c.source!=='manual'&&(plan.semantic?.motions??[]).find(m=>m.backgroundTreatment&&c.start>=m.start-1e-6&&c.end<=m.end+1e-6&&c.wordIndexes.every(index=>(m.evidence?.sourceWordIndexes??[]).includes(index)));if(focus)continue;
+    let wordOffset=0;const content=c.lines.map(line=>line.split(' ').map(word=>{const index=c.wordIndexes[wordOffset++],text=safeText(word);return c.emphasisWordIndexes?.includes(index)?`{\\1c${gold}&}${text}{\\1c${white}&}`:text;}).join(' ')).join('\\N');
+    const b=plan.layout.caption,p=plan.policy.captions,size=fitCaptionSize(c.lines,p),fade=p.fadeMs??60,entrance=p.entranceMs??180,motion=p.mode==='short-groups'?`\\fs${size}\\fscx${p.scaleX}\\fsp${p.tracking}\\fad(${fade},${fade})\\fscy98\\t(0,${entrance},\\fscy100)`:'';event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})${motion}}${content}`);
   }
   for(const m of plan.semantic?.motions??[]){
     const b=m.box,cx=(b.left+b.right)/2,cy=(b.top+b.bottom)/2,paint=assColor(plan.renderColors.dark).slice(4);
     const goldCode=assColor(plan.policy.captions.accent).slice(4);
-    if(m.params.motionId==='QUOTE_CARD_01'){
+    if(m.params.motionId==='QUOTE_CARD_01'&&m.backgroundTreatment){
+      const size=fitCaptionSize(m.lines,{...plan.policy.captions,fontSize:104});
+      event(2,m.start,m.end,'Outro',`{\\an7\\pos(${b.left},${b.top})\\p1\\bord0\\1c&H${paint}&\\1a&H35&\\fad(350,350)}m 0 0 l 780 0 780 300 0 300`);
+      event(3,m.start,m.end,'Outro',`{\\pos(${cx},${cy})\\fs${size}\\b1\\fad(350,350)}${m.lines.map(safeText).join('\\N')}`);
+    }else if(m.params.motionId==='QUOTE_CARD_01'){
       event(2,m.start,m.end,'Outro',`{\\an7\\pos(${b.left},${b.top})\\p1\\bord0\\1c&H${paint}&\\1a&H35&\\fad(200,250)}m 0 0 l 780 0 780 150 0 150`);
       event(3,m.start,m.end,'Outro',`{\\pos(${cx},${cy})\\fs44\\b1\\fad(200,250)}${m.lines.map(safeText).join('\\N')}`);
     }else if(m.params.motionId==='DIVIDER_LINE_01'){
@@ -135,6 +143,12 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   for(const [i,d]of plan.selectedMedia.entries()){
     filters.push(`[${i+1}:v]trim=start=${d.sourceIn}:end=${d.sourceOut},setpts=PTS-${d.sourceIn}/TB,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1,fps=fps=30:start_time=0,setpts=PTS+${d.start}/TB[broll${i}]`);
     filters.push(`[${base}][broll${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${d.start})*lt(t,${d.end})'[composed${i}]`);base=`composed${i}`;
+  }
+  for(const [i,m] of (plan.semantic?.motions??[]).filter(m=>m.backgroundTreatment).entries()){
+    const r=m.backgroundTreatment,duration=m.end-m.start,fade=Math.min(r.fadeSeconds,duration/3),sigma=r.sigma/4;
+    filters.push(`[${base}]split=2[focus-clear${i}][focus-input${i}]`);
+    filters.push(`[focus-input${i}]trim=start=${m.start}:end=${m.end},setpts=PTS-STARTPTS,scale=270:480,gblur=sigma=${sigma},scale=1080:1920,eq=brightness=-${r.dim},format=yuva420p,fade=t=in:st=0:d=${fade}:alpha=1,fade=t=out:st=${duration-fade}:d=${fade}:alpha=1,setpts=PTS+${m.start}/TB[focus-layer${i}]`);
+    filters.push(`[focus-clear${i}][focus-layer${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${m.start})*lt(t,${m.end})'[focus-composed${i}]`);base=`focus-composed${i}`;
   }
   filters.push(`[${base}]ass=filename=${assFile}:fontsdir=fonts[video]`);
   assert(!plan.audioMix||hasAudio,'background music requires original voice track');

@@ -64,15 +64,17 @@ def render(source, bundle, output):
     before = digest(source)
     if expected.get('sha256') and expected['sha256'] != before:
         raise ValueError('Source SHA256 mismatch')
-    font = bundle / 'fonts/OpenSans.ttf'
-    bold_font = bundle / 'fonts/OpenSans-Bold.ttf'
-    if not font.is_file() or not bold_font.is_file():
-        raise ValueError('Supply OpenSans.ttf and OFL.txt in bundle/fonts')
-    if not (bundle / 'fonts/OFL.txt').is_file():
-        raise ValueError('Font license missing')
-    family = subprocess.check_output(['fc-scan', '--format', '%{family}\n', str(font)], text=True).splitlines()
-    if 'Open Sans' not in family or manifest['policy']['captions']['font'] != 'Open Sans':
-        raise ValueError('This renderer currently requires the shared Open Sans font')
+    expected_family = manifest['policy']['captions']['font']
+    fonts = {'Open Sans': ('OpenSans.ttf', 'OpenSans-Bold.ttf'), 'Inter': ('Inter-Regular.ttf', 'Inter-Bold.ttf')}
+    if expected_family not in fonts:
+        raise ValueError('Unsupported caption font family')
+    font, bold_font = [bundle / 'fonts' / name for name in fonts[expected_family]]
+    if not font.is_file() or not bold_font.is_file() or not (bundle / 'fonts/OFL.txt').is_file():
+        raise ValueError('Supply the configured regular/bold fonts and OFL license')
+    for item in (font, bold_font):
+        families = subprocess.check_output(['fc-scan', '--format', '%{family}\n', str(item)], text=True).splitlines()
+        if expected_family not in families:
+            raise ValueError('Font does not match the configured caption family')
     has_audio_graph = '[audio]' in (bundle / 'filter.ffscript').read_text()
     if has_audio_graph != bool(audio):
         raise ValueError('Bundle audio contract does not match source')
@@ -110,7 +112,7 @@ def render(source, bundle, output):
                  'output': output.name, 'outputSha256': digest(temporary), 'bytes': temporary.stat().st_size,
                  'video': {'codec': encoded['codec_name'], 'width': encoded['width'], 'height': encoded['height'], 'fps': encoded['r_frame_rate']},
                  'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'captions': len(manifest['captions']),
-                 'font': {'family': 'Open Sans', 'regularSha256': digest(font), 'boldSha256': digest(bold_font)},
+                 'font': {'family': expected_family, 'regularSha256': digest(font), 'boldSha256': digest(bold_font)},
                  'ffmpeg': subprocess.check_output(['ffmpeg', '-version'], text=True).splitlines()[0],
                  'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
         # Exclusive creation prevents a race from overwriting another output.

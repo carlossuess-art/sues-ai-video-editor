@@ -3,8 +3,8 @@
   "id": "sues-holistics-v1",
   "name": "SUES Holistics",
   "fonts": {
-    "primary": "Open Sans",
-    "accent": "Open Sans"
+    "primary": "Inter",
+    "accent": "Inter"
   },
   "colors": {
     "text": "#FFFFFF",
@@ -15,7 +15,7 @@
   },
   "captions": {
     "maxLines": 2,
-    "maxCharsPerLine": 26,
+    "maxCharsPerLine": 22,
     "safeZone": "captions"
   },
   "outro": {

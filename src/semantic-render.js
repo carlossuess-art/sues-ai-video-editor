@@ -80,6 +80,10 @@ export function prepareSemanticRender({director,policy,camera,timeMap,visionFram
  const overlaps=(a,b)=>Math.min(a.right,b.right)>Math.max(a.left,b.left)&&Math.min(a.bottom,b.bottom)>Math.max(a.top,b.top);
  const slots=[{left:120,right:900,top:200,bottom:350},{left:120,right:900,top:1010,bottom:1160}];
  for(const motion of motions){
+  if(motion.params.motionId==='QUOTE_CARD_01'&&policy.visualStyle?.resourceTreatment?.type==='blurred-focus'){
+   assert(!motions.some(other=>other!==motion&&other.start<motion.end&&other.end>motion.start),'focus cards cannot overlap');
+   motion.box={left:120,right:900,top:650,bottom:950};motion.backgroundTreatment={...policy.visualStyle.resourceTreatment,presenterOccludedIntentionally:true};continue;
+  }
   motion.box=slots.find(box=>!motions.some(other=>other.box&&other.start<motion.end&&other.end>motion.start&&overlaps(box,other.box))&&
    Array.from({length:Math.ceil((motion.end-motion.start)*30)},(_,i)=>motion.start+i/30).every(t=>{
     const {sourceTime}=at(t),face=faces.reduce((a,b)=>Math.abs(b.time-sourceTime)<Math.abs(a.time-sourceTime)?b:a).face;

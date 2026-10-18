@@ -1,0 +1,57 @@
+{
+  "assetId": "sues-original-ambient-pad-v1",
+  "rights": "owned",
+  "method": "original procedural chord pad; no borrowed melody, samples or generative service",
+  "duration": 46,
+  "sampleRate": 48000,
+  "peak": 0.78,
+  "rms": 0.18415130999887164,
+  "chordsMidi": [
+    [
+      0,
+      [
+        36,
+        48,
+        55,
+        59,
+        62,
+        64
+      ]
+    ],
+    [
+      10,
+      [
+        33,
+        45,
+        52,
+        55,
+        59,
+        60
+      ]
+    ],
+    [
+      20,
+      [
+        29,
+        41,
+        48,
+        52,
+        57,
+        60
+      ]
+    ],
+    [
+      30,
+      [
+        36,
+        43,
+        50,
+        52,
+        55,
+        62
+      ]
+    ]
+  ],
+  "externalCostUSD": 0,
+  "humanListeningAcceptance": false
+}

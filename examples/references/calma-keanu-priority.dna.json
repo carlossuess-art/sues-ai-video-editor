@@ -1,0 +1,85 @@
+{
+  "version": "1.0",
+  "priority": [
+    "deckeanu-keanu-primary",
+    "sues-reel2-may-secondary"
+  ],
+  "decisionDate": "2026-10-18",
+  "primary": {
+    "key": "deckeanu-keanu-primary",
+    "filename": "Video 1.mp4",
+    "sha256": "5c839646c2746cc5f7616290d8e50b812bcccd94accdef35a427d3ff247ef384",
+    "duration": 64.2,
+    "width": 1080,
+    "height": 1920,
+    "role": "style-reference-only",
+    "observations": {
+      "captions": "white, bold compact sans; mostly1–3 word groups; isolated words enlarge/change colour",
+      "composition": "seated presenter with semantically related visual overlays and occasional graphic screens",
+      "resources": "defocus/dim main picture, then integrate a foreground visual or text",
+      "transitions": "hard changes plus short soft entries, opacity/scale/blur treatments",
+      "colour": "white captions with selective yellow/green/red emphasis in reference; SUES adaptation retains shared gold"
+    },
+    "sampleCaption": {
+      "time": 6.42,
+      "text": "lo que hizo",
+      "glyphBoxApprox": {
+        "left": 337,
+        "right": 743,
+        "top": 989,
+        "bottom": 1078
+      },
+      "method": "threshold of manually delimited white glyph area; not an exact font ID"
+    },
+    "analysis": {
+      "contactFrames": 16,
+      "ocrSamplesPerSecond": 4,
+      "ocrReliability": "noisy; not used to infer exact word timings or verified subtitle counts",
+      "sceneCandidates": 9,
+      "sceneThreshold": 0.12,
+      "sceneCandidatesPerMinute": 8.411214953271028,
+      "sceneLimit": "not a verified cut rate; graphical motion can trigger"
+    },
+    "originalFontFamily": "unidentified from baked pixels"
+  },
+  "secondary": {
+    "key": "sues-reel2-may-secondary",
+    "filename": "Sues_Reel2_May_V1.mov",
+    "duration": 91.466667,
+    "contactFrames": 8,
+    "sceneCandidates": 120,
+    "sceneCandidatesPerMinute": 78.7172008793105,
+    "observations": "short captions, graphical backgrounds, framed visual references, major type emphasis",
+    "sceneLimit": "graphics/transitions create multiple detections; not confirmed cuts"
+  },
+  "adaptation": {
+    "font": "Inter4.1 Bold, visual approximation, not claimed original",
+    "captionFontSize": 96,
+    "captionScaleX": 94,
+    "tracking": -2,
+    "maxWords": 3,
+    "captionGroupOptions": [
+      1,
+      2,
+      3
+    ],
+    "fontMinReadableSize": 64,
+    "captionFadeMs": 60,
+    "captionEntranceMs": 180,
+    "focus": {
+      "background": "blur+dim",
+      "resource": "literal text only in this block",
+      "fadeSeconds": 0.35
+    },
+    "pace": "calmer than reference; original speech unchanged; semantic zoom only",
+    "music": "original procedural ambient pad, optional configured input with voice ducking"
+  },
+  "pending": [
+    "confirm visual match with Carlos",
+    "exact original font if original project/font metadata becomes available",
+    "integrated image/video resource cards; BLURRED_RESOURCE_01 is still not a full asset renderer",
+    "owned retreat/nature B-roll selection",
+    "audio listening acceptance",
+    "VPS/HTTPS/browser E2E acceptance"
+  ]
+}

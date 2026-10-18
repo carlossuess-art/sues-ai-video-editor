@@ -16,7 +16,16 @@
     ]
   },
   "captions": {
-    "mode": "blocks"
+    "mode": "short-groups",
+    "fontSize": 96,
+    "scaleX": 94,
+    "tracking": -2,
+    "maxWords": 3,
+    "maxDuration": 2.4,
+    "entranceMs": 180,
+    "fadeMs": 60,
+    "reference": "deckeanu-keanu-primary",
+    "fontIdentity": "visual-approximation-not-identified"
   },
   "transitions": {
     "allowed": [
@@ -50,7 +59,7 @@
     "version": "1.0",
     "status": "provisional",
     "direction": "cinematic-nature-retreat",
-    "referenceMood": "Documental cinematográfico de naturaleza y exteriores; inspiración National Geographic, sin usar identidad ni material de esa marca.",
+    "referenceMood": "Referencia principal: Reel de deckeanu sobre Keanu Reeves; secundaria: Sues_Reel2_May_V1. Adaptación pausada con naturaleza y retiros como recursos de apoyo cuando proceda.",
     "sources": [
       "nature",
       "exterior",
@@ -73,6 +82,18 @@
       "allowSourceAudio": false,
       "reuseAssets": false,
       "fallback": "presenter"
+    },
+    "resourceTreatment": {
+      "type": "blurred-focus",
+      "sigma": 18,
+      "dim": 0.12,
+      "fadeSeconds": 0.35,
+      "scope": "literal-text-card-only",
+      "reference": "deckeanu-keanu-primary"
     }
-  }
+  },
+  "referencePriority": [
+    "deckeanu-keanu-primary",
+    "sues-reel2-may-secondary"
+  ]
 }
