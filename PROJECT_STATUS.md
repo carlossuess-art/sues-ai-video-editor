@@ -1,3 +1,18 @@
+## HTTPS verificado en VPS · captura de Carlos · 19/10/2026
+
+Captura156594 acredita activación completada: editorHTTPS200, API sin sesión401,
+y rutaWhatsApp401. Hubo espera inicial000 antes de conseguir certificados/rutas.
+Copia conservada /opt/sues-video-setup/https-backup-20261018-223450.
+Enlace privado actualizado en /opt/sues-video-setup/editor/access/url.txt;
+no publicarlo ni pedir captura del token. Motor desplegado continúa ba972;
+activador/doc/tests publicados hasta00fac91c366c507844604dc47f2b383ea1ea2d3e.
+HTTPS comprobado desdeelVPS conTLSválido y resoluciónlocalforzada, no prueba de
+acceso desdeInternet/navegador. Siguiente: Carlos abre enlaceprivado y revisaapp;
+restaurar/subir material privado y validar preview/exportaciónreal enVPS.
+No pruebasdeenvíoWhatsApp ni garantíaoperativaintegral; HTTP401 conserva ruta.
+F6/segmentaciónautomática/DirectorLLM siguen pendientes; noV1.
+
+---
 ## Despliegue observado y activación HTTPS preparada · 19/10/2026
 
 Capturas de Carlos acreditan editor ba972d76829c53400e7a6401d5e78a1e8593f9fc
