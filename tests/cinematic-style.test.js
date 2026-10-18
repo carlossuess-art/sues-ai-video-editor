@@ -11,12 +11,12 @@ const slot=(start=5,end=9,tags=['water'])=>({start,end,tags,reason:'Metáfora de
 const asset=(id='a',kind='nature',tags=['water'])=>({id,sourceRef:`fixture:${id}`,kind,tags,duration:10,available:true});
 const plan=options=>buildCinematicBrollPlan({policy:policy(),duration:38.31,slots:[slot()],assets:[],...options});
 
-test('CALMA provisional compiles cinematic direction and shared brand tokens',()=>{
+test('CALMA functional template compiles cinematic direction and shared brand tokens',()=>{
  const b=brand();b.id='future-shared';b.fonts.primary='Future Font';b.colors.text='#ABCDEF';b.captions.maxLines=1;b.outro.text='Cierre compartido';
  const p=compileTemplatePolicy(template(),b);
  assert.equal(p.brandKitId,b.id);assert.equal(p.captions.font,b.fonts.primary);
  assert.equal(p.captions.color,b.colors.text);assert.equal(p.captions.maxLines,1);assert.equal(p.outro.text,b.outro.text);
- assert.equal(p.visualStyle.status,'provisional');assert.ok(p.visualStyle.sources.includes('retreat'));
+ assert.equal(p.visualStyle.status,'functional');assert.ok(p.visualStyle.sources.includes('retreat'));
  const t=template(),p2=compileTemplatePolicy(t,b);p2.visualStyle.sources.push('mutated');assert.equal(t.visualStyle.sources.length,3);
 });
 test('no actual footage yields explicit presenter fallback, no invented assets',()=>{

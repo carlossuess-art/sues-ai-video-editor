@@ -100,3 +100,10 @@ hereda la plantilla base y sus políticas; las variantes actuales cambian ritmo,
 parámetros de presentación y cámara. La densidad automática de transiciones y
 recursos por variante aún necesita integración con el Director. Elegir una
 variante no genera por sí solo transiciones que el usuario no haya seleccionado.
+
+## Cierre de F5 y regla espacial
+
+CALMA pasa a primera plantilla funcional con definición cerrada; F5=100% en
+alcance original. Especificación y límites: SUES_CALMA_V1_SPEC.md. Las variantes
+siguen experimentales. La adaptación espacial según sujeto se aplica a toda la
+base común; oclusión real detrás del cuerpo continúa pendiente de F6.

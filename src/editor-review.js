@@ -4,7 +4,7 @@ export function editorReview(plan,director,settings){
   ...(plan.semantic?.motions??[]).map(e=>({type:'quote',start:e.start,end:e.end,text:e.lines.join(' '),reason:e.reason,sourceWordIndexes:e.evidence?.sourceWordIndexes??[],verification:e.evidence?.method??'editorial'})),
   ...(plan.graphics??[]).map(e=>({type:e.type,start:e.start,end:e.end,text:e.text,left:e.left,right:e.right,reason:e.reason,sourceWordIndexes:e.wordIndexes,verification:e.textOrigin})),
   ...(plan.globalTransitions??[]).map(e=>({type:e.type,start:e.start,end:e.end,reason:e.reason,verification:'explicit-editor-choice'})),
-  ...(plan.illustrations??[]).map(e=>({type:'image',start:e.start,end:e.end,assetId:e.assetId,rights:e.rights,verification:'sha256-bound-to-source'}))
+  ...(plan.illustrations??[]).map(e=>({type:'image',start:e.start,end:e.end,assetId:e.assetId,rights:e.rights,box:e.box,mask:e.mask,placement:e.placement??{strategy:'explicit-profile-box'},verification:'sha256-bound-to-source'}))
  ].sort((a,b)=>a.start-b.start||a.end-b.end);
  return {version:'1.0',duration:plan.duration,method:director.audit.method,sourceWords:director.audit.sourceWords,mappedWords:director.audit.mappedWords,omittedWords:director.audit.omittedWords,
   captions:plan.captions.map(c=>({id:c.id,start:c.start,end:c.end,text:c.text,source:c.source,timingUncertain:c.timingUncertain,keyword:c.keyword??null})),

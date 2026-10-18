@@ -6,19 +6,36 @@ plantillas sólo cuando hagan falta. Regla detallada en AGENTS.md y guía genera
 La automatización de densidades por variante sigue pendiente del Director.
 
 Construcción transversal F5–F10; implementación 15b17cd515adb8a70e013404332258a7e831c263.
-Estimación técnica ponderada: 72,25 %. No es aceptación estética ni V1.
+Estimación técnica ponderada: 73,75 %. No es aceptación estética ni V1.
 Se conservan los 40 puntos históricos de F1–F4; ahora se contabiliza trabajo
-parcial de F6–F10 antes excluido del 48 %. No son 24,25 puntos nuevos de validación.
+parcial de F6–F10 antes excluido del 48 %. No es una medida de aceptación humana. F5 cierra ahora su alcance original:
+kit, motor reutilizable y primera plantilla funcional; variantes aún experimentales.
 
 | Fase | Estimación interna | Peso | Aportación global |
 | --- | ---: | ---: | ---: |
 | F1–F4 | Registro anterior | 40 % | 40 % |
-| F5 · plantillas | 85 % | 10 % | 8,5 % |
+| F5 · plantillas | 100 % | 10 % | 10 % |
 | F6 · gráficos/motions | 60 % | 10 % | 6 % |
 | F7 · director | 25 % | 15 % | 3,75 % |
 | F8 · app | 70 % | 10 % | 7 % |
 | F9 · integración real | 45 % | 10 % | 4,5 % |
 | F10 · despliegue/docs | 50 % | 5 % | 2,5 % |
+
+## CALMA cerrada y composición adaptativa · actualización posterior
+
+F5=100% en alcance de primera plantilla funcional; global técnico estimado73,75%.
+No significa V1 global ni copia exacta de todos los efectos Keanu. Fuente exacta
+no confirmada; Inter es aproximación explícita según niveles de certeza del PDF.
+Especificación docs/SUES_CALMA_V1_SPEC.md. F6/F7 mantienen sus pendientes.
+
+Imágenes de app eligen región estable según rostro proyectado en todo el tramo,
+protegen texto/cierre y cambian dirección del feather cuando quedan debajo.
+Perfiles con caja explícita la conservan con validación. No segmenta cuerpos.
+Prueba FFmpeg sintética revisada: cara alta→imagen debajo; cara media→imagen arriba.
+Sin hueco seguro durante todo el intervalo→rechazo claro. No vídeo caminando real.
+173/173 tests correctos con CALMA funcional y colocación adaptativa; checkOK.
+No nuevoASR/visión/modelos/coste externo. V5 anterior conserva su evidencia;
+no se afirma que contenga esta mejora posterior. Probar conjunto actualizado.
 
 ## Resultado conjunto verificado
 

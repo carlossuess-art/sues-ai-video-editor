@@ -1,0 +1,70 @@
+{
+  "kind": "synthetic-layout-not-walking-video",
+  "cases": [
+    {
+      "case": "high-face",
+      "face": {
+        "x": 400,
+        "y": 180,
+        "width": 280,
+        "height": 300,
+        "score": 1,
+        "leftEye": {
+          "x": 510,
+          "y": 280
+        },
+        "rightEye": {
+          "x": 570,
+          "y": 280
+        }
+      },
+      "box": {
+        "left": 120,
+        "right": 900,
+        "top": 880,
+        "bottom": 1160
+      },
+      "mask": "soft-top",
+      "placement": {
+        "strategy": "subject-aware-stable-interval",
+        "zone": "below-face",
+        "facePaddingPx": 48,
+        "verification": "projected-existing-face-track-not-person-segmentation"
+      },
+      "render": "pass"
+    },
+    {
+      "case": "middle-face",
+      "face": {
+        "x": 400,
+        "y": 650,
+        "width": 280,
+        "height": 300,
+        "score": 1,
+        "leftEye": {
+          "x": 510,
+          "y": 750
+        },
+        "rightEye": {
+          "x": 570,
+          "y": 750
+        }
+      },
+      "box": {
+        "left": 120,
+        "right": 900,
+        "top": 180,
+        "bottom": 460
+      },
+      "mask": "soft-bottom",
+      "placement": {
+        "strategy": "subject-aware-stable-interval",
+        "zone": "above-or-beside-face",
+        "facePaddingPx": 48,
+        "verification": "projected-existing-face-track-not-person-segmentation"
+      },
+      "render": "pass"
+    }
+  ],
+  "externalCostUSD": 0
+}

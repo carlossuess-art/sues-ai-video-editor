@@ -19,7 +19,7 @@ Leer primero este documento y `PROJECT_STATUS.md` para continuar.
 
 ## Estado ejecutable actual
 
-Leer PROJECT_STATUS.md antes de cambiar el proyecto. CALMA es provisional;
+Leer PROJECT_STATUS.md antes de cambiar el proyecto. CALMA tiene definición cerrada y es funcional;
 IMPACTO, EXPLICA e HISTORIA son variantes experimentales ejecutables. Edición de
 palabras clave, medios privados, gráficos/transiciones y copia recuperable están
 integrados. [Funciones y límites](docs/SUES_GENERAL_STUDIO.md). No declarar V1

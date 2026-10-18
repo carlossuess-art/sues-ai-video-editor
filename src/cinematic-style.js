@@ -3,7 +3,7 @@ const finite=x=>typeof x==='number'&&Number.isFinite(x);
 export const FOOTAGE_SOURCES=Object.freeze(['nature','exterior','retreat']);
 
 export function validateCinematicStyle(style){
-  assert(style?.version==='1.0'&&style.status==='provisional','version/status');
+  assert(style?.version==='1.0'&&['provisional','functional'].includes(style.status),'version/status');
   assert(style.direction==='cinematic-nature-retreat','direction');
   assert(Array.isArray(style.sources)&&style.sources.length>0&&style.sources.every(x=>FOOTAGE_SOURCES.includes(x)),'sources');
   assert(style.colorTreatment==='natural'&&style.cameraMovement==='slow','look');

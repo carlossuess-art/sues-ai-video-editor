@@ -38,3 +38,8 @@ no resuelvan. Una plantilla nueva hereda la base común; cualquier excepción vi
 se documenta con su motivo. No hace falta definir todas las plantillas futuras
 para cerrar una primera plantilla funcional. No declarar que los efectos pendientes
 del dossier están implementados por haber fijado esta regla.
+
+CALMA: definición cerrada y primera plantilla funcional; F5=100% en alcance
+original, no V1 global. Leer docs/SUES_CALMA_V1_SPEC.md. El diseño se adapta
+a posición/movimiento; las imágenes de app usan auto-subject. Distinguir
+colocación sin tapar rostro de oclusión real detrás del cuerpo (F6 pendiente).
