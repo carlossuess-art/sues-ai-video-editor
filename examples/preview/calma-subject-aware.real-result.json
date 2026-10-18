@@ -1,0 +1,129 @@
+{
+  "version": "1.0",
+  "state": "DONE",
+  "summary": {
+    "duration": 38.31,
+    "styleId": "SUES_CALMA",
+    "sourceWords": 75,
+    "mappedWords": 75,
+    "omittedWords": 0,
+    "captions": 31,
+    "zooms": 2,
+    "motions": 3,
+    "transitions": 3,
+    "manualHighlights": 0,
+    "rejections": [],
+    "externalCostUSD": 0,
+    "productionReady": false
+  },
+  "audit": {
+    "version": "1.0",
+    "sourceSha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a",
+    "sourcePreserved": true,
+    "durationPlanned": 38.31,
+    "durationEncoded": 38.3,
+    "output": "preview.mp4",
+    "outputSha256": "5b8872c7d0a67eed9eeb7bc22634d5ebad5a5eb58efc2cf1ae3c4910c13fd135",
+    "bytes": 15347158,
+    "video": {
+      "codec": "h264",
+      "width": 1080,
+      "height": 1920,
+      "fps": "30/1"
+    },
+    "audioPresent": true,
+    "backgroundAudio": {
+      "sha256": "f8e6a31e9c7b2d5e640ec88e3240e835b0adf675f028bf65c5704e27bdd69ab1",
+      "assetId": "f8e6a31e9c7b2d5e640ec88e3240e835b0adf675f028bf65c5704e27bdd69ab1",
+      "rights": "owned",
+      "gain": 0.1
+    },
+    "broll": [],
+    "captions": 31,
+    "illustrations": [
+      {
+        "assetId": "eec396bf0f3bd27a6c66916be519ac8749af19e4cd63f15e096869d59d7ec056",
+        "sha256": "eec396bf0f3bd27a6c66916be519ac8749af19e4cd63f15e096869d59d7ec056",
+        "sourceAudio": false
+      }
+    ],
+    "font": {
+      "family": "Inter",
+      "regularSha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+      "boldSha256": "288316099b1e0a47a4716d159098005eef7c0066921f34e3200393dbdb01947f"
+    },
+    "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "fullDecode": "pass",
+    "productionReady": false,
+    "externalCostUSD": 0
+  },
+  "renderAttempts": 1,
+  "range": 206,
+  "resourceUploads": {
+    "image": {
+      "id": "eec396bf0f3bd27a6c66916be519ac8749af19e4cd63f15e096869d59d7ec056",
+      "bytes": 132525
+    },
+    "music": {
+      "id": "f8e6a31e9c7b2d5e640ec88e3240e835b0adf675f028bf65c5704e27bdd69ab1",
+      "bytes": 8832044
+    }
+  },
+  "backup": {
+    "bytes": 106854400,
+    "sha256": "dfe55cd403b5ff641c449289f45c06999d0d1c279728b412648fe7612ab0a339",
+    "restoreAudit": {
+      "valid": true,
+      "files": 16,
+      "bytes": 106832000,
+      "codeCommit": "c7d5f7a4e2f7e6f6cac20a15c642c5946b7c66af",
+      "workingTreeDirty": false
+    },
+    "ASSAndFilterMatch": true
+  },
+  "variants": [
+    {
+      "styleId": "SUES_IMPACTO",
+      "words": 75,
+      "captions": 32
+    },
+    {
+      "styleId": "SUES_EXPLICA",
+      "words": 75,
+      "captions": 31
+    },
+    {
+      "styleId": "SUES_HISTORIA",
+      "words": 75,
+      "captions": 31
+    }
+  ],
+  "settingsSource": "explicit integration-test editorial choices; not automatic LLM selection",
+  "humanAcceptance": false,
+  "externalCostUSD": 0,
+  "implementationCommit": "c7d5f7a4e2f7e6f6cac20a15c642c5946b7c66af",
+  "tests": {
+    "passed": 173,
+    "failed": 0
+  },
+  "subjectPlacement": {
+    "strategy": "subject-aware-stable-interval",
+    "syntheticProof": "examples/preview/subject-layout.synthetic-result.json",
+    "walkingFootageTested": false,
+    "personSegmentation": false
+  },
+  "delivery": {
+    "libraryFileId": "libfile_a346bcf15b888191939d7941993425f8",
+    "driveId": "1sKNjjc-7j2MzXTQ5moKgIFmfLc7lW-MM"
+  },
+  "visualQA": {
+    "realFramesSeconds": [
+      6.15
+    ],
+    "syntheticCases": [
+      "high-face",
+      "middle-face"
+    ],
+    "walkingFootageTested": false
+  }
+}

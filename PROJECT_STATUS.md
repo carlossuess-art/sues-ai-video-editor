@@ -35,9 +35,15 @@ Prueba FFmpeg sintética revisada: cara alta→imagen debajo; cara media→image
 Sin hueco seguro durante todo el intervalo→rechazo claro. No vídeo caminando real.
 173/173 tests correctos con CALMA funcional y colocación adaptativa; checkOK.
 No nuevoASR/visión/modelos/coste externo. V5 anterior conserva su evidencia;
-no se afirma que contenga esta mejora posterior. Probar conjunto actualizado.
+no se afirma que contenga esta mejora posterior. Exportación conjunta actualizada verificada:38,30s,75/75palabras,Range206,
+fuente intacta y fullDecodePASS. Copia restaurada con ASS/filtro idénticos.
+V6:15.347.158bytes,SHA5b8872c7d0a67eed9eeb7bc22634d5ebad5a5eb58efc2cf1ae3c4910c13fd135.
+Library libfile_a346bcf15b888191939d7941993425f8; Drive https://drive.google.com/file/d/1sKNjjc-7j2MzXTQ5moKgIFmfLc7lW-MM/view .
+Implementaciónc7d5f7a4e2f7e6f6cac20a15c642c5946b7c66af. Un fotograma real6,15s
+revisado para la nueva posición; dos casos sintéticos renderizados y revisados.
+Evidencia examples/preview/calma-subject-aware.real-result.json.
 
-## Resultado conjunto verificado
+## Resultado V5 anterior verificado
 
 - Palabras clave elegibles, jerarquía2:1, paletas reflectantes, oblicua/condensada;
   CALMA provisional y tres variantes experimentales. Font Inter aproximada.

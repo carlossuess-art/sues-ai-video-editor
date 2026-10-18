@@ -12,7 +12,7 @@ fuente identificada.
 - Subtítulos progresivos de 1–3 palabras. La edición manual conserva el texto
   del usuario sin inventar alineaciones de palabras. Reagrupar invalida elecciones
   dependientes de IDs; deshacer recupera los ajustes anteriores.
-- CALMA provisional y tres variantes experimentales: IMPACTO, EXPLICA e HISTORIA.
+- CALMA funcional y tres variantes experimentales: IMPACTO, EXPLICA e HISTORIA.
   Cambian ritmo gráfico y cámara, sin cortar ni acelerar la voz. No tienen
   aceptación estética humana.
 - Biblioteca privada de imágenes y audio, con procedencia propia/licenciada,
