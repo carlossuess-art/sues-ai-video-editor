@@ -50,6 +50,16 @@ def render(source, bundle, output):
         if stream is None or float(stream.get('duration', details['format']['duration'])) + 1e-6 < decision['sourceOut']:
             raise ValueError('B-roll media is missing video or too short')
         bound_media.append({'path': media, 'sha256': digest(media), 'assetId': decision['assetId']})
+    illustrations = []
+    for item in manifest.get('illustrations', []):
+        media = pathlib.Path(item['localFile']).resolve(strict=True)
+        if item.get('rights') not in ('owned', 'licensed') or item.get('role') != 'illustration' or item.get('sourceSha256') != manifest['source'].get('sha256'):
+            raise ValueError('Illustration provenance invalid')
+        details = probe(media)
+        stream = next((s for s in details['streams'] if s['codec_type'] == 'video'), None)
+        if stream is None or stream['codec_name'] not in ('png', 'mjpeg', 'webp', 'bmp') or digest(media) != item['sha256']:
+            raise ValueError('Illustration must be a verified still image')
+        illustrations.append({'path': media, 'sha256': item['sha256'], 'assetId': item['assetId']})
     music = None
     if manifest.get('audioMix'):
         mix = manifest['audioMix']
@@ -86,6 +96,8 @@ def render(source, bundle, output):
         command = ['ffmpeg', '-v', 'verbose', '-threads', '2', '-i', str(source)]
         for media in bound_media:
             command += ['-i', str(media['path'])]
+        for media in illustrations:
+            command += ['-loop', '1', '-framerate', '30', '-i', str(media['path'])]
         if music:
             command += ['-i', str(music['path'])]
         command += ['-filter_complex_threads', '1', '-filter_complex_script', 'filter.ffscript', '-map', '[video]']
@@ -103,6 +115,8 @@ def render(source, bundle, output):
         subprocess.run(['ffmpeg', '-v', 'error', '-i', str(temporary), '-f', 'null', '-'], check=True)
         if any(digest(m['path']) != m['sha256'] for m in bound_media):
             raise ValueError('B-roll source changed during render')
+        if any(digest(m['path']) != m['sha256'] for m in illustrations):
+            raise ValueError('Illustration changed during render')
         if music and digest(music['path']) != music['sha256']:
             raise ValueError('Music source changed during render')
         if digest(source) != before:
@@ -111,7 +125,7 @@ def render(source, bundle, output):
                  'durationPlanned': manifest['duration'], 'durationEncoded': float(encoded['duration']),
                  'output': output.name, 'outputSha256': digest(temporary), 'bytes': temporary.stat().st_size,
                  'video': {'codec': encoded['codec_name'], 'width': encoded['width'], 'height': encoded['height'], 'fps': encoded['r_frame_rate']},
-                 'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'captions': len(manifest['captions']),
+                 'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'captions': len(manifest['captions']), 'illustrations': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in illustrations],
                  'font': {'family': expected_family, 'regularSha256': digest(font), 'boldSha256': digest(bold_font)},
                  'ffmpeg': subprocess.check_output(['ffmpeg', '-version'], text=True).splitlines()[0],
                  'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}

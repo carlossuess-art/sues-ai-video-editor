@@ -9,6 +9,11 @@ const KITS=Object.freeze({
 export function fontKit(family){if(!Object.hasOwn(KITS,family))throw new Error('Unsupported caption font');return KITS[family];}
 export function fontFiles(family){const k=fontKit(family);return [k.regular,k.bold,k.license,...(k.metrics?[k.metrics]:[])];}
 export function resolveFontDirectory(directory,family){const files=fontFiles(family);return directory&&files.every(f=>existsSync(join(directory,f)))?resolve(directory):fontKit(family).directory;}
+export function textAdvance(text,policy,size=policy.fontSize){
+ const kit=fontKit(policy.font);if(!kit.metrics)throw new Error('Progressive captions require verified font metrics');
+ const metrics=JSON.parse(readFileSync(join(kit.directory,kit.metrics),'utf8'));
+ return [...text].reduce((sum,c)=>sum+(metrics.advances[c]??metrics.fallback),0)/(metrics.assEmHeight??metrics.unitsPerEm)*size*(policy.scaleX??100)/100+Math.max(0,[...text].length-1)*(policy.tracking??0);
+}
 export function fitCaptionSize(lines,policy,width=780){
  const base=policy.fontSize??56;if(!policy.fontSize)return base;
  const kit=fontKit(policy.font);if(!kit.metrics)return base;

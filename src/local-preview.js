@@ -1,3 +1,5 @@
+import {illustrationFilters} from './illustrations.js';
+import {captionCues,progressiveRuns} from './caption-motion.js';
 import {hierarchyLayout,METALLIC_GOLD} from './caption-hierarchy.js';
 import {shortCaptionGroups} from './short-captions.js';
 import {fitCaptionSize} from './font-kits.js';
@@ -53,7 +55,7 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
   const mapped=mapWordsToTimeline(transcript,segments);
   // Conservative blocks fit shared-kit line limits. No invented karaoke timings.
   const blocks=policy.captions.mode==='short-groups'?shortCaptionGroups(mapped.words,{maxWords:policy.captions.maxWords,maxChars:policy.captions.maxCharsPerLine,maxDuration:policy.captions.maxDuration}):segmentWords(mapped.words,{maxWords:6,maxChars:policy.captions.maxCharsPerLine*policy.captions.maxLines-10,maxDuration:4.5});
-  const captions=blocks.map(b=>({...b,lines:wrapCaption(b.text,policy.captions.maxCharsPerLine,policy.captions.maxLines)}));
+  const captions=blocks.map(b=>({...b,lines:wrapCaption(b.text,policy.captions.maxCharsPerLine,policy.captions.maxLines),wordCues:captionCues(b,mapped.words)}));
   for(const [key,box]of Object.entries(PREVIEW_LAYOUT)){
     assert(validateSafePlacement(box,key==='caption'?PORTRAIT_SAFE_ZONES.captions:PORTRAIT_SAFE_ZONES.content),'safe layout');
     assert(box.right<=PORTRAIT_SAFE_ZONES.avoid.right.left,'right UI avoidance');
@@ -86,25 +88,30 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   for(const c of plan.captions){
     const focus=c.source!=='manual'&&(plan.semantic?.motions??[]).find(m=>m.backgroundTreatment&&c.start>=m.start-1e-6&&c.end<=m.end+1e-6&&c.wordIndexes.every(index=>(m.evidence?.sourceWordIndexes??[]).includes(index)));if(focus)continue;
     const hierarchy=hierarchyLayout(c,plan.policy.captions,plan.layout.caption);
-    if(hierarchy){
+    const p=plan.policy.captions,b=plan.layout.caption,normalSize=fitCaptionSize(c.lines,p);
+    const normalRows=c.lines.map((text,i)=>({text,size:normalSize,x:(b.left+b.right)/2,y:(b.top+b.bottom)/2+(i-(c.lines.length-1)/2)*normalSize*1.1,role:'companion'}));
+    const progressive=progressiveRuns(c,hierarchy??normalRows,p);
+    if(hierarchy||progressive){
       const p=plan.policy.captions,fade=p.fadeMs??60;
-      for(const row of hierarchy){
-        const style=`\\pos(${row.x},${row.y})\\fs${row.size}\\fscx${p.scaleX}\\fsp${p.tracking}\\fad(${fade},${fade})`;
+      for(const row of progressive??hierarchy){
+        const start=row.start??c.start,end=row.end??c.end,settle=Math.round((row.settle??0)*1000);
+        const entrance=row.character?`\\move(${row.x},${row.y+8},${row.x},${row.y},0,${settle})\\frz-3\\t(0,${settle},\\frz0)`:`\\pos(${row.x},${row.y})`;
+        const style=`${entrance}\\fs${row.size}\\fscx${p.scaleX}\\fsp${row.character?0:p.tracking}\\fad(${Math.min(fade,Math.round((end-start)*150))},${fade})`;
         if(row.role==='keyword'&&c.keyword.level==='exceptional'){
           // Single outline/shadow base; opaque, mutually exclusive fill bands.
           // No stacked outlines, no dark seams between overlapping glyphs.
-          event(1,c.start,c.end,'Caption',`{${style}\\1c${assColor(METALLIC_GOLD[0])}&}${safeText(row.text)}`);
+          event(1,start,end,'Caption',`{${style}\\1c${assColor(METALLIC_GOLD[0])}&}${safeText(row.text)}`);
           const top=row.y-row.size*.65,bottom=row.y+row.size*.65;
           for(const [i,color]of METALLIC_GOLD.entries()){
             const y1=Math.floor(top+(bottom-top)*i/METALLIC_GOLD.length),y2=Math.floor(top+(bottom-top)*(i+1)/METALLIC_GOLD.length);
-            event(2,c.start,c.end,'Caption',`{${style}\\bord0\\shad0\\clip(0,${y1},1080,${y2})\\1c${assColor(color)}&}${safeText(row.text)}`);
+            event(2,start,end,'Caption',`{${style}\\bord0\\shad0\\clip(0,${y1},1080,${y2})\\1c${assColor(color)}&}${safeText(row.text)}`);
           }
-        }else event(1,c.start,c.end,'Caption',`{${style}\\1c${white}&}${safeText(row.text)}`);
+        }else event(1,start,end,'Caption',`{${style}\\1c${white}&}${safeText(row.text)}`);
       }
       continue;
     }
     let wordOffset=0;const content=c.lines.map(line=>line.split(' ').map(word=>{const index=c.wordIndexes[wordOffset++],text=safeText(word);return c.emphasisWordIndexes?.includes(index)?`{\\1c${gold}&}${text}{\\1c${white}&}`:text;}).join(' ')).join('\\N');
-    const b=plan.layout.caption,p=plan.policy.captions,size=fitCaptionSize(c.lines,p),fade=p.fadeMs??60,entrance=p.entranceMs??180,motion=p.mode==='short-groups'?`\\fs${size}\\fscx${p.scaleX}\\fsp${p.tracking}\\fad(${fade},${fade})\\fscy98\\t(0,${entrance},\\fscy100)`:'';event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})${motion}}${content}`);
+    const size=fitCaptionSize(c.lines,p),fade=p.fadeMs??60,entrance=p.entranceMs??180,motion=p.mode==='short-groups'?`\\fs${size}\\fscx${p.scaleX}\\fsp${p.tracking}\\fad(${fade},${fade})\\fscy98\\t(0,${entrance},\\fscy100)`:'';event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})${motion}}${content}`);
   }
   for(const m of plan.semantic?.motions??[]){
     const b=m.box,cx=(b.left+b.right)/2,cy=(b.top+b.bottom)/2,paint=assColor(plan.renderColors.dark).slice(4);
@@ -163,6 +170,7 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
     filters.push(`[${i+1}:v]trim=start=${d.sourceIn}:end=${d.sourceOut},setpts=PTS-${d.sourceIn}/TB,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1,fps=fps=30:start_time=0,setpts=PTS+${d.start}/TB[broll${i}]`);
     filters.push(`[${base}][broll${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${d.start})*lt(t,${d.end})'[composed${i}]`);base=`composed${i}`;
   }
+  const illustrated=illustrationFilters(plan.illustrations??[],base,1+plan.selectedMedia.length);filters.push(...illustrated.filters);base=illustrated.base;
   for(const [i,m] of (plan.semantic?.motions??[]).filter(m=>m.backgroundTreatment).entries()){
     const r=m.backgroundTreatment,duration=m.end-m.start,fade=Math.min(r.fadeSeconds,duration/3),sigma=r.sigma/4;
     filters.push(`[${base}]split=2[focus-clear${i}][focus-input${i}]`);
@@ -171,6 +179,6 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   }
   filters.push(`[${base}]ass=filename=${assFile}:fontsdir=fonts[video]`);
   assert(!plan.audioMix||hasAudio,'background music requires original voice track');
-  filters.push(...backgroundAudioFilter(plan.audioMix,1+plan.selectedMedia.length));
+  filters.push(...backgroundAudioFilter(plan.audioMix,1+plan.selectedMedia.length+(plan.illustrations?.length??0)));
   return filters.join(';\n')+'\n';
 }

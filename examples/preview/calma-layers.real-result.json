@@ -1,0 +1,114 @@
+{
+  "version": "1.0",
+  "state": "DONE",
+  "upload": {
+    "bytes": 96942857,
+    "sourcePreloaded": false,
+    "matchedAnalysis": true,
+    "analysisRestored": false,
+    "packagedFonts": false
+  },
+  "summary": {
+    "duration": 38.31,
+    "sourceWords": 75,
+    "mappedWords": 75,
+    "omittedWords": 0,
+    "captions": 31,
+    "zooms": 2,
+    "motions": 1,
+    "manualHighlights": 0,
+    "rejections": [],
+    "externalCostUSD": 0,
+    "productionReady": false
+  },
+  "renderAttempts": 1,
+  "range": {
+    "status": 206,
+    "bytes": 1024
+  },
+  "audit": {
+    "version": "1.0",
+    "sourceSha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a",
+    "sourcePreserved": true,
+    "durationPlanned": 38.31,
+    "durationEncoded": 38.3,
+    "output": "preview.mp4",
+    "outputSha256": "36624ddbe08451cf67a1c43548f39b6e9ae2f2066f30753970f42e76c2b68bce",
+    "bytes": 18317243,
+    "video": {
+      "codec": "h264",
+      "width": 1080,
+      "height": 1920,
+      "fps": "30/1"
+    },
+    "audioPresent": true,
+    "backgroundAudio": {
+      "sha256": "f8e6a31e9c7b2d5e640ec88e3240e835b0adf675f028bf65c5704e27bdd69ab1",
+      "assetId": "sues-original-ambient-pad-v1",
+      "rights": "owned",
+      "gain": 0.16
+    },
+    "broll": [],
+    "captions": 31,
+    "illustrations": [
+      {
+        "assetId": "calma-horizon-original-v1",
+        "sha256": "eec396bf0f3bd27a6c66916be519ac8749af19e4cd63f15e096869d59d7ec056",
+        "sourceAudio": false
+      }
+    ],
+    "font": {
+      "family": "Inter",
+      "regularSha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+      "boldSha256": "288316099b1e0a47a4716d159098005eef7c0066921f34e3200393dbdb01947f"
+    },
+    "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "fullDecode": "pass",
+    "productionReady": false,
+    "externalCostUSD": 0
+  },
+  "externalCostUSD": 0,
+  "humanAcceptance": false,
+  "delivery": {
+    "name": "SUES_CALMA_CAPAS_KEANU_V4_16s.mp4",
+    "sha256": "b9af9a187b6ceec854901a52d3594fd43116ec4eaad35af8e15fc6abe435cc2c",
+    "bytes": 11817803,
+    "duration": 16.0,
+    "video": [
+      {
+        "codec_name": "h264",
+        "width": 1080,
+        "height": 1920,
+        "r_frame_rate": "30/1",
+        "duration": "16.000000"
+      }
+    ],
+    "audio": true,
+    "fullDecode": "pass",
+    "sourceRange": [
+      0,
+      16
+    ]
+  },
+  "review": {
+    "framesSeconds": [
+      2.3,
+      3.1,
+      5.8,
+      5.9,
+      6.1,
+      6.35,
+      7.5,
+      8.35,
+      8.6,
+      12.8,
+      25.6
+    ],
+    "visualReview": "11 sampled frames: progressive text, letter entrance, soft-bottom image fade; no face overlap observed",
+    "tests": 159,
+    "fontIdentity": "Inter approximation; original unidentified",
+    "illustration": "original vector horizon; not a photo or subject segmentation",
+    "audioListeningAcceptance": false,
+    "deployment": "Work only; not newly deployed to VPS"
+  }
+}

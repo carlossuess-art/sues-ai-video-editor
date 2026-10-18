@@ -5,14 +5,47 @@ Progreso fase: 80 % (estimación técnica; estética provisional).
 Progreso global: 48 % = F1–F4 (40 %) + 80 % del peso F5 (8 %).
 Rama oficial: feat/phase-4-vision-camera.
 Base de este bloque: acbb8d5471cce1972c886ba9331379f8477dd35d.
-Último hito: jerarquía de palabra importante 2:1 y excepcional en oro metálico.
-Prueba CALMA con grupos separados por comas, Inter aproximada y ambiente original.
-Suite vigente:156/156 secuencial y npm run check; estética pendiente de revisión.
+Último hito: texto progresivo, entrada por caracteres e ilustración con máscara suave.
+Dossier Keanu aplicado a una muestra CALMA0–16s; Inter sigue siendo aproximación.
+Suite vigente:159/159 secuencial y npm run check; estética pendiente de revisión.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
 Necesito de Carlos: revisión de la nueva prueba estética; VPS/HTTPS esperan acceso operativo.
 Estado VPS observado: PENDIENTE MEDIOS, no iniciado; app/render probados en Work.
+
+## Aplicación del dossier Keanu · 18/10/2026
+
+- Estado recuperado del maestro/Git,base1e55884; sin reconstruir. Dossier43p leído,
+  tablas/fotogramas revisados. Guía docs/SUES_KEANU_DOSSIER_APPLICATION.md.
+- Subtítulos progresivos: prefijos centrados, tiempos e índices reales conservados.
+  Tokens0s unidos al cue real; ventanas finales<160ms coalescen sólo el display,
+  sin cambiar ASR. Texto manual estático. Continúan la jerarquía2:1 y oro estático.
+- Palabra clave por caracteres:24ms, asentamiento hasta130ms,8px y−3°→0°.
+  Ajustes propuestos, no recuperados. Posiciones con métricas Inter/libass.
+- Compositor de imagen fija con feather inferior/fades separados, crop/zoom y
+  detecciones existentes para evitar rostro. Rechaza cruces con tarjetas/B-roll,
+  fuentes ajenas/rol style-reference y recursos sin hash/derechos/vínculo al original.
+  Renderer comprueba imagen/hash antes y después. Otra importación no hereda assets.
+- Recurso originalSVG de horizonte/naturaleza rasterizado para5,2–8,4s. Es una
+  ilustración de prueba, no foto/rotoscopia. Selector/subida de imágenes UI pendiente;
+  activo por perfil privado, con interruptor de citas y recursos en la app.
+- Dos ciclos reales HTTP/upload→CALMA→zoom75%→FFmpeg→privado→Range206. La primera
+  revisión detectó espaciado y fallback excesivo; corregidos y renderizados otra vez.
+- Final completo38,30s,31grupos,75/75tokens,2zooms/1foco/1imagen,18.317.243bytes,
+  SHA36624ddbe08451cf67a1c43548f39b6e9ae2f2066f30753970f42e76c2b68bce.
+  Fuente intacta/fullDecodePASS/AAC. Fingerprint/ASS/filtro coinciden con código.
+- Entrega SUES_CALMA_CAPAS_KEANU_V4_16s.mp4:16,00s,1080×1920/30fps,H264/AAC,
+  11.817.803bytes,SHA b9af9a187b6ceec854901a52d3594fd43116ec4eaad35af8e15fc6abe435cc2c.
+  Library libfile_b3e9454b11f88191a4f73e909cfc2b0d;
+  Drive https://drive.google.com/file/d/1Gsy9owJJH4GHq_cP2hByHpoHw_MIRAQk/view .
+- QA11frames:2,3/3,1/5,8/5,9/6,1/6,35/7,5/8,35/8,6/12,8/25,6s. Letras construidas,
+  texto centrado, máscara/fades y sin invasión facial observada en esas muestras.
+  159/159tests secuenciales+check+Pythoncompile+diffcheck; coste externo0.
+- Sin fuente exacta, segmentación sujeto/sillón, gráficos completos, estilos
+  condensados/oblicuos o auditoría auditiva de SFX. No despliegue nuevo aVPS.
+  F5=80%,global48%; aceptación estética yV1 pendientes. No necesita decisión nueva
+  deCarlos para continuar con los componentes restantes dentro del alcance autorizado.
 
 ## Jerarquía de palabras · 18/10/2026
 

@@ -142,3 +142,6 @@ La plantilla provisional ya dispone de cámara, cortes, captions, outro y compos
 ### Motions y zoom semántico de CALMA
 
 [Guía de render semántico](docs/SUES_CALMA_SEMANTIC_RENDER.md): dos zooms de demostración anclados a ojos y tres motions ASS probados. `npm run semantic:smoke` verifica el anclaje en vídeo. La selección de la muestra es manual desde el transcript; el Director automático sigue pendiente.
+
+Dossier Keanu aplicado: texto progresivo, entrada por caracteres e imágenes con máscara suave.
+Detalle, límites y continuidad: [guía de aplicación](docs/SUES_KEANU_DOSSIER_APPLICATION.md).

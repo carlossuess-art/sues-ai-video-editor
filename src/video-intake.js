@@ -79,7 +79,7 @@ export class VideoIntake{
   const templatePath=Object.values(this.profiles)[0];if(!templatePath)throw new Error('No CALMA template configured');
   const template=projectConfig(templatePath),dir=join(this.directory,'analysis-'+randomUUID());
   // A different upload does not inherit music chosen for another source.
-  delete template.backgroundAudio;
+  delete template.backgroundAudio;delete template.illustrations;
   mkdirSync(dir,{mode:0o700});
   let committed=false;
   try{

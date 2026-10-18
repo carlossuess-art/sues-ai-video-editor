@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="500" viewBox="0 0 1280 500">
+  <!-- Original vector illustration for the CALMA compositing test. No stock assets. -->
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#122d48"/><stop offset=".65" stop-color="#637f8e"/><stop offset="1" stop-color="#e9cf9c"/></linearGradient>
+    <radialGradient id="light"><stop stop-color="#fff5d8" stop-opacity=".7"/><stop offset="1" stop-color="#e4b968" stop-opacity="0"/></radialGradient>
+    <linearGradient id="lake" x2="0" y2="1"><stop stop-color="#92b5b9"/><stop offset="1" stop-color="#142f40"/></linearGradient>
+    <linearGradient id="mist" x2="0" y2="1"><stop stop-color="#fff2d4" stop-opacity="0"/><stop offset=".55" stop-color="#fff2d4" stop-opacity=".35"/><stop offset="1" stop-color="#fff2d4" stop-opacity="0"/></linearGradient>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1280v500H0z"/>
+  <ellipse cx="820" cy="180" rx="340" ry="240" fill="url(#light)"/>
+  <circle cx="820" cy="184" r="53" fill="#ffebbc"/>
+  <path d="M0 250 90 214 190 262 320 145 430 230 540 180 670 280 810 235 930 150 1050 220 1180 140 1280 210v290H0z" fill="#527482"/>
+  <path d="M0 300 170 220 350 318 485 245 650 320 850 285 1040 210 1280 300v200H0z" fill="#365967"/>
+  <path d="M0 375Q380 300 640 335T1280 350v150H0z" fill="url(#lake)"/>
+  <path d="M700 362h230m-250 16h295m-235 20h180m-220 21h260m-210 23h145" fill="none" stroke="#e4ce9d" stroke-opacity=".45" stroke-width="3"/>
+  <path d="M0 310h1280v120H0z" fill="url(#mist)"/>
+  <path d="M0 378 80 350 160 390 238 405 320 470 450 500H0zM1280 350l-170 65-130 85h300z" fill="#173846"/>
+</svg>

@@ -56,6 +56,11 @@
         "avanzar"
       ],
       "metal": "warm-gold-banded"
+    },
+    "progressive": true,
+    "characterEntrance": {
+      "staggerMs": 24,
+      "settleMs": 130
     }
   },
   "transitions": {
