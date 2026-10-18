@@ -45,9 +45,11 @@ export function prepareIllustrations(items=[],plan,visionFrames=[]){
   assert(typeof item.localFile==='string'&&item.localFile.startsWith('/')&&/^[a-f0-9]{64}$/.test(item.sha256),'verified local asset');
   assert(item.placement===undefined||item.placement==='auto-subject','placement mode');
   assert(item.mask===undefined||['soft-top','soft-bottom'].includes(item.mask),'mask direction');
+  assert(item.motion===undefined||item.motion==='slow-push','image motion');
+  assert(item.edgeToEdge===undefined||typeof item.edgeToEdge==='boolean','edge-to-edge mode');
   const faces=projectedFaces(item,plan,track);
   if(item.placement==='auto-subject')item={...item,...automaticBox(faces,plan,placed,item)};
-  const b=item.box;assert(b&&['left','right','top','bottom'].every(k=>Number.isInteger(b[k]))&&b.left>=120&&b.right<=900&&b.top>=120&&b.bottom<=1170&&b.right>b.left&&b.bottom>b.top,'safe resource box');
+  const b=item.box;assert(b&&['left','right','top','bottom'].every(k=>Number.isInteger(b[k]))&&b.left>=(item.edgeToEdge?0:120)&&b.right<=(item.edgeToEdge?1080:900)&&b.top>=(item.edgeToEdge?0:120)&&b.bottom<=1170&&b.right>b.left&&b.bottom>b.top,'safe resource box');
   assert(Number.isFinite(item.featherPx)&&item.featherPx>=20&&item.featherPx<=(b.bottom-b.top)/2&&Number.isFinite(item.fadeSeconds)&&item.fadeSeconds>=.1&&item.fadeSeconds<=Math.min(.5,(item.end-item.start)/3),'mask/fade bounds');
   assert(![...(plan.semantic?.motions??[]),...(plan.graphics??[])].some(m=>m.start<item.end&&m.end>item.start),'resource overlaps motion card');
   assert(!plan.selectedMedia.some(m=>m.start<item.end&&m.end>item.start),'resource overlaps full-frame B-roll');
@@ -61,9 +63,20 @@ export function prepareIllustrations(items=[],plan,visionFrames=[]){
 export function illustrationFilters(items,base,inputStart){
  const filters=[];for(const [i,item]of items.entries()){
   const b=item.box,w=b.right-b.left,h=b.bottom-b.top,d=item.end-item.start;
+  let input=`${inputStart+i}:v`,sizing=`scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},setsar=1,`;
+  if(item.motion==='slow-push'){
+   // zoompan cannot carry source alpha directly. Transform RGB and alpha with
+   // the exact same sampling and merge before spatial/temporal masks.
+   const pan=`zoompan=z='1.02+0.06*min(on/${Math.ceil(d*30)},1)':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=${w}x${h}:fps=30`;
+   filters.push(`[${input}]${sizing}format=rgba,split=2[still-rgb${i}][still-alpha${i}]`,
+    `[still-rgb${i}]format=yuv444p,${pan},format=rgb24[pan-rgb${i}]`,
+    `[still-alpha${i}]alphaextract,${pan},format=gray[pan-alpha${i}]`,
+    `[pan-rgb${i}][pan-alpha${i}]alphamerge[moving-still${i}]`);
+   input=`moving-still${i}`;sizing='';
+  }
   // Spatial feather and temporal fade are independent operations. rgba makes
   // opaque photographs and existing alpha images follow the same mask contract.
-  filters.push(`[${inputStart+i}:v]scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},setsar=1,format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='alpha(X,Y)*clip(${item.mask==='soft-top'?'Y':`(${h}-Y)`}/${item.featherPx},0,1)',fps=30,trim=duration=${d},setpts=PTS-STARTPTS,fade=t=in:st=0:d=${item.fadeSeconds}:alpha=1,fade=t=out:st=${d-item.fadeSeconds}:d=${item.fadeSeconds}:alpha=1,setpts=PTS+${item.start}/TB[illustration${i}]`);
+  filters.push(`[${input}]${sizing}format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='alpha(X,Y)*clip(${item.mask==='soft-top'?'Y':`(${h}-Y)`}/${item.featherPx},0,1)',fps=30,trim=duration=${d},setpts=PTS-STARTPTS,fade=t=in:st=0:d=${item.fadeSeconds}:alpha=1,fade=t=out:st=${d-item.fadeSeconds}:d=${item.fadeSeconds}:alpha=1,setpts=PTS+${item.start}/TB[illustration${i}]`);
   filters.push(`[${base}][illustration${i}]overlay=x=${b.left}:y=${b.top}:eof_action=pass:repeatlast=0:enable='gte(t,${item.start})*lt(t,${item.end})'[illustrated${i}]`);base=`illustrated${i}`;
  }
  return {filters,base};

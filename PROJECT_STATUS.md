@@ -1,3 +1,49 @@
+# Estado vigente · corrección de nivel visual F6 · 18/10/2026
+
+Carlos rechaza la muestra sintética: «Esto no es el nivel que quiero».
+La estimación F6=80% y global75,75% del bloque anterior se RETIRAN como estado
+vigente: sólo medían avance técnico y no justifican el nivel visual solicitado.
+FASE6/10 · Motion Library: en revisión visual; porcentaje no validado.
+F5 conserva el cierre anterior en su alcance original; no se declara V1.
+
+Base de este bloque: c5d23952a364e47899e920d7ec9e487e1b0e4a76.
+Se releen dossier43p, referencia Keanu y fuente real de Carlos recuperada de V5.
+Nueva propuesta: tarjetas con cuadrícula/viñeta, arcos y nodos con parallax,
+jerarquía literal2:1, sello coral con luz/bordes/entrada y ruta comparativa animada.
+Se eliminan los títulos genéricos de relleno. Fotografía de la mirada extraída de
+la propia grabación, a ancho completo superior, feather y acercamiento lento.
+Se prueban dos composiciones; la primera foto rectangular se descarta, la segunda
+funde a ancho completo. No nueva fotografía/modelo/ASR/inferencia ni compra.
+
+Motor: modo de apoyo edgeToEdge explícito, con los mismos rechazos por rostro,
+captions/cierre y hashes. Slow-push transforma RGB y alpha por separado y recompone
+antes del feather/fades: no destruye transparencia de un PNG. PruebaFFmpeg real
+con hueco transparente y centro opaco correcta. Imágenes de app usan slow-push;
+la composición a sangre sólo se habilita explícitamente por perfil.
+
+178/178tests, check y diffcheck. Render real38,30s/1080×1920/30/H264/AAC,
+75/75palabras,31grupos,2zooms,3tarjetas,3transiciones,1imagen. Original intacto y
+fullDecodePASS; música propia existente a0,1 con ducking. Sin escucha humana.
+MP4 15.537.555bytes,SHA74573fa3233e77fc51acb4478b10be04f6564151a2f4e01d5f5f5fe557d4a7fa.
+Library libfile_2a84f53e0d3481918293577deb46eb99, SUES_F6_COMPOSICION_REAL_V2.mp4.
+QA8frames5,35/5,9/6,35/7,9/9,9/10,7/18,5/24,8s. Se comprueba foto/fade,
+radial incluyendo texto, tarjeta/sello/ruta. No se afirma igualar Keanu.
+Receta reproducible scripts/templates/prepare_reference_scene.mjs ligada al SHA
+del original; genera PNG, configuración y bundle. Foto, ASS y filtro idénticos
+al bundle renderizado comprobados desde esa receta. No modelo semántico nuevo.
+
+Pendiente: juicio de Carlos sobre esta propuesta, separación/oclusiones reales
+del cuerpo/sillón, recursos fotográficos adicionales y SFX verificados. No se
+completan por dibujar arcos. No QA navegador/PWA, despliegueVPS/HTTPS ni cambios a
+WhatsApp/Caddy/DNS. Coste externo nuevo0USD. No pedir redefinir la referencia.
+Siguiente exacto: comparar esta composición real con Keanu y corregir los huecos
+visuales concretos; mantener separación corporal y SFX abiertos. No aumentar el
+porcentaje por pasar tests. La presentación anterior queda rechazada, esta
+propuesta no está aprobada aún.
+
+---
+## Registro anterior · estimación retirada, no nivel visual aceptado
+
 # Estado técnico vigente · Fase 6 · 18/10/2026
 
 FASE 6/10 · Motion Library + reglas de colocación

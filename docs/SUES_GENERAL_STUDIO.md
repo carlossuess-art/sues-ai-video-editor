@@ -114,3 +114,10 @@ Seis motions renderizables; cinco elecciones explícitas por subtítulo desde
 «Recurso animado», con colocación facial conservadora y copia/deshacer.
 Guía vigente: SUES_MOTION_LIBRARY_V1.md. Prueba AV sintética completa y177tests;
 sin segmentación corporal, SFX ni nuevo despliegue. F6=80%,global75,75% interno.
+
+## Corrección visual posterior
+
+Carlos rechaza la prueba sintética: nivel insuficiente. La estimación F6=80% y
+global75,75% de arriba queda retirada como estado vigente. Ver
+SUES_F6_VISUAL_REVIEW.md y PROJECT_STATUS.md: propuesta sobre el vídeo humano real,
+178tests, aún sin aceptación audiovisual. No avanzar por cantidad de componentes.

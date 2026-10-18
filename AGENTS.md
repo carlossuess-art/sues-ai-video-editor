@@ -43,3 +43,13 @@ CALMA: definición cerrada y primera plantilla funcional; F5=100% en alcance
 original, no V1 global. Leer docs/SUES_CALMA_V1_SPEC.md. El diseño se adapta
 a posición/movimiento; las imágenes de app usan auto-subject. Distinguir
 colocación sin tapar rostro de oclusión real detrás del cuerpo (F6 pendiente).
+
+## Nivel visual · corrección18/10/2026
+
+Carlos rechaza la demostración sintética de checks/cruces: «Esto no es el nivel
+que quiero». Para F6, las muestras de iconos son QA interna; no representan la
+calidad solicitada. No elevar el porcentaje por número de renderers/tests.
+Contrastar propuestas sobre su vídeo real con el dossier/Keanu y revisar
+composición, capas, recursos y movimiento. Registrar explícitamente qué sigue
+sin segmentar, qué es una receta editorial y qué ha aceptado Carlos. La propuesta
+SUES_F6_COMPOSICION_REAL_V2 todavía no tiene aprobación audiovisual.

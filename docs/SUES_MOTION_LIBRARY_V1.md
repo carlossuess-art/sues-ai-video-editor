@@ -1,3 +1,8 @@
+> CORRECCIÓN POSTERIOR: Carlos rechaza esta demostración sintética por nivel
+> visual insuficiente. F6=80% y global75,75% quedan retirados como estado vigente.
+> Este documento registra componentes técnicos, no aceptación estética.
+> La propuesta real posterior se documenta en SUES_F6_VISUAL_REVIEW.md.
+
 # Fase 6 · Biblioteca de motions · 18/10/2026
 
 Estimación interna F6: 80 %. Global técnico ponderado: 75,75 %.

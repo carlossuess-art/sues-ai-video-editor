@@ -30,3 +30,16 @@ test('subject-aware resources move below a high face, stay stable and reverse th
   assert.throws(()=>prepareIllustrations([item],plan,occupied),/no hay espacio seguro/);
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });
+
+test('photographic motion and edge-to-edge supports keep face and caption collision checks',()=>{
+ const f=fixture();try{
+  const project=loadProject(f.profiles.test),plan=prepareProject(project).plan;plan.source.sha256='a'.repeat(64);
+  const item={assetId:'photo-support',rights:'owned',role:'illustration',sourceSha256:plan.source.sha256,sha256:'b'.repeat(64),localFile:'/tmp/photo.png',timeSpace:'edit-timeline',start:2,end:3,edgeToEdge:true,motion:'slow-push',box:{left:0,right:1080,top:0,bottom:400},featherPx:140,fadeSeconds:.2};
+  const valid=prepareIllustrations([item],plan,project.inputs.visionFrames),filters=illustrationFilters(valid,'base',1).filters.join(';');
+  assert.ok(filters.includes('alphaextract'));assert.ok(filters.includes('alphamerge'));assert.equal((filters.match(/zoompan=/g)??[]).length,2);
+  assert.deepEqual(valid[0].box,item.box);
+  assert.throws(()=>prepareIllustrations([{...item,edgeToEdge:false}],plan,project.inputs.visionFrames),/safe resource box/);
+  assert.throws(()=>prepareIllustrations([{...item,motion:'unbounded'}],plan,project.inputs.visionFrames),/image motion/);
+  assert.throws(()=>prepareIllustrations([{...item,box:{left:0,right:1080,top:400,bottom:1000}}],plan,project.inputs.visionFrames),/face/);
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
+});

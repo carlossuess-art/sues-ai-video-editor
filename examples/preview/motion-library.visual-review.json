@@ -1,0 +1,86 @@
+{
+  "kind": "real-recording-editorial-proposal-not-accepted",
+  "audit": {
+    "version": "1.0",
+    "sourceSha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a",
+    "sourcePreserved": true,
+    "durationPlanned": 38.31,
+    "durationEncoded": 38.3,
+    "output": "preview-full.mp4",
+    "outputSha256": "74573fa3233e77fc51acb4478b10be04f6564151a2f4e01d5f5f5fe557d4a7fa",
+    "bytes": 15537555,
+    "video": {
+      "codec": "h264",
+      "width": 1080,
+      "height": 1920,
+      "fps": "30/1"
+    },
+    "audioPresent": true,
+    "backgroundAudio": {
+      "sha256": "f8e6a31e9c7b2d5e640ec88e3240e835b0adf675f028bf65c5704e27bdd69ab1",
+      "assetId": "f8e6a31e9c7b2d5e640ec88e3240e835b0adf675f028bf65c5704e27bdd69ab1",
+      "rights": "owned",
+      "gain": 0.1
+    },
+    "broll": [],
+    "captions": 31,
+    "illustrations": [
+      {
+        "assetId": "carlos-gaze-derived-frame",
+        "sha256": "ec51c5f702f17b6f9f327098b8ed7f4a2e0c36b9e97ecdff8220f30ab542b370",
+        "sourceAudio": false
+      }
+    ],
+    "font": {
+      "family": "Inter",
+      "regularSha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+      "boldSha256": "288316099b1e0a47a4716d159098005eef7c0066921f34e3200393dbdb01947f"
+    },
+    "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "fullDecode": "pass",
+    "productionReady": false,
+    "externalCostUSD": 0
+  },
+  "sourceWords": 75,
+  "mappedWords": 75,
+  "motions": 3,
+  "zooms": 2,
+  "transitions": 3,
+  "qaFramesSeconds": [
+    5.35,
+    5.9,
+    6.35,
+    7.9,
+    9.9,
+    10.7,
+    18.5,
+    24.8
+  ],
+  "priorSyntheticSample": "rejected-by-user-for-insufficient-visual-level",
+  "humanAcceptance": false,
+  "personSegmentation": false,
+  "newSFX": false,
+  "recipeReproducesPhotoASSAndFilter": true,
+  "alphaRenderTest": {
+    "transparentCorner": [
+      35,
+      49,
+      61
+    ],
+    "baseRGB": [
+      37,
+      50,
+      62
+    ],
+    "opaqueCenter": [
+      9,
+      218,
+      50
+    ]
+  },
+  "delivery": {
+    "libraryFileId": "libfile_2a84f53e0d3481918293577deb46eb99",
+    "filename": "SUES_F6_COMPOSICION_REAL_V2.mp4"
+  },
+  "externalCostUSD": 0
+}
