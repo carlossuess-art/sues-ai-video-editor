@@ -16,7 +16,7 @@ test('deployment boots an upload-ready shell without private media and reuses pr
   const result=spawnSync('bash',[release+'/scripts/deploy/prepare-service.sh',setup],{encoding:'utf8',env:{...process.env,PATH:bin+':'+process.env.PATH}});
   assert.equal(result.status,0,result.stderr);assert.match(readFileSync(setup+'/estado-servicio.txt','utf8'),/ARRANCADO LOOPBACK: subida disponible/);assert.match(result.stdout,/PENDIENTE: original.mp4/);
   assert.equal(readFileSync(source+'/package-lock.json','utf8'),'{}');const calls=readFileSync(root+'/docker-calls','utf8');assert.match(calls,/run -d --name sues-video-editor/);assert.ok(calls.includes('scripts/app/doctor.mjs --shell /state/project.json'));assert.ok(!calls.includes('npm'));assert.ok(!calls.includes('caddy'));assert.ok(!calls.includes('whatsapp'));
-  const config=JSON.parse(readFileSync(setup+'/editor/project.json'));assert.equal(config.sourcePath,'/state/media/original.mp4');assert.equal(config.templatePath,'/app/examples/templates/sues-calma.template.json');
+  const config=JSON.parse(readFileSync(setup+'/editor/project.json'));assert.equal(config.sourcePath,'/state/media/original.mp4');assert.equal(config.templatePath,'/app/examples/templates/sues-calma.template.json');assert.equal(config.fontDirectory,'/app/assets/fonts/montserrat');
  }finally{rmSync(root,{recursive:true,force:true});}
 });
 

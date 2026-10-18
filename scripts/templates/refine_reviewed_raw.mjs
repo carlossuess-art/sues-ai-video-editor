@@ -13,6 +13,7 @@ const recipe={version:1,sourceSha256:project.boundHashes.source,method:'explicit
  zoom:{start:2.83,end:10.9,scale:1.1,ramp:1.2,anchor:{x:.5,y:.28},anchorMethod:'manual-fixed-composition-point-not-face-track'},
  labels:[{text:'¿TE BLOQUEAS?',start:0,end:2.65,x:510,y:215,size:96,color:'white'},{text:'ESCRÍBEME',start:15.94,end:16.91,x:510,y:1240,size:104,color:'yellow'}],
  transition:{start:13.4,end:13.8},voiceChanged:false,captionTimingChanged:false};
+if(plan.depthText?.length){recipe.labels=recipe.labels.filter(l=>l.start>3);recipe.importedContourOcclusion=plan.depthText.map(e=>({start:e.start,end:e.end,scope:e.occlusionScope,method:e.mask.method}));}
 for(const e of plan.globalTransitions){e.start=recipe.transition.start;e.end=recipe.transition.end;}
 for(const e of plan.soundEffects.events)if(e.reason==='transition')e.start=recipe.transition.start;
 const z=recipe.zoom,event={id:'reviewed-camera-01',type:'zoom',start:z.start,end:z.end,ramp:z.ramp,params:{scale:z.scale,reason:'emphasis'},reason:'Reviewed emphasis during the blocking sentence',rule:'explicit-editorial-review-v1'};

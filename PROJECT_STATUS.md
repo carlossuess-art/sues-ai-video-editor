@@ -1,3 +1,19 @@
+## Último avance · oclusión por contorno manual y preparación Hostinger ·18/10/2026
+
+SUES_PRUEBA_PROFUNDIDAD.mp4,17,20s,SHA
+caef5a4f6d305d8a9e541fcf501269e68a658daa1e4347f02fe93563f9b37620.
+Library libfile_c097da5c9308819192c920b15578bebc versión2. Texto tras contorno
+real revisado de cabeza0,25–1,25s,treskeyframes/37puntos. NO segmentación automática
+ni recorte de cuerpo completo. Config depthTextPath ligada a SHA; copia/restauración
+y aislamiento de nuevas subidas probados.194tests/check/doctor/decodePASS.
+AudioPCM idéntico;10frames revisados. Ver docs/SUES_DEPTH_TEXT.md.
+Hostinger: nueve servidores registrados,soloAIBuilder expuesto; no accesoVPS
+ni cambios remotos. Instalador usa Montserrat para perfiles nuevos; bash-n yfixture
+PASS. No Docker real aquí. No sustituir acceso ausente por SSH/API manual.
+Segmentación automática,DirectorLLM,QA navegador y despliegue siguen pendientes.
+No nuevos modelos,gasto ni cierreF6/V1. La autorización de continuar no se registra
+como aceptación creativa de esta prueba. Contorno privado guardado en el maestro.
+
 ## Última revisión visual · 18/10/2026
 
 Carlos confirma letra y motion de la primera entrega; valoración global abierta.

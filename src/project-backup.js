@@ -16,6 +16,7 @@ export async function createProjectBackup(project,prepared,directory){
   const copy=async(source,path,expected)=>{assert(lstatSync(source).isFile()&&!lstatSync(source).isSymbolicLink(),'source must be regular');const sha=fileSha256(source);if(expected)assert(sha===expected,'source changed before backup');mkdirSync(dirname(join(target,path)),{recursive:true,mode:0o700});await copyFile(source,join(target,path));chmodSync(join(target,path),0o600);assert(fileSha256(join(target,path))===sha&&fileSha256(source)===sha,'copy/source changed');return path;};
   const inputs=project.inputs,config={title:project.title,source:{...inputs.source,sha256:project.boundHashes.source},sourcePath:await copy(project.sourcePath,'media/original.media',project.boundHashes.source),fontDirectory:'fonts'};
   for(const [key,value]of Object.entries({template:inputs.template,brandKit:inputs.brand,transcript:inputs.transcript,camera:inputs.camera,vision:{version:'1.0',frames:inputs.visionFrames},catalog:inputs.catalog})){const path='analysis/'+key+'.json';write(path,value);config[key+'Path']=path;files.push(path);}
+  if(inputs.depthText){write('analysis/depth-text.json',inputs.depthText);config.depthTextPath='analysis/depth-text.json';}
   const music=prepared.resourceBindings?.backgroundAudio;
   if(music){const localFile=await copy(music.localFile,'media/music.media');config.backgroundAudio={...music,localFile};}
   config.illustrations=[];

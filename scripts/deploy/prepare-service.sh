@@ -41,7 +41,7 @@ if not config.exists():
     data=json.loads((release/'examples/projects/calma-local.example.json').read_text())
     for key in ('templatePath','brandKitPath','visionPath','catalogPath'):
         data[key]='/app/'+str((release/'examples/projects'/data[key]).resolve().relative_to(release))
-    data.update(sourcePath='/state/media/original.mp4',transcriptPath='/state/media/transcript.json',cameraPath='/state/media/camera.json',fontDirectory='/app/assets/fonts/inter')
+    data.update(sourcePath='/state/media/original.mp4',transcriptPath='/state/media/transcript.json',cameraPath='/state/media/camera.json',fontDirectory='/app/assets/fonts/montserrat')
     config.write_text(json.dumps(data,indent=2)+'\n');config.chmod(0o600)
 PY
 chown 1000:1000 "$SUES_DIR/editor/project.json"

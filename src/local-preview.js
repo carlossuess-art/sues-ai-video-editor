@@ -5,6 +5,7 @@ import {drawSymbolMotion} from './motion-overlays.js';
 import {keywordPreset} from './text-presets.js';
 import {illustrationFilters} from './illustrations.js';
 import {captionCues,progressiveRuns} from './caption-motion.js';
+import {drawDepthText} from './depth-text.js';
 import {hierarchyLayout,METALLIC_GOLD} from './caption-hierarchy.js';
 import {shortCaptionGroups} from './short-captions.js';
 import {fitCaptionSize,typefaceTags} from './font-kits.js';
@@ -91,6 +92,7 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   let out=`[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 2\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Caption,${fontFamily},${plan.policy.captions.fontSize??56},${white},${gold},&H70000000,&H90000000,-1,0,0,0,100,100,0,0,1,2,1,5,120,180,0,1\nStyle: Outro,${fontFamily},44,${gold},${gold},${dark},${dark},0,0,0,0,100,100,0,0,1,0,0,5,120,180,0,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
   if(plan.policy.captions.font==='Montserrat')out=out.replace(',-1,0,0,0,100,100,0,0,1,2,1,5,120,180,0,1',',700,0,0,0,100,100,0,0,1,0,0,5,120,180,0,1');
   const event=(layer,start,end,style,text)=>{out+=`Dialogue: ${layer},${timestamp(start)},${timestamp(end)},${style},,0,0,0,,${text}\n`;};
+  drawDepthText(plan,event,safeText,assColor);
   for(const c of plan.captions){
     const white=assColor((plan.graphics??[]).some(g=>g.type!=='secret'&&c.start>=g.start-1e-6&&c.end<=g.end+1e-6)?plan.renderColors.dark:plan.policy.captions.color);
     const focus=c.source!=='manual'&&(plan.semantic?.motions??[]).find(m=>m.backgroundTreatment&&c.start>=m.start-1e-6&&c.end<=m.end+1e-6&&c.wordIndexes.every(index=>(m.evidence?.sourceWordIndexes??[]).includes(index)));if(focus||(plan.graphics??[]).some(g=>g.replacedCaptionIds?.includes(c.id)||!g.heading&&!g.bodyLines&&g.type!=='compare'&&g.captionId===c.id&&g.text===c.text))continue;

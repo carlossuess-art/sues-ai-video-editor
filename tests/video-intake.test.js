@@ -31,13 +31,14 @@ test('upload endpoint authenticates before bytes, supports empty studio, and cre
 });
 test('private analysis import binds to source bytes, validates timings, and survives restart',async()=>{
  const f=boundFixture();try{
+ const config=JSON.parse(readFileSync(f.profiles.test));config.depthTextPath='old-source-mask.json';writeFileSync(f.profiles.test,JSON.stringify(config));
  const intake=new VideoIntake(join(f.dir,'uploads'),f.profiles,{probe}),uploaded=await intake.receive(request('new video'));
  const analysis={sourceSha256:uploaded.id,transcript:JSON.parse(readFileSync(join(f.dir,'transcript.json'))),camera:JSON.parse(readFileSync(join(f.dir,'camera.json'))),vision:JSON.parse(readFileSync(join(f.dir,'vision.json')))};
  assert.throws(()=>intake.importAnalysis(uploaded.id,{...analysis,sourceSha256:'0'.repeat(64)}),/SHA256 mismatch/);
  assert.throws(()=>intake.importAnalysis(uploaded.id,{...analysis,transcript:{...analysis.transcript,sourceDuration:100}}),/duration mismatch/);
  assert.throws(()=>intake.importAnalysis(uploaded.id,{...analysis,camera:{keyframes:[]}}),/camera frames|camera zoom/);
  assert.equal(intake.list()[0].state,'NEEDS_ANALYSIS');assert.ok(!readdirSync(join(f.dir,'uploads')).some(n=>n.startsWith('analysis-')));
- const result=intake.importAnalysis(uploaded.id,analysis);assert.equal(result.state,'READY');assert.throws(()=>intake.importAnalysis(uploaded.id,analysis),/already ready/);
+ const result=intake.importAnalysis(uploaded.id,analysis);assert.equal(result.state,'READY');assert.equal(JSON.parse(readFileSync(join(f.dir,'uploads',uploaded.id+'.project.json'))).depthTextPath,undefined);assert.throws(()=>intake.importAnalysis(uploaded.id,analysis),/already ready/);
  const restored=new VideoIntake(join(f.dir,'uploads'),{test:f.profiles.test},{probe});assert.equal(restored.list()[0].state,'READY');assert.ok(!JSON.stringify(restored.list()).includes(f.dir));
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });

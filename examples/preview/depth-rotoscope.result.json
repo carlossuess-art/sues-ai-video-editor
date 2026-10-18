@@ -1,0 +1,82 @@
+{
+  "version": "1.0",
+  "sourceSha256": "2647f4e598b27f74391efe6cad10ec381026766211a6264385f395bfd359f1b2",
+  "sourcePreserved": true,
+  "durationPlanned": 17.2,
+  "durationEncoded": 17.2,
+  "output": "SUES_PRUEBA_PROFUNDIDAD.mp4",
+  "outputSha256": "caef5a4f6d305d8a9e541fcf501269e68a658daa1e4347f02fe93563f9b37620",
+  "bytes": 9975895,
+  "video": {
+    "codec": "h264",
+    "width": 1080,
+    "height": 1920,
+    "fps": "30/1"
+  },
+  "soundEffects": {
+    "enabled": true,
+    "gain": 0.17,
+    "events": [
+      {
+        "preset": "whoosh",
+        "weight": 0.65,
+        "start": 11.14,
+        "duration": 0.36,
+        "reason": "graphic-entry",
+        "provenance": "original-procedural-sues-v1"
+      },
+      {
+        "preset": "whoosh",
+        "weight": 0.75,
+        "start": 13.4,
+        "duration": 0.36,
+        "reason": "transition",
+        "provenance": "original-procedural-sues-v1"
+      }
+    ],
+    "ducking": true,
+    "recipeVersion": "sues-original-sfx-v1",
+    "humanListeningAccepted": false
+  },
+  "audioPresent": true,
+  "captions": 23,
+  "font": {
+    "family": "Montserrat",
+    "regularSha256": "3e8abe50c44c82e2242e97d1ec8c0d385c4890cdc50447bcdb8605c81a38cfb2",
+    "boldSha256": "bc6e854971cea46b463be6f9eef4d9cd52f51cfc1fc0dd90c9d3e6483dc0ec61",
+    "extraFaces": {
+      "Montserrat-ExtraBold.ttf": "d3ac6a843d3ba6d5cafd44cf39e437055c8aed7e261010f595f57d3c7b3e2c1b",
+      "Montserrat-BoldItalic.ttf": "b4c121b337aaa977d711b6f397c5b9672d720af622555f1e3f9d3b87f2983665",
+      "Montserrat-ExtraBoldItalic.ttf": "0984784ee9883389e76bf2c7ceeeda848af26535ec111109fa92e18d448a4759",
+      "Anton-Regular.ttf": "a4ba3a92350ebb031da0cb47630ac49eb265082ca1bc0450442f4a83ab947cab",
+      "AllertaStencil-Regular.ttf": "8c504d1be20768941ab04251a389ad82d5782d647fa1c4029c811dc5bc2abd59"
+    }
+  },
+  "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+  "fullDecode": "pass",
+  "productionReady": false,
+  "externalCostUSD": 0,
+  "depthEvents": 1,
+  "depthInterval": [
+    0.25,
+    1.25
+  ],
+  "occlusionMethod": "manual-vector-rotoscope-inverse-clip",
+  "occlusionScope": "head-and-neck; only reviewed vertical region250..650",
+  "keyframes": 3,
+  "contourPoints": 37,
+  "automaticSegmentation": false,
+  "fullBodySegmentation": false,
+  "newModels": false,
+  "maskImageOrModel": false,
+  "originalVideoUsedAsForeground": true,
+  "decodedAudioIdenticalToPrevious": true,
+  "testsPassed": 194,
+  "check": "pass",
+  "doctor": "pass",
+  "backupRestore": "depth data and ASS preserved",
+  "newUploadIsolation": "mask from another source is not inherited",
+  "deployment": "not executed; VPS administration tools unavailable",
+  "humanAcceptance": false,
+  "visualQA": "10 final frames inspected including 4 active-depth frames"
+}

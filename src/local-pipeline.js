@@ -1,3 +1,4 @@
+import {prepareDepthText} from './depth-text.js';
 import {finishFadeFor} from './graphic-timing.js';
 import {prepareSoundEffects} from './sound-effects.js';
 import {applyStyleVariant} from './style-variants.js';
@@ -15,7 +16,7 @@ import {buildAutomaticDirector,validateEditorSettings} from './automatic-directo
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
-const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
+const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
 export function fileSha256(path){const fd=openSync(path,'r'),hash=createHash('sha256'),buffer=Buffer.allocUnsafe(1024*1024);try{let size;while((size=readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,size));return hash.digest('hex');}finally{closeSync(fd);}}
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
@@ -24,6 +25,7 @@ export function loadProject(configPath){
  const local=p=>realpathSync(resolve(base,p));
  const inputs={template:read(local(config.templatePath)),brand:read(local(config.brandKitPath)),transcript:read(local(config.transcriptPath)),camera:read(local(config.cameraPath)),visionFrames:read(local(config.visionPath)).frames,catalog:read(local(config.catalogPath)),source:config.source,...(config.backgroundAudio?{backgroundAudio:{...config.backgroundAudio,localFile:local(config.backgroundAudio.localFile)}}:{})};
  const illustrations=(config.illustrations??[]).map(item=>{const localFile=local(item.localFile),sha256=fileSha256(localFile);if(item.sha256!==sha256)throw new Error('Illustration SHA256 mismatch');return {...item,localFile};});inputs.illustrations=illustrations;
+ if(config.depthTextPath)inputs.depthText=read(local(config.depthTextPath));
  const sourcePath=local(config.sourcePath),sourceSha256=fileSha256(sourcePath);
  if(config.source?.sha256&&config.source.sha256!==sourceSha256)throw new Error('Source SHA256 mismatch');
  inputs.source={...inputs.source,sha256:sourceSha256};
@@ -76,6 +78,7 @@ export function prepareProject(project,settings={}){
   if(!hierarchyLayout(c,plan.policy.captions,plan.layout.caption))throw new Error('La palabra elegida no cabe legible al doble de tamaño. Elige otra o acorta el texto.');
  }
  Object.assign(plan,prepareGraphicBlocks(options.graphicCards,options.transitions,plan,options.motions));
+ plan.depthText=options.motions?prepareDepthText(inputs.depthText,plan):[];
  plan.finishFade=finishFadeFor(plan);
  plan.soundEffects=prepareSoundEffects(plan,options);
  if(plan.soundEffects.events.length){plan.pending=plan.pending.filter(p=>p!=='music-and-sfx');plan.pending.push('sound-design-human-review');}

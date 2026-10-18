@@ -112,3 +112,14 @@ Se refiere a SUES_NO_ES_PEREZA_FINAL, SHA
 ceebd8d3a95535c46a195707d6d946124d5e1ad2d75d36bd60b86e47914ea60f.
 Valida tipografía y motion en esa entrega; valoración global abierta. No inferir
 rechazo de otros elementos ni aceptación del conjunto. Autoriza continuar.
+
+## Profundidad por contorno revisado · 18/10/2026
+
+Se admite depthTextPath privado ligado al SHA de la fuente. El renderer usa
+contornos vectoriales revisados para ocultar texto dentro de la silueta; no es
+caja facial ni detección automática. La prueba PARALIZADO revisa sólo cabeza/cuello
+0,25–1,25s,zona vertical250–650. No declarar segmentación automática de cuerpo
+completo ni cerrar F6. Ver docs/SUES_DEPTH_TEXT.md. No nuevos modelos ni reintento
+MediaPipe. HostingerVPS sigue sin tools callables; sóloAIBuilder. No confundir
+scripts preparados/tests locales con servicio desplegado. Instalador nuevo usa
+Montserrat; no modifica perfiles existentes ni WhatsApp/Caddy/DNS.

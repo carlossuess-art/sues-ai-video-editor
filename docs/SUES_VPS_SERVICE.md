@@ -1,3 +1,22 @@
+# Preparación vigente · 18/10/2026 · profundidad manual
+
+La nueva release añade oclusión con contorno manual privado y fija Montserrat
+como carpeta explícita de fuentes para perfiles nuevos. No cambia perfiles ya
+existentes. Los194tests del motor pasan; arranque y aislamiento se comprueban
+con fixture, no con Docker real en este Work. Scripts bash-nPASS y doctor del
+proyecto realPASS. Sin cambios remotos, DNS, proxy, Caddy o WhatsApp.
+
+El acceso de administración VPS sigue sin estar expuesto: nueve servidores
+registrados,Node24válido,soloAIBuilder callable. La búsqueda de plugins no ofrece
+una alternativa de administración VPS. No se instala Mail ni se crea otra web.
+Se reutilizarán start-public-service.sh y prepare-service.sh de una release fija
+cuando exista conexión operativa; no reinstalar dependencias ni reconstruir.
+Primero inventario de solo lectura con inspect-vps.sh, luego comprobar destino,
+recursos/espacio,estado existente y preparar HTTPS sobre configuración observada.
+El script no sustituye ni interrumpe un contenedor existente. No afirmar despliegue.
+La segmentación automática y el DirectorLLM aún no están terminados.
+
+---
 # Actualización vigente · 18/10/2026 · subir desde la app
 
 La sección histórica de abajo describe el arranque que se detenía sin medios.
