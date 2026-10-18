@@ -74,7 +74,10 @@
       "blurred-resource",
       "numbered-list",
       "quote-card",
-      "divider-line"
+      "divider-line",
+      "check",
+      "cross",
+      "strike-text"
     ]
   },
   "look": {

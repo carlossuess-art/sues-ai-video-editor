@@ -1,7 +1,7 @@
 export function editorReview(plan,director,settings){
  const events=[
   ...(plan.semantic?.zooms??[]).map(e=>({type:'zoom',start:e.start,end:e.end,reason:e.reason,sourceWordIndexes:e.evidence?.sourceWordIndexes??[],verification:e.evidence?.method??'editorial'})),
-  ...(plan.semantic?.motions??[]).map(e=>({type:'quote',start:e.start,end:e.end,text:e.lines.join(' '),reason:e.reason,sourceWordIndexes:e.evidence?.sourceWordIndexes??[],verification:e.evidence?.method??'editorial'})),
+  ...(plan.semantic?.motions??[]).map(e=>({type:e.params.motionId==='QUOTE_CARD_01'?'quote':e.params.motionId,start:e.start,end:e.end,text:e.lines.join(' '),reason:e.reason,box:e.box,audio:e.audio,placement:e.placement,sourceWordIndexes:e.evidence?.sourceWordIndexes??[],verification:e.evidence?.method??'editorial'})),
   ...(plan.graphics??[]).map(e=>({type:e.type,start:e.start,end:e.end,text:e.text,left:e.left,right:e.right,reason:e.reason,sourceWordIndexes:e.wordIndexes,verification:e.textOrigin})),
   ...(plan.globalTransitions??[]).map(e=>({type:e.type,start:e.start,end:e.end,reason:e.reason,verification:'explicit-editor-choice'})),
   ...(plan.illustrations??[]).map(e=>({type:'image',start:e.start,end:e.end,assetId:e.assetId,rights:e.rights,box:e.box,mask:e.mask,placement:e.placement??{strategy:'explicit-profile-box'},verification:'sha256-bound-to-source'}))

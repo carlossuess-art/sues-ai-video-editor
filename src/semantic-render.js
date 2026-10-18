@@ -4,9 +4,10 @@ import {MOTION_ALIASES} from './foundation-integration.js';
 import {buildFaceTrack} from './vision.js';
 import {stabilizeFaceTrack,sampleReframeAt} from './reframe.js';
 import {editToSource} from './time-map.js';
+import {fitCaptionSize} from './font-kits.js';
 const assert=(ok,msg)=>{if(!ok)throw new Error(`Semantic render: ${msg}`);};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-export const RENDERED_MOTIONS=Object.freeze(['QUOTE_CARD_01','NUMBER_BADGE_GOLD_01','DIVIDER_LINE_01']);
+export const RENDERED_MOTIONS=Object.freeze(['QUOTE_CARD_01','NUMBER_BADGE_GOLD_01','DIVIDER_LINE_01','CHECK_GREEN_01','CROSS_RED_01','STRIKE_TEXT_01']);
 const sample=(points,time)=>{
  if(time<=points[0].time)return points[0];if(time>=points.at(-1).time)return points.at(-1);
  const i=points.findIndex(p=>p.time>=time),a=points[i-1],b=points[i],f=(time-a.time)/(b.time-a.time);
@@ -49,8 +50,9 @@ export function prepareSemanticRender({director,policy,camera,timeMap,visionFram
    const asset=library.get(id);assert(asset,'motion asset missing');
    assert(e.end-e.start>=asset.trigger.minDuration&&e.end-e.start<=6,'motion duration');
    assert(asset.trigger.semanticReasons.includes(e.params.semanticReason),'motion semantic reason');
-   const instance=instantiateMotion(asset,e.params.bindings??{}),text=id==='QUOTE_CARD_01'?instance.layers.find(l=>l.id==='quote')?.content:id==='NUMBER_BADGE_GOLD_01'?instance.layers.find(l=>l.id==='label')?.content:'';
-   assert(typeof text==='string'&&text.length<=52&&(id==='DIVIDER_LINE_01'||text.trim().length>0),'motion text');
+   const instance=instantiateMotion(asset,e.params.bindings??{}),text=id==='QUOTE_CARD_01'?instance.layers.find(l=>l.id==='quote')?.content:id==='NUMBER_BADGE_GOLD_01'?instance.layers.find(l=>l.id==='label')?.content:id==='STRIKE_TEXT_01'?instance.layers.find(l=>l.id==='text')?.content:'';
+   const textless=['DIVIDER_LINE_01','CHECK_GREEN_01','CROSS_RED_01'].includes(id);
+   assert(typeof text==='string'&&text.length<=52&&!/[\x00-\x1f\x7f]/.test(text)&&(textless||text.trim().length>0),'motion text');
    assert(e.start>=2&&e.end<=timeMap.duration-policy.outro.duration,'motion bookends');
    if(id==='NUMBER_BADGE_GOLD_01')assert(/^[1-9]\d?$/.test(String(instance.layers.find(l=>l.id==='number').content)),'badge number');
    const words=text.trim().split(/\s+/);assert(words.every(w=>w.length<=26),'motion line limit');
@@ -59,7 +61,9 @@ export function prepareSemanticRender({director,policy,camera,timeMap,visionFram
    assert(lines.length<=2&&lines.length>0,'motion wrapping');
    const nominal=Math.max(...instance.layers.map(l=>l.start+l.duration));
    const layerTimes=Object.fromEntries(instance.layers.map(l=>[l.id,{start:e.start+l.start/nominal*(e.end-e.start),end:e.start+(l.start+l.duration)/nominal*(e.end-e.start)}]));
-   motions.push({...e,instance,lines,layerTimes});
+   assert(!broll.decisions.some(d=>d.type==='broll'&&d.start<e.end&&d.end>e.start),'motion hidden by B-roll');
+   const fontSize=['NUMBER_BADGE_GOLD_01','STRIKE_TEXT_01'].includes(id)?fitCaptionSize(lines,{...policy.captions,fontSize:64},id==='NUMBER_BADGE_GOLD_01'?600:720):undefined;
+   motions.push({...e,instance,lines,layerTimes,...(fontSize?{fontSize}:{}),audio:{rendered:false,reason:'visual-only; catalogue audio layers have no verified SFX binding'}});
   }
  }
  // Exact per-output-frame eyes, compact expression anchors and conservative sampled faces.
@@ -78,18 +82,20 @@ export function prepareSemanticRender({director,policy,camera,timeMap,visionFram
   maxCombinedZoom=Math.max(maxCombinedZoom,c.zoom*z);frames++;
  }
  const overlaps=(a,b)=>Math.min(a.right,b.right)>Math.max(a.left,b.left)&&Math.min(a.bottom,b.bottom)>Math.max(a.top,b.top);
- const slots=[{left:120,right:900,top:200,bottom:350},{left:120,right:900,top:1010,bottom:1160}];
+ const slots=[200,480,760,1010].map(top=>({left:120,right:900,top,bottom:top+150}));
  for(const motion of motions){
   if(motion.params.motionId==='QUOTE_CARD_01'&&policy.visualStyle?.resourceTreatment?.type==='blurred-focus'){
    assert(!motions.some(other=>other!==motion&&other.start<motion.end&&other.end>motion.start),'focus cards cannot overlap');
    motion.box={left:120,right:900,top:650,bottom:950};motion.backgroundTreatment={...policy.visualStyle.resourceTreatment,presenterOccludedIntentionally:true};continue;
   }
-  motion.box=slots.find(box=>!motions.some(other=>other.box&&other.start<motion.end&&other.end>motion.start&&overlaps(box,other.box))&&
+  motion.box=slots.find(box=>!(layout&&((captions.some(c=>c.start<motion.end&&c.end>motion.start)&&overlaps(box,layout.caption))||overlaps(box,layout.outro)))&&!motions.some(other=>other.box&&other.start<motion.end&&other.end>motion.start&&overlaps(box,other.box))&&
    Array.from({length:Math.ceil((motion.end-motion.start)*30)},(_,i)=>motion.start+i/30).every(t=>{
     const {sourceTime}=at(t),face=faces.reduce((a,b)=>Math.abs(b.time-sourceTime)<Math.abs(a.time-sourceTime)?b:a).face;
-    return !overlaps(box,projected(t,face));
+    const projectedFace=projected(t,face),margin=48;
+    return !overlaps(box,{left:projectedFace.left-margin,right:projectedFace.right+margin,top:projectedFace.top-margin,bottom:projectedFace.bottom+margin});
    }));
   assert(motion.box,'no safe motion placement');
+  motion.placement={strategy:'stable-region-existing-face-track',marginPx:48,sampledAtFps:30,bodySegmentation:false};
  }
  return {timeSpace:'edit-timeline',events,zooms,motions,anchors,audit:{frames,maxCombinedZoom,captionFaceChecks,outroFaceChecks,faceMethod:'nearest existing detection projected per output frame; not new inference'}};
 }

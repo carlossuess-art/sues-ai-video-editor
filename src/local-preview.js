@@ -1,4 +1,5 @@
 import {drawGraphicBlocks,globalTransitionFilters} from './graphic-blocks.js';
+import {drawSymbolMotion} from './motion-overlays.js';
 import {keywordPreset} from './text-presets.js';
 import {illustrationFilters} from './illustrations.js';
 import {captionCues,progressiveRuns} from './caption-motion.js';
@@ -119,6 +120,7 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   }
   drawGraphicBlocks(plan,event,safeText,assColor);
   for(const m of plan.semantic?.motions??[]){
+    drawSymbolMotion(m,plan,event,safeText,assColor);
     const b=m.box,cx=(b.left+b.right)/2,cy=(b.top+b.bottom)/2,paint=assColor(plan.renderColors.dark).slice(4);
     const goldCode=assColor(plan.policy.captions.accent).slice(4);
     if(m.params.motionId==='QUOTE_CARD_01'&&m.backgroundTreatment){
@@ -131,9 +133,9 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
     }else if(m.params.motionId==='DIVIDER_LINE_01'){
       event(3,m.start,m.end,'Outro',`{\\an7\\pos(${b.left},${cy})\\p1\\bord0\\1c&H${goldCode}&\\fscx0\\t(0,300,\\fscx100)\\fad(100,250)}m 0 0 l 780 0 780 3 0 3`);
     }else if(m.params.motionId==='NUMBER_BADGE_GOLD_01'){
-      const number=m.instance.layers.find(l=>l.id==='number').content;
-      event(3,m.start,m.end,'Outro',`{\\pos(${b.left+50},${cy})\\fs64\\b1\\fad(180,200)}${number}`);
-      event(3,m.layerTimes.label.start,m.layerTimes.label.end,'Outro',`{\\pos(${cx+55},${cy})\\1c${white}&\\fs42\\fad(180,200)}${m.lines.map(safeText).join('\\N')}`);
+      const number=m.instance.layers.find(l=>l.id==='number').content,labelSize=m.fontSize;
+      event(3,m.start,m.end,'Outro',`{\\pos(${b.left+50},${cy})\\fs64\\b1\\1c${assColor(plan.policy.captions.accent)}&\\fad(180,200)}${number}`);
+      event(3,m.layerTimes.label.start,m.layerTimes.label.end,'Outro',`{\\clip(${b.left+120},${b.top},${b.right},${b.bottom})\\pos(${cx+55},${cy})\\1c${white}&\\fs${labelSize}\\fad(180,200)}${m.lines.map(safeText).join('\\N')}`);
     }
   }
   const b=plan.layout.outro,start=plan.duration-plan.policy.outro.duration;

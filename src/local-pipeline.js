@@ -1,4 +1,5 @@
 import {applyStyleVariant} from './style-variants.js';
+import {motionChoicesToDecisions} from './motion-overlays.js';
 import {prepareGraphicBlocks} from './graphic-blocks.js';
 import {hierarchyLayout} from './caption-hierarchy.js';
 import {prepareIllustrations} from './illustrations.js';
@@ -12,7 +13,7 @@ import {buildAutomaticDirector,validateEditorSettings} from './automatic-directo
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
-const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
+const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
 export function fileSha256(path){const fd=openSync(path,'r'),hash=createHash('sha256'),buffer=Buffer.allocUnsafe(1024*1024);try{let size;while((size=readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,size));return hash.digest('hex');}finally{closeSync(fd);}}
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
@@ -49,13 +50,15 @@ export function prepareProject(project,settings={}){
   if(c.start<2||c.end>cutoff||end-c.start<1.5||end-c.start>6)throw new Error(`La frase de ${c.start.toFixed(1)} s está demasiado cerca del inicio o del cierre para destacarla.`);
   manual.push({type:'motion',start:c.start,end,reason:`Frase elegida por usuario: ${id}`,rule:'user-caption-quote-v1',params:{motionId:'QUOTE_CARD_01',bindings:{quote:c.text},semanticReason:'reflection'},evidence:{method:'user-caption-selection',captionId:id,sourceWordIndexes:c.wordIndexes,captionStart:c.start,captionEnd:c.end,displayEnd:end,textOrigin:c.source==='manual'?'user-edited-caption':'transcript-caption',originalText:c.originalText??c.text}});
  }
- const candidates=[...automatic.decisions.filter(d=>(!manual.length&&!options.graphicCards.length)||d.type!=='motion'),...manual].sort((a,b)=>a.start-b.start||a.end-b.end);
+ const chosenMotions=motionChoicesToDecisions(options.motionChoices,{...base,captions:editedCaptions},options.motions);
+ const candidates=[...automatic.decisions.filter(d=>(!manual.length&&!options.graphicCards.length&&!chosenMotions.length)||d.type!=='motion'),...manual,...chosenMotions].sort((a,b)=>a.start-b.start||a.end-b.end);
  let decisions=[],plan=base;
  for(const candidate of candidates){
   try{
    const next=[...decisions,candidate].sort((a,b)=>a.start-b.start||a.end-b.end);
    plan=prepareLocalPreview({...inputs,segments:automatic.segments,director:{...automatic,decisions:next}});decisions=next;
   }catch(error){
+   if(candidate.rule==='user-motion-choice-v1')throw new Error(`El recurso de ${candidate.start.toFixed(1)} s no cabe de forma segura: ${error.message}`);
    if(candidate.rule==='user-caption-quote-v1')throw new Error(`La frase de ${candidate.start.toFixed(1)} s no cabe de forma segura con estos ajustes. Elige otra frase.`);
    rejections.push({rule:candidate.rule,start:candidate.start,end:candidate.end,reason:error.message});
   }
@@ -73,7 +76,7 @@ export function prepareProject(project,settings={}){
  Object.assign(plan,prepareGraphicBlocks(options.graphicCards,options.transitions,plan,options.motions));
  plan.audioSourceAvailable=!!project.inputs.backgroundAudio||!!options.musicAssetId;
  plan.illustrations=prepareIllustrations(options.motions?(inputs.illustrations??[]):[],plan,inputs.visionFrames);
- const director={...automatic,...(manual.length?{selection:'offline-lexical-baseline-with-user-review-v1'}:{}),decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length,manualHighlights:manual.length}};
+ const director={...automatic,...(manual.length||chosenMotions.length?{selection:'offline-lexical-baseline-with-user-review-v1'}:{}),decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length,manualHighlights:manual.length,manualMotions:chosenMotions.length}};
  plan.automaticDirector=director.audit;
  plan.pending=plan.pending.filter(p=>p!=='automated-director-selection');plan.pending.push('llm-semantic-director-and-human-review');
  const fingerprint=createHash('sha256').update(JSON.stringify(stable({inputs:project.inputs,boundHashes:project.boundHashes??{},fontHashes:project.fontHashes??{},settings:options,selectedAssets,engine:ENGINE_HASH}))).digest('hex');

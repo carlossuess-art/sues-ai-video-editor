@@ -24,6 +24,6 @@ test('unknown motion, missing brand colour and out-of-range times fail before re
 test('all four shipped templates resolve only registered motions',()=>{
  for(const id of ['calma','impacto','explica','historia']){
   const x=input();x.template=read(`templates/sues-${id}.template.json`);x.director={version:'1.0',templateId:x.template.id,decisions:[]};
-  const p=prepareFoundationPlan(x);assert.equal(p.policy.motions.length, id==='calma'?4:3);
+  const p=prepareFoundationPlan(x);assert.equal(p.policy.motions.length, id==='calma'?7:3);
  }
 });

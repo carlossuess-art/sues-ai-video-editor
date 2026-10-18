@@ -107,3 +107,10 @@ CALMA pasa a primera plantilla funcional con definición cerrada; F5=100% en
 alcance original. Especificación y límites: SUES_CALMA_V1_SPEC.md. Las variantes
 siguen experimentales. La adaptación espacial según sujeto se aplica a toda la
 base común; oclusión real detrás del cuerpo continúa pendiente de F6.
+
+## Ampliación F6 · biblioteca visual
+
+Seis motions renderizables; cinco elecciones explícitas por subtítulo desde
+«Recurso animado», con colocación facial conservadora y copia/deshacer.
+Guía vigente: SUES_MOTION_LIBRARY_V1.md. Prueba AV sintética completa y177tests;
+sin segmentación corporal, SFX ni nuevo despliegue. F6=80%,global75,75% interno.

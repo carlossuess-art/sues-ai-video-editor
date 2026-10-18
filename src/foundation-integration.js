@@ -9,7 +9,8 @@ export const MOTION_ALIASES=Object.freeze({
   'compare-yes-no':'COMPARE_YES_NO_01',
   'numbered-list':'NUMBER_BADGE_GOLD_01',
   'quote-card':'QUOTE_CARD_01',
-  'divider-line':'DIVIDER_LINE_01'
+  'divider-line':'DIVIDER_LINE_01',
+  'check':'CHECK_GREEN_01','cross':'CROSS_RED_01','strike-text':'STRIKE_TEXT_01'
 });
 
 export function prepareFoundationPlan({template,brand,catalog,director,duration,profile='composition',absoluteZoomLimit=1.6}){

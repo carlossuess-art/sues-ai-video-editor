@@ -1,0 +1,243 @@
+{
+  "kind": "synthetic-AV-not-real-person",
+  "state": "DONE",
+  "summary": {
+    "duration": 24,
+    "styleId": "SUES_CALMA",
+    "sourceWords": 18,
+    "mappedWords": 18,
+    "omittedWords": 0,
+    "captions": 6,
+    "zooms": 0,
+    "motions": 6,
+    "transitions": 0,
+    "manualHighlights": 1,
+    "rejections": [],
+    "externalCostUSD": 0,
+    "productionReady": false
+  },
+  "audit": {
+    "version": "1.0",
+    "sourceSha256": "a512312b3e3ea6827546d8e8216f51b8f7a78ae7853a2a16bb92f0fb08a1fb5d",
+    "sourcePreserved": true,
+    "durationPlanned": 24,
+    "durationEncoded": 24,
+    "output": "preview.mp4",
+    "outputSha256": "6fc9b436057c4b013bef3d35323cfa7f8a441fe259bacd723aee235be5c3e238",
+    "bytes": 414907,
+    "video": {
+      "codec": "h264",
+      "width": 1080,
+      "height": 1920,
+      "fps": "30/1"
+    },
+    "audioPresent": true,
+    "backgroundAudio": null,
+    "broll": [],
+    "captions": 6,
+    "illustrations": [],
+    "font": {
+      "family": "Inter",
+      "regularSha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+      "boldSha256": "288316099b1e0a47a4716d159098005eef7c0066921f34e3200393dbdb01947f"
+    },
+    "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "fullDecode": "pass",
+    "productionReady": false,
+    "externalCostUSD": 0
+  },
+  "sourceIntact": true,
+  "range": 206,
+  "renderAttempts": 1,
+  "backupRestoredWithIdenticalASSAndFilter": true,
+  "events": [
+    {
+      "type": "CHECK_GREEN_01",
+      "start": 2,
+      "end": 3.6,
+      "text": "",
+      "reason": "Recurso elegido por usuario: seg-001",
+      "box": {
+        "left": 120,
+        "right": 900,
+        "top": 480,
+        "bottom": 630
+      },
+      "audio": {
+        "rendered": false,
+        "reason": "visual-only; catalogue audio layers have no verified SFX binding"
+      },
+      "placement": {
+        "strategy": "stable-region-existing-face-track",
+        "marginPx": 48,
+        "sampledAtFps": 30,
+        "bodySegmentation": false
+      },
+      "sourceWordIndexes": [
+        0,
+        1,
+        2
+      ],
+      "verification": "explicit-editor-choice-not-semantic-inference"
+    },
+    {
+      "type": "CROSS_RED_01",
+      "start": 5,
+      "end": 6.6,
+      "text": "",
+      "reason": "Recurso elegido por usuario: seg-002",
+      "box": {
+        "left": 120,
+        "right": 900,
+        "top": 480,
+        "bottom": 630
+      },
+      "audio": {
+        "rendered": false,
+        "reason": "visual-only; catalogue audio layers have no verified SFX binding"
+      },
+      "placement": {
+        "strategy": "stable-region-existing-face-track",
+        "marginPx": 48,
+        "sampledAtFps": 30,
+        "bodySegmentation": false
+      },
+      "sourceWordIndexes": [
+        3,
+        4,
+        5
+      ],
+      "verification": "explicit-editor-choice-not-semantic-inference"
+    },
+    {
+      "type": "STRIKE_TEXT_01",
+      "start": 8,
+      "end": 9.6,
+      "text": "Nunca puedo cambiar.",
+      "reason": "Recurso elegido por usuario: seg-003",
+      "box": {
+        "left": 120,
+        "right": 900,
+        "top": 480,
+        "bottom": 630
+      },
+      "audio": {
+        "rendered": false,
+        "reason": "visual-only; catalogue audio layers have no verified SFX binding"
+      },
+      "placement": {
+        "strategy": "stable-region-existing-face-track",
+        "marginPx": 48,
+        "sampledAtFps": 30,
+        "bodySegmentation": false
+      },
+      "sourceWordIndexes": [
+        6,
+        7,
+        8
+      ],
+      "verification": "explicit-editor-choice-not-semantic-inference"
+    },
+    {
+      "type": "NUMBER_BADGE_GOLD_01",
+      "start": 11,
+      "end": 12.6,
+      "text": "Un paso sencillo.",
+      "reason": "Recurso elegido por usuario: seg-004",
+      "box": {
+        "left": 120,
+        "right": 900,
+        "top": 480,
+        "bottom": 630
+      },
+      "audio": {
+        "rendered": false,
+        "reason": "visual-only; catalogue audio layers have no verified SFX binding"
+      },
+      "placement": {
+        "strategy": "stable-region-existing-face-track",
+        "marginPx": 48,
+        "sampledAtFps": 30,
+        "bodySegmentation": false
+      },
+      "sourceWordIndexes": [
+        9,
+        10,
+        11
+      ],
+      "verification": "explicit-editor-choice-not-semantic-inference"
+    },
+    {
+      "type": "DIVIDER_LINE_01",
+      "start": 14,
+      "end": 15.2,
+      "text": "",
+      "reason": "Recurso elegido por usuario: seg-005",
+      "box": {
+        "left": 120,
+        "right": 900,
+        "top": 480,
+        "bottom": 630
+      },
+      "audio": {
+        "rendered": false,
+        "reason": "visual-only; catalogue audio layers have no verified SFX binding"
+      },
+      "placement": {
+        "strategy": "stable-region-existing-face-track",
+        "marginPx": 48,
+        "sampledAtFps": 30,
+        "bodySegmentation": false
+      },
+      "sourceWordIndexes": [
+        12,
+        13,
+        14
+      ],
+      "verification": "explicit-editor-choice-not-semantic-inference"
+    },
+    {
+      "type": "quote",
+      "start": 17,
+      "end": 19.2,
+      "text": "Vuelve a ti.",
+      "reason": "Frase elegida por usuario: seg-006",
+      "box": {
+        "left": 120,
+        "right": 900,
+        "top": 650,
+        "bottom": 950
+      },
+      "audio": {
+        "rendered": false,
+        "reason": "visual-only; catalogue audio layers have no verified SFX binding"
+      },
+      "sourceWordIndexes": [
+        15,
+        16,
+        17
+      ],
+      "verification": "user-caption-selection"
+    }
+  ],
+  "humanAcceptance": false,
+  "SFX": false,
+  "bodySegmentation": false,
+  "externalCostUSD": 0,
+  "visualQA": {
+    "framesSeconds": [
+      2.8,
+      5.8,
+      8.8,
+      11.8,
+      14.8,
+      17.8
+    ],
+    "result": "six motions visible; no clipping or facial rectangle collision observed in samples",
+    "humanAestheticAcceptance": false
+  },
+  "delivery": {
+    "libraryFileId": "libfile_06534ceb52888191b4b65c46e5315ebf",
+    "filename": "SUES_MOTION_LIBRARY_F6_PRUEBA.mp4"
+  }
+}

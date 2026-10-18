@@ -1,4 +1,5 @@
 import {STYLE_VARIANTS} from './style-variants.js';
+import {validateMotionChoices} from './motion-overlays.js';
 import {validateGraphicSettings} from './graphic-blocks.js';
 import {validateKeywordOverrides} from './text-presets.js';
 import {validateTranscript,mapWordsToTimeline} from './transcript.js';
@@ -12,8 +13,8 @@ const LEXICON=new Map([
 ]);
 export function validateEditorSettings(settings={}){
  assert(settings&&typeof settings==='object'&&!Array.isArray(settings),'settings object');
- assert(Object.keys(settings).every(k=>['zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','profileImages','styleId'].includes(k)),'unknown setting');
- const value={styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ assert(Object.keys(settings).every(k=>['motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','profileImages','styleId'].includes(k)),'unknown setting');
+ const value={motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
  assert(Number.isFinite(value.zoomIntensity)&&value.zoomIntensity>=0&&value.zoomIntensity<=1,'zoomIntensity 0..1');
  assert([1,2,3].includes(value.captionWords),'captionWords 1, 2 or 3');
  assert(Object.hasOwn(STYLE_VARIANTS,value.styleId),'style id');
@@ -21,6 +22,7 @@ export function validateEditorSettings(settings={}){
  assert(typeof value.profileImages==='boolean'&&Array.isArray(value.imageEvents)&&value.imageEvents.length<=6,'image settings');
  for(const e of value.imageEvents)assert(e&&Object.keys(e).every(k=>['assetId','start','end'].includes(k))&&typeof e.assetId==='string'&&/^[a-f0-9]{64}$/.test(e.assetId)&&Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.start>=0&&e.end-e.start>=.6&&e.end-e.start<=8,'image event invalid');
  validateGraphicSettings(value.graphicCards,value.transitions);
+ validateMotionChoices(value.motionChoices);
  assert(!value.graphicCards.length||!value.highlightCaptions.length,'Elige citas destacadas o tarjetas gráficas en esta versión, no ambas.');
  value.keywordOverrides=validateKeywordOverrides(value.keywordOverrides);
  assert(typeof value.musicEnabled==='boolean'&&typeof value.duckMusic==='boolean'&&(value.musicGain===null||Number.isFinite(value.musicGain)&&value.musicGain>=0&&value.musicGain<=.18),'music settings invalid');

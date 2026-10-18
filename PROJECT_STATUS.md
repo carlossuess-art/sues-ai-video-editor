@@ -1,3 +1,52 @@
+# Estado técnico vigente · Fase 6 · 18/10/2026
+
+FASE 6/10 · Motion Library + reglas de colocación
+Progreso fase: 80 % (estimación interna; alcance ampliado aún abierto).
+Progreso global técnico: 75,75 %. No aceptación estética ni V1.
+Rama oficial: feat/phase-4-vision-camera. Base: 13ed08f8c1a8aeaafaf98a694af91c7462577e60.
+
+Seis renderers visuales: cita, número, separador, check, cruz y tachado. Cinco
+recursos elegibles por subtítulo desde la app; guardado/deshacer/copia/restauración.
+Etiquetas semánticas del catálogo y decisiones explícitas trazables; no se añade
+un clasificador LLM ni se interpreta un check como validación factual automática.
+Región estable proyectada a30fps con margen facial48px; protege captions/cierre,
+rechaza falta de hueco y motions ocultos por B-roll. Audio SFX declarado pendiente.
+
+177/177tests secuenciales, check y diffcheck correctos. Prueba real del worker
+con AV y detecciones SINTÉTICAS:24s,1080×1920/30,H264/AAC,18/18palabras,6motions,
+1render,original intacto/fullDecodePASS/Range206. Copia restaurada con ASS/filtro
+idénticos. QA6frames, sin escucha humana, presentador real o navegador/PWA.
+MP4 414.907bytes,SHA6fc9b436057c4b013bef3d35323cfa7f8a441fe259bacd723aee235be5c3e238;
+Library libfile_06534ceb52888191b4b65c46e5315ebf.
+Guía docs/SUES_MOTION_LIBRARY_V1.md; evidencia examples/preview/motion-library.synthetic-result.json.
+
+| Fase | Estimación interna | Peso | Aportación global |
+| --- | ---: | ---: | ---: |
+| F1–F4 | Registro anterior | 40 % | 40 % |
+| F5 · plantillas | 100 % | 10 % | 10 % |
+| F6 · gráficos/motions | 80 % | 10 % | 8 % |
+| F7 · director | 25 % | 15 % | 3,75 % |
+| F8 · app | 70 % | 10 % | 7 % |
+| F9 · integración real | 45 % | 10 % | 4,5 % |
+| F10 · despliegue/docs | 50 % | 5 % | 2,5 % |
+
+Pendientes F6: máscara/oclusiones reales del cuerpo/sillón, medios y SFX
+verificados; BLURRED_RESOURCE_01 y COMPARE_YES_NO_01 siguen contratos genéricos,
+no confundirlos con las imágenes feather/tarjetas de la app. Validación con vídeos
+humanos distintos y aceptación audiovisual pendiente. F7 conserva semántica y
+densidad automática; F8–10 sus pendientes documentados. Sin despliegue nuevoVPS.
+Siguiente acción exacta: integrar máscara temporal ligada al original para oclusión
+real y validar con un clip humano; incorporar SFX propios/licenciados verificados
+cuando estén disponibles. No inventar una máscara usando sólo la cara.
+Bloqueos: sin máscara/persona segmentada ni colección SFX validada. No activar
+modelos/proveedores nuevos sin autorización específica. CreatorClub sigue aplazado.
+Necesito de Carlos: nada para revisar los motions; máscara/recursos o autorización
+concreta de segmentación si se aborda ese siguiente bloque. Coste externo nuevo0USD.
+No cambios a WhatsApp/Caddy/DNS/ASR/visión. No se declara V1.
+
+---
+## Registro anterior · conservado como histórico
+
 # Estado técnico vigente · construcción general · 18/10/2026
 
 Decisión vigente: el dossier y la referencia Keanu son la base visual de TODAS
