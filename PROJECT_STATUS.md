@@ -5,14 +5,48 @@ Progreso fase: 80 % (estimación técnica; estética provisional).
 Progreso global: 48 % = F1–F4 (40 %) + 80 % del peso F5 (8 %).
 Rama oficial: feat/phase-4-vision-camera.
 Base de este bloque: acbb8d5471cce1972c886ba9331379f8477dd35d.
-Último hito: selección de citas desde captions, deshacer hasta10ajustes y guardado
-idempotente. Prueba con vídeo realCarlos38,30s/75palabras/1cita elegida víaAPI completada.
-Suite: 133/133 y npm run check (src/scripts/web); Python compile OK.
+Último hito: subida privada desde la app y recuperación del análisis por HTTP.
+Dos ciclos reales CALMA completos, incluido un arranque sin medios precargados.
+Suite vigente: 145/145 y npm run check; sintaxis Bash correcta.
 Smoke API→plan→ajustes→worker FFmpeg→MP4→Range real OK. Audio sintético OK.
 Sin aceptación E2E humana ni cierre estético.
 Coste externo nuevo: 0 USD. Sin ASR/MediaPipe/Shotstack/generación/Lovable/compras.
-Necesito de Carlos: confirmar vía de subida privada desde móvil al VPS.
+Necesito de Carlos ahora: nada; ejecución de release y acceso HTTPS quedan pendientes de acceso VPS.
 Estado observado: PENDIENTE MEDIOS; app no iniciada.
+
+## Subida desde la app · 18/10/2026
+
+- Base: HEAD 5294b7d. Maestro, estado y guías leídos; no AGENTS.md encontrado.
+- Subida privada MP4/MOV/WebM con audio: 250 MiB, 10 minutos, streaming a disco,
+  SHA256/FFprobe, una simultánea, cuatro originales. Reintentos sin duplicar,
+  reserva de espacio y limpieza de subidas interrumpidas. Sesión/origen protegidos.
+- Cada vídeo se liga a su análisis por hash. Otro original queda NEEDS_ANALYSIS,
+  sin heredar palabras o encuadres ajenos. READY y WAITING_ASSETS visibles en UI.
+- Recuperación privada JSON desde la app: transcript, cámara y visión existentes.
+  Comprueba identidad, medidas, duración y plan antes de habilitar el montaje.
+  Guarda perfiles atómicos y los restaura al reiniciar. No sustituye análisis listos
+  ni usados por trabajos existentes. No hereda música de otro vídeo.
+- Open Sans 400/700 + licencia SIL OFL incluidos en assets/fonts (264 KiB).
+  Shell y consulta de diseño arrancan sin medios; doctor sólo con perfil completo.
+  El despliegue conserva runtime y dependencias, sin reinstalar ni tocar WA/Caddy.
+- Dos ciclos reales HTTP: original 96.942.857 bytes → subida → CALMA → ajuste 75 %
+  → worker → almacén privado → Range 206. El segundo parte sin original, transcript,
+  cámara o fuentes privados, y recupera el análisis por API usando fuentes del repo.
+- Ambos: 38,30 s, 75/75 palabras, 16 captions, 2 zooms, 1 cita; un render por ciclo.
+  Original intacto, decodificación íntegra y AAC. MP4 de 18.602.463 bytes, SHA
+  a5e14849b73272fbf7f194c7d2851559d3b741b4ad3f5a5a0dc9586d61efed6a idéntico.
+- QA de ocho fotogramas: 3/7/12,5/16/18/25,5/33/36,5 s; textos fuera del rostro
+  en esas muestras. Sin escucha completa, navegador/PWA real ni aceptación humana.
+- 145/145 tests, check, Bash y diff-check. Guía docs/SUES_VIDEO_UPLOAD.md y script
+  scripts/app/smoke_upload_real.mjs. Evidencia pública compacta en
+  examples/preview/upload-cold.real-result.json. Análisis de recuperación fuera de Git.
+- Despliegue preparado, NO ejecutado en VPS. No hay dispositivo remoto conectado
+  ni herramienta de administración VPS callable. Estado VPS observado: PENDIENTE
+  MEDIOS, no iniciado. HTTPS sigue pendiente. No se cambia WhatsApp, Caddy o DNS.
+- Vídeos nuevos se pueden guardar e importar con su análisis; ASR/visión automáticos
+  de originales distintos siguen sin integrar. No confundir subida con V1 completa.
+- Coste externo nuevo: 0. Sin ASR, nueva visión, modelos, generación o Lovable.
+  Fase 5: 80 %; global: 48 %. Avance de F8 sin cierre de aceptación estética/V1.
 
 ## VPS · ejecución confirmada18/10 01:26
 
@@ -376,14 +410,16 @@ fases cerradas. Hay UI/backend local persistente; no despliegue público ni E2E 
 
 ## Siguiente acción exacta
 
-Leer maestro + estado + SUES_EDITORIAL_REVIEW.md. Rama oficial con cola/archivo/
-recuperación/progreso/doctor/citas elegibles/undo integrados y evidencia real. El
-siguiente paso de alojamiento necesita acceso operativo a administraciónVPS y
-revisar destino/seguridad; no publicar el harness local como servicio terminado.
-Hostinger tiene9servidores registrados pero sóloAIBuilder callables en esta sesión.
-No SSH/API manual para sustituir tools ausentes. Supabaseactivo corresponde alOráculo,
-no hay proyectoeditor identificado; no crear ni aceptar costes sin decisión concreta.
+1. Ejecutar la release fija de este bloque en VPS mediante el launcher existente.
+   El shell ya puede arrancar sin vídeo o análisis privados precargados.
+2. Comprobar estado y conectar HTTPS protegido tras inspeccionar el proxy real.
+   No abrir loopback 3010 directamente a Internet ni modificar WhatsApp/Caddy a ciegas.
+3. Desde la app: subir el original y, si falta su análisis, seleccionar el JSON
+   privado de recuperación. Probar CALMA → ajustes → exportación en VPS.
+4. Integrar el análisis automático autorizado de vídeos distintos y completar QA
+   de navegador/PWA y aceptación audiovisual con Carlos.
 
-Pendientes: HTTPS/auth/aislamiento/almacenamiento duradero remoto yQA visual/PWA real;
-DirectorIA semántico y estética/B-roll/música propios. Respetar bloqueoMediaPipe y
-no repetirASR/modelos pagados por defecto. F5sigue80%,global48%; no declararV1.
+Bloqueo de ejecución: no hay acceso directo VPS en esta sesión. Código y pruebas
+se completan en Work; no equivalen a despliegue. No reinstalar runtime/npm ni
+repetir ASR/MediaPipe por defecto. Supabase del Oráculo permanece separado.
+Fase 5 sigue al 80 %, global 48 %; no declarar V1 hasta aceptación integral.

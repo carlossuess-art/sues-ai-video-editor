@@ -41,7 +41,7 @@ if not config.exists():
     data=json.loads((release/'examples/projects/calma-local.example.json').read_text())
     for key in ('templatePath','brandKitPath','visionPath','catalogPath'):
         data[key]='/app/'+str((release/'examples/projects'/data[key]).resolve().relative_to(release))
-    data.update(sourcePath='/state/media/original.mp4',transcriptPath='/state/media/transcript.json',cameraPath='/state/media/camera.json',fontDirectory='/state/media/fonts')
+    data.update(sourcePath='/state/media/original.mp4',transcriptPath='/state/media/transcript.json',cameraPath='/state/media/camera.json',fontDirectory='/app/assets/fonts')
     config.write_text(json.dumps(data,indent=2)+'\n');config.chmod(0o600)
 PY
 chown 1000:1000 "$SUES_DIR/editor/project.json"
@@ -49,17 +49,15 @@ SUES_MISSING=0
 for sues_file in original.mp4 transcript.json fonts/OpenSans.ttf fonts/OpenSans-Bold.ttf fonts/OFL.txt; do
  if [ ! -s "$SUES_DIR/editor/media/$sues_file" ] || [ -L "$SUES_DIR/editor/media/$sues_file" ]; then SUES_MISSING=1; fi
 done
-if [ "$SUES_MISSING" -eq 1 ]; then
- echo 'PENDIENTE MEDIOS: original.mp4, transcript.json y fuentes OpenSans.ttf/OpenSans-Bold.ttf/OFL.txt en editor/media. No iniciado; no descargas de packs.' >"$SUES_DIR/estado-servicio.txt"
- exit 0
-fi
 # Only application checkout/dependencies and private editor state enter the container.
 SUES_DOCKER=(--read-only --cap-drop ALL --security-opt no-new-privileges --cpus 0.5 --memory 1g --pids-limit 256 --user 1000:1000 --tmpfs /tmp:rw,nosuid,size=256m --mount "type=bind,src=$SUES_RELEASE,dst=/app,readonly" --mount "type=bind,src=$SUES_SOURCE/node_modules,dst=/app/node_modules,readonly" --mount "type=bind,src=$SUES_DIR/editor,dst=/state" --workdir /app)
 if [ ! -s "$SUES_DIR/editor/media/camera.json" ]; then
  docker run --rm --network none "${SUES_DOCKER[@]}" sues-video-runtime:20261017 node scripts/vision/build_reframe.mjs examples/vision/poc001.mediapipe.json /state/media/camera.json
 fi
-echo 'VALIDANDO CONFIGURACION Y MEDIOS' >"$SUES_DIR/estado-servicio.txt"
-docker run --rm --network none "${SUES_DOCKER[@]}" sues-video-runtime:20261017 node scripts/app/doctor.mjs /state/project.json >"$SUES_DIR/doctor-servicio.json"
+if [ "$SUES_MISSING" -eq 0 ]; then
+ echo 'VALIDANDO CONFIGURACION Y MEDIOS' >"$SUES_DIR/estado-servicio.txt"
+ docker run --rm --network none "${SUES_DOCKER[@]}" sues-video-runtime:20261017 node scripts/app/doctor.mjs /state/project.json >"$SUES_DIR/doctor-servicio.json"
+fi
 # Generate secret locally once; never send it to stdout or Docker's environment.
 if [ ! -s "$SUES_DIR/editor/access/token" ]; then
  python3 - "$SUES_DIR/editor/access/token" <<'PY'
@@ -80,7 +78,7 @@ docker run -d --name sues-video-editor --restart unless-stopped --network host \
 for sues_attempt in {1..20}; do
  if curl --silent --fail --max-time 2 http://127.0.0.1:3010/ >/dev/null; then
   printf '%s\n' "$(git -C "$SUES_RELEASE" rev-parse HEAD)" >"$SUES_DIR/servicio-commit.txt"
-  echo 'ARRANCADO LOOPBACK: shell HTTP comprobado; HTTPS/preview/exportacion VPS pendientes. WhatsApp/Caddy sin cambios.' >"$SUES_DIR/estado-servicio.txt"
+  echo 'ARRANCADO LOOPBACK: subida disponible; material pendiente si no restaurado. HTTPS/preview/exportacion VPS pendientes. WhatsApp/Caddy sin cambios.' >"$SUES_DIR/estado-servicio.txt"
   exit 0
  fi
  sleep 1

@@ -3,7 +3,7 @@ import {readFileSync,statSync,createReadStream} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomBytes,timingSafeEqual} from 'node:crypto';
-import {loadProject} from './local-pipeline.js';
+import {VideoIntake,projectConfig,projectReady} from './video-intake.js';
 import {RENDERED_MOTIONS} from './semantic-render.js';
 import {MOTION_ALIASES} from './foundation-integration.js';
 import {EditorJobs} from './editor-jobs.js';
@@ -16,19 +16,19 @@ export function parseRange(value,size){
  if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||start>=size||end<start)throw new Error('Invalid range');
  end=Math.min(end,size-1);return {start,end,partial:true};
 }
-async function body(req){
+async function body(req,maxBytes=65536){
  if(!/^application\/json(?:;|$)/i.test(req.headers['content-type']??''))throw new Error('JSON required');
- const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>65536)throw new Error('Request too large');chunks.push(chunk);}
+ const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>maxBytes)throw new Error('Request too large');chunks.push(chunk);}
  const value=JSON.parse(Buffer.concat(chunks).toString());if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
   if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.pathname!=='/'||parsed.search||parsed.hash||parsed.origin!==publicOrigin)throw new Error('Canonical HTTPS origin required');
   origin=parsed.origin;
  }
- const jobs=new EditorJobs({directory,profiles,renderer,storage});let expectedHost;
+ const jobs=new EditorJobs({directory,profiles,renderer,storage});let intake;try{intake=new VideoIntake(join(directory,'uploads'),profiles,{probe:intakeProbe});}catch(error){void jobs.close();throw error;}let expectedHost;
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
  const server=http.createServer(async(req,res)=>{
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Cross-Origin-Resource-Policy','same-origin');
@@ -45,13 +45,17 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     const cookie=/(?:^|;\s*)sues_session=([^;]+)/.exec(req.headers.cookie??'')?.[1];
     if(!eq(cookie,token))return json(res,401,{error:'Session required'});
     if(!['GET','HEAD'].includes(req.method)&&req.headers['x-sues-request']!=='editor')return json(res,403,{error:'Request header required'});
+    if(path==='/api/uploads'&&req.method==='GET')return json(res,200,intake.list());
+    const analysisMatch=/^\/api\/uploads\/([a-f0-9]{64})\/analysis$/.exec(path);
+    if(analysisMatch&&req.method==='POST'){if(jobs.list().some(j=>j.profileId==='upload-'+analysisMatch[1]))throw new Error('Analysis owned by existing jobs; restore original assets');return json(res,200,intake.importAnalysis(analysisMatch[1],await body(req,2*1024*1024)));}
+    if(path==='/api/uploads'&&req.method==='POST'){req.setTimeout(120000);return json(res,201,await intake.receive(req));}
     if(path==='/api/health'&&req.method==='GET')return json(res,200,jobs.health());
     if(path==='/api/design'&&req.method==='GET'){
      const id=url.searchParams.get('profileId');if(!Object.hasOwn(profiles,id))return json(res,404,{error:'Unknown profile'});
-     const project=loadProject(profiles[id]),{brand,template,catalog}=project.inputs;
+     const config=projectConfig(profiles[id]),read=p=>JSON.parse(readFileSync(p,'utf8')),brand=read(config.brandKitPath),template=read(config.templatePath),catalog=read(config.catalogPath);
      return json(res,200,{brand,template,styles:['SUES_CALMA','SUES_IMPACTO','SUES_EXPLICA','SUES_HISTORIA'].map(id=>({id,available:id==='SUES_CALMA'})),motions:catalog.map(m=>({id:m.id,type:m.type,tags:m.tags,minDuration:m.trigger.minDuration,reasons:m.trigger.semanticReasons,rendered:RENDERED_MOTIONS.includes(m.id),allowedInTemplate:template.motion.allowed.map(a=>MOTION_ALIASES[a]??a).includes(m.id)}))});
     }
-    if(path==='/api/profiles'&&req.method==='GET')return json(res,200,Object.keys(profiles).map(id=>({id,title:id,template:'SUES_CALMA',mode:'existing-transcript-and-vision'})));
+    if(path==='/api/profiles'&&req.method==='GET')return json(res,200,Object.keys(profiles).map(id=>({id,title:id,template:'SUES_CALMA',mode:'existing-transcript-and-vision',ready:projectReady(profiles[id])})));
     if(path==='/api/jobs'&&req.method==='GET')return json(res,200,jobs.list());
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{}));
@@ -81,6 +85,6 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
    const [file,type]=files[path];res.setHeader('Content-Type',type);res.end(readFileSync(join(WEB,file)));
   }catch(error){if(res.headersSent)return res.destroy();const safe=/not found|Unknown profile/i.test(error.message)?404:/busy|ready|changed|transition|owned|Adjustments|queue full|closing/.test(error.message)?409:400;json(res,safe,{error:error.code?'No se pudo acceder al recurso local configurado':error.message.replaceAll(directory,'[local]')});}
  });
- server.requestTimeout=10000;server.headersTimeout=10000;
+ server.requestTimeout=900000;server.headersTimeout=10000;
  return {jobs,server,token,async listen(){await new Promise((r,j)=>{server.once('error',j);server.listen(port,'127.0.0.1',r);});origin??=`http://127.0.0.1:${server.address().port}`;expectedHost=new URL(origin).host;return `${origin}/#${token}`;},async close(){await jobs.close();server.closeIdleConnections();await new Promise(r=>server.close(r));}};
 }

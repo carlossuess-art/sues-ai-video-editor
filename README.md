@@ -1,3 +1,8 @@
+> Actualización 18/10/2026: el estudio admite subida privada desde la app y recuperación
+> de análisis existentes. Dos ciclos reales CALMA por HTTP comprobados en Work.
+> [Guía de subida y límites](docs/SUES_VIDEO_UPLOAD.md). VPS/HTTPS y análisis automático
+> de cualquier vídeo nuevo siguen pendientes; no se declara V1.
+
 # SUES AI VIDEO EDITOR
 
 Editor SUES en desarrollo: CALMA con cámara/captions/motions, Director léxico

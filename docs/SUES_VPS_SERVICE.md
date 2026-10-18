@@ -1,3 +1,13 @@
+# Actualización vigente · 18/10/2026 · subir desde la app
+
+La sección histórica de abajo describe el arranque que se detenía sin medios.
+La nueva release permite iniciar el shell sin original/transcript/fuentes privados.
+Incluye Open Sans con licencia y permite subir el vídeo y recuperar su análisis
+privado desde la pantalla. Véase SUES_VIDEO_UPLOAD.md para estados, límites y prueba.
+El doctor de proyecto sólo se ejecuta al arrancar si los medios ya están completos.
+Dos ciclos reales de subida/API/render pasaron en Work; esta release no se ha
+lanzado aún en VPS y HTTPS continúa pendiente. No se ha tocado WhatsApp/Caddy.
+
 # Arranque aislado del editor · 17/10/2026
 
 Estado: preparado y probado en desarrollo; **no ejecutado en VPS**. F5 80%, global 48%.
