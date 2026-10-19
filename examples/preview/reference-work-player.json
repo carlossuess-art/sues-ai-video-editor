@@ -1,0 +1,68 @@
+{
+  "version": "1.0",
+  "browser": "145.0.7632.6",
+  "checks": [
+    {
+      "device": "desktop",
+      "timeline": {
+        "transport": true,
+        "scrub": true,
+        "keyboardPlayback": true,
+        "typingDoesNotControlPlayback": true,
+        "captionSeekAndFocus": true,
+        "undo": true,
+        "dirtyTimelineHidden": true,
+        "videoRemainsVisible": true
+      }
+    },
+    {
+      "device": "desktop",
+      "localSelectionPlays": true,
+      "uploadPlays": true,
+      "uploadSurvivesReload": true,
+      "unknownUploadDoesNotInheritTranscript": true,
+      "toolsKeepPlayerVisible": true,
+      "previewActuallyPlays": true,
+      "exportBlockedBeforePreviewAndAfterChanges": true,
+      "exportMatchesPreviewSha256": "ef6403e1c136e4649d66bfc3259926040cf0429222b1e94e4c8afe6caf754238",
+      "exportDoesNotRenderAgain": true,
+      "updatedPreviewCreatesNewVersion": true,
+      "fullDecode": "pass",
+      "sourcePreserved": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "timeline": {
+        "transport": true,
+        "scrub": true,
+        "keyboardPlayback": true,
+        "typingDoesNotControlPlayback": true,
+        "captionSeekAndFocus": true,
+        "undo": true,
+        "dirtyTimelineHidden": true,
+        "videoRemainsVisible": true
+      }
+    },
+    {
+      "device": "mobile",
+      "localSelectionPlays": true,
+      "uploadPlays": true,
+      "uploadSurvivesReload": true,
+      "unknownUploadDoesNotInheritTranscript": true,
+      "toolsKeepPlayerVisible": true,
+      "previewActuallyPlays": true,
+      "exportBlockedBeforePreviewAndAfterChanges": true,
+      "exportMatchesPreviewSha256": "ef6403e1c136e4649d66bfc3259926040cf0429222b1e94e4c8afe6caf754238",
+      "exportDoesNotRenderAgain": true,
+      "updatedPreviewCreatesNewVersion": false,
+      "fullDecode": "pass",
+      "sourcePreserved": true,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "pageErrors": [],
+  "externalCostUSD": 0,
+  "kind": "local-video-playback-preview-and-export-test",
+  "sourceSha256": "27120143cec95f3c01b031d3b1f1ab67deffabff7b08ada8eeff36834277e387"
+}

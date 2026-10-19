@@ -188,3 +188,16 @@ output{color:var(--cyan)}
 .timeline-playback button:disabled{opacity:.36}
 .timeline-playback #timeline-play{min-width:44px;background:#07566a;border-color:#008ba4;color:#f2ffff}
 @media(max-width:700px){.timeline-playback button{min-width:35px;min-height:26px;padding:4px;font-size:10px}.timeline-playback #timeline-play{min-width:33px}}
+
+/* Keep the video prominent; the primary toolbar already provides these shortcuts. */
+@media(max-width:700px){
+ .workspace{grid-template-rows:minmax(310px,68%) minmax(215px,32%)}
+ .timeline-toolbar,.timeline-lane,.timeline-hint{display:none}
+ .editor-timeline{flex-shrink:0}
+ .preview-wrap{padding:0}
+ .tool-panel,.captions{overscroll-behavior:contain}
+}
+.editor-shortcuts{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+.editor-shortcuts button{display:flex;flex-direction:column;align-items:center;gap:5px}
+.editor-shortcuts svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:700px){.tool-panel .editor-shortcuts button{min-height:54px;font-size:11px}}

@@ -1,3 +1,23 @@
+## Misión Work · frontend de referencia · 19/10/2026
+
+Auditoría desde aa6e7c246a8de811ac2329d87936e9e84f091e9e; base oficial
+fd168dd2b7ff5817be89ee28d8e654e792002fab. Integración por PR reversible.
+Guía y evidencia vigente: docs/SUES_WORK_VALIDATION_20261019.md.
+Frontend noche/cian, reproductor persistente, seis herramientas con iconos,
+timeline real y exportación del MP4 previsualizado. QA local en Chromium145,
+211tests/check y 12 pruebas Python de despliegue. Estas últimas simulan Docker.
+Sin cambios de renderer/dependencias ni créditos externos.
+
+VPS: no desplegado por Work. HTTPS abre; Session required bloquea la revisión
+privada. No hay herramientas HostingerVPS, dispositivos DesktopCommander ni
+claves/config SSH disponibles. Instalación anterior fd168 reportada por Carlos;
+commit remoto no verificado. Actualizador reforzado con TAR privado verificado
+y recuperación del contenedor anterior; backup/rollback remotos no ejecutados.
+F8 QA local; F6/F9/V1 y aceptación humana pendientes. Porcentajes no recalculados.
+Siguiente: habilitar acceso administrativo existente, ejecutar release fija y
+validar subida→preview→ajuste→exportación en producción sin tocar servicios ajenos.
+
+---
 ## Reproductor persistente y previsualización antes de exportar · 19/10/2026
 
 Carlos rechaza el recorrido PR5 por falta de visibilidad. Pide vídeo siempre

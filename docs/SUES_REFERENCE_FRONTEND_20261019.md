@@ -1,3 +1,6 @@
+> Continuación Work: [resultados de QA y despliegue](SUES_WORK_VALIDATION_20261019.md).
+> Las notas de verificación estática de abajo son históricas.
+
 # Frontend de referencia · 19/10/2026
 
 Rama: `feat/reference-editor-ui-20261019`

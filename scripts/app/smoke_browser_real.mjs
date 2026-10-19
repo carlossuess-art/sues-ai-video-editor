@@ -18,7 +18,7 @@ try{
  for(const [device,viewport] of [['desktop',{width:1440,height:1000}],['mobile',{width:393,height:852}]]){
   const context=await browser.newContext({viewport,locale:'es-ES',acceptDownloads:true}),page=await context.newPage();page.on('pageerror',e=>pageErrors.push(e.message));
   const idle=async()=>{await page.waitForFunction(()=>!working);const err=await page.locator('#error').evaluate(e=>e.hidden?'':e.textContent);assert.equal(err,'');};
-  const reveal=async selector=>{const tool=await page.locator(selector).first().evaluate(e=>e.closest('#material-panel')?'material':e.closest('#image-settings')?'media':e.closest('#sound-settings')?'sound':e.closest('#caption-settings')?'captions':'style');await page.evaluate(name=>showTool(name),tool);await page.locator(selector).first().evaluate(e=>{for(let p=e.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;});};
+  const reveal=async selector=>{const tool=await page.locator(selector).first().evaluate(e=>e.closest('#material-panel')?'material':e.closest('#image-settings')?'media':e.closest('#sfx-controls')?'sfx':e.closest('#sound-settings')?'sound':e.closest('#caption-settings')?'captions':'style');await page.evaluate(name=>showTool(name),tool);await page.locator(selector).first().evaluate(e=>{for(let p=e.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;});};
   const click=async selector=>{await reveal(selector);await page.click(selector);await idle();};
   await page.goto(launch);await page.waitForFunction(()=>document.querySelector('#queue-summary').textContent.includes('en proceso'));await page.waitForFunction(()=>document.querySelector('#profile').options.length>0&&design!==null);await idle();
   assert.equal(await page.evaluate(()=>location.hash),'');

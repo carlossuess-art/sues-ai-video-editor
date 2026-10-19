@@ -1,6 +1,6 @@
 let design=null,designProfile=null,assetLibrary=[];
 const $=id=>document.getElementById(id);let current=null,plan=null,working=false,editorStep='material-panel',previewDirty=false,playerView='original',localVideoURL=null;
-const stateNames={DRAFT:'Borrador',UPLOADED:'Vídeo guardado',ANALYZING:'Preparando',PLANNED:'Plan preparado',PREVIEW_READY:'Listo para exportar',ADJUSTING:'Guardando ajustes',QUEUED:'En cola',RENDERING:'Creando vista previa',PUBLISHING:'Guardando vídeo',DONE:'Vista previa lista',FAILED:'Requiere atención',PUBLISH_FAILED:'Guardado pendiente',CANCELLED:'Cancelado'};
+const stateNames={DRAFT:'Borrador',UPLOADED:'Vídeo guardado',ANALYZING:'Preparando',PLANNED:'Plan preparado',PREVIEW_READY:'Listo para previsualizar',ADJUSTING:'Guardando ajustes',QUEUED:'En cola',RENDERING:'Creando vista previa',PUBLISHING:'Guardando vídeo',DONE:'Vista previa lista',FAILED:'Requiere atención',PUBLISH_FAILED:'Guardado pendiente',CANCELLED:'Cancelado'};
 function editability(editable){for(const id of ['elements-format','zoom','motions','caption-words','sfx-enabled','sfx-gain','music-enabled','music-gain','music-duck','music-asset','profile-images','image-asset','image-start','image-end','add-image'])$(id).disabled=!editable;$('adjustment-help').textContent=editable?'Los cambios se verán al pulsar Previsualizar.':current?'Crea otra versión para ajustar un montaje ya exportado o en proceso.':'Prepara o recupera un montaje para ajustar su imagen, sonido y subtítulos.';}
 const error=e=>{$('error').textContent=e.message??String(e);$('error').hidden=false;};
 async function api(path,method='GET',body){const response=await fetch('/api/'+path,{method,credentials:'same-origin',headers:{'Content-Type':'application/json','X-Sues-Request':'editor'},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();if(!response.ok)throw new Error(value.error??'No se pudo completar la operación');return value;}
@@ -108,16 +108,21 @@ async function loadDesign(profileId){design=await api('design?profileId='+encode
 function showView(name){$('editor-shortcuts').hidden=name!=='editor';for(const view of ['editor','templates','brand','library'])$(view+'-view').hidden=view!==name;$('intro').hidden=name!=='editor';for(const b of document.querySelectorAll('nav button'))b.classList.toggle('selected',b.dataset.view===name);}
 for(const b of document.querySelectorAll('nav button'))b.onclick=()=>{showView(b.dataset.view);const menu=b.closest('.studio-tools');if(menu)menu.open=false;};
 function showTool(tool){
- if(!['material','style','captions','sound','media'].includes(tool))return;
+ if(!['material','style','captions','sound','sfx','media'].includes(tool))return;
  showView('editor');$('video-panel').hidden=false;$('material-panel').hidden=tool!=='material';$('adjustments-panel').hidden=tool==='material';
  $('style-tool-controls').hidden=tool!=='style';
- const active={style:'motion-settings',captions:'caption-settings',sound:'sound-settings',media:'image-settings'}[tool];
+ $('music-controls').hidden=tool==='sfx';$('sfx-controls').hidden=tool!=='sfx';$('music-status').hidden=tool==='sfx';
+ const active={style:'motion-settings',captions:'caption-settings',sound:'sound-settings',sfx:'sound-settings',media:'image-settings'}[tool];
  for(const id of ['motion-settings','caption-settings','sound-settings','image-settings']){$(id).hidden=id!==active;if(id===active&&tool!=='style')$(id).open=true;}
  for(const button of document.querySelectorAll('[data-editor-tool]')){button.classList.toggle('active',button.dataset.editorTool===tool);button.setAttribute('aria-pressed',String(button.dataset.editorTool===tool));}
- $('adjustments-panel').querySelector('h2').textContent={style:'Estilo y estructura',captions:'Texto y elementos',sound:'Sonido',media:'Imágenes'}[tool]??'Ajustes';
+ $('adjustments-panel').querySelector('h2').textContent={style:'Estilo y estructura',captions:'Texto y elementos',sound:'Música',sfx:'Efectos de sonido',media:'Imágenes'}[tool]??'Ajustes';
 }
 function showEditorStep(id){showTool(id==='material-panel'?'material':'style');}
-for(const button of document.querySelectorAll('[data-editor-tool]'))button.onclick=()=>showTool(button.dataset.editorTool);
+const toolIcons={material:'M3 5h12v14H3z M15 9l6-3v12l-6-3',style:'M12 3v4 M12 17v4 M3 12h4 M17 12h4 M8 8l8 8 M16 8l-8 8',captions:'M4 5h16 M12 5v15 M8 20h8',sound:'M9 18V5l11-2v13 M9 9l11-2 M9 18c0 2-5 3-5 0s5-3 5 0 M20 16c0 2-5 3-5 0s5-3 5 0',sfx:'M3 10v4 M7 6v12 M12 3v18 M17 7v10 M21 10v4',media:'M3 3h18v18H3z M3 17l6-6 4 4 3-3 5 5 M15 7h.01'};
+for(const button of document.querySelectorAll('[data-editor-tool]')){
+ button.onclick=()=>showTool(button.dataset.editorTool);
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),path=document.createElementNS('http://www.w3.org/2000/svg','path');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');path.setAttribute('d',toolIcons[button.dataset.editorTool]);svg.append(path);button.prepend(svg);
+}
 $('export-from-settings').onclick=()=>$('render').click();
 for(const eventName of ['input','change'])$('adjustments-panel').addEventListener(eventName,event=>{if(event.target.id!=='caption-search')markPreviewDirty();});
 $('caption-search').oninput=()=>{const query=$('caption-search').value.trim().toLocaleLowerCase('es');let count=0;for(const row of $('captions').children){const match=!query||row.querySelector('textarea').value.toLocaleLowerCase('es').includes(query);row.hidden=!match;if(match)count++;}$('caption-search-status').textContent=query?count+' subtítulos encontrados':'';};
@@ -266,8 +271,9 @@ function elementControls(c,job){
     button.addEventListener('click',()=>{
      const v=player();if(v&&Number.isFinite(v.duration)&&v.duration>0){v.currentTime=Math.min(v.duration,item.start);v.dispatchEvent(new Event('timeupdate'));}
      document.querySelector('[data-editor-tool="captions"]')?.click();
+     $('caption-search').value='';$('caption-search').dispatchEvent(new Event('input'));
      const row=[...document.querySelectorAll('#captions .caption')].find(el=>el.querySelector('textarea')?.dataset.id===item.id);
-     if(row){row.open=true;row.scrollIntoView({behavior:'smooth',block:'nearest'});}
+     if(row){row.open=true;const field=row.querySelector('textarea');field.focus({preventScroll:true});$('captions').scrollTop=row.offsetTop-$('captions').offsetTop;}
     });
     segments.append(button);
    }
