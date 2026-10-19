@@ -31,12 +31,13 @@ export async function verifyReferenceTimeline(page, viewport) {
  await segment.click();
  assert.ok(Math.abs(await video.evaluate(v=>v.currentTime)-start)<.2);
  assert.equal(await page.locator('#captions textarea').first().evaluate(e=>e===document.activeElement),true);
- const original=await page.locator('#captions textarea').first().inputValue();
+ // Original captions may already be at maxLength (52); use a short QA value.
+ await page.locator('#captions textarea').first().fill('Prueba temporal QA');
  const time=await video.evaluate(v=>v.currentTime);
  await page.keyboard.press('End');await page.keyboard.press('Space');await page.keyboard.press('ArrowLeft');
  assert.equal(await video.evaluate(v=>v.paused),true);
  assert.ok(Math.abs(await video.evaluate(v=>v.currentTime)-time)<.2);
- assert.equal(await page.locator('#captions textarea').first().inputValue(),original+' ');
+ assert.equal(await page.locator('#captions textarea').first().inputValue(),'Prueba temporal QA ');
  assert.equal(await page.locator('#export-video').isDisabled(),true);
  assert.equal(await page.locator('#timeline-segments').isVisible(),false);
  await page.click('#undo');await page.waitForFunction(()=>!working&&!previewDirty);
