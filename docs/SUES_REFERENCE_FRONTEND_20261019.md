@@ -66,3 +66,11 @@ Se incorporan reproducir/pausar y saltos de ±5 segundos, enlazados al reproduct
 ## Continuación · atajos seguros del reproductor
 
 Commit `0d02fb26224257b359f067ff7f4e596167a496f7`: espacio para reproducir/pausar y flechas ←/→ para ±5 segundos sólo cuando no se está escribiendo, seleccionando controles o usando modificadores. Mantiene las protecciones de exportación y reproducción existentes. Verificación estática de cinco condiciones del código desde GitHub realizada; no es prueba de navegador. Conexión Git directa bloqueada en contenedor por DNS; sin pruebas integrales ni despliegue. Próximo paso: QA en navegador y corrección de bugs antes de merge.
+
+## Corrección aplicada directamente en GitHub · 20/10/2026
+
+Commit frontend `9460dcb112898dd8800db0a334338a0e85aed362`; commit test `ab2b151c417a7bb7746f5ae9cda4ccb1bf7d1488`.
+- Los atajos de reproducción no interceptan ahora enlaces, summary, campos editables, roles interactivos ni eventos en composición o con modificador Shift.
+- La prueba Chromium de subtítulos escribe un valor QA corto antes de comprobar que el teclado no provoca seek involuntario; evita falsos negativos si el texto previo alcanzó maxLength=52.
+- Verificación posterior: se releyeron ambos archivos desde la rama de GitHub y se comprobó la presencia de las modificaciones.
+- Pendiente: ejecutar las pruebas Node/Chromium y render real antes de merge o despliegue. Producción sin cambios.
