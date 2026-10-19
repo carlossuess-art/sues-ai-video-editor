@@ -1,3 +1,21 @@
+## Muestra de profundidad aceptada y receta reutilizable · 19/10/2026
+
+Carlos: «Lo veo bien», referido a la comparación y muestra vertical de12s,
+SHA816d3bb6c1ea77b6048ed650e49b654c129d79626e766d59b9a3645c10d471a1.
+Se registra aceptación visual de esta composición/contornos; no aprobación sonora
+explícita ni segmentación automática/cuerpo completo, F6 o V1 global.
+
+Receta declarativa en examples/templates/reviewed-depth.recipe.json; etiquetas,
+transiciones, límites de capas y ganancias configurables para DOPAMIN/CALMA.
+Preparación DOPAMIN con la receta por defecto conserva manifest,ASS yfiltro
+idénticos byte a byte a la muestra aceptada. Identidad del estudio ahora incorpora
+plan/fuente/recursos/matte/fuentes/música/motor, en lugar de sólo el JSON de capas.
+209tests/checkPASS. Sin recodificar ni consumir servicios; oficial/VPS sin cambios.
+Siguiente: integración/revisión de controles en navegador, ampliar máscaras sólo
+con contornos revisados y continuar cobertura del catálogo. No reabrir esta opinión
+visual para una receta idéntica. PR4 sigue borrador dependiente de PR3.
+
+---
 ## Composición tras sujeto · muestra para comparar · 19/10/2026
 
 FASE6en curso;sin porcentaje recalculado ni cierreV1. Rama

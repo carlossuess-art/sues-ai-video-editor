@@ -110,7 +110,15 @@
     9.2,
     10.5
   ],
-  "humanAcceptance": false,
+  "humanAcceptance": {
+    "visualSample": true,
+    "quote": "Lo veo bien",
+    "date": "2026-10-19",
+    "scope": "shown 12-second depth composition and contours",
+    "audioExplicitlyAccepted": false,
+    "fullBodyAutomaticMaskAccepted": false,
+    "globalV1Accepted": false
+  },
   "browserQA": false,
   "rawOriginalSha256": "cae55ad4b8ebb4a92e05361ca890dc3ebec2643cd3eac2fb7ec7d81f623cfa2e",
   "comparisonSha256": "64dce0812990c8c7427980be3dd1f53b4acea0abe27746ba11b7d5976d894fec",
@@ -126,5 +134,12 @@
     "comparison": "libfile_375c09bd02208191a5e08aa1ec9369b4",
     "vertical": "libfile_e288cc7634488191b40a55117ab806fb",
     "studyArchive": "libfile_f8cfb62e98248191bdddb90283de42cf"
+  },
+  "recipeReuse": {
+    "recipe": "examples/templates/reviewed-depth.recipe.json",
+    "acceptedDopaminManifestByteIdentical": true,
+    "acceptedDopaminASSByteIdentical": true,
+    "acceptedDopaminFilterByteIdentical": true,
+    "newRenderRequired": false
   }
 }

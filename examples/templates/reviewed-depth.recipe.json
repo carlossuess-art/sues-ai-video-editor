@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "labels": [
+    {"start": 0.1, "end": 2.3, "text": "¿QUÉ TE FRENA?"},
+    {"start": 2.5, "end": 5.1, "text": "OBSERVA EL PATRÓN"},
+    {"start": 6, "end": 8, "text": "DA UN PRIMER PASO"}
+  ],
+  "musicGain": 0.065,
+  "sfxGain": 0.22,
+  "profiles": {
+    "SUES_DOPAMIN": {"subjectEventLimit": 6, "transitions": [{"start": 1.4, "end": 1.8, "type": "blur"}, {"start": 9.6, "end": 10, "type": "warm"}]},
+    "SUES_CALMA": {"subjectEventLimit": 1, "transitions": [{"start": 1.4, "end": 1.8, "type": "warm"}]}
+  }
+}

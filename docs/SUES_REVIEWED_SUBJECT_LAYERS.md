@@ -63,7 +63,7 @@ Entrega final1080×1920/30fps,H264/AAC,12.00s,8275828bytes:
 SHA816d3bb6c1ea77b6048ed650e49b654c129d79626e766d59b9a3645c10d471a1.
 DecodePASS, fuente preservada, once fotogramas finales revisados. Comparación
 original/resultado sincronizada1080×960,12s,5975670bytes. Revisión visual interna;
-sin escucha/aceptación de Carlos ni QA navegador. Un render intermedio fue rechazado
+sin escucha explícita ni QA navegador; aceptación visual posterior abajo. Un render intermedio fue rechazado
 por cambio de hash de máscara; se recodificó a archivo nuevo completo y se revalidó,
 sin eliminar comprobaciones de integridad.
 
@@ -78,8 +78,25 @@ examples/preview/reviewed-subject-depth.result.json.
 
 ## Continuación
 
-Primero recoger una opinión visual concreta de Carlos sobre la comparación:
-profundidad y contornos en las dos ventanas. Después refinar o extender la misma
-receta. Máscara corporal general, segmentación autónoma, motion library completa,
+Carlos responde «Lo veo bien» el19/10/2026: muestra visual aceptada para esta
+composición y contornos. Conservarla al reutilizar o extender la receta. Máscara corporal general, segmentación autónoma, motion library completa,
 Director y QA navegador siguen pendientes. No nuevo despliegue, WhatsApp,Caddy oDNS.
 Fase6 sigue abierta; no V1 ni estimación porcentual nueva por recuento de pruebas.
+
+
+## Receta reutilizable y conservación del resultado
+
+`prepare_depth_study.mjs` acepta un sexto argumento opcional RECIPE_JSON;
+por defecto usa `examples/templates/reviewed-depth.recipe.json`. Reutiliza plantilla,
+marca, fuentes y música del proyecto existente; los rótulos siguen siendo editoriales.
+La receta declara etiquetas/tiempos, ganancias y transiciones por estilo, y limita
+el número de capas; los bindings y revisión de cada matte siguen siendo obligatorios.
+Se rechazan rangos fuera de fuente, etiquetas solapadas, estilos/transiciones y
+ganancias inválidos antes de escribir. No se instala un generador semántico.
+
+Con los mismos medios, DOPAMIN produce manifest,ASS yfiltro byteidénticos al
+bundle de la muestra aceptada. No hace falta recodificar para comprobar esa igualdad.
+La huella ahora liga el plan compilado, estilo, hashes de fuente/recursos/matte,
+fuentes y música, motor, renderer y script/validador de receta; antes sólo cubría
+el archivo de capas. Dos pruebas nuevas validan límites y la invalidación de la
+huella al cambiar cada dependencia. 209tests/checkPASS; sin cambiar el render previo.

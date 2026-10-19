@@ -153,4 +153,12 @@ solapado. Muestra12s sólo región superior0.25–1.4 y8.2–8.9. EnsayosGrabCut
 no sirven como cuerpo completo automático:contornos finales corregidos a mano,
 no afirmar detector o segmentación general. Rótulos editoriales,noASR.
 Carlos pidió ejecución autónoma hasta un punto concreto de opinión; comparación
-lista,valoración pendiente. No desplegar ni cerrarF6 por esta prueba.
+lista; aceptación visual posterior registrada abajo. No desplegar ni cerrarF6 por esta prueba.
+
+## Aceptación de muestra y reutilización · 19/10/2026
+
+Carlos: «Lo veo bien» sobre SUES_PROFUNDIDAD_REVISADA/comparativa12s,
+SHA816d3bb6c1ea77b6048ed650e49b654c129d79626e766d59b9a3645c10d471a1.
+Aceptación visual de esa composición/contornos; no ampliar a audio, automatización
+corporal ni cierre F6/V1. Mantener look aceptado. La receta explícita reutilizable
+vive en examples/templates/reviewed-depth.recipe.json; no inferir discurso/ASR.
