@@ -171,3 +171,10 @@ sincomprobar runtime/browser-tools. Ver smoke_browser_real.mjs y evidenciaJSON.
 El binario descargado por Playwrightv1234 estabaincompleto; Chrome oficial145 sí
 funciona. No añadir Chrome/Playwright a dependenciasVPS. QA técnica noes aceptación
 estética ni prueba delservidor remoto. VPSúltimoobservado sigueba972.
+
+## Rama oficial actualizada · 19/10/2026
+
+PR3/PR4 fusionados enoficial:releaseprobada7cbccb9bcd8c394106e22027ebfe284782e8989a,
+árbol95561a9f5ee103c1c9a5d4e80369cf77d2e4807f. No tratar PR3/4 comopendientes.
+Guía deactualización fijada:docs/SUES_VERIFIED_RELEASE.md. VPSsin despliegue;
+DesktopCommander confirmó0dispositivos conectados. Noafirmar pruebas remotas.

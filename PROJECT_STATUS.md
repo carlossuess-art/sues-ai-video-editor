@@ -1,3 +1,22 @@
+## Integración oficial y release verificada · 19/10/2026
+
+PR3 fusionado en8d120cfc9681933214b364df911ffe4fdebadb6b; PR4 fusionado en
+7cbccb9bcd8c394106e22027ebfe284782e8989a. Rama oficial feat/phase-4-vision-camera.
+Árbol95561a9f5ee103c1c9a5d4e80369cf77d2e4807f idéntico al probado en navegador,
+209tests/check y10simulaciones. Sin cambios de package.json/package-lock.json.
+DOPAMIN/ELEMENTS ycompositor trasmatte revisado integrados;CALMA siguepor defecto.
+Receta visual aprobada preservada. QA de24combinaciones yrender38,31s desde
+recuperaciónUI completada; ver evidencia debajoy guía SUES_VERIFIED_RELEASE.md.
+
+Actualizador aislado listo para ese commit; noejecutado remotamente. Inventario
+actual deDesktopCommander devuelve0dispositivos conectados; no hay herramientas
+HostingerVPS/SSH disponibles. VPSúltimoobservado sigueba972;no asumir actualización.
+Necesidad puntual deCarlos:ejecutar elcomando fijado enla terminalHostinger,conservar
+su salida ydespués validar app remota. La limitación esacceso alVPS,no autorización.
+Sin gasto externo,nuevos modelos,ASR,Lovable oalteracionesWhatsApp/Caddy/DNS.
+F6/V1 ysegmentación corporal automática siguenabiertas.
+
+---
 ## Editor validado en navegador real · 19/10/2026
 
 Chromium145 local:24combinaciones = escritorio/móvil × CALMA/DOPAMIN × seis
