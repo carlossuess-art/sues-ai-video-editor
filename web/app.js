@@ -107,13 +107,27 @@ async function loadDesign(profileId){design=await api('design?profileId='+encode
 function showView(name){$('editor-shortcuts').hidden=name!=='editor';for(const view of ['editor','templates','brand','library'])$(view+'-view').hidden=view!==name;$('intro').hidden=name!=='editor';for(const b of document.querySelectorAll('nav button'))b.classList.toggle('selected',b.dataset.view===name);}
 for(const b of document.querySelectorAll('nav button'))b.onclick=()=>{showView(b.dataset.view);const menu=b.closest('.studio-tools');if(menu)menu.open=false;};
 function showTool(tool){
- if(!['material','style','captions','sound','media'].includes(tool))return;
- showView('editor');$('video-panel').hidden=false;$('material-panel').hidden=tool!=='material';$('adjustments-panel').hidden=tool==='material';
+ const tools=['material','style','music','sfx','captions','visuals','camera','mix'];
+ if(!tools.includes(tool))return;
+ showView('editor');
+ $('video-panel').hidden=false;
+ $('material-panel').hidden=tool!=='material';
+ $('adjustments-panel').hidden=tool==='material';
  $('style-tool-controls').hidden=tool!=='style';
- const active={style:'motion-settings',captions:'caption-settings',sound:'sound-settings',media:'image-settings'}[tool];
- for(const id of ['motion-settings','caption-settings','sound-settings','image-settings']){$(id).hidden=id!==active;if(id===active&&tool!=='style')$(id).open=true;}
- for(const button of document.querySelectorAll('[data-editor-tool]')){button.classList.toggle('active',button.dataset.editorTool===tool);button.setAttribute('aria-pressed',String(button.dataset.editorTool===tool));}
- $('adjustments-panel').querySelector('h2').textContent={style:'Estilo y estructura',captions:'Texto y elementos',sound:'Sonido',media:'Imágenes'}[tool]??'Ajustes';
+ const active={music:'music-settings',sfx:'sfx-settings',captions:'caption-settings',visuals:'visual-settings',camera:'camera-settings',mix:'mix-settings'}[tool];
+ for(const id of ['music-settings','sfx-settings','caption-settings','visual-settings','camera-settings','mix-settings']){
+   const section=$(id);section.hidden=id!==active;
+   if(id===active)section.open=true;
+ }
+ for(const button of document.querySelectorAll('[data-editor-tool]')){
+   const selected=button.dataset.editorTool===tool;
+   button.classList.toggle('active',selected);
+   button.setAttribute('aria-pressed',String(selected));
+ }
+ $('adjustments-panel').querySelector('h2').textContent={
+   style:'Edición y estructura',music:'Música',sfx:'Efectos de sonido',
+   captions:'Subtítulos',visuals:'Visuales',camera:'Cámara',mix:'Mezcla'
+ }[tool]??'Ajustes';
 }
 function showEditorStep(id){showTool(id==='material-panel'?'material':'style');}
 for(const button of document.querySelectorAll('[data-editor-tool]'))button.onclick=()=>showTool(button.dataset.editorTool);
