@@ -254,7 +254,8 @@ function elementControls(c,job){
     segments.append(button);
    }
   }
-  const has=captions.length>0;
+  const isMontage=player()===document.getElementById('video');
+  const has=captions.length>0&&isMontage&&!previewDirty;
   segments.hidden=!has;hint.hidden=!has;track.hidden=!has;
   const v=player(),time=v?.currentTime||0;
   for(const element of segments.children){const active=time>=Number(element.dataset.start)&&time<Number(element.dataset.end);element.classList.toggle('playing',active);element.setAttribute('aria-current',active?'true':'false');}
@@ -262,6 +263,8 @@ function elementControls(c,job){
  const watcher=new MutationObserver(sync);
  watcher.observe(document.getElementById('captions'),{childList:true,subtree:true,characterData:true});
  for(const v of [document.getElementById('video'),document.getElementById('source-video')]){v.addEventListener('timeupdate',sync);v.addEventListener('loadedmetadata',sync);}
+ for(const v of [document.getElementById('video'),document.getElementById('source-video')])new MutationObserver(sync).observe(v,{attributes:true,attributeFilter:['hidden','src']});
+ new MutationObserver(sync).observe(document.getElementById('state'),{childList:true,characterData:true,subtree:true});
  document.getElementById('timeline-scrub').addEventListener('input',sync);
  window.addEventListener('sues:plan-updated',sync);sync();
 })();
