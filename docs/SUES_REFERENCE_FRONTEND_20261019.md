@@ -54,3 +54,8 @@ Verificación: código remoto releído y anclajes identificados. Intento de clon
 Se ha activado una tarea diaria de continuidad. Cada ejecución recuperará primero el roadmap y el estado de GitHub, y sólo ejecutará operaciones seguras sin costes nuevos ni despliegues arriesgados no aprobados.
 
 Corrección incremental commit `2a8a2851ac98ff92496e598cf5fdca7b324a4b8d`: la pista de subtítulos del timeline se muestra únicamente en el montaje activo y cuando no hay cambios pendientes de previsualizar. Se observan cambios de vista de vídeo y de estado para evitar una pista falsa sobre el original. Sin pruebas Chromium o despliegue en este bloque. Próxima tarea: tests y validación de navegador antes de integración.
+
+## Bloque siguiente · controles reales de reproducción
+
+Commit UI: `b9dc0810ff60d59f80afb10039f5c179aa8c8150`.
+Se incorporan reproducir/pausar y saltos de ±5 segundos, enlazados al reproductor activo (original o montaje), con límites de duración y controles deshabilitados sin metadatos válidos. Se preserva la protección de exportación y la pista de subtítulos sólo en montaje vigente. Comprobación estática de cinco invariantes realizada a través del contenido remoto, todas presentes. No se ha ejecutado navegador, render ni pruebas de Node; el contenedor actual no resuelve github.com para clonación y el acceso a archivos se hizo mediante el conector. No fusionado ni desplegado.
