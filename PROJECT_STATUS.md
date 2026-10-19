@@ -1136,3 +1136,49 @@ fases cerradas. Hay UI/backend local persistente; no despliegue público ni E2E 
 Código, renders y pruebas en Work no equivalen a despliegue. No reinstalar runtime
 ni repetir ASR/MediaPipe por defecto. Supabase del Oráculo permanece separado.
 Fase5 sigue al80%, global48%; aceptación estética y V1 todavía pendientes.
+
+
+## Pretrabajo UI definitivo · 19/10/2026
+
+Rama aislada: feat/phase-8-editor-shell, basada en fd168dd2.
+No cambia motor, renderer, contratos existentes de producción ni VPS.
+
+Implementado en la rama:
+- rediseño visual dark premium con acento cian;
+- toolbar móvil ampliada a Vídeo / Edición / Música / SFX / Subtítulos / Visuales / Cámara / Mezcla;
+- controles existentes redistribuidos por tarea sin duplicar IDs ni inventar backend;
+- Música conserva pista/activación/ducking reales;
+- SFX conserva activación real;
+- Mezcla concentra gain real de música/SFX y muestra voz100% como lectura base;
+- Visuales agrupa motions + imágenes existentes;
+- Cámara expone intensidad de zoom existente;
+- botón visible pero desactivado «✨ Ajustar con IA» hasta que exista endpoint Director real;
+- contrato AI adjustment preview-first en src/ai-adjustment-contract.js;
+- contrato Music Journey multi-tramo en src/music-journey.js, con fallback de una sola cama;
+- fixtures/tests de Music Journey y regresión estática del shell.
+
+Commits del bloque:
+36f8e965b7d57c1797bbab80c9a9e629d6e988fc
+0a1b8a949fa4e1ec2e248fae19762cff1a563d49
+29e59b073b50922798d9bd333c816e35114cc4ab
+58b9d7e4fffcda84d8d5bf5e3af48443f71310d0
+dfeb5d2842ad4d166cd67574e05dbf878c6557bc
+6bab06e5f96b253ce584cf7760874b92473b9875
+1383b7695e5c3df00f4a9a4cefcacf804dac1ec5
+1b34d0e7d2f75f80cf680ac560a8f12ed1ea7187
+88ef27fafadda0eb0a29252e3ab456461b8c05a1
+946674a4eebfa31cae14f773ed1275b1c13ec907
+afca126cfba422f6aa9b2aacc019fe77affe66aa
+604bbb10d7f25a955c85cc75b6b981c8f7eaef6d
+
+Validación pendiente: esta rama no se ha levantado en navegador ni ha ejecutado npm test/check
+desde chat normal. No fusionar/desplegar hasta checkout + tests + QA móvil/escritorio.
+Look y Music Journey editable no se muestran como controles activos porque el backend real
+todavía no los ejecuta.
+
+Siguiente acción exacta para Work: checkout feat/phase-8-editor-shell, npm test, npm run check,
+levantar editor, QA 393x852 y escritorio, corregir regresiones, comparar visualmente con la
+propuesta aprobada y sólo entonces preparar PR hacia feat/phase-4-vision-camera.
+
+Coste externo: 0 USD. Necesito de Carlos: nada para validación técnica; opinión sólo cuando
+haya captura/QA navegable de esta rama.
