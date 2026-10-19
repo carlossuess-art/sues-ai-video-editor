@@ -1,3 +1,64 @@
+## Editor validado en navegador real · 19/10/2026
+
+Chromium145 local:24combinaciones = escritorio/móvil × CALMA/DOPAMIN × seis
+formatosELEMENTS. Guardar yrecargar conserva cada formato; sin desbordamiento
+horizontal a1440×1000 y393×852. Deshacer restaura huella yduplicar mantieneELEMENTS.
+DescargaTAR yrecuperación por selector dearchivo desdeUI conservan los ajustes.
+Render real desde proyecto recuperado:38,31s,DONE,decodePASS,fuenteintacta,
+Range206/1024bytes;controles deajuste bloqueados al terminar. Sin erroresJS.
+209testsNode/check y10pruebas simuladas dedesplieguePASS. Chrome/Playwright sólo
+herramientas locales opcionales; dependenciasdel servidor idénticas.
+Etiqueta antigua «tamaño doble» corregida a«Palabra importante»; sin cambiar look.
+Evidencia examples/preview/browser-integration.real-result.json yscript
+scripts/app/smoke_browser_real.mjs. Capturas/medios/cookies privados fuera deGit.
+Preparado para integrar PR3/PR4 enoficial;VPS sin modificar. Esta QA técnica no
+convierte la tarjetaFLOW detest enuna nueva entrega creativa aprobada.
+
+---
+## Muestra de profundidad aceptada y receta reutilizable · 19/10/2026
+
+Carlos: «Lo veo bien», referido a la comparación y muestra vertical de12s,
+SHA816d3bb6c1ea77b6048ed650e49b654c129d79626e766d59b9a3645c10d471a1.
+Se registra aceptación visual de esta composición/contornos; no aprobación sonora
+explícita ni segmentación automática/cuerpo completo, F6 o V1 global.
+
+Receta declarativa en examples/templates/reviewed-depth.recipe.json; etiquetas,
+transiciones, límites de capas y ganancias configurables para DOPAMIN/CALMA.
+Preparación DOPAMIN con la receta por defecto conserva manifest,ASS yfiltro
+idénticos byte a byte a la muestra aceptada. Identidad del estudio ahora incorpora
+plan/fuente/recursos/matte/fuentes/música/motor, en lugar de sólo el JSON de capas.
+209tests/checkPASS. Sin recodificar ni consumir servicios; oficial/VPS sin cambios.
+Siguiente: integración/revisión de controles en navegador, ampliar máscaras sólo
+con contornos revisados y continuar cobertura del catálogo. No reabrir esta opinión
+visual para una receta idéntica. PR4 sigue borrador dependiente de PR3.
+
+---
+## Composición tras sujeto · muestra para comparar · 19/10/2026
+
+FASE6en curso;sin porcentaje recalculado ni cierreV1. Rama
+feat/reviewed-subject-depth,basePR3/0d857ac. Nuevo compositor de recursos detrás
+de matte FFV1/gray ligado al original,hash/revisión/rangos/región,copia yaislamiento
+de subidas. Matting manual/asistido de región superior; NO cuerpo completo
+automático. Cinco ensayos locales no generalizan en manos/pared; se corrigen
+contornos a mano yse acota muestra0.25–1.4s y8.2–8.9s,hasta y1100.
+
+207testsNode/check/pycompile/diffPASS;FFmpeg prueba interior intacto/exterior
+visible yzona inferior protegida. Copia/restauración yguardas contra rutas
+anidadas fuera del paquete. Entrega12s1080×1920/30,H264/AAC,8275828bytes,
+SHA816d3bb6c1ea77b6048ed650e49b654c129d79626e766d59b9a3645c10d471a1;
+decodePASS,fuenteintacta,11framesrevisados. Rótulos editoriales,noASR/LLM.
+Comparativa12s sincronizada:libfile_375c09bd02208191a5e08aa1ec9369b4;
+vertical:libfile_e288cc7634488191b40a55117ab806fb;archivo técnico privado
+libfile_f8cfb62e98248191bdddb90283de42cf (NO recuperar desdeUI).
+Guía docs/SUES_REVIEWED_SUBJECT_LAYERS.md y evidencia JSON.
+
+Siguiente: Carlos compara profundidad ycontornos; tras su opinión,refinar/expandir
+los mismos recursos. Pendiente máscara corporal general,segmentación automática,
+DirectorLLM,navegador yaceptación sonora/visual. OpenCV opcional sóloensayoslocales,
+sin dependencias nuevasVPS,pesos,ASR,proveedores,pagos oLovable. Oficial/VPS sin
+cambios; no se presenta la prueba como montaje terminado.
+
+---
 ## Perfiles combinables verificados · 19/10/2026
 
 FASE 6/10 · Motion Library y composición; avances transversales F5/F7/F8.

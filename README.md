@@ -1,3 +1,6 @@
+> Recursos detrás del sujeto: [compositor, muestra y límites](docs/SUES_REVIEWED_SUBJECT_LAYERS.md).
+> Matte manual de región superior; cuerpo completo automático pendiente. Sin despliegue.
+
 > Perfiles combinables (19/10/2026): DOPAMIN experimental + CALMA conservada +
 > ELEMENTS (LIST/RANKING/COMPARE/REVEAL/Q&A/FLOW), con elecciones explícitas.
 > [Arquitectura, auditoría, catálogo y límites](docs/SUES_COMPOSABLE_PROFILES.md).

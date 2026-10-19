@@ -33,7 +33,7 @@ export function projectConfig(path){
 export function projectReady(path){
  try{
   const c=projectConfig(path),template=read(c.templatePath),brand=read(c.brandKitPath),family=template.captions.font??brand.fonts.primary,fontDirectory=resolveFontDirectory(c.fontDirectory,family);
-  return ['sourcePath','transcriptPath','cameraPath','visionPath','templatePath','brandKitPath','catalogPath',...(c.depthTextPath?['depthTextPath']:[])].every(k=>regular(c[k]))&&fontFiles(family).every(f=>regular(join(fontDirectory,f)));
+  return ['sourcePath','transcriptPath','cameraPath','visionPath','templatePath','brandKitPath','catalogPath',...(c.depthTextPath?['depthTextPath']:[]),...(c.subjectLayersPath?['subjectLayersPath']:[])].every(k=>regular(c[k]))&&fontFiles(family).every(f=>regular(join(fontDirectory,f)));
  }catch{return false;}
 }
 
@@ -80,7 +80,7 @@ export class VideoIntake{
   const templatePath=Object.values(this.profiles)[0];if(!templatePath)throw new Error('No CALMA template configured');
   const template=projectConfig(templatePath),dir=join(this.directory,'analysis-'+randomUUID());
   // A different upload does not inherit music chosen for another source.
-  delete template.backgroundAudio;delete template.illustrations;delete template.depthTextPath;
+  delete template.backgroundAudio;delete template.illustrations;delete template.depthTextPath;delete template.subjectLayersPath;
   mkdirSync(dir,{mode:0o700});
   let committed=false;
   try{

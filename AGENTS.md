@@ -144,3 +144,30 @@ DOPAMIN y los diseños ELEMENTS siguen experimentales. Mantener Montserrat y14/1
 posteriores; no restaurar2:1 por leer documentación histórica. No afirmar máscaras
 corporales automáticas, fondos/partículas/cadenas/candado/avatar completos.
 REA se evaluó documentalmente; no instalado ni necesario para este bloque.
+
+## Profundidad raster revisada · 19/10/2026
+
+Leer docs/SUES_REVIEWED_SUBJECT_LAYERS.md. Compositor tras sujeto integrado con
+matte vinculado aSHA,rangos yregión revisados;fuente full-frame sin cortes/zoom
+solapado. Muestra12s sólo región superior0.25–1.4 y8.2–8.9. EnsayosGrabCut/flow
+no sirven como cuerpo completo automático:contornos finales corregidos a mano,
+no afirmar detector o segmentación general. Rótulos editoriales,noASR.
+Carlos pidió ejecución autónoma hasta un punto concreto de opinión; comparación
+lista; aceptación visual posterior registrada abajo. No desplegar ni cerrarF6 por esta prueba.
+
+## Aceptación de muestra y reutilización · 19/10/2026
+
+Carlos: «Lo veo bien» sobre SUES_PROFUNDIDAD_REVISADA/comparativa12s,
+SHA816d3bb6c1ea77b6048ed650e49b654c129d79626e766d59b9a3645c10d471a1.
+Aceptación visual de esa composición/contornos; no ampliar a audio, automatización
+corporal ni cierre F6/V1. Mantener look aceptado. La receta explícita reutilizable
+vive en examples/templates/reviewed-depth.recipe.json; no inferir discurso/ASR.
+
+## QA navegador disponible · 19/10/2026
+
+Chromium145 local + Playwright opcional completan24combinaciones enescritorio/móvil,
+copia/recuperaciónUI yrender real. No repetir«Chromium ausente» como bloqueo vigente
+sincomprobar runtime/browser-tools. Ver smoke_browser_real.mjs y evidenciaJSON.
+El binario descargado por Playwrightv1234 estabaincompleto; Chrome oficial145 sí
+funciona. No añadir Chrome/Playwright a dependenciasVPS. QA técnica noes aceptación
+estética ni prueba delservidor remoto. VPSúltimoobservado sigueba972.
