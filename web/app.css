@@ -16,3 +16,21 @@ nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:40px}nav button{border-col
 input[type=number],input[type=text],input:not([type]){font:inherit;color:var(--text);background:#101820;border:1px solid var(--line);border-radius:8px;padding:10px;max-width:100%}.plan-review,#editorial-review{margin-top:20px}.plan-review summary,#editorial-review summary{cursor:pointer;font-size:15px}h3{font-size:16px}.small{font-size:13px}button,.button,select{font-size:14px}@media(max-width:700px){body{font-size:16px}label{font-size:15px}.small{font-size:14px}button,.button,select,textarea,.caption textarea,.caption button,input{font-size:16px;min-height:44px}.caption label{font-size:14px}.jobs button{font-size:14px;min-height:44px}h3{font-size:18px}.captions{max-height:650px}.badge{font-size:11px;white-space:normal;max-width:175px}header .brand{font-size:22px;letter-spacing:4px}.image-times{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}input[type=checkbox]{min-height:auto;width:20px;height:20px}.actions>*{flex:1 1 150px}.caption summary{font-size:16px}footer{font-size:13px}}
 
 .project-recovery{margin:20px 0;padding:16px;border:1px solid var(--line);border-radius:12px}.project-recovery summary{cursor:pointer;color:var(--gold);font-size:15px}.project-recovery input{width:100%;max-width:100%;margin:8px 0 14px}.project-recovery button,.project-recovery progress{width:100%}.project-recovery progress{accent-color:var(--gold);margin-top:12px}
+
+
+/* Keep secondary controls folded; all existing inputs remain in the document. */
+.studio-section{border-top:1px solid var(--line);margin-top:16px;padding-top:12px}
+.studio-section>summary{cursor:pointer;font-size:15px;line-height:1.5;color:var(--gold);padding:8px 0}
+.studio-section[open]>summary{margin-bottom:12px}
+.adjustment-actions{display:grid;gap:6px;margin:14px 0}
+.editor-shortcuts{display:none}
+#material-panel,#video-panel,#adjustments-panel{scroll-margin-top:72px}
+details.caption{border:1px solid var(--line);border-radius:8px;padding:10px}
+details.caption>summary{font-size:14px;line-height:1.5;cursor:pointer;overflow-wrap:anywhere}
+details.caption[open]>summary{margin-bottom:12px;color:var(--gold)}
+@media(max-width:700px){
+ .editor-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;position:sticky;top:0;z-index:10;background:var(--bg);padding:10px 0;margin-bottom:14px}
+ .editor-shortcuts button{min-height:44px;padding:10px 6px}
+ .studio-section>summary{font-size:16px;min-height:44px}
+ details.caption>summary{font-size:16px}
+}

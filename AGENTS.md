@@ -178,3 +178,11 @@ PR3/PR4 fusionados enoficial:releaseprobada7cbccb9bcd8c394106e22027ebfe284782e89
 árbol95561a9f5ee103c1c9a5d4e80369cf77d2e4807f. No tratar PR3/4 comopendientes.
 Guía deactualización fijada:docs/SUES_VERIFIED_RELEASE.md. VPSsin despliegue;
 DesktopCommander confirmó0dispositivos conectados. Noafirmar pruebas remotas.
+
+## VPS observado y menú compacto · 19/10/2026
+
+Captura156756.png acredita «El editor ya usa esta versión; sin reinicio» alcomprobar
+7cbccb9;Carlos confirma DOPAMIN/ELEMENTS enapp. No seguirafirmando ba972 comovigente.
+ExportaciónVPS sigue sinpruebaposterior. Menú largo rechazado porCarlos; agrupar
+ajustes secundarios ysubtítulos enplegables conservando funciones/valores. Accesos
+móviles Material/Ajustes/Vídeo. Ver examples/preview/compact-ui.real-result.json.

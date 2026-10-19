@@ -1,3 +1,25 @@
+## Panel compacto verificado · 19/10/2026
+
+Carlos confirma DOPAMIN yELEMENTS visibles enapp tras actualización; captura
+156756.png muestra «El editor ya usa esta versión; sin reinicio» para7cbccb9.
+VPSobservado ahora7cbccb9, reemplaza ba972 como últimoestado; exportación remota
+noacreditada. Carlos indica queelmenú esdemasiadolargo ydificulta encontrar cosas.
+
+Ajuste incremental deinterfaz:estilo/estructura yguardar/deshacer siemprevisibles;
+recursos,cámara,imágenes,sonido ysubtítulos enseccionesplegables. Cada subtítulo se
+abre individualmente; trabajosguardados tambiénplegados. ELEMENTS con etiquetas
+enespañol manteniendo valorespersistidos; al elegirformato seabre susección.
+Accesosmóviles fijos Material/Ajustes/Vídeo; sin alterar motordevídeo, tipografía,
+recetas ni ajustes guardados. ShellPWA v7 para renovar recursosinterfaz.
+
+Chromium145:24combinaciones escritorio/móvilPASS, guardar/recargar/deshacer/
+duplicar/copia/recuperaciónUI; sin erroresJS ni desbordamientohorizontal. Panel
+plegado774pxescritorio y800pxmóvil; accesoAjustes llegaalselector sinbúsquedalarga.
+209tests/checkPASS. No nueva recodificación: motor src/renderer sin cambios.
+Evidencia examples/preview/compact-ui.real-result.json. Rama detrabajo
+feat/compact-editor-controls; actualización deeste menú enVPS todavía pendiente.
+
+---
 ## Integración oficial y release verificada · 19/10/2026
 
 PR3 fusionado en8d120cfc9681933214b364df911ffe4fdebadb6b; PR4 fusionado en
