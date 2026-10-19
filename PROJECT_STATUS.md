@@ -1,3 +1,28 @@
+## Recorrido UX por tareas implementado · 19/10/2026
+
+Carlos pide diseño UX de alto nivel. La corrección del panel se amplía al recorrido
+Material → Edición → Resultado: sólo un panel visible, contexto y acción principal
+por tarea, navegación reversible, opciones del estudio fuera del flujo principal.
+Preparar/recuperar abre Edición; Generar guarda y abre Resultado; descarga al acabar.
+Ajustes secundarios plegados, subtítulos individuales y búsqueda con estado vacío.
+Texto sin guardar conservado entre pasos; indicador de cambios, sin falsos cambios
+al buscar. Botón Generar accesible en barra inferior móvil. Valores y motor intactos.
+Guía: docs/SUES_UX_FLOW.md. PR5 amplía el ajuste compacto; aún sin instalar en VPS.
+
+Chromium145:24 combinaciones escritorio/móvil × estilos × ELEMENTS PASS;
+guardar/recargar/deshacer/duplicar/copia/recuperación y render real38,31s,
+decodePASS, fuente intacta yRange206. Prueba adicional en móvil/escritorio:
+texto sin guardar, búsqueda/0resultados, tecladoEnter, una tarea visible,
+sin scroll horizontal. Botón principal nuevo genera un vídeo real, abre Resultado
+y habilita descarga;decodePASS yoriginalintacto.209tests/checkPASS.
+Evidencia guided-ux.real-result.json yux-navigation.real-result.json.
+
+VPS observado7cbccb9 por captura delactualizador yDOPAMIN/ELEMENTS visibles.
+Nueva UX local verificada; su despliegue remoto pendiente por falta de acceso.
+No se declara aceptación de usabilidad, mejora porcentual medida ni cierre F6/V1.
+Sin créditos externos, nuevos modelos/ASR/proveedores ni dependencias deproducción.
+
+---
 ## Panel compacto verificado · 19/10/2026
 
 Carlos confirma DOPAMIN yELEMENTS visibles enapp tras actualización; captura

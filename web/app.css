@@ -34,3 +34,25 @@ details.caption[open]>summary{margin-bottom:12px;color:var(--gold)}
  .studio-section>summary{font-size:16px;min-height:44px}
  details.caption>summary{font-size:16px}
 }
+
+
+/* A single task per step, with a persistent route back to the other tasks. */
+.workspace{display:block;max-width:820px;margin:0 auto}
+.intro{max-width:820px;margin:0 auto 20px}.intro h1{font:500 clamp(26px,4vw,36px)/1.2 system-ui;margin:0 0 10px}.intro p{margin:0}
+.editor-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;position:sticky;top:0;z-index:10;max-width:820px;margin:0 auto 20px;background:var(--bg);padding:10px 0}
+.editor-shortcuts button{min-height:48px;padding:10px 6px;color:var(--muted)}
+.editor-shortcuts button.active{border-color:var(--gold);background:#d7b56d15;color:var(--gold)}
+.workspace>.panel{width:100%}.adjustment-actions{grid-template-columns:1fr 1fr}
+.step-action{margin-top:24px;border-top:1px solid var(--line);padding-top:16px}.step-action .primary{width:100%;min-height:52px}
+#caption-search{width:100%;font:inherit;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text)}
+#step-title{scroll-margin-top:12px}.preview-wrap{min-height:260px}
+@media(max-width:700px){main{padding-top:20px}nav{margin-bottom:24px}.adjustment-actions button{padding:11px 6px}.intro h1{font-size:27px}.intro p{font-size:15px}.studio-section>summary{padding:12px 0}.workspace>.panel{padding:20px}.editor-shortcuts{margin-bottom:16px}}
+
+.studio-tools{max-width:820px;margin:0 auto 22px;text-align:right}.studio-tools>summary{cursor:pointer;font-size:14px;color:var(--muted);padding:8px 0}.studio-tools nav{margin-top:12px;text-align:left}
+@media(max-width:700px){
+ .editor-shortcuts button{font-size:14px;white-space:nowrap}
+ #adjustments-panel{padding-bottom:120px}
+ #adjustments-panel .step-action{position:fixed;bottom:0;left:0;right:0;z-index:15;background:var(--panel);border-top:1px solid var(--line);padding:10px 16px max(12px,env(safe-area-inset-bottom));margin:0;box-shadow:0 -10px 30px #0003}
+ .step-action p{margin:0 0 6px;font-size:12px}.step-action .primary{min-height:48px}
+ .studio-tools{margin-bottom:18px}.studio-tools nav{margin-bottom:0}
+}

@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "browser": "145.0.7632.6",
+  "checks": [
+    {
+      "device": "mobile",
+      "singleTaskVisible": true,
+      "unsavedTextPreservedAcrossSteps": true,
+      "searchAndEmptyState": true,
+      "searchDoesNotMarkDirty": true,
+      "keyboardNativeButtons": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "singleTaskVisible": true,
+      "unsavedTextPreservedAcrossSteps": true,
+      "searchAndEmptyState": true,
+      "searchDoesNotMarkDirty": true,
+      "keyboardNativeButtons": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "primaryGenerateButton": true,
+      "resultStepAutomatic": true,
+      "realRender": "DONE",
+      "downloadVisible": true,
+      "fullDecode": "pass",
+      "sourcePreserved": true
+    }
+  ],
+  "pageErrors": [],
+  "externalCostUSD": 0,
+  "nodeTests": 209,
+  "humanUsabilityAcceptance": false
+}

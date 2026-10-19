@@ -18,13 +18,13 @@ try{
  for(const [device,viewport] of [['desktop',{width:1440,height:1000}],['mobile',{width:393,height:852}]]){
   const context=await browser.newContext({viewport,locale:'es-ES',acceptDownloads:true}),page=await context.newPage();page.on('pageerror',e=>pageErrors.push(e.message));
   const idle=async()=>{await page.waitForFunction(()=>!working);const err=await page.locator('#error').evaluate(e=>e.hidden?'':e.textContent);assert.equal(err,'');};
-  const reveal=async selector=>{await page.locator(selector).first().evaluate(e=>{for(let p=e.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;});};
+  const reveal=async selector=>{const section=await page.locator(selector).first().evaluate(e=>e.closest('#material-panel,#adjustments-panel,#video-panel')?.id);if(section)await page.evaluate(id=>showEditorStep(id),section);await page.locator(selector).first().evaluate(e=>{for(let p=e.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;});};
   const click=async selector=>{await reveal(selector);await page.click(selector);await idle();};
   await page.goto(launch);await page.waitForFunction(()=>document.querySelector('#queue-summary').textContent.includes('en proceso'));await page.waitForFunction(()=>document.querySelector('#profile').options.length>0&&design!==null);await idle();
   assert.equal(await page.evaluate(()=>location.hash),'');
   if(await page.locator('#style-id').isDisabled())await click('#duplicate');
   for(const styleId of ['SUES_CALMA','SUES_DOPAMIN']){
-   await page.selectOption('#style-id',styleId);await click('#create');
+   await click('#create');await page.selectOption('#style-id',styleId);await click('#save');
    await reveal('#zoom');await page.locator('#zoom').fill('0');await reveal('#profile-images');await page.uncheck('#profile-images');await click('#save');
    const range=await page.evaluate(()=>{const first=plan.manifest.captions.find(c=>c.start>=2&&c.end<=plan.manifest.duration-5);const last=plan.manifest.captions.find(c=>c.start>=first.start&&c.end-first.start>=2&&c.end-first.start<=4);return {first:first.id,last:last.id};});
    for(const format of ['LIST','RANKING','COMPARE','REVEAL','Q&A','FLOW']){
@@ -42,19 +42,19 @@ try{
   const original=await page.evaluate(()=>current.id);await click('#duplicate');assert.notEqual(await page.evaluate(()=>current.id),original);assert.equal(await page.locator('#elements-format').inputValue(),'FLOW');
   await page.screenshot({path:join(out,device+'-elements.png'),fullPage:true});
   if(device==='desktop'){
-   await click('#backup');assert.equal(await page.locator('#backup-download').isVisible(),true);
+   await click('#backup');await reveal('#backup-download');assert.equal(await page.locator('#backup-download').isVisible(),true);
    const downloadEvent=page.waitForEvent('download');await page.click('#backup-download');const download=await downloadEvent,tar=join(out,'browser-project.tar');await download.saveAs(tar);
-   await page.locator('.project-recovery').evaluate(e=>e.open=true);await page.locator('#recovery-file').setInputFiles(tar);await click('#recover-project');assert.match(await page.locator('#recovery-status').textContent(),/recuperado/);assert.equal(await page.locator('#elements-format').inputValue(),'FLOW');
+   await reveal('#recovery-file');await page.locator('.project-recovery').evaluate(e=>e.open=true);await page.locator('#recovery-file').setInputFiles(tar);await click('#recover-project');assert.match(await page.locator('#recovery-status').textContent(),/recuperado/);assert.equal(await page.locator('#elements-format').inputValue(),'FLOW');
    if(!process.env.SUES_BROWSER_SKIP_RENDER){await click('#render');await page.waitForFunction(()=>current?.state==='DONE'||current?.state==='FAILED',{},{timeout:900000});await idle();assert.equal(await page.evaluate(()=>current.state),'DONE');assert.equal(await page.locator('#elements-format').isDisabled(),true);
    const audit=await page.evaluate(()=>api('jobs/'+current.id+'/audit'));assert.equal(audit.fullDecode,'pass');assert.equal(audit.sourcePreserved,true);
    const rangeStatus=await page.evaluate(async()=>{const r=await fetch('/api/jobs/'+current.id+'/media',{headers:{Range:'bytes=0-1023'}});return {status:r.status,bytes:(await r.arrayBuffer()).byteLength};});assert.deepEqual(rangeStatus,{status:206,bytes:1024});
    const media=await app.jobs.media(await page.evaluate(()=>current.id));checks.push({device,backupDownloaded:true,recoveryThroughFileInput:true,settingsPreserved:true,realRender:'DONE',fullDecode:'pass',sourcePreserved:true,range:206,videoSha256:fileSha256(media)});}
   }
   // Measure the compact view after folding optional controls; folding must not alter settings.
-  const folding=await page.evaluate(()=>{const before=JSON.stringify(current.settings);for(const e of document.querySelectorAll('details'))e.open=false;return {unchanged:before===JSON.stringify(current.settings),height:document.querySelector('#adjustments-panel').getBoundingClientRect().height,openDetails:document.querySelectorAll('details[open]').length};});
-  assert.equal(folding.unchanged,true);assert.equal(folding.openDetails,0);assert.ok(folding.height<1100,JSON.stringify(folding));
+  await reveal('#style-id');const folding=await page.evaluate(()=>{const before=JSON.stringify(current.settings);for(const e of document.querySelectorAll('details'))e.open=false;return {unchanged:before===JSON.stringify(current.settings),height:document.querySelector('#adjustments-panel').getBoundingClientRect().height,openDetails:document.querySelectorAll('details[open]').length};});
+  assert.equal(folding.unchanged,true);assert.equal(folding.openDetails,0);assert.ok(folding.height<1300,JSON.stringify(folding));
   if(device==='mobile')await page.click('[data-editor-section="adjustments-panel"]');
-  if(device==='mobile'){await page.waitForFunction(()=>document.querySelector('#adjustments-panel').getBoundingClientRect().top>=0&&document.querySelector('#adjustments-panel').getBoundingClientRect().top<180);assert.equal(await page.locator('#style-id').isVisible(),true);}
+  if(device==='mobile'){await page.waitForFunction(()=>!document.querySelector('#adjustments-panel').hidden);assert.equal(await page.locator('#style-id').isVisible(),true);}
   await page.screenshot({path:join(out,device+'-compact.png'),fullPage:true});checks.push({device,compactPanelHeight:Math.round(folding.height),foldingPreservesSettings:true});
   await context.close();
  }
