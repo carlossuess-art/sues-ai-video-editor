@@ -1,3 +1,50 @@
+## Recorrido UX por tareas implementado · 19/10/2026
+
+Carlos pide diseño UX de alto nivel. La corrección del panel se amplía al recorrido
+Material → Edición → Resultado: sólo un panel visible, contexto y acción principal
+por tarea, navegación reversible, opciones del estudio fuera del flujo principal.
+Preparar/recuperar abre Edición; Generar guarda y abre Resultado; descarga al acabar.
+Ajustes secundarios plegados, subtítulos individuales y búsqueda con estado vacío.
+Texto sin guardar conservado entre pasos; indicador de cambios, sin falsos cambios
+al buscar. Botón Generar accesible en barra inferior móvil. Valores y motor intactos.
+Guía: docs/SUES_UX_FLOW.md. PR5 amplía el ajuste compacto; aún sin instalar en VPS.
+
+Chromium145:24 combinaciones escritorio/móvil × estilos × ELEMENTS PASS;
+guardar/recargar/deshacer/duplicar/copia/recuperación y render real38,31s,
+decodePASS, fuente intacta yRange206. Prueba adicional en móvil/escritorio:
+texto sin guardar, búsqueda/0resultados, tecladoEnter, una tarea visible,
+sin scroll horizontal. Botón principal nuevo genera un vídeo real, abre Resultado
+y habilita descarga;decodePASS yoriginalintacto.209tests/checkPASS.
+Evidencia guided-ux.real-result.json yux-navigation.real-result.json.
+
+VPS observado7cbccb9 por captura delactualizador yDOPAMIN/ELEMENTS visibles.
+Nueva UX local verificada; su despliegue remoto pendiente por falta de acceso.
+No se declara aceptación de usabilidad, mejora porcentual medida ni cierre F6/V1.
+Sin créditos externos, nuevos modelos/ASR/proveedores ni dependencias deproducción.
+
+---
+## Panel compacto verificado · 19/10/2026
+
+Carlos confirma DOPAMIN yELEMENTS visibles enapp tras actualización; captura
+156756.png muestra «El editor ya usa esta versión; sin reinicio» para7cbccb9.
+VPSobservado ahora7cbccb9, reemplaza ba972 como últimoestado; exportación remota
+noacreditada. Carlos indica queelmenú esdemasiadolargo ydificulta encontrar cosas.
+
+Ajuste incremental deinterfaz:estilo/estructura yguardar/deshacer siemprevisibles;
+recursos,cámara,imágenes,sonido ysubtítulos enseccionesplegables. Cada subtítulo se
+abre individualmente; trabajosguardados tambiénplegados. ELEMENTS con etiquetas
+enespañol manteniendo valorespersistidos; al elegirformato seabre susección.
+Accesosmóviles fijos Material/Ajustes/Vídeo; sin alterar motordevídeo, tipografía,
+recetas ni ajustes guardados. ShellPWA v7 para renovar recursosinterfaz.
+
+Chromium145:24combinaciones escritorio/móvilPASS, guardar/recargar/deshacer/
+duplicar/copia/recuperaciónUI; sin erroresJS ni desbordamientohorizontal. Panel
+plegado774pxescritorio y800pxmóvil; accesoAjustes llegaalselector sinbúsquedalarga.
+209tests/checkPASS. No nueva recodificación: motor src/renderer sin cambios.
+Evidencia examples/preview/compact-ui.real-result.json. Rama detrabajo
+feat/compact-editor-controls; actualización deeste menú enVPS todavía pendiente.
+
+---
 ## Integración oficial y release verificada · 19/10/2026
 
 PR3 fusionado en8d120cfc9681933214b364df911ffe4fdebadb6b; PR4 fusionado en
