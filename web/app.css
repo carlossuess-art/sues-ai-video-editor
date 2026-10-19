@@ -214,3 +214,58 @@ input[type=range]{accent-color:var(--cyan)}
  .player-selector{justify-content:center}
  .player-selector #player-label{flex-basis:100%;text-align:center}
 }
+
+
+/* Phase 8 task toolbar: real controls only, horizontally scrollable on mobile. */
+.editor-shortcuts{
+ grid-template-columns:repeat(8,minmax(82px,1fr))!important;
+ overflow-x:auto;
+ overscroll-behavior-inline:contain;
+ scrollbar-width:none;
+}
+.editor-shortcuts::-webkit-scrollbar{display:none}
+.editor-shortcuts button{white-space:nowrap}
+.ai-adjust{
+ border-color:#755fd6;
+ color:#cbbfff;
+ background:#755fd614;
+}
+.ai-adjust:disabled{
+ opacity:.68;
+ cursor:not-allowed;
+}
+.mix-readonly{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:12px;
+ padding:12px 14px;
+ margin:10px 0 14px;
+ border:1px solid var(--line);
+ border-radius:12px;
+ background:#071018;
+}
+.mix-readonly span{color:var(--muted)}
+.mix-readonly strong{color:var(--cyan)}
+.tool-section[open]{padding-bottom:8px}
+
+@media(max-width:700px){
+ .tool-panel .editor-shortcuts{
+   display:flex!important;
+   gap:4px;
+   overflow-x:auto;
+   scroll-snap-type:x proximity;
+ }
+ .tool-panel .editor-shortcuts button{
+   flex:0 0 78px;
+   scroll-snap-align:start;
+   padding:7px 5px;
+   white-space:normal;
+ }
+ .stage .actions{
+   grid-template-columns:1fr 1fr;
+ }
+ #ai-adjust{
+   grid-column:1/-1;
+ }
+}
