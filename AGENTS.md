@@ -132,3 +132,15 @@ smoke real38,31s con reinicio/reintento, integridad y Range206. Leer
 docs/SUES_PROJECT_RECOVERY.md. Copia privada enLibrary; no ponerla enGit.
 Actualizador de sóloeditor preparado y simulado, NO ejecutadoVPS. Motor instalado
 sigueba972 hasta comprobar otra captura. Nada de nuevos modelos/ASR ni cierreV1.
+
+## Perfiles combinables · decisión de Carlos · 19/10/2026
+
+DOPAMIN es la referencia maestra Keanu de alta intensidad; CALMA comparte base
+y aproximadamente50% de intensidad/frecuencia, conservando su trabajo validado.
+ELEMENTS es una estructura combinable con ambos: LIST,RANKING,COMPARE,REVEAL,Q&A,FLOW.
+Leer docs/SUES_COMPOSABLE_PROFILES.md para cobertura y límites. La implementación
+inicial es explícita por rangos de captions, no detección semántica automática.
+DOPAMIN y los diseños ELEMENTS siguen experimentales. Mantener Montserrat y14/12
+posteriores; no restaurar2:1 por leer documentación histórica. No afirmar máscaras
+corporales automáticas, fondos/partículas/cadenas/candado/avatar completos.
+REA se evaluó documentalmente; no instalado ni necesario para este bloque.

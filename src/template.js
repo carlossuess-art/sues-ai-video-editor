@@ -3,7 +3,7 @@ import {validateBrandKit} from './brand-kit.js';
 const assert=(ok,msg)=>{if(!ok)throw new Error(msg);};
 const num=x=>typeof x==='number'&&Number.isFinite(x);
 
-export const STYLE_IDS=Object.freeze(['SUES_CALMA','SUES_IMPACTO','SUES_EXPLICA','SUES_HISTORIA']);
+export const STYLE_IDS=Object.freeze(['SUES_CALMA','SUES_DOPAMIN','SUES_IMPACTO','SUES_EXPLICA','SUES_HISTORIA']);
 
 export function validateTemplate(t,brand){
   validateBrandKit(brand);

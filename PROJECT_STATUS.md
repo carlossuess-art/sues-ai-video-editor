@@ -1,3 +1,46 @@
+## Perfiles combinables verificados · 19/10/2026
+
+FASE 6/10 · Motion Library y composición; avances transversales F5/F7/F8.
+Progreso fase/global: no recalculado; las estimaciones anteriores retiradas no
+se recuperan por cantidad de componentes ni por QA. F6 sigue abierta; no V1.
+Rama de este bloque: feat/composable-editing-profiles.
+Base oficial verificada:78f38fb1f47f4bfa279904fe6199cc29d9df9030.
+
+DOPAMIN añadido como perfil experimental de referencia maestra Keanu. CALMA se
+conserva por defecto, con intensidad/frecuencia relativas0,5; presupuestos de zoom
+y entradas más rápidas enDOPAMIN, sin efectos periódicos ni cortes de voz. ELEMENTS
+se combina con ambos mediante LIST,RANKING,COMPARE,REVEAL,Q&A,FLOW: uno a diez
+bloques por rangos de captions, dos columnas, preguntas/respuestas, numeración y
+progreso. Copia/selección explícitas; no detección semántica automática. Paneles
+cubren intencionalmente el plano, no fingen recorte corporal. Controles enUI/API,
+SFXopt-in, evidencia, límites, deshacer y recuperación existentes reutilizados.
+
+Auditoría y catálogo de huecos:docs/SUES_COMPOSABLE_PROFILES.md. REA, Captions,
+AfterEffects yCapCut evaluados con documentación primaria; no se instalaREA ni
+se integra unaAPI supuesta. Sin nuevos modelos,ASR,proveedores,Lovable o cargos.
+
+Validación:199tests baseline;203tests finalesPASS,check ydiffcheckPASS.
+12combinaciones preparadas con vídeo/análisis reales,75/75palabras. Un render
+final DOPAMIN+COMPARE víaAPI/worker:38,31s,32captions,1elemento,0zooms por ajuste
+explícito,1intento,DONE,original intacto,decodePASS,Range206. Guardado/deshacer y
+copia/restauración conASS/filtro idénticos. SHAfinal
+6a19c534b7d3f17815479cab158eb35868cd83e07c5ff64c82a5ae93000b23aa.
+Comparación CALMA anterior78f38fb vs motor nuevo con mismo proyecto/ajustes:
+ASS y filtro de vídeo/audio idénticos byte a byte,31captions/75palabras.
+QA interna6formatos y5frames del render final; sin escucha humana ni QA navegador
+(Chromiumausente,no descarga). Muestra técnica con etiquetasQA,no entrega creativa
+ni aceptación deCarlos. Medios privados fuera deGit; evidencia compacta en
+examples/preview/composable-profiles.real-result.json.
+
+Siguiente acción exacta: revisar/afinar diseños y extracción semántica deELEMENTS
+sobre una locución estructurada, completar máscara corporal/efectos ausentes del
+catálogo, validar nuevaUI en navegador y después release fija enVPS. Despliegue
+no realizado: sigue últimoestado observadoba972,con actualización previa preparada.
+Bloqueos: sinChromiumlocal ni máscaraautomática instalada. Necesito deCarlos:
+nada para continuar código; valoración de ejemplo real antes de aceptaciónestética.
+NoWhatsApp,Caddy,DNS ni producción modificados. No se cierraF6/V1.
+
+---
 ## Recuperación completa verificada en Work · 19/10/2026
 
 App permite recuperar TAR privado con vídeo/análisis/fuentes/medios/ajustes,

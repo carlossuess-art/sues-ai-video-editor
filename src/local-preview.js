@@ -1,3 +1,4 @@
+import {drawElements} from './elements.js';
 import {renderAudioFilters} from './sound-effects.js';
 import {technicalPaperFilters} from './technical-paper.js';
 import {drawGraphicBlocks,globalTransitionFilters} from './graphic-blocks.js';
@@ -93,6 +94,7 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   if(plan.policy.captions.font==='Montserrat')out=out.replace(',-1,0,0,0,100,100,0,0,1,2,1,5,120,180,0,1',',700,0,0,0,100,100,0,0,1,0,0,5,120,180,0,1');
   const event=(layer,start,end,style,text)=>{out+=`Dialogue: ${layer},${timestamp(start)},${timestamp(end)},${style},,0,0,0,,${text}\n`;};
   drawDepthText(plan,event,safeText,assColor);
+  drawElements(plan,event,safeText,assColor);
   for(const c of plan.captions){
     const white=assColor((plan.graphics??[]).some(g=>g.type!=='secret'&&c.start>=g.start-1e-6&&c.end<=g.end+1e-6)?plan.renderColors.dark:plan.policy.captions.color);
     const focus=c.source!=='manual'&&(plan.semantic?.motions??[]).find(m=>m.backgroundTreatment&&c.start>=m.start-1e-6&&c.end<=m.end+1e-6&&c.wordIndexes.every(index=>(m.evidence?.sourceWordIndexes??[]).includes(index)));if(focus||(plan.graphics??[]).some(g=>g.replacedCaptionIds?.includes(c.id)||!g.heading&&!g.bodyLines&&g.type!=='compare'&&g.captionId===c.id&&g.text===c.text))continue;

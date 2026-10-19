@@ -1,3 +1,8 @@
+> Perfiles combinables (19/10/2026): DOPAMIN experimental + CALMA conservada +
+> ELEMENTS (LIST/RANKING/COMPARE/REVEAL/Q&A/FLOW), con elecciones explícitas.
+> [Arquitectura, auditoría, catálogo y límites](docs/SUES_COMPOSABLE_PROFILES.md).
+> No desplegado en VPS; consultar PROJECT_STATUS.md y la rama oficial vigente.
+
 > CALMA · 18/10/2026: referencia prioritaria Keanu/deckeanu, grupos de1–3 palabras,
 > Inter como aproximación visual, foco desenfocado y nueva prueba con música ambiental.
 > [Estado y límites](docs/SUES_CALMA_KEANU_REFERENCE.md). Aceptación estética y VPS pendientes.

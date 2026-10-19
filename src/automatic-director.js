@@ -1,4 +1,5 @@
-import {STYLE_VARIANTS} from './style-variants.js';
+import {validateElements} from './elements.js';
+import {STYLE_VARIANTS,visualProfile} from './style-variants.js';
 import {validateMotionChoices} from './motion-overlays.js';
 import {validateGraphicSettings} from './graphic-blocks.js';
 import {validateKeywordOverrides} from './text-presets.js';
@@ -13,7 +14,8 @@ const LEXICON=new Map([
 ]);
 export function validateEditorSettings(settings={}){
  assert(settings&&typeof settings==='object'&&!Array.isArray(settings),'settings object');
- assert(Object.keys(settings).every(k=>['sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','profileImages','styleId'].includes(k)),'unknown setting');
+ assert(Object.keys(settings).every(k=>['sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','profileImages','styleId','elements'].includes(k)),'unknown setting');
+ validateElements(settings.elements);
  const value={sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
  assert(typeof value.sfxEnabled==='boolean'&&Number.isFinite(value.sfxGain)&&value.sfxGain>=0&&value.sfxGain<=.7,'sfx settings');
  assert(Number.isFinite(value.zoomIntensity)&&value.zoomIntensity>=0&&value.zoomIntensity<=1,'zoomIntensity 0..1');
@@ -65,11 +67,11 @@ export function buildAutomaticDirector({transcript,template,brand,camera,setting
   }
  }
  candidates.sort((a,b)=>b.score-a.score||a.start-b.start||a.sourceWordIndexes[0]-b.sourceWordIndexes[0]);
- const decisions=[],chosen=[],limit=Math.min(3,Math.floor(transcript.sourceDuration/15));
+ const profile=visualProfile(template.id),decisions=[],chosen=[],limit=Math.min(profile.maxZoomEvents,Math.floor(transcript.sourceDuration/profile.secondsPerZoom));
  if(limit>0&&options.zoomIntensity>0&&scale>=policy.camera.baseZoom){
   for(const c of candidates){
    const start=c.start,end=Math.min(cutoff,Math.max(c.end,start+2.4));
-   if(end-start<2.4-1e-6||chosen.some(e=>start<e.end+2&&end>e.start-2))continue;
+   if(end-start<2.4-1e-6||chosen.some(e=>start<e.end+profile.zoomGap&&end>e.start-profile.zoomGap))continue;
    chosen.push({start,end});
    decisions.push({type:'zoom',start,end,reason:`Coincidencia léxica en locución: ${c.hits.map(h=>h.token).join(', ')}`,rule:'calma-lexical-v1',params:{scale,ramp:Math.min(1,(end-start)/2),reason:c.hits[0].kind},evidence:{...c,method:'spanish-lexicon-not-llm',timing:'existing-word-timestamps'}});
    if(chosen.length>=limit)break;
@@ -81,5 +83,5 @@ export function buildAutomaticDirector({transcript,template,brand,camera,setting
  }
  decisions.sort((a,b)=>a.start-b.start||a.end-b.end);
  return {version:'1.0',templateId:template.id,timeSpace:'edit-timeline',selection:'offline-lexical-baseline-v1',decisions,segments,
-  audit:{method:'deterministic Spanish lexical baseline; not LLM semantic understanding',sourceWords:transcript.words.length,mappedWords:mapped.words.length,omittedWords:0,cutsRemoved:0,externalCostUSD:0,candidates:candidates.length,uncertainWordIndexes:transcript.words.flatMap((w,i)=>w.timingUncertain?[i]:[]),settings:options}};
+  audit:{method:'deterministic Spanish lexical baseline; not LLM semantic understanding',sourceWords:transcript.words.length,mappedWords:mapped.words.length,omittedWords:0,cutsRemoved:0,externalCostUSD:0,visualProfile:profile,candidates:candidates.length,uncertainWordIndexes:transcript.words.flatMap((w,i)=>w.timingUncertain?[i]:[]),settings:options}};
 }
