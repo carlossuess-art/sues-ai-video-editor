@@ -93,3 +93,30 @@ Después separar Música/SFX/Mezcla y Cámara sólo cuando existan endpoints/est
 suficientes para no presentar controles decorativos.
 
 No despliegue automático desde esta rama.
+
+
+## Ajustar con IA · prompt contextual
+
+Añadir un botón visible pero secundario: **✨ Ajustar con IA**.
+
+No sustituye los controles directos. Sirve para cambios difíciles de expresar con sliders
+o para varias decisiones coordinadas, por ejemplo:
+- «haz este tramo más reflexivo y baja la música»;
+- «cambia este recurso por algo más natural»;
+- «desde aquí hasta el final reduce la intensidad de efectos»;
+- «haz los subtítulos menos agresivos en esta parte».
+
+El prompt debe poder aplicarse a:
+- todo el vídeo;
+- el instante actual;
+- un rango seleccionado;
+- la herramienta abierta (Música, SFX, Subtítulos, Visuales, Cámara, Look o Mezcla).
+
+Flujo obligatorio:
+prompt → propuesta estructurada → nueva preview → usuario decide → exportar.
+Nunca prompt → sobrescribir/exportar directamente.
+
+Contrato: src/ai-adjustment-contract.js.
+La versión anterior se conserva y Deshacer debe poder recuperarla.
+No activar el botón en producción hasta que exista un Director/endpoint real que convierta
+la petición en cambios estructurados y validables.
