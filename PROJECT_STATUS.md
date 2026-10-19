@@ -1,7 +1,9 @@
 ## Misión Work · frontend de referencia · 19/10/2026
 
 Auditoría desde aa6e7c246a8de811ac2329d87936e9e84f091e9e; base oficial
-fd168dd2b7ff5817be89ee28d8e654e792002fab. Integración por PR reversible.
+fd168dd2b7ff5817be89ee28d8e654e792002fab. PR7 fusionada sin conflictos:
+1178f9c10cff7b1c38ac8e8aa196a034dd4d8c9c, árbol probado
+3c995c16cf18159b0ff78b045978d93d5117eb8e. Integración reversible.
 Guía y evidencia vigente: docs/SUES_WORK_VALIDATION_20261019.md.
 Frontend noche/cian, reproductor persistente, seis herramientas con iconos,
 timeline real y exportación del MP4 previsualizado. QA local en Chromium145,

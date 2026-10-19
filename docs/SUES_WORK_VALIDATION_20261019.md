@@ -7,6 +7,12 @@ ninguna de ambas ramas. El Roadmap contiene además una rama distinta
 `feat/phase-8-editor-shell`; sus contratos Music Journey/IA no se mezclan con
 este frontend ni se presentan como funcionalidades ejecutadas.
 
+PR7 integrada: https://github.com/carlossuess-art/sues-ai-video-editor/pull/7
+Release verificada: `1178f9c10cff7b1c38ac8e8aa196a034dd4d8c9c`.
+Árbol: `3c995c16cf18159b0ff78b045978d93d5117eb8e`, idéntico al probado.
+Merge sin conflictos. Después del merge: 211tests/check y 12pruebas Python PASS.
+Las modificaciones documentales posteriores no cambian el código probado.
+
 ## Cambios de la auditoría
 
 - Reproductor permanente y estética noche/cian del frontend recibido.
@@ -86,7 +92,7 @@ El checksum histórico 903881… corresponde a releases anteriores.
 Procedimiento autorizado para cuando haya acceso:
 
 1. Inventariar sólo editor, commit, mounts, imagen, espacio y estado de cola.
-2. Usar `python3 scripts/deploy/update_service.py COMMIT40_VERIFICADO` desde la
+2. Usar `python3 scripts/deploy/update_service.py 1178f9c10cff7b1c38ac8e8aa196a034dd4d8c9c` desde la
    release exacta publicada, tras comprobar el SHA del actualizador.
 3. El script comprueba salud/sesión, ausencia de renders/cola/guardado/copias,
    mismo lock de dependencias y doctor con el runtime existente.
