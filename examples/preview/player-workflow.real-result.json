@@ -1,0 +1,79 @@
+{
+  "version": "1.0",
+  "browser": "145.0.7632.6",
+  "checks": [
+    {
+      "device": "desktop",
+      "localSelectionPlays": true,
+      "uploadPlays": true,
+      "uploadSurvivesReload": true,
+      "unknownUploadDoesNotInheritTranscript": true,
+      "toolsKeepPlayerVisible": true,
+      "previewActuallyPlays": true,
+      "exportBlockedBeforePreviewAndAfterChanges": true,
+      "exportMatchesPreviewSha256": "41ff92d3928bf7c37f35d1708066df7dfbd7dc5c3047e5f90ecbdb6d285f013e",
+      "exportDoesNotRenderAgain": true,
+      "updatedPreviewCreatesNewVersion": true,
+      "fullDecode": "pass",
+      "sourcePreserved": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "localSelectionPlays": true,
+      "uploadPlays": true,
+      "uploadSurvivesReload": true,
+      "unknownUploadDoesNotInheritTranscript": true,
+      "toolsKeepPlayerVisible": true,
+      "previewActuallyPlays": true,
+      "exportBlockedBeforePreviewAndAfterChanges": true,
+      "exportMatchesPreviewSha256": "41ff92d3928bf7c37f35d1708066df7dfbd7dc5c3047e5f90ecbdb6d285f013e",
+      "exportDoesNotRenderAgain": true,
+      "updatedPreviewCreatesNewVersion": false,
+      "fullDecode": "pass",
+      "sourcePreserved": true,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "pageErrors": [],
+  "externalCostUSD": 0,
+  "kind": "local-video-playback-preview-and-export-test",
+  "sourceSha256": "8c9cba65a27efe019a5cdd7fe08557924b142f2babe00f2cb23de311cb4d7edb",
+  "nodeTests": 211,
+  "deploymentSimulationTests": 10,
+  "sourceSwitchRegression": [
+    {
+      "device": "desktop",
+      "sourceChangeClearsExistingTranscript": true,
+      "reloadKeepsNewUnanalysedSource": true,
+      "localAndServerOriginalPlayback": true,
+      "knownUploadReady": true
+    },
+    {
+      "device": "mobile",
+      "sourceChangeClearsExistingTranscript": true,
+      "reloadKeepsNewUnanalysedSource": true,
+      "localAndServerOriginalPlayback": true,
+      "knownUploadReady": true
+    }
+  ],
+  "groupingRegression": [
+    {
+      "device": "desktop",
+      "styleReplansBeforeElementSelection": true,
+      "undoRestoresUnsavedCaption": true,
+      "elementsNotSilentlyDiscarded": true
+    },
+    {
+      "device": "mobile",
+      "styleReplansBeforeElementSelection": true,
+      "undoRestoresUnsavedCaption": true,
+      "elementsNotSilentlyDiscarded": true
+    }
+  ],
+  "syntheticSource": true,
+  "newASR": false,
+  "liveVPSAuthenticatedReview": false,
+  "demoLibraryFileId": "libfile_99fa6c00ec9c81919386a02db5dc7106",
+  "humanUsabilityAcceptance": false
+}

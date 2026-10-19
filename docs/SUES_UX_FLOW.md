@@ -1,3 +1,6 @@
+> Estado histórico: el19/10 Carlos pidió después reproductor persistente y
+> previsualización antes de exportar. Prevalece SUES_PLAYER_PREVIEW_EXPORT.md.
+
 # Recorrido de edición · 19/10/2026
 
 Carlos pide una experiencia clara y de alto nivel, después de no poder encontrar

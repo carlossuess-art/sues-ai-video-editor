@@ -4,7 +4,7 @@ import {fontCatalog,fontDownload} from './font-catalog.js';
 import {MediaLibrary} from './media-library.js';
 import {GRAPHIC_BLOCKS,GLOBAL_TRANSITIONS} from './graphic-blocks.js';
 import http from 'node:http';
-import {readFileSync,statSync,createReadStream} from 'node:fs';
+import {readFileSync,statSync,createReadStream,openSync,readSync,closeSync} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomBytes,timingSafeEqual} from 'node:crypto';
@@ -35,9 +35,14 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  }
  const jobs=new EditorJobs({directory,profiles,renderer,storage});let intake,assets,recoveries;try{assets=new MediaLibrary(join(directory,'assets'),{probe:assetProbe});jobs.assetResolver=(id,kind)=>assets.resolve(id,kind);recoveries=new ProjectRecovery(join(directory,'recoveries'),profiles);intake=new VideoIntake(join(directory,'uploads'),profiles,{probe:intakeProbe});}catch(error){void jobs.close();throw error;}let expectedHost;
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
+ const sourceStream=(req,res,file)=>{
+  const size=statSync(file).size;let range;try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
+  const fd=openSync(file,'r'),head=Buffer.alloc(12);try{readSync(fd,head,0,12,0);}finally{closeSync(fd);}
+  res.setHeader('Content-Type',head.subarray(0,4).equals(Buffer.from([0x1a,0x45,0xdf,0xa3]))?'video/webm':'video/mp4');res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();const stream=createReadStream(file,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
+ };
  const server=http.createServer(async(req,res)=>{
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Cross-Origin-Resource-Policy','same-origin');
-  res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
+  res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
   try{
    if(req.headers.host!==expectedHost)return json(res,403,{error:'Host rejected'});
    if(req.headers.origin&&req.headers.origin!==origin)return json(res,403,{error:'Origin rejected'});
@@ -67,9 +72,15 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      const job=jobs.list().find(j=>j.profileId===recovered.profileId)??jobs.create(recovered.profileId,recoveries.settings(recovered.profileId));
      return json(res,201,{recovery:recovered,job});
     }
+    const uploadSource=/^\/api\/uploads\/([a-f0-9]{64})\/media$/.exec(path);
+    if(uploadSource&&['GET','HEAD'].includes(req.method))return sourceStream(req,res,intake.media(uploadSource[1]));
+    const profileSource=/^\/api\/profiles\/([^/]+)\/source$/.exec(path);
+    if(profileSource&&['GET','HEAD'].includes(req.method)){const id=decodeURIComponent(profileSource[1]);if(!Object.hasOwn(profiles,id))throw new Error('Unknown profile');return sourceStream(req,res,jobs.loadProfile(id).sourcePath);}
+    const jobSource=/^\/api\/jobs\/([a-f0-9-]+)\/source$/.exec(path);
+    if(jobSource&&['GET','HEAD'].includes(req.method)){const job=jobs.get(jobSource[1]),project=jobs.loadProfile(job.profileId);if(project.inputs.source.sha256!==jobs.plan(job.id).manifest.source.sha256)throw new Error('Source changed; prepare the montage again');return sourceStream(req,res,project.sourcePath);}
     const analysisMatch=/^\/api\/uploads\/([a-f0-9]{64})\/analysis$/.exec(path);
     if(analysisMatch&&req.method==='POST'){if(jobs.list().some(j=>j.profileId==='upload-'+analysisMatch[1]))throw new Error('Analysis owned by existing jobs; restore original assets');return json(res,200,intake.importAnalysis(analysisMatch[1],await body(req,2*1024*1024)));}
-    if(path==='/api/uploads'&&req.method==='POST'){req.setTimeout(120000);return json(res,201,await intake.receive(req));}
+    if(path==='/api/uploads'&&req.method==='POST'){req.setTimeout(120000);return json(res,201,await intake.receive(req,{name:url.searchParams.get('name')}));}
     if(path==='/api/health'&&req.method==='GET')return json(res,200,jobs.health());
     if(path==='/api/design'&&req.method==='GET'){
      const id=url.searchParams.get('profileId');if(!Object.hasOwn(profiles,id))return json(res,404,{error:'Unknown profile'});

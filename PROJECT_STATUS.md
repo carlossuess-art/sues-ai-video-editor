@@ -1,3 +1,36 @@
+## Reproductor persistente y previsualización antes de exportar · 19/10/2026
+
+Carlos rechaza el recorrido PR5 por falta de visibilidad. Pide vídeo siempre
+presente con herramientas debajo (móvil), guía contextual y Previsualizar antes de
+Exportar. Nueva decisión prevalece sobre paneles separados. Guía vigente:
+docs/SUES_PLAYER_PREVIEW_EXPORT.md. Rama feat/persistent-player-preview.
+
+Original reproducible al seleccionar, después de subir y tras recargar; nombre,
+tamaño y estado visibles. Nuevo vídeo sin análisis no conserva transcripción ni
+selección del anterior, incluso si ya había un montaje abierto y se recarga.
+Reproductor permanente con Original/Montaje, play/pausa/búsqueda/pantalla completa.
+Herramientas Vídeo/Estilo/Texto/Sonido/Imágenes. Previsualizar renderiza el montaje
+completo; Exportar descarga ese mismo MP4 sin repetir render. Editar bloquea Exportar
+hasta actualizar la vista previa en nueva versión. Cambio de estilo prepara cues
+antes de ELEMENTS y Deshacer conserva texto previo sin guardar.
+
+211tests/check y10simulaciones PASS. Chromium145, escritorio/móvil: selección y
+subida reales del vídeo de prueba, playback nativo original/montaje, recarga,
+fuente nueva sin texto ajeno, herramientas con vídeo visible, exportación SHAigual
+sin otro render, edición→nueva vista previa yversión anterior conservada. Tres
+renders24s con decodePASS/originalintacto. Regresiones de fuente/reload y estilo/
+Deshacer/ELEMENTS en ambos tamaños PASS; sin erroresJS ni overflow horizontal.
+Evidencia examples/preview/player-workflow.real-result.json. Demo UI10,8s guardada:
+libfile_99fa6c00ec9c81919386a02db5dc7106. Vídeo sintético/etiquetasQA, sin ASR nuevo.
+
+Web publicada navegada: shell nuevo visible, «Session required» en navegador
+remoto. Carlos no puede completar ese acceso; no se inspeccionaron sus trabajos
+VPS. El navegador remoto tampoco accede al loopback local. Se usaron pruebas de
+software de la copia local; no afirmar exportación/autenticación VPS ni aprobación
+humana. Nueva corrección todavía no instalada remotamente. Sin cargos, proveedores,
+modelos o dependencias nuevas de producción; nada de WhatsApp/Caddy/DNS.
+
+---
 ## Recorrido UX por tareas implementado · 19/10/2026
 
 Carlos pide diseño UX de alto nivel. La corrección del panel se amplía al recorrido

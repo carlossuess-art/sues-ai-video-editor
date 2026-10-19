@@ -63,7 +63,8 @@ export class VideoIntake{
   });
  }
  list(){
-  return this.records().map(c=>({id:c.sha256,bytes:c.bytes,createdAt:c.createdAt,profileId:c.profileId??null,
+  return this.records().map(c=>({id:c.sha256,bytes:c.bytes,createdAt:c.createdAt,lastUploadedAt:c.lastUploadedAt??c.createdAt,profileId:c.profileId??null,
+   name:c.name??'Vídeo subido',duration:c.source.duration,width:c.source.width,height:c.source.height,
    state:c.profileId?(projectReady(this.profiles[c.profileId])?'READY':'WAITING_ASSETS'):'NEEDS_ANALYSIS'}));
  }
  importAnalysis(id,data){
@@ -85,7 +86,7 @@ export class VideoIntake{
   let committed=false;
   try{
    for(const [name,value]of Object.entries({transcript:data.transcript,camera:data.camera,vision}))atomicJSON(join(dir,name+'.json'),value);
-   const config={...template,source:metadata.source,sourcePath:join(this.directory,id+'.video'),transcriptPath:join(dir,'transcript.json'),cameraPath:join(dir,'camera.json'),visionPath:join(dir,'vision.json'),fontDirectory:fonts(template.fontDirectory)};
+   const config={...template,title:metadata.name??'Vídeo subido',source:metadata.source,sourcePath:join(this.directory,id+'.video'),transcriptPath:join(dir,'transcript.json'),cameraPath:join(dir,'camera.json'),visionPath:join(dir,'vision.json'),fontDirectory:fonts(template.fontDirectory)};
    const candidate=join(dir,'project.json');atomicJSON(candidate,config);
    // Validate the complete plan before making the profile selectable.
    prepareProject(loadProject(candidate));
@@ -94,7 +95,13 @@ export class VideoIntake{
    committed=true;this.profiles[profileId]=profilePath;return this.list().find(e=>e.id===id);
   }finally{if(!committed)rmSync(dir,{recursive:true,force:true});}
  }
- async receive(req){
+ media(id){
+  if(!HASH.test(id))throw new Error('Upload not found');
+  const record=this.records().find(r=>r.sha256===id);if(!record)throw new Error('Upload not found');
+  const path=join(this.directory,id+'.video');if(!regular(path)||lstatSync(path).size!==record.bytes||fileSha256(path)!==id)throw new Error('Stored video integrity changed');
+  return path;
+ }
+ async receive(req,{name}={}){
   if(this.busy)throw new Error('Upload busy');
   if(!/^(?:video\/(?:mp4|quicktime|webm)|application\/octet-stream)(?:;|$)/i.test(req.headers['content-type']??''))throw new Error('Selecciona un vídeo MP4, MOV o WebM');
   const length=Number(req.headers['content-length']);
@@ -120,14 +127,15 @@ export class VideoIntake{
    if(existsSync(path)){
     if(!regular(path)||lstatSync(path).size!==size||fileSha256(path)!==sha256)throw new Error('Stored video integrity changed');
    }else linkSync(temp,path);
-   const metadata={sha256,bytes:size,createdAt:new Date().toISOString(),source:{sha256,duration,width:Math.abs(rotation)%180===90?video.height:video.width,height:Math.abs(rotation)%180===90?video.width:video.height}};
+   const safeName=typeof name==='string'?name.split(/[\\/]/).at(-1).replace(/[\x00-\x1f\x7f]/g,'').slice(0,160):'';
+   const metadata={sha256,bytes:size,...(safeName?{name:safeName}:{}),createdAt:new Date().toISOString(),source:{sha256,duration,width:Math.abs(rotation)%180===90?video.height:video.width,height:Math.abs(rotation)%180===90?video.width:video.height}};
    for(const config of Object.values(this.profiles)){
     const c=projectConfig(config);if(c.source?.sha256!==sha256)continue;
     metadata.profileId='upload-'+sha256;const target=join(this.directory,sha256+'.project.json');
-    if(!existsSync(target))atomicJSON(target,{...c,sourcePath:path,fontDirectory:fonts(c.fontDirectory)});
+    if(!existsSync(target))atomicJSON(target,{...c,title:metadata.name??c.title,sourcePath:path,fontDirectory:fonts(c.fontDirectory)});
     this.profiles[metadata.profileId]=target;break;
    }
-   const target=join(this.directory,sha256+'.json');if(!existsSync(target))atomicJSON(target,metadata);
+   const target=join(this.directory,sha256+'.json');const previous=existsSync(target)?read(target):metadata;atomicJSON(target,{...previous,...(!previous.name&&safeName?{name:safeName}:{}),lastUploadedAt:new Date().toISOString()});
    return this.list().find(c=>c.id===sha256);
   }finally{if(fd)await fd.close();await unlink(temp).catch(()=>{});this.busy=false;}
  }
