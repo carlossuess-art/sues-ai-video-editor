@@ -27,3 +27,17 @@ Antes de integrar: revisar con navegador móvil y escritorio, metadata, seek del
 4. Tras QA, crear PR e integrar sin desplegar automáticamente al VPS.
 
 Fase 6 abierta según roadmap maestro; no se recalcula progreso ni se afirma V1.
+
+## Continuación · 19/10/2026 noche
+
+Último commit: `c66e0c155df5de45586ba5fc1549076cc0aff4ec`
+
+Se añade timeline semántico:
+- Usa `plan.manifest.captions` con `start/end/id/text` para situar cada frase; sin clips simulados.
+- Cada segmento permite seek en el reproductor visible y abre el editor de la frase concreta.
+- Resalta el segmento correspondiente a `currentTime`.
+- Limpia y reconstruye elementos al cambiar la identidad o contenido del plan.
+- Conserva el scrub real implementado en el bloque anterior.
+- Revisión estructural por lectura del código remoto: 7 comprobaciones de puntos de integración superadas.
+
+**Límite explícito:** no se ejecutaron pruebas Node/Chromium, playback, render o VPS. Se requiere una prueba funcional de navegador antes de fusionar. Se mantiene la rama aislada.
