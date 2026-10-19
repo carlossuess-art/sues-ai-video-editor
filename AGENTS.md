@@ -144,3 +144,13 @@ DOPAMIN y los diseños ELEMENTS siguen experimentales. Mantener Montserrat y14/1
 posteriores; no restaurar2:1 por leer documentación histórica. No afirmar máscaras
 corporales automáticas, fondos/partículas/cadenas/candado/avatar completos.
 REA se evaluó documentalmente; no instalado ni necesario para este bloque.
+
+## Profundidad raster revisada · 19/10/2026
+
+Leer docs/SUES_REVIEWED_SUBJECT_LAYERS.md. Compositor tras sujeto integrado con
+matte vinculado aSHA,rangos yregión revisados;fuente full-frame sin cortes/zoom
+solapado. Muestra12s sólo región superior0.25–1.4 y8.2–8.9. EnsayosGrabCut/flow
+no sirven como cuerpo completo automático:contornos finales corregidos a mano,
+no afirmar detector o segmentación general. Rótulos editoriales,noASR.
+Carlos pidió ejecución autónoma hasta un punto concreto de opinión; comparación
+lista,valoración pendiente. No desplegar ni cerrarF6 por esta prueba.

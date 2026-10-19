@@ -1,3 +1,29 @@
+## Composición tras sujeto · muestra para comparar · 19/10/2026
+
+FASE6en curso;sin porcentaje recalculado ni cierreV1. Rama
+feat/reviewed-subject-depth,basePR3/0d857ac. Nuevo compositor de recursos detrás
+de matte FFV1/gray ligado al original,hash/revisión/rangos/región,copia yaislamiento
+de subidas. Matting manual/asistido de región superior; NO cuerpo completo
+automático. Cinco ensayos locales no generalizan en manos/pared; se corrigen
+contornos a mano yse acota muestra0.25–1.4s y8.2–8.9s,hasta y1100.
+
+207testsNode/check/pycompile/diffPASS;FFmpeg prueba interior intacto/exterior
+visible yzona inferior protegida. Copia/restauración yguardas contra rutas
+anidadas fuera del paquete. Entrega12s1080×1920/30,H264/AAC,8275828bytes,
+SHA816d3bb6c1ea77b6048ed650e49b654c129d79626e766d59b9a3645c10d471a1;
+decodePASS,fuenteintacta,11framesrevisados. Rótulos editoriales,noASR/LLM.
+Comparativa12s sincronizada:libfile_375c09bd02208191a5e08aa1ec9369b4;
+vertical:libfile_e288cc7634488191b40a55117ab806fb;archivo técnico privado
+libfile_f8cfb62e98248191bdddb90283de42cf (NO recuperar desdeUI).
+Guía docs/SUES_REVIEWED_SUBJECT_LAYERS.md y evidencia JSON.
+
+Siguiente: Carlos compara profundidad ycontornos; tras su opinión,refinar/expandir
+los mismos recursos. Pendiente máscara corporal general,segmentación automática,
+DirectorLLM,navegador yaceptación sonora/visual. OpenCV opcional sóloensayoslocales,
+sin dependencias nuevasVPS,pesos,ASR,proveedores,pagos oLovable. Oficial/VPS sin
+cambios; no se presenta la prueba como montaje terminado.
+
+---
 ## Perfiles combinables verificados · 19/10/2026
 
 FASE 6/10 · Motion Library y composición; avances transversales F5/F7/F8.

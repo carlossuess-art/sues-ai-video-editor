@@ -60,6 +60,21 @@ def render(source, bundle, output):
         if stream is None or stream['codec_name'] not in ('png', 'mjpeg', 'webp', 'bmp') or digest(media) != item['sha256']:
             raise ValueError('Illustration must be a verified still image')
         illustrations.append({'path': media, 'sha256': item['sha256'], 'assetId': item['assetId']})
+    subject_layers = []
+    for item in manifest.get('subjectLayers', []):
+        matte = item.get('matte', {})
+        resource = pathlib.Path(item['localFile']).resolve(strict=True)
+        mask = pathlib.Path(matte['localFile']).resolve(strict=True)
+        if item.get('sourceSha256') != manifest['source'].get('sha256') or item.get('rights') not in ('owned', 'licensed') or matte.get('reviewStatus') != 'reviewed':
+            raise ValueError('Subject layer provenance/review invalid')
+        resource_info, mask_info = probe(resource), probe(mask)
+        image_stream = next((s for s in resource_info['streams'] if s['codec_type'] == 'video'), None)
+        mask_stream = next((s for s in mask_info['streams'] if s['codec_type'] == 'video'), None)
+        if not image_stream or image_stream['codec_name'] not in ('png', 'mjpeg', 'webp', 'bmp') or digest(resource) != item['sha256']:
+            raise ValueError('Subject resource must be a verified still')
+        if not mask_stream or (mask_stream['codec_name'], mask_stream['width'], mask_stream['height'], mask_stream['r_frame_rate'], mask_stream.get('pix_fmt')) != ('ffv1', 1080, 1920, '30/1', 'gray') or abs(float(mask_info['format']['duration']) - manifest['duration']) > 1/30 or digest(mask) != matte['sha256']:
+            raise ValueError('Subject matte format/duration/hash mismatch')
+        subject_layers.append({'resource': resource, 'resourceSha256': item['sha256'], 'mask': mask, 'maskSha256': matte['sha256'], 'assetId': item['assetId'], 'method': matte['method']})
     music = None
     if manifest.get('audioMix'):
         mix = manifest['audioMix']
@@ -107,6 +122,8 @@ def render(source, bundle, output):
             command += ['-i', str(media['path'])]
         for media in illustrations:
             command += ['-loop', '1', '-framerate', '30', '-i', str(media['path'])]
+        for layer in subject_layers:
+            command += ['-loop', '1', '-framerate', '30', '-i', str(layer['resource']), '-i', str(layer['mask'])]
         if music:
             command += ['-i', str(music['path'])]
         command += ['-filter_complex_threads', '1', '-filter_complex_script', 'filter.ffscript', '-map', '[video]']
@@ -126,6 +143,9 @@ def render(source, bundle, output):
             raise ValueError('B-roll source changed during render')
         if any(digest(m['path']) != m['sha256'] for m in illustrations):
             raise ValueError('Illustration changed during render')
+        for layer in subject_layers:
+            if digest(layer['resource']) != layer['resourceSha256'] or digest(layer['mask']) != layer['maskSha256']:
+                raise ValueError('Subject layer changed during render')
         if music and digest(music['path']) != music['sha256']:
             raise ValueError('Music source changed during render')
         if digest(source) != before:
@@ -134,7 +154,7 @@ def render(source, bundle, output):
                  'durationPlanned': manifest['duration'], 'durationEncoded': float(encoded['duration']),
                  'output': output.name, 'outputSha256': digest(temporary), 'bytes': temporary.stat().st_size,
                  'video': {'codec': encoded['codec_name'], 'width': encoded['width'], 'height': encoded['height'], 'fps': encoded['r_frame_rate']},
-                 'soundEffects': manifest.get('soundEffects'), 'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'captions': len(manifest['captions']), 'illustrations': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in illustrations],
+                 'subjectLayers': [{k: v for k, v in layer.items() if k not in ('mask', 'resource')} for layer in subject_layers], 'soundEffects': manifest.get('soundEffects'), 'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'captions': len(manifest['captions']), 'illustrations': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in illustrations],
                  'font': {'family': expected_family, 'regularSha256': digest(font), 'boldSha256': digest(bold_font), 'extraFaces': extra_fonts},
                  'ffmpeg': subprocess.check_output(['ffmpeg', '-version'], text=True).splitlines()[0],
                  'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}

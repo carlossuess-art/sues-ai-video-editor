@@ -1,0 +1,130 @@
+{
+  "version": "1.0",
+  "sourceSha256": "afe5ec9f378ea170bac9ff3396dd7b37cba5e25f51168f90c0cdfe9b7259281a",
+  "sourcePreserved": true,
+  "durationPlanned": 12,
+  "durationEncoded": 12.0,
+  "outputSha256": "816d3bb6c1ea77b6048ed650e49b654c129d79626e766d59b9a3645c10d471a1",
+  "bytes": 8275828,
+  "video": {
+    "codec": "h264",
+    "width": 1080,
+    "height": 1920,
+    "fps": "30/1"
+  },
+  "subjectLayers": [
+    {
+      "resourceSha256": "c06d8acd2fa398d031b4d6bfe05cc87dcc51c41e043e8c97eb679ebbbc3b0326",
+      "maskSha256": "f80f120390bce728a26532a96e49235c5e1229b0870458b1aacec745b151bb82",
+      "assetId": "sues-digital-own",
+      "method": "manual-rotoscope-raster-v1"
+    },
+    {
+      "resourceSha256": "6cd37e519cf52132ca636fa6eb62d672a2e6ce52c6e398049836d17f1601be93",
+      "maskSha256": "f80f120390bce728a26532a96e49235c5e1229b0870458b1aacec745b151bb82",
+      "assetId": "sues-light-own",
+      "method": "manual-rotoscope-raster-v1"
+    }
+  ],
+  "soundEffects": {
+    "enabled": true,
+    "gain": 0.22,
+    "events": [
+      {
+        "preset": "whoosh",
+        "weight": 0.5,
+        "start": 1.4,
+        "duration": 0.36,
+        "reason": "transition",
+        "provenance": "original-procedural-sues-v1"
+      },
+      {
+        "preset": "whoosh",
+        "weight": 0.75,
+        "start": 9.6,
+        "duration": 0.36,
+        "reason": "transition",
+        "provenance": "original-procedural-sues-v1"
+      }
+    ],
+    "ducking": true,
+    "recipeVersion": "sues-original-sfx-v1",
+    "humanListeningAccepted": false
+  },
+  "audioPresent": true,
+  "broll": [],
+  "captions": 3,
+  "illustrations": [],
+  "font": {
+    "family": "Montserrat",
+    "regularSha256": "3e8abe50c44c82e2242e97d1ec8c0d385c4890cdc50447bcdb8605c81a38cfb2",
+    "boldSha256": "bc6e854971cea46b463be6f9eef4d9cd52f51cfc1fc0dd90c9d3e6483dc0ec61",
+    "extraFaces": {
+      "Montserrat-ExtraBold.ttf": "d3ac6a843d3ba6d5cafd44cf39e437055c8aed7e261010f595f57d3c7b3e2c1b",
+      "Montserrat-BoldItalic.ttf": "b4c121b337aaa977d711b6f397c5b9672d720af622555f1e3f9d3b87f2983665",
+      "Montserrat-ExtraBoldItalic.ttf": "0984784ee9883389e76bf2c7ceeeda848af26535ec111109fa92e18d448a4759",
+      "Anton-Regular.ttf": "a4ba3a92350ebb031da0cb47630ac49eb265082ca1bc0450442f4a83ab947cab",
+      "AllertaStencil-Regular.ttf": "8c504d1be20768941ab04251a389ad82d5782d647fa1c4029c811dc5bc2abd59"
+    }
+  },
+  "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+  "fullDecode": "pass",
+  "productionReady": false,
+  "externalCostUSD": 0,
+  "kind": "reviewed-upper-body-depth-study",
+  "automaticPersonDetection": false,
+  "fullBodyMask": false,
+  "newASR": false,
+  "newWeights": false,
+  "editorialLabelsNotVerbatimCaptions": true,
+  "sourceTrim": {
+    "start": 0.073125,
+    "duration": 12,
+    "originalPreserved": true
+  },
+  "reviewedMaskRanges": [
+    {
+      "start": 0.25,
+      "end": 1.4
+    },
+    {
+      "start": 8.2,
+      "end": 8.9
+    }
+  ],
+  "reviewedRegion": {
+    "top": 0,
+    "bottom": 1100
+  },
+  "tests": 207,
+  "visualQAFrames": [
+    0.15,
+    0.5,
+    0.8,
+    1.2,
+    1.8,
+    8.3,
+    8.5,
+    8.7,
+    8.85,
+    9.2,
+    10.5
+  ],
+  "humanAcceptance": false,
+  "browserQA": false,
+  "rawOriginalSha256": "cae55ad4b8ebb4a92e05361ca890dc3ebec2643cd3eac2fb7ec7d81f623cfa2e",
+  "comparisonSha256": "64dce0812990c8c7427980be3dd1f53b4acea0abe27746ba11b7d5976d894fec",
+  "portableReplay": {
+    "fullDecode": "pass",
+    "sourcePreserved": true,
+    "sameMP4Sha256": false,
+    "decodedFrames": 360,
+    "identicalDecodedFrames": 347,
+    "bitExactReplay": false
+  },
+  "library": {
+    "comparison": "libfile_375c09bd02208191a5e08aa1ec9369b4",
+    "vertical": "libfile_e288cc7634488191b40a55117ab806fb",
+    "studyArchive": "libfile_f8cfb62e98248191bdddb90283de42cf"
+  }
+}

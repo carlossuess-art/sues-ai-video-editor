@@ -1,5 +1,6 @@
 export function editorReview(plan,director,settings){
  const events=[
+  ...(plan.subjectLayers??[]).map(e=>({type:'behind-subject-resource',start:e.start,end:e.end,assetId:e.assetId,scope:e.scope,reason:'Recurso editorial detrás del sujeto con matte revisado',verification:e.matte.method,automaticPersonDetection:false})),
   ...(plan.elements??[]).map(e=>({type:'elements-'+e.format,start:e.start,end:e.end,text:e.label,secondary:e.secondary,number:e.number,reason:'Estructura elegida por el usuario',scope:e.scope,sourceWordIndexes:e.sourceWordIndexes,verification:e.timing,copyOrigin:e.copyOrigin})),
   ...(plan.semantic?.zooms??[]).map(e=>({type:'zoom',start:e.start,end:e.end,reason:e.reason,sourceWordIndexes:e.evidence?.sourceWordIndexes??[],verification:e.evidence?.method??'editorial'})),
   ...(plan.semantic?.motions??[]).map(e=>({type:e.params.motionId==='QUOTE_CARD_01'?'quote':e.params.motionId,start:e.start,end:e.end,text:e.lines.join(' '),reason:e.reason,box:e.box,audio:e.audio,placement:e.placement,sourceWordIndexes:e.evidence?.sourceWordIndexes??[],verification:e.evidence?.method??'editorial'})),

@@ -1,3 +1,4 @@
+import {subjectLayerFilters} from './subject-layers.js';
 import {drawElements} from './elements.js';
 import {renderAudioFilters} from './sound-effects.js';
 import {technicalPaperFilters} from './technical-paper.js';
@@ -204,6 +205,7 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
     filters.push(`[${i+1}:v]trim=start=${d.sourceIn}:end=${d.sourceOut},setpts=PTS-${d.sourceIn}/TB,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1,fps=fps=30:start_time=0,setpts=PTS+${d.start}/TB[broll${i}]`);
     filters.push(`[${base}][broll${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${d.start})*lt(t,${d.end})'[composed${i}]`);base=`composed${i}`;
   }
+  const subject=subjectLayerFilters(plan.subjectLayers??[],base,1+plan.selectedMedia.length+(plan.illustrations?.length??0));filters.push(...subject.filters);base=subject.base;
   const illustrated=illustrationFilters(plan.illustrations??[],base,1+plan.selectedMedia.length);filters.push(...illustrated.filters);base=illustrated.base;
   for(const [i,m] of (plan.semantic?.motions??[]).filter(m=>m.backgroundTreatment).entries()){
     const r=m.backgroundTreatment,duration=m.end-m.start,fade=Math.min(r.fadeSeconds,duration/3),sigma=r.sigma/4;
@@ -216,6 +218,6 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   if(hasTransitions){const global=globalTransitionFilters(plan.globalTransitions,'captioned');filters.push(...global.filters,`[${global.base}]null[${plan.finishFade?'finish-input':'video'}]`);}
   if(plan.finishFade){const f=plan.finishFade;filters.push(`[${hasTransitions?'finish-input':'captioned'}]fade=t=out:st=${f.start}:d=${f.duration}[video]`);}
   assert(!plan.audioMix||hasAudio,'background music requires original voice track');
-  filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0),{hasAudio}));
+  filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0)+2*(plan.subjectLayers?.length??0),{hasAudio}));
   return filters.join(';\n')+'\n';
 }
