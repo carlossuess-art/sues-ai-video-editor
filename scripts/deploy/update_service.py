@@ -2,11 +2,14 @@
 """Pinned editor-only update for the already verified single-owner HTTPS VPS."""
 import copy
 import fcntl
+import hashlib
 import importlib.util
 import json
 import os
 from pathlib import Path
 import re
+import shutil
+import tarfile
 import subprocess
 import sys
 import tempfile
@@ -17,6 +20,49 @@ ROOT = Path('/opt/sues-video-setup')
 EDITOR = 'sues-video-editor'
 HOST = 'editor.suesholistics.com'
 REPO = 'https://github.com/carlossuess-art/sues-ai-video-editor.git'
+
+
+def digest(stream):
+    value = hashlib.sha256()
+    while chunk := stream.read(1024 * 1024):
+        value.update(chunk)
+    return value.hexdigest()
+
+
+def backup_state(destination):
+    """Called with the sole editor stopped. Never extract or follow symlinks."""
+    state = ROOT / 'editor'
+    if not state.is_dir() or state.is_symlink():
+        raise RuntimeError('Estado privado inesperado; no se actualiza')
+    entries = [state, *state.rglob('*')]
+    for path in entries:
+        if path.is_symlink() or not (path.is_file() or path.is_dir()):
+            raise RuntimeError('Estado con enlaces o archivos especiales; revisar antes de actualizar')
+    total = sum(path.stat().st_size for path in entries if path.is_file())
+    if shutil.disk_usage(ROOT).free < total * 1.1 + 16 * 1024 * 1024:
+        raise RuntimeError('Espacio insuficiente para copia verificada')
+    archive = destination / 'editor-state.tar'
+    with tarfile.open(archive, 'x') as tar:
+        tar.add(state, arcname='editor', recursive=True)
+    verified = {}
+    with tarfile.open(archive, 'r:') as tar:
+        members = tar.getmembers()
+        if len(members) != len(entries):
+            raise RuntimeError('Inventario de copia incompleto')
+        for member in members:
+            path = ROOT / member.name
+            if member.isfile():
+                with path.open('rb') as original, tar.extractfile(member) as saved:
+                    expected = digest(original)
+                    if expected != digest(saved) or path.stat().st_size != member.size:
+                        raise RuntimeError('Copia de estado no coincide')
+                verified[member.name] = expected
+            elif not member.isdir():
+                raise RuntimeError('Tipo inesperado en copia')
+    with archive.open('rb') as stream:
+        sha = digest(stream)
+    (destination / 'editor-state.manifest.json').write_text(json.dumps({'archiveSha256': sha, 'files': verified}, indent=2))
+    return sha
 
 
 def run(*args, check=True, timeout=90):
@@ -71,6 +117,8 @@ def main(sha):
         if 'SUES_PUBLIC_ORIGIN=https://' + HOST not in old['Config']['Env']:
             raise RuntimeError('Primero debe estar activado el origen HTTPS verificado')
         mounts = {m['Destination']: m for m in old['Mounts']}
+        if mounts.get('/state', {}).get('Source') != str(ROOT / 'editor'):
+            raise RuntimeError('Montaje privado inesperado')
         old_release = Path(mounts['/app']['Source'])
         old_sha = run('git', '-c', 'safe.directory=' + str(old_release), '-C', str(old_release), 'rev-parse', 'HEAD').stdout.strip()
         if old_sha == sha:
@@ -111,11 +159,14 @@ def main(sha):
         backup = ROOT / ('update-backup-' + stamp)
         backup.mkdir(mode=0o700)
         (backup / 'editor-inspect.json').write_text(json.dumps(old))
+        (backup / 'previous-commit.txt').write_text(old_sha + '\n')
         previous = EDITOR + '-before-update-' + stamp
         renamed = False
         try:
             print('Preparación verificada. Actualizando editor...', flush=True)
             run('docker', 'stop', '--time', '45', EDITOR)
+            state_sha = backup_state(backup)
+            print('Copia privada verificada SHA256: ' + state_sha, flush=True)
             run('docker', 'rename', EDITOR, previous)
             renamed = True
             (backup / 'editor-container.txt').write_text(previous + '\n')

@@ -9,11 +9,13 @@ import update_service as updater
 
 
 class UpdateTests(unittest.TestCase):
-    def exercise(self, fail=False, busy=False, already=False, dependencies_changed=False):
+    def exercise(self, fail=False, busy=False, already=False, dependencies_changed=False, backup_failed=False):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             old_release = root / 'release.old'
             old_release.mkdir()
+            (root / 'editor').mkdir()
+            (root / 'editor/project.json').write_text('{"existing":"project"}')
             (old_release / 'package-lock.json').write_text('{}')
             original = 'a' * 40
             target = original if already else 'b' * 40
@@ -46,11 +48,15 @@ class UpdateTests(unittest.TestCase):
 
             helper = SimpleNamespace(editor_args=lambda value: ['docker', 'create', '--name', updater.EDITOR, 'sha256:fixed'], status=lambda *a, **k: '401' if '/api/health' in a[0] else '200')
             with patch.object(updater, 'ROOT', root), patch.object(updater, 'inspect', return_value=old), patch.object(updater, 'run', side_effect=run), patch.object(updater, 'health', side_effect=health), patch.object(updater, 'helper', return_value=helper), patch.object(updater.os, 'geteuid', return_value=0), patch.object(updater.time, 'sleep'):
-                if fail or busy or dependencies_changed:
+                if fail or busy or dependencies_changed or backup_failed:
                     with self.assertRaises(RuntimeError):
                         updater.main(target)
                     self.assertFalse((root / 'servicio-commit.txt').exists())
-                    if fail:
+                    if backup_failed:
+                        self.assertIn(('docker', 'start', updater.EDITOR), calls)
+                        self.assertFalse(any(c[:2] == ('docker', 'rename') for c in calls))
+                        self.assertFalse(created)
+                    elif fail:
                         self.assertTrue(any(c[:2] == ('docker', 'rename') and c[-1] == updater.EDITOR for c in calls))
                         self.assertIn(('docker', 'start', updater.EDITOR), calls)
                     else:
@@ -62,6 +68,10 @@ class UpdateTests(unittest.TestCase):
                     else:
                         self.assertEqual((root / 'servicio-commit.txt').read_text().strip(), target)
                         self.assertTrue(created)
+                        archive = next(root.glob('update-backup-*/editor-state.tar'))
+                        self.assertTrue(archive.is_file())
+                        manifest = json.loads(archive.with_name('editor-state.manifest.json').read_text())
+                        self.assertIn('editor/project.json', manifest['files'])
                 self.assertFalse(any('caddy' in ' '.join(c).lower() for c in calls))
 
     def test_update_preserves_proxy_and_prepares_nested_mount(self):
@@ -78,6 +88,25 @@ class UpdateTests(unittest.TestCase):
 
     def test_current_version_does_not_restart(self):
         self.exercise(already=True)
+
+    def test_backup_failure_restarts_existing_editor_before_rename(self):
+        with patch.object(updater, 'backup_state', side_effect=RuntimeError('backup failed')):
+            self.exercise(backup_failed=True)
+
+    def test_backup_rejects_symlink_and_verifies_real_bytes(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'editor').mkdir()
+            (root / 'editor/source').write_bytes(b'private original')
+            backup = root / 'backup'
+            backup.mkdir()
+            with patch.object(updater, 'ROOT', root):
+                sha = updater.backup_state(backup)
+                self.assertEqual(len(sha), 64)
+                self.assertEqual(json.loads((backup / 'editor-state.manifest.json').read_text())['archiveSha256'], sha)
+                (root / 'editor/external').symlink_to('/etc/hosts')
+                with self.assertRaises(RuntimeError):
+                    updater.backup_state(backup)
 
 
 if __name__ == '__main__':

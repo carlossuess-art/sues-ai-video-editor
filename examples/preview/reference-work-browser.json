@@ -1,0 +1,188 @@
+{
+  "version": "1.0",
+  "browser": "145.0.7632.6",
+  "checks": [
+    {
+      "device": "desktop",
+      "styleId": "SUES_CALMA",
+      "format": "LIST",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "styleId": "SUES_CALMA",
+      "format": "RANKING",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "styleId": "SUES_CALMA",
+      "format": "COMPARE",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "styleId": "SUES_CALMA",
+      "format": "REVEAL",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "styleId": "SUES_CALMA",
+      "format": "Q&A",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "styleId": "SUES_CALMA",
+      "format": "FLOW",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "styleId": "SUES_DOPAMIN",
+      "format": "LIST",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "styleId": "SUES_DOPAMIN",
+      "format": "RANKING",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "styleId": "SUES_DOPAMIN",
+      "format": "COMPARE",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "styleId": "SUES_DOPAMIN",
+      "format": "REVEAL",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "styleId": "SUES_DOPAMIN",
+      "format": "Q&A",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "styleId": "SUES_DOPAMIN",
+      "format": "FLOW",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "desktop",
+      "compactPanelHeight": 453,
+      "foldingPreservesSettings": true
+    },
+    {
+      "device": "mobile",
+      "styleId": "SUES_CALMA",
+      "format": "LIST",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "styleId": "SUES_CALMA",
+      "format": "RANKING",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "styleId": "SUES_CALMA",
+      "format": "COMPARE",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "styleId": "SUES_CALMA",
+      "format": "REVEAL",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "styleId": "SUES_CALMA",
+      "format": "Q&A",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "styleId": "SUES_CALMA",
+      "format": "FLOW",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "styleId": "SUES_DOPAMIN",
+      "format": "LIST",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "styleId": "SUES_DOPAMIN",
+      "format": "RANKING",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "styleId": "SUES_DOPAMIN",
+      "format": "COMPARE",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "styleId": "SUES_DOPAMIN",
+      "format": "REVEAL",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "styleId": "SUES_DOPAMIN",
+      "format": "Q&A",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "styleId": "SUES_DOPAMIN",
+      "format": "FLOW",
+      "savedAndReloaded": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "compactPanelHeight": 448,
+      "foldingPreservesSettings": true
+    }
+  ],
+  "pageErrors": [],
+  "renderSkipped": true,
+  "externalCostUSD": 0,
+  "humanAcceptance": false
+}

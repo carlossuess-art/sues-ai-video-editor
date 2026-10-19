@@ -5,6 +5,7 @@ import {resolve,join,basename} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createEditorServer} from '../../src/editor-server.js';
 import {fileSha256} from '../../src/local-pipeline.js';
+import {verifyReferenceTimeline} from './verify_reference_timeline.mjs';
 const [config,source,destination]=process.argv.slice(2);
 if(!destination||!process.env.SUES_PLAYWRIGHT_MODULE||!process.env.SUES_CHROMIUM_PATH)throw Error('PROJECT SOURCE NEW_OUTPUT and browser environment required');
 const {chromium}=await import(pathToFileURL(resolve(process.env.SUES_PLAYWRIGHT_MODULE)).href),out=resolve(destination);mkdirSync(out,{mode:0o700});
@@ -25,11 +26,13 @@ try{
    await page.locator('#upload-video').setInputFiles(resolve(source));await playable('#source-video');await page.click('#upload');await page.waitForFunction(()=>current?.state==='PREVIEW_READY'&&!working);await idle();await playable('#source-video');
    assert.equal(await page.locator('#export-video').isDisabled(),true);assert.equal(await page.locator('#video-panel').isVisible(),true);if(process.env.SUES_UPLOAD_ONLY){checks.push({device,sourceChangeClearsExistingTranscript:true,reloadKeepsNewUnanalysedSource:true,localAndServerOriginalPlayback:true,knownUploadReady:true});continue;}
    await page.getByRole('button',{name:'Estilo',exact:true}).click();await page.selectOption('#style-id','SUES_DOPAMIN');await idle();assert.equal(await page.locator('#source-video').isVisible(),true);
-   await page.getByRole('button',{name:'Sonido',exact:true}).click();assert.equal(await page.locator('#source-video').isVisible(),true);await page.getByRole('button',{name:'Estilo',exact:true}).click();
+   await page.getByRole('button',{name:'Música',exact:true}).click();assert.equal(await page.locator('#source-video').isVisible(),true);await page.getByRole('button',{name:'Estilo',exact:true}).click();
    await page.click('#render');await page.waitForFunction(()=>!working&&(current?.state==='DONE'||current?.state==='FAILED'),null,{timeout:900000});await idle();assert.equal(await page.evaluate(()=>current.state),'DONE');await playable('#video');assert.equal(await page.locator('#export-video').isDisabled(),false);assert.equal(await page.locator('#view-preview').getAttribute('aria-pressed'),'true');
+   const timeline=await verifyReferenceTimeline(page,viewport);
+   checks.push({device,timeline});
    const first=await page.evaluate(()=>({id:current.id,attempt:current.attempt}));const previewHash=fileSha256(await app.jobs.media(first.id));
    const downloadEvent=page.waitForEvent('download');await page.click('#export-video');const download=await downloadEvent,downloadPath=join(out,device+'-export.mp4');await download.saveAs(downloadPath);assert.equal(fileSha256(downloadPath),previewHash);assert.deepEqual(await page.evaluate(()=>({id:current.id,attempt:current.attempt})),first);
-   await page.locator('#motion-settings > summary').click();await page.locator('#zoom').fill('0');assert.equal(await page.locator('#export-video').isDisabled(),true);assert.match(await page.locator('#player-label').textContent(),/cambios sin aplicar/);
+   await page.locator('[data-editor-tool="style"]').click();await page.locator('#motion-settings > summary').click();await page.locator('#zoom').fill('0');assert.equal(await page.locator('#export-video').isDisabled(),true);assert.match(await page.locator('#player-label').textContent(),/cambios sin aplicar/);
    await page.screenshot({path:join(out,device+'-pending-changes.png'),fullPage:true});
    if(device==='desktop'){
     await page.click('#render');await page.waitForFunction(id=>current?.id!==id,first.id);await page.waitForFunction(()=>!working&&(current?.state==='DONE'||current?.state==='FAILED'),null,{timeout:900000});await idle();assert.equal(await page.evaluate(()=>current.state),'DONE');assert.notEqual(await page.evaluate(()=>current.id),first.id);await playable('#video');assert.equal(await page.locator('#export-video').isDisabled(),false);assert.equal(app.jobs.get(first.id).state,'DONE');

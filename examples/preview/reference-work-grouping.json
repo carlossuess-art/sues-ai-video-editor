@@ -1,0 +1,16 @@
+{
+  "checks": [
+    {
+      "device": "desktop",
+      "styleReplansBeforeElementSelection": true,
+      "undoRestoresUnsavedCaption": true,
+      "elementsNotSilentlyDiscarded": true
+    },
+    {
+      "device": "mobile",
+      "styleReplansBeforeElementSelection": true,
+      "undoRestoresUnsavedCaption": true,
+      "elementsNotSilentlyDiscarded": true
+    }
+  ]
+}

@@ -1,3 +1,6 @@
+> Frontend de referencia auditado en Work: [QA, integración y despliegue](docs/SUES_WORK_VALIDATION_20261019.md).
+> La validación local no acredita una actualización de producción.
+
 > Recursos detrás del sujeto: [compositor, muestra y límites](docs/SUES_REVIEWED_SUBJECT_LAYERS.md).
 > Matte manual de región superior; cuerpo completo automático pendiente. Sin despliegue.
 
