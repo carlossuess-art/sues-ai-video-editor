@@ -56,3 +56,28 @@ details.caption[open]>summary{margin-bottom:12px;color:var(--gold)}
  .step-action p{margin:0 0 6px;font-size:12px}.step-action .primary{min-height:48px}
  .studio-tools{margin-bottom:18px}.studio-tools nav{margin-bottom:0}
 }
+
+/* The player stays present; tools act on the same visible video. */
+header{height:64px}.intro{max-width:1300px;margin:0 auto 12px}.intro h1{font-size:23px;margin:0 0 4px}.intro p{font-size:13px;margin:0}
+main{max-width:1440px;padding:16px 24px}.studio-tools{max-width:1300px;margin:0 auto 12px}.studio-tools>summary{padding:4px 0}
+.workspace{max-width:1300px;display:grid;grid-template-columns:minmax(320px,1fr) minmax(320px,400px);gap:16px;height:calc(100svh - 180px);min-height:580px;margin:0 auto}
+.workspace>.stage{display:flex;flex-direction:column;min-height:0;padding:16px}.stage-heading h2{font-size:17px;margin:4px 0}.stage-heading{min-height:40px}.stage .eyebrow{display:none}
+.player-selector{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 10px}.player-selector button{padding:7px 12px;min-height:36px}.player-selector button[aria-pressed=true]{border-color:var(--gold);color:var(--gold)}#player-label{font-size:12px;color:var(--muted);flex:1 1 180px}
+.preview-wrap{flex:1;min-height:160px;padding:0;overflow:hidden;align-items:center;background:#06090c}
+.preview-wrap video{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain}.preview-wrap .placeholder{margin:auto;padding:12px}
+.stage .actions{margin-top:12px;gap:8px}.stage .actions>button{flex:1 1 120px;min-height:44px}.stage .small{margin:5px 0;font-size:12px}#progress:empty{display:none}.stage .plan-review{margin-top:4px;font-size:12px}.stage #editorial-review{max-height:120px;overflow:auto}
+.tool-panel{min-width:0;overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px}.tool-panel .panel{border:0;background:none;padding:16px;border-radius:0;min-width:0}.tool-panel .panel>h2{margin:0 0 12px;font-size:17px}.tool-panel .small{font-size:13px}.tool-panel .adjustments{grid-column:auto}
+.tool-panel .editor-shortcuts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:sticky;top:0;z-index:5;margin:0;padding:8px;background:var(--panel);border-bottom:1px solid var(--line);gap:4px}
+.editor-shortcuts button{font-size:12px;min-height:44px;padding:8px 2px;white-space:nowrap}.adjustment-actions{margin:8px 0;gap:8px}.studio-section{margin-top:10px;padding-top:6px}.studio-section>summary{font-size:14px;padding:8px 0}#adjustments-panel{padding-bottom:16px}.captions{max-height:none;overflow:visible;display:block}#save-status:empty{display:none}
+#selected-video-status{overflow-wrap:anywhere;color:var(--gold)}footer{max-width:1300px;margin:10px auto;font-size:11px}
+@media(max-width:700px){
+ header{height:52px;padding:0 16px}.brand{font-size:20px}header .brand{font-size:20px;letter-spacing:4px}header .badge{font-size:10px;padding:5px 9px}
+ main{padding:8px 10px}.intro{margin-bottom:8px}.intro h1{font-size:19px}.intro p{display:none}.studio-tools{position:absolute;top:58px;right:12px;z-index:10;max-width:200px;margin:0}.studio-tools>summary{font-size:12px}.studio-tools[open]{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px}.studio-tools nav{display:grid;margin:0}
+ .workspace{grid-template-columns:1fr;grid-template-rows:minmax(230px,46%) minmax(220px,54%);gap:8px;height:calc(100svh - 100px);min-height:540px}.workspace>.stage{padding:10px;border-radius:12px}.stage-heading{min-height:22px}.stage-heading h2{font-size:14px;line-height:1.2;margin:0;max-width:230px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.stage-heading .badge{font-size:9px;padding:4px 7px}.player-selector{margin:3px 0 5px;gap:5px}.player-selector button{font-size:12px;min-height:30px;padding:5px 8px}#player-label{font-size:10px;flex:1;line-height:1.2}
+ .preview-wrap{min-height:100px;border-radius:6px}.stage .actions{margin-top:6px}.stage .actions>button{min-height:38px;font-size:13px;padding:7px 8px}.stage .small{font-size:11px;line-height:1.3;margin:3px 0}.stage .plan-review{display:none}.stage #editorial-review{display:none}.stage #progress{font-size:11px}
+ .tool-panel{border-radius:12px}.tool-panel .editor-shortcuts button{font-size:12px;min-height:42px;padding:5px 2px}.tool-panel .editor-shortcuts{padding:5px}.tool-panel .panel{padding:12px}#adjustments-panel{padding-bottom:16px}.tool-panel label{font-size:14px;margin:8px 0}.tool-panel select,.tool-panel input,.tool-panel textarea{font-size:16px}.tool-panel h2{font-size:16px}.tool-panel .small{font-size:12px}.tool-panel .studio-section>summary{font-size:14px}
+ .step-action{position:static!important}footer{display:none}
+}
+.workspace{align-items:stretch}.workspace>.stage{height:100%;overflow:hidden}.stage .preview-wrap{flex:1 1 0;height:0}.tool-panel{height:100%;min-height:0}.stage .preview-wrap video{display:block;max-height:100%;object-fit:contain}
+@media(max-width:700px){.stage .preview-wrap{min-height:90px}.stage .actions>button{min-height:44px}}
+@media(max-width:700px){.workspace{grid-template-rows:minmax(280px,58%) minmax(220px,42%)}}

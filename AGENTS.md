@@ -196,3 +196,16 @@ Guía docs/SUES_UX_FLOW.md; no confundir mero plegado con final de esta petició
 Pruebas navegador reales, incluido Generar→Resultado→descarga. Preservar motor,
 contratos y UI accesible; ninguna IA conversacional nueva implícita. Nueva UX
 pendiente de instalar en VPS; último observado7cbccb9. Aceptación humana pendiente.
+
+## Decisión UX posterior y vigente · 19/10/2026
+
+Carlos rechaza PR5: el vídeo debe permanecer visible al editar, con herramientas
+inferiores en móvil y ayuda del siguiente paso. Previsualizar precede a Exportar;
+no ocultar el reproductor cambiando de herramienta ni exportar cambios no revisados.
+Prevalece docs/SUES_PLAYER_PREVIEW_EXPORT.md sobre la separación en tres paneles.
+Original reproducible desde selección/subida/reload, montaje previsualizable completo,
+Exportar mismo archivo sin recodificar. Cambios invalidan la vista previa; nueva
+versión conserva la anterior. No usar transcripción de otro material como feedback.
+Web real bloqueada por sesión en el navegador de revisión: no afirmar revisión de
+sus trabajos privados; Carlos no puede completar handoff. Pruebas locales autorizadas
+con vídeo sintético, sin ASR/pago. Evidencia player-workflow.real-result.json.
