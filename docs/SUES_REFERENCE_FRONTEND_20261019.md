@@ -59,3 +59,7 @@ Corrección incremental commit `2a8a2851ac98ff92496e598cf5fdca7b324a4b8d`: la pi
 
 Commit UI: `b9dc0810ff60d59f80afb10039f5c179aa8c8150`.
 Se incorporan reproducir/pausar y saltos de ±5 segundos, enlazados al reproductor activo (original o montaje), con límites de duración y controles deshabilitados sin metadatos válidos. Se preserva la protección de exportación y la pista de subtítulos sólo en montaje vigente. Comprobación estática de cinco invariantes realizada a través del contenido remoto, todas presentes. No se ha ejecutado navegador, render ni pruebas de Node; el contenedor actual no resuelve github.com para clonación y el acceso a archivos se hizo mediante el conector. No fusionado ni desplegado.
+
+## Continuación · atajos seguros del reproductor
+
+Commit `0d02fb26224257b359f067ff7f4e596167a496f7`: espacio para reproducir/pausar y flechas ←/→ para ±5 segundos sólo cuando no se está escribiendo, seleccionando controles o usando modificadores. Mantiene las protecciones de exportación y reproducción existentes. Verificación estática de cinco condiciones del código desde GitHub realizada; no es prueba de navegador. Conexión Git directa bloqueada en contenedor por DNS; sin pruebas integrales ni despliegue. Próximo paso: QA en navegador y corrección de bugs antes de merge.
