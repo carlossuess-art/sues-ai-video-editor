@@ -123,3 +123,12 @@ completo ni cerrar F6. Ver docs/SUES_DEPTH_TEXT.md. No nuevos modelos ni reinten
 MediaPipe. HostingerVPS sigue sin tools callables; sóloAIBuilder. No confundir
 scripts preparados/tests locales con servicio desplegado. Instalador nuevo usa
 Montserrat; no modifica perfiles existentes ni WhatsApp/Caddy/DNS.
+
+## Recuperación y despliegue · 19/10/2026
+
+Carlos acredita HTTPS y acceso a la app móvil, perfil sin material. No repetir
+diagnósticoDNS/Caddy. Se añade recuperación completaTAR desdeUI,199tests/check y
+smoke real38,31s con reinicio/reintento, integridad y Range206. Leer
+docs/SUES_PROJECT_RECOVERY.md. Copia privada enLibrary; no ponerla enGit.
+Actualizador de sóloeditor preparado y simulado, NO ejecutadoVPS. Motor instalado
+sigueba972 hasta comprobar otra captura. Nada de nuevos modelos/ASR ni cierreV1.

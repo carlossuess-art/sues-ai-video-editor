@@ -1,0 +1,44 @@
+{
+  "version": "1.0",
+  "recovery": "private-portable-tar",
+  "state": "DONE",
+  "sourceSha256": "50c56298e59f783b2dfe2979c80ddc4e83a84ab4eb9048aa56ff8423be67ba6a",
+  "sourcePreserved": true,
+  "ASSAndFilterMatch": true,
+  "retryAndRestart": true,
+  "renderAttempts": 1,
+  "range": 206,
+  "archiveSha256": "2a659a1511bc3673b9374c7fb73fc82dfa5a5b0aae2f716b13ac7de8b70e612c",
+  "archiveBytes": 108625920,
+  "videoSha256": "686105e194b34a9ff050dbeb79a3ee5726767148e534b37eeb4ffa0aca905277",
+  "videoBytes": 16115725,
+  "summary": {
+    "duration": 38.31,
+    "styleId": "SUES_CALMA",
+    "sourceWords": 75,
+    "mappedWords": 75,
+    "omittedWords": 0,
+    "captions": 31,
+    "zooms": 2,
+    "motions": 3,
+    "transitions": 3,
+    "manualHighlights": 0,
+    "rejections": [],
+    "externalCostUSD": 0,
+    "productionReady": false
+  },
+  "externalCostUSD": 0,
+  "humanAcceptance": false,
+  "browserQA": false,
+  "qaFramesSeconds": [
+    4,
+    14,
+    18.5,
+    25
+  ],
+  "libraryBackup": {
+    "libraryFileId": "libfile_edcad6d1230c8191ad58668614741a3e",
+    "version": 0
+  },
+  "scope": "Work integration proof; not VPS deployment or human acceptance"
+}
