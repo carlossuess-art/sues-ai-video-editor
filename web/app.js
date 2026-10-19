@@ -230,6 +230,17 @@ function elementControls(c,job){
  back.addEventListener('click',()=>seek(-5));forward.addEventListener('click',()=>seek(5));
  play.addEventListener('click',()=>{const v=active();if(!v)return;if(v.paused)v.play().catch(()=>{});else v.pause();});
  for(const v of videos)for(const e of ['play','pause','loadedmetadata','emptied'])v.addEventListener(e,controls);
+ // Non-destructive shortcuts. Never intercept typing, native controls or modifier keys.
+ document.addEventListener('keydown',event=>{
+  if(event.defaultPrevented||event.altKey||event.ctrlKey||event.metaKey||event.repeat)return;
+  const target=event.target;
+  if(target?.closest?.('input,textarea,select,button,[contenteditable="true"],video,[role="slider"]'))return;
+  const v=active();if(!v||!Number.isFinite(v.duration)||v.duration<=0)return;
+  if(event.code==='Space'){event.preventDefault();if(v.paused)v.play().catch(()=>{});else v.pause();}
+  else if(event.code==='ArrowLeft'){event.preventDefault();seek(-5);}
+  else if(event.code==='ArrowRight'){event.preventDefault();seek(5);}
+ });
+
   const observer=new MutationObserver(update);for(const v of videos)observer.observe(v,{attributes:true,attributeFilter:['hidden','src']});
  const obsControls=new MutationObserver(controls);for(const v of videos)obsControls.observe(v,{attributes:true,attributeFilter:['hidden','src']});controls();
  update();
