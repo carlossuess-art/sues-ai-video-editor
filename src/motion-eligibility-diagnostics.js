@@ -1,0 +1,1 @@
+export const MOTION_RENDERER_MAX_SECONDS = 6;
