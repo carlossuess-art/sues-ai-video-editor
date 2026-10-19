@@ -224,7 +224,14 @@ function elementControls(c,job){
  for(const v of videos){for(const event of ['loadedmetadata','timeupdate','durationchange','emptied','play','pause'])v.addEventListener(event,update);}
  scrub.addEventListener('input',()=>{const v=active();if(v&&Number.isFinite(v.duration)&&v.duration>0){v.currentTime=Number(scrub.value)/1000*v.duration;update();}});
  for(const button of document.querySelectorAll('[data-timeline-tool]'))button.addEventListener('click',()=>document.querySelector('[data-editor-tool="'+button.dataset.timelineTool+'"]')?.click());
- const observer=new MutationObserver(update);for(const v of videos)observer.observe(v,{attributes:true,attributeFilter:['hidden','src']});
+ const back=document.getElementById('timeline-back'),play=document.getElementById('timeline-play'),forward=document.getElementById('timeline-forward');
+ const controls=()=>{const v=active(),ok=!!v&&Number.isFinite(v.duration)&&v.duration>0;for(const b of [back,play,forward])b.disabled=!ok;play.textContent=v&&!v.paused?'Ⅱ':'▶';play.setAttribute('aria-label',v&&!v.paused?'Pausar vídeo':'Reproducir vídeo');};
+ const seek=amount=>{const v=active();if(!v||!Number.isFinite(v.duration))return;v.currentTime=Math.max(0,Math.min(v.duration,v.currentTime+amount));update();};
+ back.addEventListener('click',()=>seek(-5));forward.addEventListener('click',()=>seek(5));
+ play.addEventListener('click',()=>{const v=active();if(!v)return;if(v.paused)v.play().catch(()=>{});else v.pause();});
+ for(const v of videos)for(const e of ['play','pause','loadedmetadata','emptied'])v.addEventListener(e,controls);
+  const observer=new MutationObserver(update);for(const v of videos)observer.observe(v,{attributes:true,attributeFilter:['hidden','src']});
+ const obsControls=new MutationObserver(controls);for(const v of videos)obsControls.observe(v,{attributes:true,attributeFilter:['hidden','src']});controls();
  update();
 })();
 
