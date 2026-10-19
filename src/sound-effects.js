@@ -12,6 +12,7 @@ export function prepareSoundEffects(plan,{sfxEnabled=false,sfxGain=.35}={}){
  assert(typeof sfxEnabled==='boolean'&&Number.isFinite(sfxGain)&&sfxGain>=0&&sfxGain<=.7,'settings');
  const events=[],add=(preset,start,reason,weight=1)=>{start=Math.max(0,start);const duration=Math.min(SOUND_PRESETS[preset].duration,plan.duration-start);if(duration<.05||events.some(e=>Math.abs(e.start-start)<.08))return;events.push({preset,weight,start:Number(start.toFixed(6)),duration:Number(duration.toFixed(6)),reason,provenance:'original-procedural-sues-v1'});};
  if(sfxEnabled&&sfxGain>0){
+  for(const e of plan.elements??[])add('whoosh',e.start,'elements-entry',.65);
   for(const g of plan.graphics??[]){add(g.type==='secret'?'impact':'whoosh',g.start-.06,'graphic-entry',g.type==='secret'?.75:.65);if(g.type==='secret')add('neon',secretRevealTime(g),'neon-reveal',.55);if(g.type==='compare')for(const at of [g.voiceCues?.left??g.start+.1,g.voiceCues?.right??g.start+1.1])if(at+.4<g.end)add('draw',at+.4,'arrow-draw',.7);}
   for(const t of plan.globalTransitions??[])add('whoosh',t.start,'transition',t.type==='radialBurst'?1:t.type==='warm'?.75:.5);
   for(const m of plan.semantic?.motions??[])add('impact',m.start,'motion-entry');

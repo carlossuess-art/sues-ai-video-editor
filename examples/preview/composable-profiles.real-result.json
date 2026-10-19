@@ -1,0 +1,155 @@
+{
+  "version": "1.0",
+  "source": "authorized-original-with-existing-analysis",
+  "checks": [
+    {
+      "styleId": "SUES_CALMA",
+      "format": "LIST",
+      "sourceWords": 75,
+      "mappedWords": 75,
+      "start": 2.0399999618530273,
+      "end": 4.199999809265137
+    },
+    {
+      "styleId": "SUES_CALMA",
+      "format": "RANKING",
+      "sourceWords": 75,
+      "mappedWords": 75,
+      "start": 2.0399999618530273,
+      "end": 4.199999809265137
+    },
+    {
+      "styleId": "SUES_CALMA",
+      "format": "COMPARE",
+      "sourceWords": 75,
+      "mappedWords": 75,
+      "start": 2.0399999618530273,
+      "end": 4.199999809265137
+    },
+    {
+      "styleId": "SUES_CALMA",
+      "format": "REVEAL",
+      "sourceWords": 75,
+      "mappedWords": 75,
+      "start": 2.0399999618530273,
+      "end": 4.199999809265137
+    },
+    {
+      "styleId": "SUES_CALMA",
+      "format": "Q&A",
+      "sourceWords": 75,
+      "mappedWords": 75,
+      "start": 2.0399999618530273,
+      "end": 4.199999809265137
+    },
+    {
+      "styleId": "SUES_CALMA",
+      "format": "FLOW",
+      "sourceWords": 75,
+      "mappedWords": 75,
+      "start": 2.0399999618530273,
+      "end": 4.199999809265137
+    },
+    {
+      "styleId": "SUES_DOPAMIN",
+      "format": "LIST",
+      "sourceWords": 75,
+      "mappedWords": 75,
+      "start": 2.0399999618530273,
+      "end": 4.579999923706055
+    },
+    {
+      "styleId": "SUES_DOPAMIN",
+      "format": "RANKING",
+      "sourceWords": 75,
+      "mappedWords": 75,
+      "start": 2.0399999618530273,
+      "end": 4.579999923706055
+    },
+    {
+      "styleId": "SUES_DOPAMIN",
+      "format": "COMPARE",
+      "sourceWords": 75,
+      "mappedWords": 75,
+      "start": 2.0399999618530273,
+      "end": 4.579999923706055
+    },
+    {
+      "styleId": "SUES_DOPAMIN",
+      "format": "REVEAL",
+      "sourceWords": 75,
+      "mappedWords": 75,
+      "start": 2.0399999618530273,
+      "end": 4.579999923706055
+    },
+    {
+      "styleId": "SUES_DOPAMIN",
+      "format": "Q&A",
+      "sourceWords": 75,
+      "mappedWords": 75,
+      "start": 2.0399999618530273,
+      "end": 4.579999923706055
+    },
+    {
+      "styleId": "SUES_DOPAMIN",
+      "format": "FLOW",
+      "sourceWords": 75,
+      "mappedWords": 75,
+      "start": 2.0399999618530273,
+      "end": 4.579999923706055
+    }
+  ],
+  "rendered": "DOPAMIN+ELEMENTS/COMPARE",
+  "editorialCopy": "QA-only-not-an-interpretation-of-the-speech",
+  "state": "DONE",
+  "renderAttempts": 1,
+  "sourcePreserved": true,
+  "fullDecode": "pass",
+  "range": 206,
+  "backupASSAndFilterMatch": true,
+  "undoRestoresFingerprint": true,
+  "summary": {
+    "duration": 38.31,
+    "styleId": "SUES_DOPAMIN",
+    "sourceWords": 75,
+    "mappedWords": 75,
+    "omittedWords": 0,
+    "captions": 32,
+    "zooms": 0,
+    "motions": 1,
+    "transitions": 0,
+    "manualHighlights": 0,
+    "rejections": [],
+    "externalCostUSD": 0,
+    "productionReady": false
+  },
+  "videoSha256": "6a19c534b7d3f17815479cab158eb35868cd83e07c5ff64c82a5ae93000b23aa",
+  "externalCostUSD": 0,
+  "humanAcceptance": false,
+  "browserQA": false,
+  "tests": {
+    "node": 203,
+    "failures": 0,
+    "baselineBeforeChange": 199
+  },
+  "visualQA": {
+    "sixFormatFramesReviewed": true,
+    "integrationFramesReviewed": [
+      1.5,
+      2.1,
+      2.8,
+      4.3,
+      5.1
+    ],
+    "humanAcceptance": false,
+    "browserQA": false
+  },
+  "legacyCALMA": {
+    "baseCommit": "78f38fb1f47f4bfa279904fe6199cc29d9df9030",
+    "settings": "existing-private-CALMA-project",
+    "assIdentical": true,
+    "filterIdentical": true,
+    "captionCount": 31,
+    "wordCount": 75
+  }
+}

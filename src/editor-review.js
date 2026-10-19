@@ -1,5 +1,6 @@
 export function editorReview(plan,director,settings){
  const events=[
+  ...(plan.elements??[]).map(e=>({type:'elements-'+e.format,start:e.start,end:e.end,text:e.label,secondary:e.secondary,number:e.number,reason:'Estructura elegida por el usuario',scope:e.scope,sourceWordIndexes:e.sourceWordIndexes,verification:e.timing,copyOrigin:e.copyOrigin})),
   ...(plan.semantic?.zooms??[]).map(e=>({type:'zoom',start:e.start,end:e.end,reason:e.reason,sourceWordIndexes:e.evidence?.sourceWordIndexes??[],verification:e.evidence?.method??'editorial'})),
   ...(plan.semantic?.motions??[]).map(e=>({type:e.params.motionId==='QUOTE_CARD_01'?'quote':e.params.motionId,start:e.start,end:e.end,text:e.lines.join(' '),reason:e.reason,box:e.box,audio:e.audio,placement:e.placement,sourceWordIndexes:e.evidence?.sourceWordIndexes??[],verification:e.evidence?.method??'editorial'})),
   ...(plan.graphics??[]).map(e=>({type:e.type,start:e.start,end:e.end,text:e.text,left:e.left,right:e.right,heading:e.heading,bodyLines:e.bodyLines,lead:e.lead,icons:e.icons,endCaptionId:e.endCaptionId,voiceCues:e.voiceCues,replacedCaptionIds:e.replacedCaptionIds,graphicCopyOrigin:'explicit-editor-choice-when-present',reason:e.reason,sourceWordIndexes:e.wordIndexes,verification:e.textOrigin})),
