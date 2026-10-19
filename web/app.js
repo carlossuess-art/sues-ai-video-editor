@@ -212,3 +212,16 @@ function elementControls(c,job){
  for(const other of plan.manifest.captions.filter(other=>other.start>=c.start&&other.end-c.start<=12)){const o=node('option',other.end.toFixed(2)+' s · '+other.text);o.value=other.id;end.append(o);}end.value=chosen?.endCaptionId??c.id;label.append(end);box.append(label);
  return box;
 }
+
+/* Real-player timeline: uses only loaded media metadata, never fabricated clips. */
+(function setupPlayerTimeline(){
+ const scrub=document.getElementById('timeline-scrub'),clock=document.getElementById('timeline-current'),duration=document.getElementById('timeline-duration'),captions=document.getElementById('timeline-captions');
+ const format=seconds=>{if(!Number.isFinite(seconds))return '00:00';const n=Math.max(0,Math.floor(seconds));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')};
+ const videos=[document.getElementById('source-video'),document.getElementById('video')];
+ const active=()=>videos.find(v=>!v.hidden&&v.getAttribute('src'))||null;
+ const update=()=>{const v=active(),d=v?.duration;const valid=Number.isFinite(d)&&d>0;scrub.disabled=!valid;scrub.value=valid?String(Math.round(v.currentTime/d*1000)):'0';clock.textContent=format(v?.currentTime||0);duration.textContent=format(d);captions.hidden=!(v===videos[1]&&document.getElementById('caption-count').textContent.trim());};
+ for(const v of videos){for(const event of ['loadedmetadata','timeupdate','durationchange','emptied','play','pause'])v.addEventListener(event,update);}
+ scrub.addEventListener('input',()=>{const v=active();if(v&&Number.isFinite(v.duration)&&v.duration>0){v.currentTime=Number(scrub.value)/1000*v.duration;update();}});
+ const observer=new MutationObserver(update);for(const v of videos)observer.observe(v,{attributes:true,attributeFilter:['hidden','src']});
+ update();
+})();
