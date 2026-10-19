@@ -223,6 +223,7 @@ function elementControls(c,job){
  const update=()=>{const v=active(),d=v?.duration;const valid=Number.isFinite(d)&&d>0;scrub.disabled=!valid;scrub.value=valid?String(Math.round(v.currentTime/d*1000)):'0';clock.textContent=format(v?.currentTime||0);duration.textContent=format(d);captions.hidden=!(v===videos[1]&&document.getElementById('caption-count').textContent.trim());};
  for(const v of videos){for(const event of ['loadedmetadata','timeupdate','durationchange','emptied','play','pause'])v.addEventListener(event,update);}
  scrub.addEventListener('input',()=>{const v=active();if(v&&Number.isFinite(v.duration)&&v.duration>0){v.currentTime=Number(scrub.value)/1000*v.duration;update();}});
+ for(const button of document.querySelectorAll('[data-timeline-tool]'))button.addEventListener('click',()=>document.querySelector('[data-editor-tool="'+button.dataset.timelineTool+'"]')?.click());
  const observer=new MutationObserver(update);for(const v of videos)observer.observe(v,{attributes:true,attributeFilter:['hidden','src']});
  update();
 })();
