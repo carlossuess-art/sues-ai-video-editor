@@ -64,7 +64,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/recoveries'&&req.method==='GET')return json(res,200,recoveries.list());
     if(path==='/api/recoveries'&&req.method==='POST'){
      req.setTimeout(900000);const recovered=await recoveries.receive(req);
-     const job=jobs.create(recovered.profileId,recoveries.settings(recovered.profileId));
+     const job=jobs.list().find(j=>j.profileId===recovered.profileId)??jobs.create(recovered.profileId,recoveries.settings(recovered.profileId));
      return json(res,201,{recovery:recovered,job});
     }
     const analysisMatch=/^\/api\/uploads\/([a-f0-9]{64})\/analysis$/.exec(path);
@@ -76,7 +76,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      const config=projectConfig(profiles[id]),read=p=>JSON.parse(readFileSync(p,'utf8')),brand=read(config.brandKitPath),template=read(config.templatePath),catalog=read(config.catalogPath);
      return json(res,200,{brand,template,graphicBlocks:GRAPHIC_BLOCKS,transitions:GLOBAL_TRANSITIONS,styles:Object.entries(STYLE_VARIANTS).map(([id,v])=>({id,available:true,status:v.status,pacing:v.pacing})),motions:catalog.map(m=>({id:m.id,type:m.type,tags:m.tags,minDuration:m.trigger.minDuration,reasons:m.trigger.semanticReasons,rendered:RENDERED_MOTIONS.includes(m.id),allowedInTemplate:template.motion.allowed.map(a=>MOTION_ALIASES[a]??a).includes(m.id)}))});
     }
-    if(path==='/api/profiles'&&req.method==='GET')return json(res,200,Object.keys(profiles).map(id=>({id,title:id,template:'SUES_CALMA',mode:'existing-transcript-and-vision',ready:projectReady(profiles[id])})));
+    if(path==='/api/profiles'&&req.method==='GET'){const recovered=new Map(recoveries.list().map(r=>[r.profileId,r.title]));return json(res,200,Object.keys(profiles).map(id=>({id,title:recovered.has(id)?recovered.get(id)+' · recuperado':id.startsWith('upload-')?'Vídeo subido':id,template:'SUES_CALMA',mode:'existing-transcript-and-vision',ready:projectReady(profiles[id])})));}
     if(path==='/api/jobs'&&req.method==='GET')return json(res,200,jobs.list());
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{}));

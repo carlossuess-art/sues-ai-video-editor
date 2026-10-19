@@ -35,6 +35,8 @@ def extract(archive, destination):
             if (not (member.isdir() or member.isfile()) or member.issparse() or
                     member.size < 0 or member.size > MAX_BYTES):
                 raise ValueError('La copia contiene enlaces o entradas no permitidas')
+            if name.endswith('.json') and member.size > 8 * 1024 * 1024:
+                raise ValueError('Un archivo de análisis supera 8 MiB')
             total += member.size
             if total > MAX_BYTES:
                 raise ValueError('La copia descomprimida supera 512 MiB')

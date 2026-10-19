@@ -74,8 +74,8 @@ export class ProjectRecovery{
    this.profiles[record.profileId]=join(target,'project','project.json');
    return {...record,reused:false};
   }finally{
-   if(fd)await fd.close();await unlink(temp).catch(()=>{});
-   if(!complete&&existsSync(stage))rmSync(stage,{recursive:true,force:true});this.busy=false;
+   try{if(fd)await fd.close();}
+   finally{await unlink(temp).catch(()=>{});try{if(!complete&&existsSync(stage))rmSync(stage,{recursive:true,force:true});}finally{this.busy=false;}}
   }
  }
 }

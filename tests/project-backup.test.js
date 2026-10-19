@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {rmSync,writeFileSync,readFileSync,symlinkSync} from 'node:fs';
+import {rmSync,writeFileSync,readFileSync,symlinkSync,unlinkSync} from 'node:fs';
 import {join} from 'node:path';
 import {fixture} from './helpers/editor-fixture.js';
 import {loadProject,prepareProject} from '../src/local-pipeline.js';
@@ -16,4 +16,10 @@ test('portable backup restores media, analysis, font kit and editor choices with
 });
 test('backup rejects symlinked roots instead of following another directory',async()=>{
  const f=fixture();try{const link=join(f.dir,'link');symlinkSync(f.dir,link,'dir');assert.throws(()=>verifyProjectBackup(link),/regular backup directory/);}finally{rmSync(f.dir,{recursive:true,force:true});}
+});
+test('backup verification rejects unlisted files and a symlinked manifest',async()=>{
+ const f=fixture();try{const project=loadProject(f.profiles.test),out=join(f.dir,'portable');await createProjectBackup(project,prepareProject(project),out);
+ writeFileSync(join(out,'unlisted.json'),'{}');assert.throws(()=>verifyProjectBackup(out),/unlisted/);unlinkSync(join(out,'unlisted.json'));
+ const manifest=readFileSync(join(out,'backup-manifest.json'));unlinkSync(join(out,'backup-manifest.json'));writeFileSync(join(f.dir,'external.json'),manifest);symlinkSync(join(f.dir,'external.json'),join(out,'backup-manifest.json'));assert.throws(()=>verifyProjectBackup(out),/regular manifest/);
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
 });

@@ -1,3 +1,28 @@
+## Recuperación completa verificada en Work · 19/10/2026
+
+App permite recuperar TAR privado con vídeo/análisis/fuentes/medios/ajustes,
+perfil nuevo y trabajo listo. Reintento/reinicio no duplican trabajo. Seguridad:
+sesión/origen antes debytes, extracción acotada sin enlaces/traversal/sparse,
+hashes/config declarada y limpieza ante fallos. Estados en español, bloqueoSFX
+noeditable y BrandKit del trabajo seleccionado. No ASR/modelos/LLM nuevos.
+
+199testsNode/checkPASS;5Pythonextractor y10desplieguesimuladasPASS. Smoke real:
+38,31s/75de75palabras/31captions/2zooms/3motions/3transiciones,DONE,1intento,
+fuenteintacta/fullDecode/Range206. ASS/filtro restaurados idénticos. QA4frames,
+sin reproducción humana ni QA de navegador; descargaChromium incompleta detenida.
+VídeoSHA686105e194b34a9ff050dbeb79a3ee5726767148e534b37eeb4ffa0aca905277.
+Copia privada108625920bytes,SHA2a659a1511bc3673b9374c7fb73fc82dfa5a5b0aae2f716b13ac7de8b70e612c,
+Librarylibfile_edcad6d1230c8191ad58668614741a3e versión0.
+
+Actualizador update_service.py preparado: commitfijo, imagen/deps/estado/token/
+origenHTTPS conservados, doctor y rollback; sóloeditor,sinWA/Caddy/DNS/pull/build.
+Cinco tests simulados específicos; no Docker real ni ejecuciónVPS. Producción
+sigueba972 con HTTPS y acceso móvil acreditados; perfil aún sin material.
+La consulta de archivosVPS quedó pospuesta porCarlos. Pendiente aplicar release,
+recuperar copia desdeUI y validar exportación allí. Leer docs/SUES_PROJECT_RECOVERY.md.
+No aceptación nueva, segmentación automática, DirectorLLM ni cierreF6/V1.
+
+---
 ## HTTPS verificado en VPS · captura de Carlos · 19/10/2026
 
 Captura156594 acredita activación completada: editorHTTPS200, API sin sesión401,
