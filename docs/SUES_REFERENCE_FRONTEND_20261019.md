@@ -41,3 +41,10 @@ Se añade timeline semántico:
 - Revisión estructural por lectura del código remoto: 7 comprobaciones de puntos de integración superadas.
 
 **Límite explícito:** no se ejecutaron pruebas Node/Chromium, playback, render o VPS. Se requiere una prueba funcional de navegador antes de fusionar. Se mantiene la rama aislada.
+
+## Continuación · controles de timeline
+
+Último commit frontend: `490feba81e2c056059b031533e03a85c3bfef23b`.
+Se añaden accesos directos Subtítulos, Audio, Visuales y Estilo dentro del timeline, enlazados con los botones y paneles ya operativos. Sin cambio de motor, persistencia, proveedores o dependencias.
+
+Verificación: código remoto releído y anclajes identificados. Intento de clonación local fallido por DNS de GitHub desde el contenedor; por tanto NO constan en este bloque pruebas completas Node/Chromium ni render. Rama todavía sin merge ni despliegue; siguiente paso obligatorio: QA móvil/escritorio y regresión antes de integrar. No se ha probado el VPS.
