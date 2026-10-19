@@ -177,3 +177,8 @@ output{color:var(--cyan)}
 .timeline-segment.playing{background:#704dc1;border-color:#e0bdff;box-shadow:0 0 0 1px #d7b4fb80}
 .timeline-hint{font-size:10px!important;line-height:1.3!important;color:#8aa6ba;margin:4px 0 0!important}
 @media(max-width:700px){.timeline-segments{height:26px}.timeline-segment{top:3px;height:19px;line-height:13px;padding:2px 3px;font-size:9px}.timeline-hint{font-size:9px!important}}
+
+.timeline-toolbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:2px 0 8px}
+.timeline-toolbar button{min-width:0;border-color:#2d4c5d;background:#102534;color:#a6d9e9;min-height:32px;padding:5px 3px;font-size:11px;white-space:nowrap}
+.timeline-toolbar button:hover{background:#174052;color:#e5fbff}
+@media(max-width:700px){.timeline-toolbar{gap:3px;margin:1px 0 4px}.timeline-toolbar button{font-size:10px;min-height:27px;padding:3px 1px}}
