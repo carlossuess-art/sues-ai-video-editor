@@ -162,3 +162,24 @@ Siguiente acción: revisar el criterio editorial de estructuras sobre una locuci
 adecuada, completar máscaras de cuerpo y efectos concretos del catálogo y probar
 la nueva UI en navegador. El VPS conserva el estado observado anterior; este
 bloque no cambia producción ni cierra F6/V1.
+
+
+## Verificación real de interfaz · 19/10/2026
+
+Chromium145:24combinaciones escritorio/móvil,CALMA/DOPAMIN y6formatos,guardadas
+yrecargadas sin pérdida ni scroll horizontal. Deshacer/duplicarPASS. Recuperación
+TAR desdeinput deUI conservaELEMENTS; exportación real38,31s,decodePASS,original
+intacto yRange206. Controlesbloqueados alcompletar;sin erroresJS. No es aceptación
+estética de losseis diseños. Ver examples/preview/browser-integration.real-result.json.
+
+Ejecutar laQA opcional sin agregar Playwright como dependencia deproducción:
+
+```sh
+SUES_PLAYWRIGHT_MODULE=/ruta/playwright/index.mjs \
+SUES_CHROMIUM_PATH=/ruta/chrome-headless-shell \
+node scripts/app/smoke_browser_real.mjs PROYECTO.json NUEVO_DIRECTORIO_PRIVADO
+```
+
+Usar análisis existente deloriginal autorizado. Elscript descarga unacopia privada
+yla recupera desde laUI,exporta y comprueba integridad. Capturas/TAR quedan fuera
+ deGit. La instalación de navegador no modifica elruntime delVPS.

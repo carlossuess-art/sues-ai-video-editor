@@ -162,3 +162,12 @@ SHA816d3bb6c1ea77b6048ed650e49b654c129d79626e766d59b9a3645c10d471a1.
 Aceptación visual de esa composición/contornos; no ampliar a audio, automatización
 corporal ni cierre F6/V1. Mantener look aceptado. La receta explícita reutilizable
 vive en examples/templates/reviewed-depth.recipe.json; no inferir discurso/ASR.
+
+## QA navegador disponible · 19/10/2026
+
+Chromium145 local + Playwright opcional completan24combinaciones enescritorio/móvil,
+copia/recuperaciónUI yrender real. No repetir«Chromium ausente» como bloqueo vigente
+sincomprobar runtime/browser-tools. Ver smoke_browser_real.mjs y evidenciaJSON.
+El binario descargado por Playwrightv1234 estabaincompleto; Chrome oficial145 sí
+funciona. No añadir Chrome/Playwright a dependenciasVPS. QA técnica noes aceptación
+estética ni prueba delservidor remoto. VPSúltimoobservado sigueba972.

@@ -1,3 +1,20 @@
+## Editor validado en navegador real · 19/10/2026
+
+Chromium145 local:24combinaciones = escritorio/móvil × CALMA/DOPAMIN × seis
+formatosELEMENTS. Guardar yrecargar conserva cada formato; sin desbordamiento
+horizontal a1440×1000 y393×852. Deshacer restaura huella yduplicar mantieneELEMENTS.
+DescargaTAR yrecuperación por selector dearchivo desdeUI conservan los ajustes.
+Render real desde proyecto recuperado:38,31s,DONE,decodePASS,fuenteintacta,
+Range206/1024bytes;controles deajuste bloqueados al terminar. Sin erroresJS.
+209testsNode/check y10pruebas simuladas dedesplieguePASS. Chrome/Playwright sólo
+herramientas locales opcionales; dependenciasdel servidor idénticas.
+Etiqueta antigua «tamaño doble» corregida a«Palabra importante»; sin cambiar look.
+Evidencia examples/preview/browser-integration.real-result.json yscript
+scripts/app/smoke_browser_real.mjs. Capturas/medios/cookies privados fuera deGit.
+Preparado para integrar PR3/PR4 enoficial;VPS sin modificar. Esta QA técnica no
+convierte la tarjetaFLOW detest enuna nueva entrega creativa aprobada.
+
+---
 ## Muestra de profundidad aceptada y receta reutilizable · 19/10/2026
 
 Carlos: «Lo veo bien», referido a la comparación y muestra vertical de12s,
