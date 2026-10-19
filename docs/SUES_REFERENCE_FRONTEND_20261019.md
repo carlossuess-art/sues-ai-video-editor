@@ -48,3 +48,9 @@ Se añade timeline semántico:
 Se añaden accesos directos Subtítulos, Audio, Visuales y Estilo dentro del timeline, enlazados con los botones y paneles ya operativos. Sin cambio de motor, persistencia, proveedores o dependencias.
 
 Verificación: código remoto releído y anclajes identificados. Intento de clonación local fallido por DNS de GitHub desde el contenedor; por tanto NO constan en este bloque pruebas completas Node/Chromium ni render. Rama todavía sin merge ni despliegue; siguiente paso obligatorio: QA móvil/escritorio y regresión antes de integrar. No se ha probado el VPS.
+
+## Bloque de continuidad programada · 19/10/2026
+
+Se ha activado una tarea diaria de continuidad. Cada ejecución recuperará primero el roadmap y el estado de GitHub, y sólo ejecutará operaciones seguras sin costes nuevos ni despliegues arriesgados no aprobados.
+
+Corrección incremental commit `2a8a2851ac98ff92496e598cf5fdca7b324a4b8d`: la pista de subtítulos del timeline se muestra únicamente en el montaje activo y cuando no hay cambios pendientes de previsualizar. Se observan cambios de vista de vídeo y de estado para evitar una pista falsa sobre el original. Sin pruebas Chromium o despliegue en este bloque. Próxima tarea: tests y validación de navegador antes de integración.
