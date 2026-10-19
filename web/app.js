@@ -237,9 +237,9 @@ function elementControls(c,job){
  for(const v of videos)for(const e of ['play','pause','loadedmetadata','emptied'])v.addEventListener(e,controls);
  // Non-destructive shortcuts. Never intercept typing, native controls or modifier keys.
  document.addEventListener('keydown',event=>{
-  if(event.defaultPrevented||event.altKey||event.ctrlKey||event.metaKey||event.repeat)return;
+  if(event.defaultPrevented||event.altKey||event.ctrlKey||event.metaKey||event.shiftKey||event.repeat||event.isComposing)return;
   const target=event.target;
-  if(target?.closest?.('input,textarea,select,button,[contenteditable="true"],video,[role="slider"]'))return;
+  if(target?.closest?.('a,summary,input,textarea,select,button,[contenteditable],video,[role="button"],[role="link"],[role="slider"],[role="textbox"],[role="combobox"]'))return;
   const v=active();if(!v||!Number.isFinite(v.duration)||v.duration<=0)return;
   if(event.code==='Space'){event.preventDefault();if(v.paused)v.play().catch(()=>{});else v.pause();}
   else if(event.code==='ArrowLeft'){event.preventDefault();seek(-5);}
