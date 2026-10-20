@@ -1,3 +1,42 @@
+## Whisper local desplegado y vídeo nuevo exportado · 20/10/2026
+
+Instalado a75c76f6612e7720724b39c90a40525555e17a14, árbol
+3113d266cf11b3c86cb35e40c0b86631b0c54cf0; anterior2f44a708.
+Integrado sin force mediante lease desde0f04ab2; implementación4fefef5 y
+corrección a75c76f. systemd sues-editor-update-20261020-192045-394d190b y
+supervisor sues-whisper-editor-deploy-20261020:SUCCESS/exitCode0/Resultsuccess.
+Backup verificado /opt/sues-video-setup/update-backup-20261020-192047-25550,
+TAR SHA2566a9b7858c2a57e5df792e9079b51746c1d8131967565684da99348cf956f0bc5;
+contenedor anterior conservado. Worker detenido durante copia, reiniciado activo.
+
+Whisper real CPU/base/int8 sin API:vídeo nuevo12.979956s,español11palabras.
+Perfil validado por HTTPS y render de producción f91ce48c-768e-4b1e-acfb-7ad5189d5393:
+DONE/1intento,DOPAMIN,5grupos,11/11palabras,0cortes/zoom/motions/transiciones;
+plano horizontal íntegro dentro de lienzo vertical,voz original. MP4 H264/AAC
+3902956bytes,SHA25610c90bef98f574c9830cd12c88fc1e8ce77d84711f9dd061c7b6cfd006eb1158,
+vídeo12.966667s(tolerancia1frame),audio conservado,fullDecodePASS. HTTP200/Range206,
+descarga idéntica. Fuente intacta;5trabajos anteriores y sus archivos idénticos.
+225archivos previos comprobados:223idénticos;únicos cambios previstos son metadata
+del nuevo upload(perfil/plantilla) y heartbeat. Ninguna baja. Prompt original intacto.
+
+245Node/check/diff--check PASS. Chromium145 real móvil/escritorio,8s imagen+8.05s
+audio,MP4/play/descarga/fullDecode/reanudación/nombre/plantilla/prompt PASS; ASR del
+smoke sustituido, inferencia real separada en VPS. Recurso web4/4 SHA idéntico.
+Prueba real de producción es HTTP/FFmpeg,no un clic visual Work;protección de
+credenciales nativa sigue vigente. Error real inicial de duración corregido con
+último fotograma hasta fin de voz,sin relajar validación;primeros intentos fallidos
+están documentados. No afirmar transcripción perfecta ni aceptación audiovisual.
+
+Servicio sues-editor-whisper persistente systemd:uid1000/capacidades0,CPU50%,
+768MiB máximo,modelo fijado+hash,red bloqueada,fuentes/modelo RO,sólo mailbox RW.
+Autorización explícita de Carlos registrada en AGENTS. ASR es nuevo; director libre,
+cortes semánticos,seguimiento facial y efectos del prompt siguen pendientes.
+Los encargos no compatibles no se aplican; acción básica explícita y registrada.
+Sin costes/API/otros servicios ni cambios WAC/WhatsApp/Caddy/DNS. F6/F9/V1 abiertas.
+Informe docs/SUES_LOCAL_WHISPER_20261020.md;evidencia whisper.vps-result.json y
+whisper-ui.chromium-result.json. Mis proyectos:«Prueba de tu vídeo · Whisper local».
+
+---
 ## Whisper local autorizado · validación previa20/10/2026
 
 Instalado ASR aislado faster-whisper1.2.1/base/int8 en VPS. Fuente nueva real

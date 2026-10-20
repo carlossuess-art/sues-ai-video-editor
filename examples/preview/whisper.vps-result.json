@@ -1,0 +1,86 @@
+{
+  "production": {
+    "commit": "a75c76f6612e7720724b39c90a40525555e17a14",
+    "jobId": "f91ce48c-768e-4b1e-acfb-7ad5189d5393",
+    "state": "DONE",
+    "previousJobs": 5,
+    "previousFilesVerified": 225,
+    "missingFiles": [],
+    "changedEphemeralFiles": [
+      "jobs/uploads/asr/worker.json"
+    ],
+    "HTTPS": 200,
+    "unauthenticatedAPI": 401,
+    "localTranscriptionAvailable": true,
+    "briefUnchanged": true,
+    "attempt": 1,
+    "summary": {
+      "duration": 12.979956,
+      "styleId": "SUES_DOPAMIN",
+      "sourceWords": 11,
+      "mappedWords": 11,
+      "omittedWords": 0,
+      "captions": 5,
+      "zooms": 0,
+      "motions": 0,
+      "transitions": 0,
+      "manualHighlights": 0,
+      "rejections": [],
+      "externalCostUSD": 0,
+      "productionReady": false
+    },
+    "outputSHA256": "10c90bef98f574c9830cd12c88fc1e8ce77d84711f9dd061c7b6cfd006eb1158",
+    "downloadBytes": 3902956,
+    "downloadStatus": 200,
+    "rangeStatus": 206,
+    "fullDecode": "pass",
+    "sourcePreserved": true,
+    "durationPlanned": 12.979956,
+    "durationEncoded": 12.966667,
+    "allPreviousJobsPreserved": true,
+    "publicResourcesVerified": [
+      "app.js",
+      "index.html",
+      "studio.css",
+      "sw.js"
+    ],
+    "oldJobFilesByteIdentical": true,
+    "priorFilesByteIdentical": 223,
+    "workerIsolation": [
+      "Uid:\t1000\t1000\t1000\t1000",
+      "CapEff:\t0000000000000000",
+      "CapBnd:\t0000000000000000"
+    ]
+  },
+  "deployment": {
+    "commit": "a75c76f6612e7720724b39c90a40525555e17a14",
+    "state": "SUCCESS",
+    "started": 1792524044.7360198,
+    "unit": "sues-editor-update-20261020-192045-394d190b",
+    "directory": "/opt/sues-video-setup/background-update/20261020-192045-394d190b",
+    "deployment": {
+      "commit": "a75c76f6612e7720724b39c90a40525555e17a14",
+      "mode": "deploy",
+      "state": "SUCCESS",
+      "started": 1792524045.2092314,
+      "exitCode": 0,
+      "finished": 1792524050.140459
+    },
+    "systemd": "Result=success\nExecMainStatus=0\n",
+    "exitCode": 0,
+    "finished": 1792524051.1847768
+  },
+  "backup": {
+    "path": "/opt/sues-video-setup/update-backup-20261020-192047-25550",
+    "sha256": "6a9b7858c2a57e5df792e9079b51746c1d8131967565684da99348cf956f0bc5",
+    "previousCode": "2f44a708a88ce8ced0d698ce3a2c1448f4c717dd"
+  },
+  "actualASR": {
+    "engine": "faster-whisper-base-int8",
+    "language": "es",
+    "words": 11,
+    "memoryPeakBytes": 316768256,
+    "APIChargesUSD": 0
+  },
+  "nativeWorkBrowser": "not retested; credential protection remains; Chromium evidence is local"
+}

@@ -75,3 +75,34 @@ drift exceeds one frame. No se relajó el control:full-frame-fit conserva el úl
 fotograma con tpad y recorta a la duración del segmento. Mantiene toda la voz,
 no acelera ni inventa movimiento. Regresión Chromium con vídeo8s/audio8.05s,
 MP4 y decodificación reales;se vuelve a probar la fuente privada en VPS.
+
+## Resultado final observado
+
+Código instalado a75c76f6612e7720724b39c90a40525555e17a14, árbol
+3113d266cf11b3c86cb35e40c0b86631b0c54cf0; anterior2f44a708. GitHub oficial
+avanzada con lease sin force. Despliegue20261020-192045-394d190b SUCCESS/exit0,
+Resultsuccess/ExecMainStatus0; supervisor también0. Worker reiniciado activo.
+Backup /opt/sues-video-setup/update-backup-20261020-192047-25550/editor-state.tar,
+SHA2566a9b7858c2a57e5df792e9079b51746c1d8131967565684da99348cf956f0bc5.
+Contenedor sues-video-editor-before-update-20261020-192047-25550 retenido.
+
+Candidato aislado exacto a75c76f:render real fuente+ASR/fullDecode PASS. Después
+producción HTTPS:importación validada,crear versión y render real1intento/DONE,
+job f91ce48c-768e-4b1e-acfb-7ad5189d5393. MP43902956bytes,H2641080x1920/30,AAC,
+SHA25610c90bef98f574c9830cd12c88fc1e8ce77d84711f9dd061c7b6cfd006eb1158;
+idéntico al candidato.11/11palabras,5grupos,sin cortes semánticos,zoom,motions o
+transiciones.5trabajos previos íntegros;original intacto;prompt guardado intacto.
+HTTP200,Range206,fullDecode y4recursos web por SHA PASS.223de225archivos previos
+idénticos;2cambios previstos:heartbeat y metadata del upload recién preparado.
+Fotograma real3s revisado:plano completo,subtítulos;hay errores de ASR para revisar.
+No es aceptación estética ni prueba de que el prompt libre se haya ejecutado.
+
+245tests/check ysmoke final Chromium con audio8.05s/vídeo8s PASS;regresión del flujo
+Subir→verde→prompt también PASS. QA nativa Work no repetida por protección de
+credenciales;VPS privado comprobado mediante HTTP y renderer,no login visual nuevo.
+Algunos primeros ensayos de arnés fallaron por mountpoint node_modules ausente y
+lock de PID1 reutilizado en contenedor QA:corregidos en entorno aislado/nuevo store,
+no contados como PASS ni borrando locks de producción. Sin cambios de otros servicios.
+
+Evidencias:examples/preview/whisper.vps-result.json ywhisper-ui.chromium-result.json.
+F6/director semántico/V1 no cerrados. Recuperación por correo/Google no se modifica.
