@@ -1,3 +1,24 @@
+## Banco de recursos · inventario real y plan · 20/10/2026
+
+Acceso Google aCreatorClub completado yverificado;curso71contenidos. Descargas
+4packsPremiere/AfterEffects+3CapCutPC localizadas:69MOGRT,1prfpset,75archivos fuentes.
+14archivosSFX descargados/FFprobe/hash:13únicos,duplicado de disparo decámara.
+Duraciones0.056188–6.2955s. MuestraMOGRT inspeccionada sin ejecutar:contiene
+composiciónAdobe+miniaturas. No se han integrado ni convertido estos presets.
+Pistaambiental propia46s/48k/estéreo/PCM16 verificada. WebAPIassets=[];
+Drive imágenes/motions/final vacías.13referencias,28pruebas y24archivos de trabajo
+localizados, no contados como banco limpio. Inventario privado con enlaces guardado
+como SUES_BANCO_RECURSOS_INVENTARIO_Y_PLAN.md. No enlaces privados/medios enGit.
+
+Plan:sfx únicos primero→tipoSFX e inserción temporal/ganancia→3–5motions adaptados→
+transiciones/overlays ycolocación segura→catálogoGemini→vídeo real para revisión.
+Biblioteca actualaudio>=3s esparamúsica:no sirvepara lamayoría deSFX cortos.
+ArchivosMOGRT/CapCut necesitanadaptación; tenerlos no implementael efecto.
+Auditoría inicial7packs,no todo contenido71clases;licencias/dependencias yselección
+sonora pendientes. No nuevos costes,instalaciones ni cambiosVPS/código/despliegue.
+Instalado sigue9febcdf;F6/F9/V1abiertas. Ver docs/SUES_RESOURCE_BANK_PLAN.md.
+
+---
 ## Planes externos desplegados · 20/10/2026
 
 Instalado 9febcdfbf2d9f641a455af958a7d1970d47298b5, árbol
