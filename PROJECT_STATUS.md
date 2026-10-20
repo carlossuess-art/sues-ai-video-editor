@@ -1,3 +1,28 @@
+## Dashboard y director desplegados y verificados · 20/10/2026
+
+Instalado240632a7d969919ce402e072da8297fd1c5a7299, árbol
+41636d976d65582525da121862abfe6ee973ebe2. Anterior9d8d077. Integración oficial
+con lease desde8c89b500,sin force. systemd
+sues-editor-update-20261020-160252-78817089:SUCCESS/exitCode0,Resultsuccess/status0.
+HTTPS200, API401 sin sesión/200 privada, propuesta de instrucciones de sólo
+lectura y JPEG real privados PASS.214 archivos persistentes previos idénticos
+por SHA;5 trabajos conservados;cola0/0/0. Backup verificado:
+/opt/sues-video-setup/update-backup-20261020-160254-22885, TAR SHA256
+b78a283069e50a8a3bc6babbff2ff02f0ad641665b8e80f30eb19b220d1d7502;
+contenedor anterior conservado para rollback. Sin cambios de otras aplicaciones.
+
+243 tests Node/check PASS local. Chromium145 móvil/escritorio: tres renders
+sintéticos8s,reproducción,descarga idéntica al preview,fuente intacta,proyectos/
+versiones,prompts y persistencia. Layout final separado con fixture y poster real,
+no otro render. Nueva UI oscura/cian con proyectos,instrucciones y herramientas
+contextuales. Director local de ajustes explícitos; no LLM libre/cortes por
+significado ni nuevo ASR. Peticiones desconocidas se rechazan enteras. Work nativo
+no se pudo reabrir por protección de credenciales; no afirmar login visual VPS
+nuevo. Carlos sí confirma descarga real móvil anterior. Aceptación estética de
+esta UI y F6/F9/V1 abiertas. Sin créditos,dependencias nuevas ni costes.
+Informe docs/SUES_PROJECT_DIRECTOR_UI_20261020.md y tres JSON project-director.*.
+
+---
 ## Dashboard y director por instrucciones · 20/10/2026 · probado localmente
 
 Nuevo recorrido sobre el editor existente: inicio/Nuevo proyecto, nombre y

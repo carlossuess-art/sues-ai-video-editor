@@ -69,5 +69,21 @@ humana. F6/F9/V1 globales siguen abiertas. Motor/render y dependencias intactos.
 
 ## Publicación
 
-Integración y despliegue pendientes al crear este informe; actualizar estado
-posterior con commit, unidad systemd, backup verificado y conservación de datos.
+Código instalado240632a7d969919ce402e072da8297fd1c5a7299, árbol
+41636d976d65582525da121862abfe6ee973ebe2, idéntico al checkout probado.
+Oficial integrada con expected_sha8c89b500, sin force. Despliegue systemd
+sues-editor-update-20261020-160252-78817089:SUCCESS, exitCode0, Resultsuccess,
+ExecMainStatus0. HTTPS200, API401 sin sesión/200 autenticada, propuesta de
+instrucciones de sólo lectura y JPEG privado real PASS. Cola0/0/0.
+No se ha enviado otro render de producción para probar la interfaz.
+
+Backup /opt/sues-video-setup/update-backup-20261020-160254-22885/editor-state.tar,
+SHA256 b78a283069e50a8a3bc6babbff2ff02f0ad641665b8e80f30eb19b220d1d7502,
+recalculado después del despliegue. Manifiesto por archivo verificado por updater.
+Contenedor anterior9d8d077 conservado como
+sues-video-editor-before-update-20261020-160254-22885(exited) para rollback;
+no se hizo reversión innecesaria.214 archivos persistentes previos idénticos por
+SHA, incluidos medios, trabajos, ajustes y credenciales. Cinco trabajos presentes.
+Se añadió únicamente la miniatura de la prueba HTTP. Sin tocar otros servicios.
+Evidencia examples/preview/project-director.vps-result.json.
+

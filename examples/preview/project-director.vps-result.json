@@ -1,0 +1,31 @@
+{
+  "kind": "actual-hostinger-project-studio-deployment",
+  "commit": "240632a7d969919ce402e072da8297fd1c5a7299",
+  "tree": "41636d976d65582525da121862abfe6ee973ebe2",
+  "previousCommit": "9d8d07776f974b02cc74724b89b3b6b7e7a42e18",
+  "unit": "sues-editor-update-20261020-160252-78817089",
+  "state": "SUCCESS",
+  "exitCode": 0,
+  "systemdResult": "success",
+  "systemdExecMainStatus": 0,
+  "https": 200,
+  "unauthenticatedAPI": 401,
+  "authenticatedAPI": 200,
+  "directorProposal": "pass; read only, no production render submitted",
+  "privateJPEGPoster": "pass; actual FFmpeg",
+  "existingPersistentFiles": 214,
+  "unchangedPersistentFiles": 214,
+  "jobsBeforeAndAfter": 5,
+  "queue": {
+    "rendering": 0,
+    "waiting": 0,
+    "saving": 0
+  },
+  "container": "running",
+  "backup": "/opt/sues-video-setup/update-backup-20261020-160254-22885",
+  "backupSHA256": "b78a283069e50a8a3bc6babbff2ff02f0ad641665b8e80f30eb19b220d1d7502",
+  "rollbackContainer": "sues-video-editor-before-update-20261020-160254-22885",
+  "rollbackContainerState": "exited; retained",
+  "browserLogin": "not repeated; Work native credential runtime remains blocked",
+  "externalCostUSD": 0
+}
