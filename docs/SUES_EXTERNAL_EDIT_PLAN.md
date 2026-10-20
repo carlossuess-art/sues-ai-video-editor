@@ -79,3 +79,29 @@ Capacidades aún no implementadas: cortes/velocidad por plan externo, seguimient
 de ojos/cuerpo, desenfoque selectivo, posición libre y SFX independientes por
 segundo. Blur/radial existentes no se exponen en el importador antes de su auditoría
 de memoria. No se cierran F6/F9/V1 ni se promete dirección semántica automática.
+
+## Despliegue comprobado
+
+Código instalado `9febcdfbf2d9f641a455af958a7d1970d47298b5`, árbol
+`8390f6296c0b5e2126d223e73148df56270de7ce`; anterior `a75c76f`.
+Oficial integrada sin force mediante lease desde `c99f4185`.
+Unidad `sues-editor-update-20261020-201352-fd680eb5`, supervisor
+`sues-external-plan-deploy-20261020-9febcdf-retry`: SUCCESS, exitCode0,
+Result=success/ExecMainStatus0. Whisper congelado durante copia y reiniciado.
+Primer preflight del supervisor abortó al considerar pendiente una solicitud
+ASR ya COMPLETE; guard corregido reconociendo terminales, sin borrar datos.
+
+Backup `/opt/sues-video-setup/update-backup-20261020-201355-26377/editor-state.tar`,
+SHA256 `aba378266bb25a34f829440787f5b49317f7ee93aef1267b2c1f71526850555c`,
+recalculado contra manifiesto. Contenedor anterior
+`sues-video-editor-before-update-20261020-201355-26377` conservado.
+Rollback requiere código+estado de la misma copia, conservando antes los trabajos
+posteriores; no se ha necesitado una reversión real.
+
+HTTPS200, API401 sin sesión, revisión privada real compila destello2.27s y
+bloquea faltantes/operación no soportada. No se renderiza otro trabajo privado
+para esta comprobación ni se afirma nuevo acceso visual nativo Work.
+6trabajos y259archivos previos comprobados:258idénticos y sólo heartbeat esperado;
+ninguna baja.4recursos públicos y7archivos instalados SHA idénticos. Editor
+running/OOMfalse,Whisper activo. Evidencia external-plan.vps-result.json.
+Sin consumo API ni cambios de otras aplicaciones.

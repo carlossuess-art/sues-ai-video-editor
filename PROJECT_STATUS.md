@@ -1,3 +1,35 @@
+## Planes externos desplegados · 20/10/2026
+
+Instalado 9febcdfbf2d9f641a455af958a7d1970d47298b5, árbol
+8390f6296c0b5e2126d223e73148df56270de7ce; anterior a75c76f.
+Integrado en oficial con lease desde c99f4185, sin force; rama
+feat/external-edit-plan-20261020 conserva la implementación probada.
+systemd sues-editor-update-20261020-201352-fd680eb5: SUCCESS/exitCode0,
+Result=success/ExecMainStatus0; supervisor sues-external-plan-deploy-20261020-9febcdf-retry
+SUCCESS/0. Worker Whisper detenido durante copia, reiniciado activo.
+Un primer guard detectó como pendiente una solicitud ASR ya COMPLETE y abortó
+antes de actualizar; corregido para reconocer terminales sin borrar solicitudes.
+
+Backup verificado /opt/sues-video-setup/update-backup-20261020-201355-26377/editor-state.tar,
+SHA256 aba378266bb25a34f829440787f5b49317f7ee93aef1267b2c1f71526850555c;
+contenedor anterior sues-video-editor-before-update-20261020-201355-26377 retenido.
+Rollback conserva código+estado del mismo backup; guardar primero cualquier
+trabajo posterior. No se ha necesitado ejecutar una reversión real.
+HTTPS200/API privada401 sin sesión. Revisiones reales por API HTTPS compilan
+destello2.27s y bloquean recurso ausente/capacidad no soportada; sólo lectura,
+sin otro render de producción ni nueva prueba de login visual nativo Work.
+4 recursos web y7 archivos instalados SHA idénticos al código probado.
+6trabajos originales intactos;259archivos anteriores comprobados,258idénticos,
+único cambio esperado heartbeat;ninguna baja. Contenedor running/OOMfalse.
+247Node/check PASS,Chromium145 móvil/escritorio con MP4 real24s,imagen/audio
+generados subidos porHTTP,análisis facial sintético,descarga/hash/fullDecode,
+borrador recuperado y conservación del padre PASS. Sin API/costes nuevos.
+Pruebas creativas con banco definitivo pendientes; no cierre de F6/F9/V1.
+No cambios WAC/WhatsApp/Caddy/DNS ni otras aplicaciones.
+Evidencias external-plan.vps-result.json y external-plan.chromium-result.json;
+contrato y límites docs/SUES_EXTERNAL_EDIT_PLAN.md.
+
+---
 ## Importación de planes externos · 20/10/2026 · probado localmente
 
 Implementado pegar plan JSON SUES de Gemini/otra IA→comprobar→ejecutar en otra
@@ -14,7 +46,7 @@ destello15.27s, imagen/audio subidos, corrección, borrador recuperado,
 descarga idéntica/fullDecode/sin overflow PASS. Análisis facial de QA sintético.
 QA técnica; banco definitivo y valoración creativa pendientes. Whisper solo
 no proporciona colocación facial de imágenes. Más límites/contrato en
-docs/SUES_EXTERNAL_EDIT_PLAN.md. Instalado VPS sigue a75c76f hasta nuevo registro.
+docs/SUES_EXTERNAL_EDIT_PLAN.md. Despliegue acreditado en el registro superior.
 
 ---
 ## Whisper local desplegado y vídeo nuevo exportado · 20/10/2026

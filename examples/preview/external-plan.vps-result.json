@@ -1,0 +1,39 @@
+{
+  "commit": "9febcdfbf2d9f641a455af958a7d1970d47298b5",
+  "previousCommit": "a75c76f6612e7720724b39c90a40525555e17a14",
+  "HTTPS": 200,
+  "unauthenticatedAPI": 401,
+  "localTranscriptionAvailable": true,
+  "jobCount": 6,
+  "productionReviewCompilesExactTime": 2.27,
+  "missingAndUnsupportedBlocked": true,
+  "productionRenderExecuted": false,
+  "privateReviewReadOnly": true,
+  "priorFilesVerified": 259,
+  "missingFiles": [],
+  "changedEphemeralFiles": [
+    "jobs/uploads/asr/worker.json"
+  ],
+  "publicResourcesVerified": [
+    "web/app.js",
+    "web/index.html",
+    "web/sw.js",
+    "web/studio.css"
+  ],
+  "installedCodeHashesVerified": [
+    "web/app.js",
+    "web/index.html",
+    "web/sw.js",
+    "web/studio.css",
+    "src/editor-server.js",
+    "src/external-edit-plan.js",
+    "src/graphic-blocks.js"
+  ],
+  "backup": "/opt/sues-video-setup/update-backup-20261020-201355-26377",
+  "backupSHA256": "aba378266bb25a34f829440787f5b49317f7ee93aef1267b2c1f71526850555c",
+  "rollbackContainer": "sues-video-editor-before-update-20261020-201355-26377",
+  "systemdUnit": "sues-editor-update-20261020-201352-fd680eb5",
+  "systemd": "Result=success\nExecMainStatus=0\n",
+  "originalsAndJobsUnchanged": true,
+  "externalCostUSD": 0
+}
