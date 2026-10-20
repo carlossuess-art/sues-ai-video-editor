@@ -64,7 +64,7 @@ export class VideoIntake{
  }
  list(){
   return this.records().map(c=>({id:c.sha256,bytes:c.bytes,createdAt:c.createdAt,lastUploadedAt:c.lastUploadedAt??c.createdAt,profileId:c.profileId??null,
-   name:c.name??'Vídeo subido',duration:c.source.duration,width:c.source.width,height:c.source.height,
+   name:c.name??'Vídeo subido',brief:c.brief??null,duration:c.source.duration,width:c.source.width,height:c.source.height,
    state:c.profileId?(projectReady(this.profiles[c.profileId])?'READY':'WAITING_ASSETS'):'NEEDS_ANALYSIS'}));
  }
  importAnalysis(id,data){
@@ -100,6 +100,13 @@ export class VideoIntake{
   const record=this.records().find(r=>r.sha256===id);if(!record)throw new Error('Upload not found');
   const path=join(this.directory,id+'.video');if(!regular(path)||lstatSync(path).size!==record.bytes||fileSha256(path)!==id)throw new Error('Stored video integrity changed');
   return path;
+ }
+ saveBrief(id,prompt){
+  if(!HASH.test(id)||!this.records().some(r=>r.sha256===id))throw new Error('Upload not found');
+  if(typeof prompt!=='string'||prompt.length>4000)throw new Error('Las instrucciones admiten hasta 4000 caracteres.');
+  const path=join(this.directory,id+'.json'),record=read(path);
+  record.brief={prompt:prompt.trim(),savedAt:new Date().toISOString()};atomicJSON(path,record);
+  return {saved:true,brief:record.brief,requiresAnalysis:this.list().find(u=>u.id===id).state!=='READY'};
  }
  async receive(req,{name}={}){
   if(this.busy)throw new Error('Upload busy');

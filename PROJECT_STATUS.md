@@ -1,3 +1,16 @@
+## Prompt guardado también para vídeos pendientes de análisis · 20/10/2026
+
+Primera corrección de orden instaladaa55e57d(systemd SUCCESS/0); ampliación local:
+Enviar prompt guarda también encargos de fuentes sin análisis, privados y ligados
+al hash del upload. Aparecen en dashboard y se recuperan al recargar/reabrir.
+No genera, analiza ni promete haber ejecutado el encargo. API acotada4000chars,
+requiere sesión/CSRF; vídeo original intacto.244 Node+check PASS; Chromium145
+móvil/escritorio con subida real/FFprobe, verde tras201, envío, guardado y
+recuperación del pendiente PASS. Renderer no ejecutado en este ensayo.
+Ampliación pendiente de instalar; no cambios de dependencias/motor/costes.
+Informe docs/SUES_UPLOAD_FIRST_20261020.md.
+
+---
 ## Corrección: subir primero, prompt después · 20/10/2026 · validada localmente
 
 Nuevo proyecto abre con Subir vídeo como primera acción. Selector+subida en un
