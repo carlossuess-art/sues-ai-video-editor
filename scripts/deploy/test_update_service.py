@@ -9,7 +9,7 @@ import update_service as updater
 
 
 class UpdateTests(unittest.TestCase):
-    def exercise(self, fail=False, busy=False, already=False, dependencies_changed=False, backup_failed=False):
+    def exercise(self, fail=False, busy=False, already=False, dependencies_changed=False, backup_failed=False, diagnostic=False):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             old_release = root / 'release.old'
@@ -62,9 +62,11 @@ class UpdateTests(unittest.TestCase):
                     else:
                         self.assertNotIn(('docker', 'stop', '--time', '45', updater.EDITOR), calls)
                 else:
-                    updater.main(target)
-                    if already:
+                    updater.main(target, diagnostic=diagnostic)
+                    if already or diagnostic:
                         self.assertFalse(created)
+                        self.assertFalse(any(c[:2] == ('docker', 'stop') for c in calls))
+                        self.assertFalse(list(root.glob('update-backup-*')))
                     else:
                         self.assertEqual((root / 'servicio-commit.txt').read_text().strip(), target)
                         self.assertTrue(created)
@@ -73,6 +75,7 @@ class UpdateTests(unittest.TestCase):
                         manifest = json.loads(archive.with_name('editor-state.manifest.json').read_text())
                         self.assertIn('editor/project.json', manifest['files'])
                 self.assertFalse(any('caddy' in ' '.join(c).lower() for c in calls))
+                self.assertFalse(any(c[:2] == ('docker', 'rm') for c in calls))
 
     def test_update_preserves_proxy_and_prepares_nested_mount(self):
         self.exercise()
@@ -88,6 +91,9 @@ class UpdateTests(unittest.TestCase):
 
     def test_current_version_does_not_restart(self):
         self.exercise(already=True)
+
+    def test_diagnostic_checks_target_without_stopping_or_backing_up(self):
+        self.exercise(diagnostic=True)
 
     def test_backup_failure_restarts_existing_editor_before_rename(self):
         with patch.object(updater, 'backup_state', side_effect=RuntimeError('backup failed')):

@@ -67,6 +67,11 @@ def backup_state(destination):
 
 def run(*args, check=True, timeout=90):
     result = subprocess.run(args, text=True, capture_output=True, timeout=timeout)
+    # Only public build/preflight output is logged. Docker inspect/env remain private.
+    if args[0] == 'git' or args[:2] == ('docker', 'run'):
+        for output in (result.stdout, result.stderr):
+            if output:
+                print(output, end='' if output.endswith('\n') else '\n', flush=True)
     if check and result.returncode:
         raise RuntimeError('Falló: ' + ' '.join(args[:2]) + ' (código ' + str(result.returncode) + ')')
     return result
@@ -103,7 +108,7 @@ def helper(release):
     return module
 
 
-def main(sha):
+def main(sha, diagnostic=False):
     os.umask(0o077)
     if os.geteuid() != 0 or not re.fullmatch('[a-f0-9]{40}', sha):
         raise RuntimeError('Se requiere root y un commit de 40 caracteres')
@@ -121,11 +126,15 @@ def main(sha):
             raise RuntimeError('Montaje privado inesperado')
         old_release = Path(mounts['/app']['Source'])
         old_sha = run('git', '-c', 'safe.directory=' + str(old_release), '-C', str(old_release), 'rev-parse', 'HEAD').stdout.strip()
-        if old_sha == sha:
+        print('Versión instalada: ' + old_sha + '\nVersión aprobada: ' + sha, flush=True)
+        if old_sha == sha and not diagnostic:
             health()
+            if helper(old_release).status('https://' + HOST + '/', resolve=HOST + ':443:127.0.0.1') != '200':
+                raise RuntimeError('HTTPS no disponible')
             print('El editor ya usa esta versión; sin reinicio.')
             return
         health()
+        print('Cola inactiva. Descargando exclusivamente el commit aprobado.', flush=True)
         release = Path(tempfile.mkdtemp(prefix='release-update.', dir=ROOT))
         run('git', 'init', str(release))
         run('git', '-C', str(release), 'fetch', '--depth', '1', REPO, sha, timeout=180)
@@ -134,6 +143,7 @@ def main(sha):
             raise RuntimeError('El commit descargado no coincide')
         if (release / 'package-lock.json').read_bytes() != (old_release / 'package-lock.json').read_bytes():
             raise RuntimeError('Cambian dependencias; no se actualiza el runtime automáticamente')
+        print('Dependencias sin cambios; comprobando runtime existente.', flush=True)
         (release / 'node_modules').mkdir(exist_ok=True)
         # Public code only; never chmod private state or dependency directories.
         for path in [release, *release.rglob('*')]:
@@ -155,7 +165,21 @@ def main(sha):
             doctor += ['--mount', value + (',readonly' if not mount['RW'] else '')]
         run(*doctor, old['Image'], 'node', 'scripts/app/doctor.mjs', '--shell', '/state/project.json')
         health()
-        stamp = time.strftime('%Y%m%d-%H%M%S')
+        if diagnostic:
+            state = ROOT / 'editor'
+            entries = [state, *state.rglob('*')]
+            if any(p.is_symlink() or not (p.is_file() or p.is_dir()) for p in entries):
+                raise RuntimeError('Estado con enlaces o archivos especiales; backup requiere revisión')
+            total = sum(p.stat().st_size for p in entries if p.is_file())
+            free = shutil.disk_usage(ROOT).free
+            if free < total * 1.1 + 16 * 1024 * 1024:
+                raise RuntimeError('Espacio insuficiente para copia verificada')
+            print('Backup previo: ' + str(total) + ' bytes de estado; ' + str(free) + ' bytes libres. Copia aún NO creada.', flush=True)
+            if module.status('https://' + HOST + '/', resolve=HOST + ':443:127.0.0.1') != '200':
+                raise RuntimeError('HTTPS no disponible')
+            print('DIAGNÓSTICO OK: commit/dependencias/runtime/cola/HTTPS comprobados. NO instalado.', flush=True)
+            return
+        stamp = time.strftime('%Y%m%d-%H%M%S') + '-' + str(os.getpid())
         backup = ROOT / ('update-backup-' + stamp)
         backup.mkdir(mode=0o700)
         (backup / 'editor-inspect.json').write_text(json.dumps(old))
@@ -192,17 +216,33 @@ def main(sha):
         except BaseException:
             print('Fallo: recuperando contenedor anterior...', flush=True)
             if renamed:
-                run('docker', 'rm', '-f', EDITOR, check=False)
+                # Preserve a failed container for diagnosis; never delete its data.
+                exists = run('docker', 'inspect', EDITOR, check=False)
+                if exists.returncode == 0:
+                    run('docker', 'stop', '--time', '45', EDITOR, check=False)
+                    run('docker', 'rename', EDITOR, EDITOR + '-failed-update-' + stamp)
                 run('docker', 'rename', previous, EDITOR)
             run('docker', 'start', EDITOR)
+            for _ in range(20):
+                try:
+                    health()
+                    if module.status('https://' + HOST + '/', resolve=HOST + ':443:127.0.0.1') != '200':
+                        raise RuntimeError('HTTPS no recuperado')
+                    print('Contenedor anterior recuperado; salud y HTTPS comprobados.', flush=True)
+                    break
+                except Exception:
+                    time.sleep(1)
+            else:
+                raise RuntimeError('ERROR DE RECUPERACIÓN: revisar contenedor anterior y backup privado')
             raise
 
 
 if __name__ == '__main__':
     try:
-        if len(sys.argv) != 2:
-            raise RuntimeError('Uso: python3 update_service.py COMMIT40')
-        main(sys.argv[1])
+        diagnostic = len(sys.argv) == 3 and sys.argv[1] == '--diagnose'
+        if len(sys.argv) != 2 and not diagnostic:
+            raise RuntimeError('Uso: python3 update_service.py [--diagnose] COMMIT40')
+        main(sys.argv[-1], diagnostic=diagnostic)
     except Exception as error:
         print('ERROR: ' + str(error), file=sys.stderr)
         sys.exit(1)
