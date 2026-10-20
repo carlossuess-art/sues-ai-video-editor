@@ -1,3 +1,37 @@
+## Login por correo terminado y probado · 20/10/2026 · pendiente de instalar
+
+Release aprobada: 6da5a3d9145dde6bff7056e318b67d020e99c66f. Árbol probado:
+53954f7657a1561ef72720a2daa12cd6c99b1f3e, idéntico al publicado. Continúa
+feat/editor-email-login-20261020 desde 550fc179. Oficial avanzó con lease desde
+d2e789c, sin force ni reconstrucción.
+
+Cuenta carlossuess@gmail.com. Hash scrypt privado bajo /state/access, sesiones
+firmadas persistentes de 30 días y botón de ojo en login, creación y confirmación.
+Configuración mediante enlace HTTPS de un uso, 256 bits y caducidad de 30 minutos,
+generado por root en VPS. Solo se instala el hash del token; la contraseña se
+introduce en el formulario HTTPS. Enlace privado anterior conservado. Sin proveedor
+operativo de correo verificado, la recuperación se hace mediante administración
+del VPS y enlace privado, sin envíos ficticios ni nuevos servicios.
+
+233 pruebas Node y npm run check PASS. 28 Python de despliegue PASS, con Docker,
+systemd, red y chown simulados. Chromium 145 real en móvil y escritorio: creación,
+confirmación, tres ojos, login, errores, cookie persistida tras reiniciar navegador
+y servidor, logout y enlace anterior PASS. 24 combinaciones del editor PASS, con
+copia y recuperación por UI. Tres renders FFmpeg de 24 segundos: reproducción,
+exportación con SHA idéntico al preview, nueva versión, decode PASS y original
+intacto. Primera ejecución en workspace fallida no cuenta; ejecución aislada
+posterior en /tmp completa PASS. No cambia motor, fingerprints ni dependencias.
+
+Scripts publicados descargados y checksums comprobados. Comandos y evidencia:
+docs/SUES_EMAIL_LOGIN_VERIFIED_20261020.md. Actualizador con TAR verificado antes
+de instalar configuración, contenedores anterior/fallido conservados y rollback
+automático de código/configuración. No se despliega en esta misión por instrucción
+de Carlos. VPS último acreditado: 71399e1. Siguiente: comando 1, comprobar SUCCESS
+con comando 2, abrir enlace privado y crear contraseña. Login HTTPS real y recorrido
+F9 siguen pendientes. F6 abierta; porcentajes no recalculados. Sin gastos ni cambios
+en WhatsApp, WAC, Caddy, DNS u otros servicios.
+
+---
 ## Despliegue VPS acreditado por capturas · 20/10/2026
 
 Carlos aporta capturas 156828–156830 de la consulta independiente tras reconectar.

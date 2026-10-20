@@ -120,3 +120,31 @@ SUCCESS abre el enlace de configuración, crea la contraseña con ojo yconfirmac
  cierra sesión yentra desde laURLnormal con su correo. Después prueba un vídeo real.
 No afirmar puesta en servicio, envío de recuperación por correo ni cierreF9/V1
 hasta evidencias remotas. F6 sigue abierta; porcentajes no recalculados.
+
+## Release fijada y comandos
+
+Código aprobado: `6da5a3d9145dde6bff7056e318b67d020e99c66f`, árbol `53954f7657a1561ef72720a2daa12cd6c99b1f3e`.
+SHA256 configurador: `05662c47d83af4a61cbede7efe2ff5d375743ecb0fa31dc8dc8662ea991d0550`.
+SHA256 lanzador: `999d22c752757f1be87da636407978b4ec95e89e47973196650df38e8c832372`.
+SHA256 actualizador: `d65cf1ba69f12c06b290ea58f5d4569e879d0e8acb990b9b00b609cc5076abc4`.
+Los tres scripts publicados fueron descargados de nuevo y sus hashes coinciden.
+Árbol remoto idéntico al checkout probado; avance de oficial con expected_sha, sin force.
+Comandos comprobados por sintaxis, sin ejecutar despliegue.
+
+### Comando 1
+
+```bash
+python3 -c 'import hashlib,subprocess,tempfile,urllib.request,sys;from pathlib import Path;c="6da5a3d9145dde6bff7056e318b67d020e99c66f";d=urllib.request.urlopen("https://raw.githubusercontent.com/carlossuess-art/sues-ai-video-editor/"+c+"/scripts/deploy/configure_login.py",timeout=60).read();hashlib.sha256(d).hexdigest()=="05662c47d83af4a61cbede7efe2ff5d375743ecb0fa31dc8dc8662ea991d0550" or sys.exit("Checksum incorrecto");p=Path(tempfile.mkdtemp(prefix="login-bootstrap.",dir="/opt/sues-video-setup"))/"configure_login.py";p.write_bytes(d);subprocess.run(["python3",str(p),c,"999d22c752757f1be87da636407978b4ec95e89e47973196650df38e8c832372","d65cf1ba69f12c06b290ea58f5d4569e879d0e8acb990b9b00b609cc5076abc4"],check=True)'
+```
+
+El despliegue queda en systemd. Esperar SUCCESS con el comando2; abrir después
+el enlace privado mostrado por el comando1 antes de30min. Crear contraseña y
+repetirla con los botones de ojo; luego entrar desde la URL normal. No enviar
+el enlace privado ni la contraseña a Work. Si el enlace caduca, ejecutar otra
+vez el configurador de la release aprobada, tras comprobar que no hay trabajos activos.
+
+### Comando 2
+
+```bash
+python3 -c 'import json,subprocess;from pathlib import Path;b=Path("/opt/sues-video-setup/background-update");r=json.loads((b/"latest.json").read_text());d=Path(r["directory"]);print("MODO:",r["mode"],"COMMIT:",r["commit"],flush=True);subprocess.run(["systemctl","show",r["unit"],"--property=ActiveState,SubState,Result,ExecMainCode,ExecMainStatus"]);p=d/"result.json";print(p.read_text() if p.exists() else "Resultado pendiente",flush=True);subprocess.run(["tail","-n","45",str(d/"run.log")])'
+```
