@@ -51,3 +51,49 @@ Antes de las pruebas, TAR verificado y154 archivos persistentes idénticos al
 backup update-backup-20261020-131350-17153. Jobs originales sin modificar.
 La comparación aislada no equivale a publicar el montaje desde la UI. Instalación
 y recorrido final Work se registrarán tras completarlos. No cerrar F6/V1.
+
+## Instalación y prueba real posterior
+
+Oficial y VPS:9d8d07776f974b02cc74724b89b3b6b7e7a42e18, árbol
+7521eb75a5386e0198b793434c6c5b8469ae4533, idéntico al checkout probado.
+Anteriorb9969f8c. Launcher/updater sin modificar y SHA comprobados. Unidad
+sues-editor-update-20261020-144641-2058f69e:SUCCESS/exitCode0 y systemd0.
+Backup /opt/sues-video-setup/update-backup-20261020-144644-22424, TAR SHA256
+948125e28ef63835292b3263a7027d9827d4738e5e870a2d714e8d49c7972f8d.
+Contenedor anterior conservado; mismas cuotas1GiB/0,5CPU, sin cambios ajenos.
+
+Recarga Work tras despliegue:sesión conservada y Cerrar sesión visible. Aviso
+HEVC correcto en original. Crear otra versión desde trabajo fallido produjo
+56e3df6c-e917-44a5-a71b-2bf42b04e09b. Cambio de zoom100→99, Guardar y Deshacer
+verificados visualmente; vuelve100 y se mantienen los ajustes iniciales.
+Previsualizar desde UI:progreso real, DONE en1intento. Originales154 archivos
+persistentes sin cambios respecto al backup; solo se añade la copia QA y salidas.
+
+Montaje reproducido desde Work:currentTime7,080334, duration38,3, paused=false,
+readyState4, videoWidth1080/videoHeight1920, error=null. La fuente HEVC sigue
+sin imagen en ese navegador; el H264 generado sí se reproduce. No se comprobó
+escucha estética del audio ni se registró aprobación humana.
+
+Descarga HTTP real autenticada:/api/jobs/<QA>/media devuelve200,18332121bytes,
+SHA256 idéntico al audit y render aislado:
+2c26c0564cab764098164062589afa20f21fcca0b6d7ead8507154d3a2743404.
+Range0–31 devuelve206 y32bytes. Intentos siguen1 después de descargar:sin
+recodificación. Audit fullDecode=pass, sourcePreserved=true, audioPresent=true.
+
+Límite de la prueba visual:al intentar preparar el evento download y pulsar
+Exportar, el navegador Work informó retained_data_restricted y reinició su kernel.
+No se puede asegurar que ese clic se enviase. Una pestaña nueva en el origen y
+el reinicio documentado del REPL no recuperaron observación:«native credential
+state cannot be safely resumed». Se detuvieron los intentos de navegador; no
+se leyó ni inyectó ningún token/cookie ni se pidió otra contraseña. Por eso
+la descarga por botón, la captura final y recarga visual DESPUÉS del render
+quedan pendientes. Descarga/API real y reproducción anterior sí verificadas.
+No convertir esta restricción del runtime en un fallo de contraseña o de la web.
+
+Siguiente:reabrir sesión de revisión en un runtime Work operativo y completar
+el último clic/recarga visual. El acceso por contraseña está comprobado; Google
+no es requisito para seguir. F9 es validación parcial real sobre material
+recuperado, no una prueba completa de subida/análisis nuevo ni cierreF6/V1.
+Auditar memoria de otros efectos que aún usan split+trim retrasado (transiciones
+globales blur/radial) antes de ampliar esta conclusión a todas las plantillas.
+No se afirma que esta corrección cubra esas ramas no ejercitadas.

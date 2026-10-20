@@ -1,0 +1,42 @@
+{
+  "releaseCommit": "9d8d07776f974b02cc74724b89b3b6b7e7a42e18",
+  "previousCommit": "b9969f8c468a15a7bc77409f862caf13d98596e2",
+  "deployResult": "SUCCESS",
+  "deployExitCode": 0,
+  "backup": "/opt/sues-video-setup/update-backup-20261020-144644-22424",
+  "backupSHA256": "948125e28ef63835292b3263a7027d9827d4738e5e870a2d714e8d49c7972f8d",
+  "workPasswordLogin": true,
+  "workSessionAfterDeploy": true,
+  "qaJob": "56e3df6c-e917-44a5-a71b-2bf42b04e09b",
+  "uiSaveUndo": true,
+  "uiPreviewTriggered": true,
+  "state": "DONE",
+  "attempt": 1,
+  "workPlayback": {
+    "currentTime": 7.080334,
+    "duration": 38.3,
+    "paused": false,
+    "readyState": 4,
+    "videoWidth": 1080,
+    "videoHeight": 1920,
+    "error": null
+  },
+  "httpDownload": {
+    "status": 200,
+    "bytes": 18332121,
+    "sha256": "2c26c0564cab764098164062589afa20f21fcca0b6d7ead8507154d3a2743404",
+    "matchesPreview": true,
+    "rangeStatus": 206,
+    "noNewRender": true
+  },
+  "originalPersistentFiles": 154,
+  "changedOriginalFiles": 0,
+  "sourcePreserved": true,
+  "fullDecode": "pass",
+  "audioPresent": true,
+  "browserExportClickResult": "UNKNOWN: retained_data_restricted before dispatch",
+  "browserDownloadTestPassed": false,
+  "browserFinalReloadPassed": false,
+  "f9Complete": false,
+  "externalCostUSD": 0
+}

@@ -1,3 +1,45 @@
+## Work autenticado, render real desbloqueado y desplegado · 20/10/2026
+
+Código instalado9d8d07776f974b02cc74724b89b3b6b7e7a42e18, árbol
+7521eb75a5386e0198b793434c6c5b8469ae4533, oficial con lease desde3d6b5a2.
+Anteriorb9969f8c. Contraseña real introducida únicamente mediante browserAuth:
+primer intento declined(no acredita contraseña errónea), segundo submitted,
+editor autenticado visible. No se leyó ni publicó contraseña/token/cookie.
+Google opcional y desactivado:no bloquea el objetivo de revisar con sesión SUES.
+
+Prueba visual encontró original HEVC con audio pero videoWidth0 en Work y dos
+FAILED/SIGKILL antiguos. Baseline aislada misma imagen1GiB/0,5CPU:OOMkill1,
+pico1GiB. Corregido focus split+trim:ramas completas alineadas y fade absoluto,
+sin alterar intensidad/tiempos. Render real38,3s, H2641080x1920/30, audio y
+fullDecode PASS con463597568bytes de pico y0OOM. Sin ampliar recursos.
+
+240 tests Node y check PASS local; Chromium145 real móvil/escritorio con HEVC
+sintético:aviso compatible, reintento crea versión nueva y conserva fallida PASS.
+Ese ensayo induce fallo del renderer y NO valida exportación. Render real sí
+comprobado aparte sobre material recuperado del VPS. Informe:
+docs/SUES_LIVE_QA_20261020.md y JSON de evidencia en examples/preview.
+
+Despliegue systemd SUCCESS/código0. Backup verificado:
+/opt/sues-video-setup/update-backup-20261020-144644-22424, TAR SHA256
+948125e28ef63835292b3263a7027d9827d4738e5e870a2d714e8d49c7972f8d;
+rollback con contenedor anterior conservado. Work mantuvo sesión tras despliegue.
+Copia QA56e3df6c-e917-44a5-a71b-2bf42b04e09b:guardar zoom99/deshacer100,
+previsualizar por UI, DONE en1intento, vídeo reproducido en Work(1080x1920,
+38,3s, tiempo avanza, sin error). Originales154 archivos persistentes intactos.
+Descarga HTTPS real200/Range206:18332121bytes, SHA256
+2c26c0564cab764098164062589afa20f21fcca0b6d7ead8507154d3a2743404,
+idéntico al preview, sin otro render; fuente intacta y audit completo.
+
+Límite vigente:al intentar evento download/clic Exportar, runtime Work bloqueó
+observación por protección de credenciales; nueva pestaña/REPL no recuperan.
+No afirmar clic/descarga del navegador o recarga final superados. API/archivo y
+reproducción visual sí probados. No pedir otra contraseña para resolverlo como
+si fuera error del editor. Falta ese cierre visual en runtime operativo y F9
+completa con subida nueva; F6/V1 abiertas. Auditar otros split+trim retrasados
+(transiciones globales) antes de afirmar todas las plantillas libres de OOM.
+Sin créditos, paquetes, costes ni cambios WAC/WhatsApp/Caddy/DNS/otras apps.
+
+---
 ## Estado vigente: código OAuth desplegado; Google pendiente de credenciales · 20/10/2026
 
 Instalado y verificado directamente mediante Desktop Commander en srv1841004:
