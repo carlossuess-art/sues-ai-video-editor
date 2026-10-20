@@ -1,3 +1,4 @@
+import {STYLE_VARIANTS} from './style-variants.js';
 import {
  mkdirSync,readFileSync,writeFileSync,readdirSync,lstatSync,existsSync,
  linkSync,unlinkSync,statfsSync,renameSync,rmSync
@@ -101,11 +102,13 @@ export class VideoIntake{
   const path=join(this.directory,id+'.video');if(!regular(path)||lstatSync(path).size!==record.bytes||fileSha256(path)!==id)throw new Error('Stored video integrity changed');
   return path;
  }
- saveBrief(id,prompt){
+ saveBrief(id,prompt,{projectTitle,styleId}={}){
   if(!HASH.test(id)||!this.records().some(r=>r.sha256===id))throw new Error('Upload not found');
   if(typeof prompt!=='string'||prompt.length>4000)throw new Error('Las instrucciones admiten hasta 4000 caracteres.');
+  if(projectTitle!==undefined&&(typeof projectTitle!=='string'||projectTitle.trim().length>120||/[\x00-\x1f\x7f]/.test(projectTitle)))throw Error('Nombre de proyecto no válido');
+  if(styleId!==undefined&&!Object.hasOwn(STYLE_VARIANTS,styleId))throw Error('Plantilla no válida');
   const path=join(this.directory,id+'.json'),record=read(path);
-  record.brief={prompt:prompt.trim(),savedAt:new Date().toISOString()};atomicJSON(path,record);
+  record.brief={...record.brief,prompt:prompt.trim(),...(projectTitle!==undefined?{projectTitle:projectTitle.trim()}:{}),...(styleId!==undefined?{styleId}:{}),savedAt:new Date().toISOString()};atomicJSON(path,record);
   return {saved:true,brief:record.brief,requiresAnalysis:this.list().find(u=>u.id===id).state!=='READY'};
  }
  async receive(req,{name}={}){

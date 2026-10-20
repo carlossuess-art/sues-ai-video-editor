@@ -1,3 +1,13 @@
+## Whisper local autorizado · validación previa20/10/2026
+
+Instalado ASR aislado faster-whisper1.2.1/base/int8 en VPS. Fuente nueva real
+12.98s→11palabras es/COMPLETE;sin API.245tests/check y Chromium móvil/escritorio
+con mailbox sustituido+MP4 real/descarga/hash PASS. Nuevo flujo guarda plantilla/
+nombre,prompt y reanuda análisis;modo plano completo sin inventar caras. No LLM.
+Código aún sin desplegar;instalado editor sigue2f44a708. Backup218archivos
+verificado antes de instalación. Detalle docs/SUES_LOCAL_WHISPER_20261020.md.
+
+---
 ## Subir → confirmación verde → enviar prompt · desplegado20/10/2026
 
 Instalado2f44a708a88ce8ced0d698ce3a2c1448f4c717dd, árbol

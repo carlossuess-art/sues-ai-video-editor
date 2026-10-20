@@ -1,0 +1,28 @@
+[Unit]
+Description=SUES editor offline Whisper transcription
+After=local-fs.target
+[Service]
+Type=simple
+# Container uid1000 may have no host passwd entry. Drop privileges explicitly.
+ExecStart=/usr/bin/setpriv --reuid=1000 --regid=1000 --clear-groups --bounding-set=-all /run/sues-whisper/venv/bin/python -u /run/sues-whisper/worker.py --root /run/sues-uploads --model /run/sues-whisper/model
+Restart=on-failure
+RestartSec=5
+KillMode=control-group
+TimeoutStopSec=10
+UMask=0077
+CPUQuota=50%
+MemoryMax=768M
+TasksMax=48
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateNetwork=yes
+ProtectSystem=strict
+ProtectHome=yes
+BindReadOnlyPaths=/opt/sues-video-setup/whisper-local:/run/sues-whisper /opt/sues-video-setup/editor/jobs/uploads:/run/sues-uploads
+BindPaths=/opt/sues-video-setup/editor/jobs/uploads/asr:/run/sues-uploads/asr
+ReadWritePaths=/run/sues-uploads/asr
+CapabilityBoundingSet=CAP_SETUID CAP_SETGID CAP_SETPCAP
+RestrictAddressFamilies=AF_UNIX
+Environment=OMP_NUM_THREADS=1 HF_HUB_OFFLINE=1 HF_HUB_DISABLE_TELEMETRY=1 DO_NOT_TRACK=1
+[Install]
+WantedBy=multi-user.target

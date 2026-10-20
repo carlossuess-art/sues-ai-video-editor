@@ -82,6 +82,8 @@ export function buildAutomaticDirector({transcript,template,brand,camera,setting
   if(quote)decisions.push({type:'motion',start:quote.start,end:Math.min(cutoff,Math.max(quote.end,quote.start+2.2)),reason:`Cita literal de palabras ${quote.sourceWordIndexes[0]}–${quote.sourceWordIndexes.at(-1)}`,rule:'calma-literal-quote-v1',params:{motionId:'QUOTE_CARD_01',bindings:{quote:quote.text},semanticReason:'reflection'},evidence:{...quote,displayEnd:Math.min(cutoff,Math.max(quote.end,quote.start+2.2)),displayHoldExtendsASRTimestamps:false,method:'exact-transcript-quote-not-llm',timing:'existing-word-timestamps'}});
  }
  decisions.sort((a,b)=>a.start-b.start||a.end-b.end);
+ // Full-frame uploads have no face analysis. Do not invent subjects or eye anchors.
+ if(camera.mode==='full-frame-fit')decisions.length=0;
  return {version:'1.0',templateId:template.id,timeSpace:'edit-timeline',selection:'offline-lexical-baseline-v1',decisions,segments,
-  audit:{method:'deterministic Spanish lexical baseline; not LLM semantic understanding',sourceWords:transcript.words.length,mappedWords:mapped.words.length,omittedWords:0,cutsRemoved:0,externalCostUSD:0,visualProfile:profile,candidates:candidates.length,uncertainWordIndexes:transcript.words.flatMap((w,i)=>w.timingUncertain?[i]:[]),settings:options}};
+  audit:{method:'deterministic Spanish lexical baseline; not LLM semantic understanding',framing:camera.mode??'existing-camera',faceAnalysis:camera.mode==='full-frame-fit'?'unavailable; full image preserved':'existing',sourceWords:transcript.words.length,mappedWords:mapped.words.length,omittedWords:0,cutsRemoved:0,externalCostUSD:0,visualProfile:profile,candidates:candidates.length,uncertainWordIndexes:transcript.words.flatMap((w,i)=>w.timingUncertain?[i]:[]),settings:options}};
 }

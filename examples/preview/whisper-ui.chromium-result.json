@@ -1,0 +1,36 @@
+{
+  "kind": "local-chromium-whisper-mailbox-ui",
+  "browser": "145.0.7632.6",
+  "checks": [
+    {
+      "device": "desktop",
+      "asr": "mailbox substituted; not real inference",
+      "httpProbe": "real",
+      "resumeAfterReload": true,
+      "projectNameAndStylePersist": true,
+      "unsupportedPromptExplicit": true,
+      "templateOnlyRequiresExplicitClick": true,
+      "actualRender": true,
+      "fullDecode": true,
+      "downloadMatchesPreview": "ca170b0bdde593367519293bb879c57e059258089d48806a83014f8b0e370100",
+      "originalIntact": true,
+      "noOverflow": true
+    },
+    {
+      "device": "mobile",
+      "asr": "mailbox substituted; not real inference",
+      "httpProbe": "real",
+      "resumeAfterReload": true,
+      "projectNameAndStylePersist": true,
+      "unsupportedPromptExplicit": true,
+      "templateOnlyRequiresExplicitClick": true,
+      "actualRender": true,
+      "fullDecode": true,
+      "downloadMatchesPreview": "3b1f8c727327f4fcb434bd4e572696aba3c635ee54c076c790aca769e436a29c",
+      "originalIntact": true,
+      "noOverflow": true
+    }
+  ],
+  "errors": [],
+  "externalCostUSD": 0
+}

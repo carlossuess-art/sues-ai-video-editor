@@ -1,4 +1,5 @@
 import {planInstructions} from './instruction-director.js';
+import {LocalAnalysis} from './local-analysis.js';
 import {googleAuth,readGoogleConfig,GOOGLE_CALLBACK} from './editor-google-auth.js';
 import {STYLE_VARIANTS} from './style-variants.js';
 import {ProjectRecovery} from './project-recovery.js';
@@ -48,6 +49,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  let loginBusy=0;
  const cookie=value=>`sues_session=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_SECONDS}${publicOrigin?'; Secure':''}`;
  const jobs=new EditorJobs({directory,profiles,renderer,storage});let intake,assets,recoveries;try{assets=new MediaLibrary(join(directory,'assets'),{probe:assetProbe});jobs.assetResolver=(id,kind)=>assets.resolve(id,kind);recoveries=new ProjectRecovery(join(directory,'recoveries'),profiles);intake=new VideoIntake(join(directory,'uploads'),profiles,{probe:intakeProbe});}catch(error){void jobs.close();throw error;}let expectedHost;
+ const analysis=new LocalAnalysis(intake);
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
  const sourceStream=(req,res,file)=>{
   const size=statSync(file).size;let range;try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
@@ -132,12 +134,15 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(profileSource&&['GET','HEAD'].includes(req.method)){const id=decodeURIComponent(profileSource[1]);if(!Object.hasOwn(profiles,id))throw new Error('Unknown profile');return sourceStream(req,res,jobs.loadProfile(id).sourcePath);}
     const jobSource=/^\/api\/jobs\/([a-f0-9-]+)\/source$/.exec(path);
     if(jobSource&&['GET','HEAD'].includes(req.method)){const job=jobs.get(jobSource[1]),project=jobs.loadProfile(job.profileId);if(project.inputs.source.sha256!==jobs.plan(job.id).manifest.source.sha256)throw new Error('Source changed; prepare the montage again');return sourceStream(req,res,project.sourcePath);}
+    const localAnalysisMatch=/^\/api\/uploads\/([a-f0-9]{64})\/transcribe$/.exec(path);
+    if(localAnalysisMatch&&req.method==='POST')return json(res,202,analysis.request(localAnalysisMatch[1]));
+    if(localAnalysisMatch&&req.method==='GET')return json(res,200,analysis.status(localAnalysisMatch[1]));
     const briefMatch=/^\/api\/uploads\/([a-f0-9]{64})\/brief$/.exec(path);
-    if(briefMatch&&req.method==='POST')return json(res,200,intake.saveBrief(briefMatch[1],(await body(req)).prompt));
+    if(briefMatch&&req.method==='POST'){const b=await body(req);return json(res,200,intake.saveBrief(briefMatch[1],b.prompt,b));}
     const analysisMatch=/^\/api\/uploads\/([a-f0-9]{64})\/analysis$/.exec(path);
     if(analysisMatch&&req.method==='POST'){if(jobs.list().some(j=>j.profileId==='upload-'+analysisMatch[1]))throw new Error('Analysis owned by existing jobs; restore original assets');return json(res,200,intake.importAnalysis(analysisMatch[1],await body(req,2*1024*1024)));}
     if(path==='/api/uploads'&&req.method==='POST'){req.setTimeout(120000);return json(res,201,await intake.receive(req,{name:url.searchParams.get('name')}));}
-    if(path==='/api/health'&&req.method==='GET')return json(res,200,{...jobs.health(),googleLoginConfigured:googleReady(),passwordLoginConfigured:!!adminPasswordHash,passwordSetupConfigured:setup.available()});
+    if(path==='/api/health'&&req.method==='GET')return json(res,200,{...jobs.health(),localTranscriptionAvailable:analysis.available(),googleLoginConfigured:googleReady(),passwordLoginConfigured:!!adminPasswordHash,passwordSetupConfigured:setup.available()});
     if(path==='/api/design'&&req.method==='GET'){
      const id=url.searchParams.get('profileId');if(!Object.hasOwn(profiles,id))return json(res,404,{error:'Unknown profile'});
      const config=projectConfig(profiles[id]),read=p=>JSON.parse(readFileSync(p,'utf8')),brand=read(config.brandKitPath),template=read(config.templatePath),catalog=read(config.catalogPath);
@@ -146,7 +151,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/profiles'&&req.method==='GET'){const recovered=new Map(recoveries.list().map(r=>[r.profileId,r.title]));return json(res,200,Object.keys(profiles).map(id=>({id,title:recovered.has(id)?recovered.get(id)+' · recuperado':id.startsWith('upload-')?'Vídeo subido':id,template:'SUES_CALMA',mode:'existing-transcript-and-vision',ready:projectReady(profiles[id])})));}
     if(path==='/api/jobs'&&req.method==='GET')return json(res,200,jobs.list());
     if(path==='/api/jobs'&&req.method==='POST'){
-     const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true}));
+     const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
     const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|media|audit|undo|direct-plan|direct|poster))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});

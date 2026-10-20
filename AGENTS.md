@@ -209,3 +209,12 @@ versión conserva la anterior. No usar transcripción de otro material como feed
 Web real bloqueada por sesión en el navegador de revisión: no afirmar revisión de
 sus trabajos privados; Carlos no puede completar handoff. Pruebas locales autorizadas
 con vídeo sintético, sin ASR/pago. Evidencia player-workflow.real-result.json.
+
+## Autorización vigente · Whisper local · 20/10/2026
+
+Carlos autoriza expresamente instalar Whisper local en srv1841004 y conectarlo
+al editor para analizar vídeos nuevos, sin coste de API. Implementación CPU
+faster-whisper/base/int8 aislada; no amplía autorización a otros modelos,
+LLM, MediaPipe, nuevos proveedores de pago ni otras aplicaciones. Mantener
+backup verificado, límites de recursos y distinguir transcripción de dirección
+semántica. La transcripción automática requiere revisión humana.

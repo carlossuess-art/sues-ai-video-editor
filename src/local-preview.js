@@ -41,11 +41,13 @@ export function wrapCaption(text,maxChars=26,maxLines=2){
 
 function validateCamera(camera,width,height){
   assert(camera?.keyframes?.length>0,'camera frames');
+  const fit=camera.mode==='full-frame-fit';
   let previous=-1;
   for(const k of camera.keyframes){
     assert(['time','x','y','width','height','zoom'].every(n=>finite(k[n])),'camera finite');
     assert(k.time>previous&&k.time>=0,'camera order');previous=k.time;
     assert(k.x>=0&&k.y>=0&&k.width>=2&&k.height>=2&&k.x+k.width<=width+1e-6&&k.y+k.height<=height+1e-6,'camera bounds');
+    if(fit){assert(k.x===0&&k.y===0&&k.width===width&&k.height===height&&k.zoom===1,'full-frame fit must preserve original bounds');continue;}
     assert(Math.abs(k.width/k.height-9/16)<1e-6,'portrait crop');
     const effectiveZoom=Math.min(height,width/(9/16))/k.height;
     assert(effectiveZoom<=1.6+1e-6&&Math.abs(k.zoom-effectiveZoom)<1e-4,'absolute camera zoom exceeds limit or disagrees with crop');
@@ -194,7 +196,8 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   if(n>1){filters.push(`[0:v]split=${n}${spans.map((_,i)=>`[sv${i}]`).join('')}`);if(hasAudio)filters.push(`[0:a]asplit=${n}${spans.map((_,i)=>`[sa${i}]`).join('')}`);}
   for(const s of spans){
     const i=s.index,vin=n>1?`sv${i}`:'0:v',ain=n>1?`sa${i}`:'0:a';
-    filters.push(`[${vin}]trim=start=${s.sourceIn}:end=${s.sourceOut},crop=w=${width}:h=${height}:x='${x}':y='${y}':exact=1,setpts=PTS-${s.sourceIn}/TB,scale=1080:1920:flags=lanczos,setsar=1,fps=fps=30:start_time=0,format=yuv420p[v${i}]`);
+    const framing=plan.camera.mode==='full-frame-fit'?'scale=1080:1920:force_original_aspect_ratio=decrease:force_divisible_by=2:flags=lanczos,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=0x081219':`crop=w=${width}:h=${height}:x='${x}':y='${y}':exact=1`;
+    filters.push(`[${vin}]trim=start=${s.sourceIn}:end=${s.sourceOut},${framing},setpts=PTS-${s.sourceIn}/TB,${plan.camera.mode==='full-frame-fit'?'':'scale=1080:1920:flags=lanczos,'}setsar=1,fps=fps=30:start_time=0,format=yuv420p[v${i}]`);
     if(hasAudio)filters.push(`[${ain}]atrim=start=${s.sourceIn}:end=${s.sourceOut},asetpts=PTS-${s.sourceIn}/TB,aresample=48000:async=1:first_pts=0[a${i}]`);
   }
   filters.push(`${spans.map((_,i)=>`[v${i}]${hasAudio?`[a${i}]`:''}`).join('')}concat=n=${n}:v=1:a=${hasAudio?1:0}[base]${hasAudio?'[audio]':''}`);

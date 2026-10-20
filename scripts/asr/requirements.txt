@@ -1,0 +1,3 @@
+# Tested CPU implementation; PyAV19 removes metadata_errors required by 1.2.1.
+faster-whisper==1.2.1
+av==15.1.0
