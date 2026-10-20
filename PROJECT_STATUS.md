@@ -1,3 +1,24 @@
+## Despliegue VPS acreditado por capturas · 20/10/2026
+
+Carlos aporta capturas 156828–156830 de la consulta independiente tras reconectar.
+Modo deploy, commit 71399e1c9ac6a7da1b586c50b8dae5d93651050b,
+Result=success, ExecMainCode=0, ExecMainStatus=0, state=SUCCESS y exitCode=0.
+Log: copia privada verificada SHA256 y ACTUALIZACIÓN OK para ese commit.
+Backup conservado: /opt/sues-video-setup/update-backup-20261020-054955-12714.
+La unidad transitoria terminó (inactive/dead); no significa caída del editor.
+Evidencia remota aportada por Carlos, no sesión administrativa de Work.
+Según el updater verificado, éxito exige salud privada, protección de API y HTTPS.
+Rollback disponible; no fue necesario ni se ha ensayado en producción.
+Versión anterior exacta no visible en estas capturas. No repetir instalación.
+
+Queda pendiente aceptación F9 en producción: subir vídeo real, preparar edición,
+reproducir preview, ajustar/nueva versión y exportar MP4. El doctor muestra
+renderExecuted=false: despliegue correcto no acredita un render remoto.
+F6 sigue abierta, porcentajes no recalculados; últimos cambios de teclado del
+frontend continúan aislados. Sin cambios WhatsApp/WAC/Caddy/DNS ni gasto externo.
+Siguiente: abrir editor.suesholistics.com con la sesión habitual y probar recorrido.
+
+---
 ## Desbloqueo e integración verificados · 20/10/2026
 
 Código oficial: 71399e1c9ac6a7da1b586c50b8dae5d93651050b; árbol
