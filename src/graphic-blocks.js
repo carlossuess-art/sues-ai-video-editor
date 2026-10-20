@@ -8,9 +8,9 @@ const text=value=>typeof value==='string'&&value.trim().length>0&&value.length<=
 export function validateGraphicSettings(cards=[],transitions=[]){
  assert(Array.isArray(cards)&&cards.length<=3&&Array.isArray(transitions)&&transitions.length<=3,'up to three cards and transitions');
  for(const c of cards){assert(c&&Object.keys(c).every(k=>['captionId','endCaptionId','type','left','right','heading','bodyLines','lead','icons'].includes(k))&&captionId(c.captionId)&&Object.hasOwn(GRAPHIC_BLOCKS,c.type),'card choice');if(c.type==='compare')assert(text(c.left)&&text(c.right),'comparison needs two short labels');}
- for(const t of transitions)assert(t&&Object.keys(t).every(k=>['captionId','type','phase'].includes(k))&&captionId(t.captionId)&&Object.hasOwn(GLOBAL_TRANSITIONS,t.type),'transition choice');
+ for(const t of transitions)assert(t&&Object.keys(t).every(k=>['captionId','type','phase','start'].includes(k))&&Object.hasOwn(GLOBAL_TRANSITIONS,t.type)&&((t.start===undefined&&captionId(t.captionId))||(t.type==='warm'&&Number.isFinite(t.start)&&t.start>=0&&t.captionId===undefined&&t.phase===undefined)),'transition choice');
  for(const c of cards){if(c.endCaptionId!==undefined)assert(captionId(c.endCaptionId),'end caption');if(c.heading!==undefined)assert(text(c.heading),'heading');if(c.lead!==undefined)assert(text(c.lead),'lead');if(c.bodyLines!==undefined)assert(Array.isArray(c.bodyLines)&&c.bodyLines.length>0&&c.bodyLines.length<=3&&c.bodyLines.every(text),'body lines');if(c.icons!==undefined)assert(Array.isArray(c.icons)&&c.icons.length===2&&c.icons.every(i=>['clapper','makeup','luggage','clock','eye','heart'].includes(i)),'icons');}for(const t of transitions)assert(t.phase===undefined||t.phase==='exit','transition phase');
- assert(new Set(cards.map(c=>c.captionId)).size===cards.length&&new Set(transitions.map(t=>t.captionId)).size===transitions.length,'duplicate event choice');
+ assert(new Set(cards.map(c=>c.captionId)).size===cards.length&&new Set(transitions.map(t=>t.captionId??'time:'+t.start)).size===transitions.length,'duplicate event choice');
 }
 export function prepareGraphicBlocks(cards,transitions,plan,enabled=true){
  validateGraphicSettings(cards,transitions);
@@ -26,7 +26,7 @@ export function prepareGraphicBlocks(cards,transitions,plan,enabled=true){
   return {...choice,voiceCues,replacedCaptionIds,fontSize,lines:c.lines,start:c.start,end,text:c.text,wordIndexes:c.wordIndexes,textOrigin:c.source==='manual'?'user-edited-caption':'transcript-caption',reason:'Explicit editorial card choice',scope:'full-frame-presenter-intentionally-covered'};
  });
  for(const c of graphics){assert(!graphics.some(o=>o!==c&&o.start<c.end&&o.end>c.start),'cards overlap');assert(!(plan.semantic?.motions??[]).some(m=>m.start<c.end&&m.end>c.start),'card overlaps motion');assert(!plan.selectedMedia.some(m=>m.start<c.end&&m.end>c.start),'card overlaps B-roll');}
- const effects=transitions.map(choice=>{const c=get(choice.captionId),card=graphics.find(g=>g.captionId===choice.captionId);assert(choice.phase!=='exit'||card,'exit needs a card');const start=choice.phase==='exit'?card.end-.2:c.start,end=start+.4;assert(end<=cutoff,'transition too close to closing');return {...choice,start,end,duration:.4,reason:'Explicit editorial transition choice',scope:'entire-composition-including-captions',audio:'unchanged'};});
+ const effects=transitions.map(choice=>{const c=choice.start===undefined?get(choice.captionId):null,card=graphics.find(g=>g.captionId===choice.captionId);assert(choice.phase!=='exit'||card,'exit needs a card');const start=choice.phase==='exit'?card.end-.2:choice.start??c.start,end=start+.4;assert(end<=cutoff,'transition too close to closing');return {...choice,start,end,duration:.4,reason:'Explicit editorial transition choice',scope:'entire-composition-including-captions',audio:'unchanged'};});
  for(const e of effects)assert(!effects.some(o=>o!==e&&o.start<e.end&&o.end>e.start),'transitions overlap');
  return {graphics:enabled?graphics:[],globalTransitions:enabled?effects:[]};
 }

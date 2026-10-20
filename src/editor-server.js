@@ -1,3 +1,4 @@
+import {externalCatalog,reviewExternalPlan} from './external-edit-plan.js';
 import {planInstructions} from './instruction-director.js';
 import {LocalAnalysis} from './local-analysis.js';
 import {googleAuth,readGoogleConfig,GOOGLE_CALLBACK} from './editor-google-auth.js';
@@ -7,7 +8,7 @@ import {fontCatalog,fontDownload} from './font-catalog.js';
 import {MediaLibrary} from './media-library.js';
 import {GRAPHIC_BLOCKS,GLOBAL_TRANSITIONS} from './graphic-blocks.js';
 import http from 'node:http';
-import {readFileSync,statSync,createReadStream,openSync,readSync,closeSync} from 'node:fs';
+import {readFileSync,statSync,createReadStream,openSync,readSync,closeSync,existsSync,writeFileSync,renameSync} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomBytes,timingSafeEqual} from 'node:crypto';
@@ -153,11 +154,31 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|media|audit|undo|direct-plan|direct|poster))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|poster))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
     if(!action&&req.method==='PATCH')return json(res,200,jobs.adjust(id,(await body(req)).settings));
+    if(action==='external-draft'&&['GET','POST'].includes(req.method)){
+     const file=join(jobs.dir(id),'external-plan-draft.json');
+     if(req.method==='GET')return json(res,200,existsSync(file)?JSON.parse(readFileSync(file,'utf8')):{text:''});
+     const b=await body(req);if(typeof b.text!=='string'||b.text.length>30000)throw Error('El plan admite hasta 30000 caracteres.');
+     const draft={text:b.text,updatedAt:new Date().toISOString()},temporary=file+'.tmp';writeFileSync(temporary,JSON.stringify(draft),{mode:0o600});renameSync(temporary,file);return json(res,200,draft);
+    }
+    if(action==='external-catalog'&&req.method==='GET'){const source=jobs.get(id);return json(res,200,externalCatalog(jobs.loadProfile(source.profileId),source.settings,assets.list()));}
+    if(['external-review','external-execute'].includes(action)&&req.method==='POST'){
+     const b=await body(req),source=jobs.get(id);
+     if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))throw Error('Espera a que termine la edición actual.');
+     const proposal=reviewExternalPlan(b.text,{project:jobs.loadProfile(source.profileId),settings:source.settings,assets:assets.list(),commandPlanner:planInstructions});
+     if(action==='external-review')return json(res,200,proposal);
+     if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId))throw Error('Identificador de petición no válido.');
+     const existing=[...jobs.jobs.values()].find(j=>j.parentId===id&&j.requestId===b.requestId);
+     if(existing){if(existing.instructions.at(-1)?.reviewId!==b.reviewId)return json(res,409,{error:'Petición reutilizada con otro plan.'});return json(res,200,existing.state==='PREVIEW_READY'?jobs.render(existing.id):jobs.view(existing));}
+     if(!proposal.canApply)return json(res,422,{error:'Hay operaciones pendientes. No se ha creado ni renderizado otra versión.',proposal});
+     if(b.reviewId!==proposal.reviewId)return json(res,409,{error:'El plan o el proyecto han cambiado. Revisa de nuevo.'});
+     const next=jobs.create(source.profileId,proposal.changes,{parentId:id,requestId:b.requestId,instruction:{kind:'external-plan',text:b.text,reviewId:proposal.reviewId,actions:proposal.actions,at:new Date().toISOString()}});
+     return json(res,202,jobs.render(next.id));
+    }
     if(['direct-plan','direct'].includes(action)&&req.method==='POST'){
      const b=await body(req),source=jobs.get(id);
      if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))throw Error('Espera a que termine la edición actual.');

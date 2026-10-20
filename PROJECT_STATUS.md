@@ -1,3 +1,22 @@
+## Importación de planes externos · 20/10/2026 · probado localmente
+
+Implementado pegar plan JSON SUES de Gemini/otra IA→comprobar→ejecutar en otra
+versión. Catálogo por vídeo con SHA, recursos reales, captions y límites;
+ninguna llamada de IA/API. Destello cálido por segundo exacto, imágenes con
+análisis facial preparado, música de biblioteca, corrección de captions y
+comandos globales soportados. Revisión compila todo; faltante/capacidad no
+soportada/invalidez se distinguen y bloquean el conjunto, sin omisión silenciosa.
+Hash de revisión evita aplicar un plan obsoleto; requestId idempotente; historial,
+originales y versión anterior preservados. Borrador privado recuperable al
+recargar, incluso con recursos pendientes. No interpreta prosa libre.
+247 Node/check PASS; Chromium145 escritorio/móvil con MP4 real generado24s,
+destello15.27s, imagen/audio subidos, corrección, borrador recuperado,
+descarga idéntica/fullDecode/sin overflow PASS. Análisis facial de QA sintético.
+QA técnica; banco definitivo y valoración creativa pendientes. Whisper solo
+no proporciona colocación facial de imágenes. Más límites/contrato en
+docs/SUES_EXTERNAL_EDIT_PLAN.md. Instalado VPS sigue a75c76f hasta nuevo registro.
+
+---
 ## Whisper local desplegado y vídeo nuevo exportado · 20/10/2026
 
 Instalado a75c76f6612e7720724b39c90a40525555e17a14, árbol

@@ -1,0 +1,42 @@
+{
+  "kind": "local-generated-media-external-plan-qa",
+  "browser": "145.0.7632.6",
+  "checks": [
+    {
+      "device": "desktop",
+      "missingResourceBlocked": true,
+      "unsupportedOperationBlocked": true,
+      "staleReviewInvalidated": true,
+      "exactFlashSecond": 15.27,
+      "captionCorrection": true,
+      "realUploadedImageAndAudio": true,
+      "syntheticFaceAnalysis": true,
+      "realRender": true,
+      "fullDecode": true,
+      "downloadMatches": true,
+      "parentUnchanged": true,
+      "sourceUnchanged": true,
+      "manualEditRetainsExactTimes": true,
+      "noOverflow": true
+    },
+    {
+      "device": "mobile",
+      "missingResourceBlocked": true,
+      "unsupportedOperationBlocked": true,
+      "staleReviewInvalidated": true,
+      "exactFlashSecond": 15.27,
+      "captionCorrection": true,
+      "realUploadedImageAndAudio": true,
+      "syntheticFaceAnalysis": true,
+      "realRender": true,
+      "fullDecode": true,
+      "downloadMatches": true,
+      "parentUnchanged": true,
+      "sourceUnchanged": true,
+      "manualEditRetainsExactTimes": true,
+      "noOverflow": true
+    }
+  ],
+  "errors": [],
+  "externalCostUSD": 0
+}
