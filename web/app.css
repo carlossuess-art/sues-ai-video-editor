@@ -201,3 +201,10 @@ output{color:var(--cyan)}
 .editor-shortcuts button{display:flex;flex-direction:column;align-items:center;gap:5px}
 .editor-shortcuts svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 @media(max-width:700px){.tool-panel .editor-shortcuts button{min-height:54px;font-size:11px}}
+
+.login-screen{max-width:400px;margin:34px auto;padding:26px}
+.login-screen h2{font-size:23px;font-weight:700;color:#e9fbff}
+.login-screen form{display:grid;gap:10px}
+.login-screen input{width:100%;min-height:44px;background:#081b29;color:#fff;border:1px solid #426277;border-radius:9px;padding:10px}
+.login-screen .primary{min-height:48px;margin-top:12px}
+#login-message{min-height:1.4em}
