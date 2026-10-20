@@ -1,0 +1,36 @@
+{
+  "kind": "real-local-chromium-google-flow",
+  "googleProvider": "MOCKED: NOT A LIVE GOOGLE LOGIN",
+  "browser": "145.0.7632.6",
+  "checks": [
+    {
+      "device": "desktop",
+      "googleProvider": "LOCAL RSA SIGNED SUBSTITUTE",
+      "passwordLogin": true,
+      "passwordEye": true,
+      "googleCallback": true,
+      "otherAccountDenied": true,
+      "securePersistentCookie": true,
+      "browserAndServerRestart": true,
+      "logout": true,
+      "projectsPreserved": true,
+      "noOverflow": true
+    },
+    {
+      "device": "mobile",
+      "googleProvider": "LOCAL RSA SIGNED SUBSTITUTE",
+      "passwordLogin": true,
+      "passwordEye": true,
+      "googleCallback": true,
+      "otherAccountDenied": true,
+      "securePersistentCookie": true,
+      "browserAndServerRestart": true,
+      "logout": true,
+      "projectsPreserved": true,
+      "noOverflow": true
+    }
+  ],
+  "pageErrors": [],
+  "production": false,
+  "externalCostUSD": 0
+}

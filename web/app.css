@@ -212,3 +212,5 @@ output{color:var(--cyan)}
 [hidden]{display:none!important}.login-screen{max-width:480px;margin:3rem auto}.login-screen input{width:100%;box-sizing:border-box}.login-screen button{min-height:44px}.login-recovery{margin-top:1.5rem}.login-recovery p{line-height:1.5}#logout{margin-left:auto}
 
 .password-field{display:flex;align-items:stretch;gap:8px}.password-field input{min-width:0;flex:1}.password-toggle{flex:0 0 46px;display:flex;align-items:center;justify-content:center;padding:8px}.password-toggle[aria-pressed="true"]{color:var(--gold);border-color:var(--gold)}
+
+.login-alternative{display:grid;gap:.65rem;text-align:center;margin:1.25rem 0}.login-alternative>span{opacity:.65}.login-alternative button{min-height:48px;width:100%}.login-alternative p{margin:0}

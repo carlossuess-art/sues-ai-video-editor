@@ -1,3 +1,4 @@
+import {googleAuth,readGoogleConfig,GOOGLE_CALLBACK} from './editor-google-auth.js';
 import {STYLE_VARIANTS} from './style-variants.js';
 import {ProjectRecovery} from './project-recovery.js';
 import {fontCatalog,fontDownload} from './font-catalog.js';
@@ -28,7 +29,7 @@ async function body(req,maxBytes=65536){
  const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>maxBytes)throw new Error('Request too large');chunks.push(chunk);}
  const value=JSON.parse(Buffer.concat(chunks).toString());if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash')}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -40,6 +41,8 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  try{adminPasswordHash=readFileSync(passwordFile,'utf8').trim();}catch(error){if(error.code!=='ENOENT')throw error;}
  if(adminPasswordHash&&!validPasswordRecord(adminPasswordHash))throw new Error('Invalid administrator password hash file');
  let sessions=passwordSessions(token,adminPasswordHash);
+ const google=googleAuth({config:readGoogleConfig(googleOAuthFile),publicOrigin,fetcher:googleOAuthFetch});
+ const googleReady=()=>!!google&&!!adminPasswordHash;
  const setup=loginSetup(passwordFile);
  let loginBusy=0;
  const cookie=value=>`sues_session=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_SECONDS}${publicOrigin?'; Secure':''}`;
@@ -57,6 +60,18 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
    if(req.headers.host!==expectedHost)return json(res,403,{error:'Host rejected'});
    if(req.headers.origin&&req.headers.origin!==origin)return json(res,403,{error:'Origin rejected'});
    const url=new URL(req.url,origin),path=url.pathname;
+   if(path==='/api/auth/options'&&req.method==='GET')return json(res,200,{google:googleReady()});
+   if(path==='/api/auth/google/start'&&req.method==='POST'){
+    if(req.headers['x-sues-request']!=='editor')return json(res,403,{error:'Request header required'});
+    if(!googleReady())return json(res,503,{error:'Google todavía no está configurado. Utiliza tu correo y contraseña.'});
+    try{const launch=google.begin();res.setHeader('Set-Cookie',launch.cookie);return json(res,200,{url:launch.url});}catch{return json(res,429,{error:'Demasiados accesos pendientes. Vuelve a intentarlo más tarde.'});}
+   }
+   if(path===GOOGLE_CALLBACK&&req.method==='GET'){
+    let success=false;
+    if(googleReady()){try{await google.complete(url.searchParams,req.headers.cookie);success=true;}catch{/* Never expose codes, tokens or provider errors. */}}
+    res.setHeader('Set-Cookie',success?[google.clearCookie(),cookie(sessions.issue())]:[google?.clearCookie()??'sues_google=; Secure; HttpOnly; SameSite=Lax; Path=/api/auth/google; Max-Age=0']);
+    res.writeHead(303,{Location:success?'/':'/?google=failed'});return res.end();
+   }
    if(path==='/api/password/setup'&&req.method==='POST'){
     if(req.headers['x-sues-request']!=='editor')return json(res,403,{error:'Request header required'});
     const key=req.socket.remoteAddress||'unknown';
@@ -119,7 +134,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     const analysisMatch=/^\/api\/uploads\/([a-f0-9]{64})\/analysis$/.exec(path);
     if(analysisMatch&&req.method==='POST'){if(jobs.list().some(j=>j.profileId==='upload-'+analysisMatch[1]))throw new Error('Analysis owned by existing jobs; restore original assets');return json(res,200,intake.importAnalysis(analysisMatch[1],await body(req,2*1024*1024)));}
     if(path==='/api/uploads'&&req.method==='POST'){req.setTimeout(120000);return json(res,201,await intake.receive(req,{name:url.searchParams.get('name')}));}
-    if(path==='/api/health'&&req.method==='GET')return json(res,200,{...jobs.health(),passwordLoginConfigured:!!adminPasswordHash,passwordSetupConfigured:setup.available()});
+    if(path==='/api/health'&&req.method==='GET')return json(res,200,{...jobs.health(),googleLoginConfigured:googleReady(),passwordLoginConfigured:!!adminPasswordHash,passwordSetupConfigured:setup.available()});
     if(path==='/api/design'&&req.method==='GET'){
      const id=url.searchParams.get('profileId');if(!Object.hasOwn(profiles,id))return json(res,404,{error:'Unknown profile'});
      const config=projectConfig(profiles[id]),read=p=>JSON.parse(readFileSync(p,'utf8')),brand=read(config.brandKitPath),template=read(config.templatePath),catalog=read(config.catalogPath);

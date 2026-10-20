@@ -1,3 +1,4 @@
+const googleLoginFailed=new URLSearchParams(location.search).get('google')==='failed';
 let design=null,designProfile=null,assetLibrary=[];
 const $=id=>document.getElementById(id);let current=null,plan=null,working=false,editorStep='material-panel',previewDirty=false,playerView='original',localVideoURL=null;
 const stateNames={DRAFT:'Borrador',UPLOADED:'Vídeo guardado',ANALYZING:'Preparando',PLANNED:'Plan preparado',PREVIEW_READY:'Listo para previsualizar',ADJUSTING:'Guardando ajustes',QUEUED:'En cola',RENDERING:'Creando vista previa',PUBLISHING:'Guardando vídeo',DONE:'Vista previa lista',FAILED:'Requiere atención',PUBLISH_FAILED:'Guardado pendiente',CANCELLED:'Cancelado'};
@@ -317,3 +318,19 @@ $('setup-form').onsubmit=async event=>{
  try{const response=await fetch('/api/password/setup',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Sues-Request':'editor'},body:JSON.stringify({token:setupToken,password:$('setup-password').value,confirmation:$('setup-confirmation').value})});const data=await response.json();if(!response.ok)throw new Error(data.error||'No se pudo configurar el acceso');setupToken=null;$('setup-password').value='';$('setup-confirmation').value='';await init();}catch(e){message.textContent=e.message;}finally{button.disabled=false;}
 };
 window.addEventListener('hashchange',()=>{if(location.hash)init();});
+
+// The provider is contacted only after an explicit click; no Google script or tracking pixel.
+(async()=>{
+ const button=$('google-login'),status=$('google-login-status');
+ if(googleLoginFailed){
+  $('login-message').textContent='No se pudo acceder con Google. Selecciona la cuenta administradora o utiliza tu contraseña.';
+  history.replaceState(null,'',location.pathname+location.hash);
+ }
+ try{const response=await fetch('/api/auth/options',{credentials:'same-origin'}),options=await response.json();if(!response.ok)throw Error();button.disabled=!options.google;status.textContent=options.google?'Solo para carlossuess@gmail.com.':'Google pendiente de configuración. Puedes entrar con tu contraseña.';}
+ catch{status.textContent='No se pudo comprobar Google. Puedes entrar con tu contraseña.';}
+ button.onclick=async()=>{
+  button.disabled=true;
+  try{const response=await fetch('/api/auth/google/start',{method:'POST',credentials:'same-origin',headers:{'X-Sues-Request':'editor'}}),result=await response.json();if(!response.ok)throw Error(result.error);const target=new URL(result.url);if(target.origin!=='https://accounts.google.com')throw Error('Destino de acceso no válido');location.assign(target.href);}
+  catch(e){$('login-message').textContent=e.message||'No se pudo acceder con Google';button.disabled=false;}
+ };
+})();

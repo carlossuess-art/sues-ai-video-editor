@@ -1,3 +1,21 @@
+## Google OAuth preparado y probado localmente · 20/10/2026
+
+Base oficial080fe98; VPS observado directamente usa6da5a3d, contraseña configurada,
+cuatro trabajos y cola vacía. Se añade Continuar con Google, manteniendo contraseña,
+ojos y recuperación anterior. OAuth Code+PKCE/state/nonce, firma/claims OIDC,
+email_verified y cuenta única carlossuess@gmail.com; sesiones SUES30d. Sin nuevas
+dependencias ni cambios de motor. Google ausente queda desactivado explícitamente.
+
+239 Node + check PASS; 28 Python de despliegue con infraestructura simulada PASS.
+Chromium145 real móvil/escritorio: contraseña, tres ojos y persistencia PASS;
+flujo Google sobre HTTPS local real con proveedor/JWKS RSA SUSTITUTOS PASS,
+incluidos rechazo de otra cuenta y reinicios. No acredita Google en producción.
+Detalles y límites: docs/SUES_GOOGLE_LOGIN_20261020.md. Google Cloud en navegador
+Work devuelve Site Unavailable también tras recargar; cliente/secret no disponibles.
+Falta creación/autorización de Google y login real, sin exponer secretos al chat.
+Despliegue del código y conservación remota de datos pendientes de comprobar.
+
+---
 ## Login por correo terminado y probado · 20/10/2026 · pendiente de instalar
 
 Release aprobada: 6da5a3d9145dde6bff7056e318b67d020e99c66f. Árbol probado:
