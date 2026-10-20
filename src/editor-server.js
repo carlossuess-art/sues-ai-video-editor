@@ -42,7 +42,10 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
   res.setHeader('Content-Type',head.subarray(0,4).equals(Buffer.from([0x1a,0x45,0xdf,0xa3]))?'video/webm':'video/mp4');res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();const stream=createReadStream(file,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
  };
  const loginLimiter=createLoginLimiter();
- const adminPasswordHash=process.env.SUES_ADMIN_PASSWORD_HASH||'';
+ const passwordFile=join(directory,'access','admin-password-hash');
+ let adminPasswordHash='';
+ try{adminPasswordHash=readFileSync(passwordFile,'utf8').trim();}catch(error){if(error.code!=='ENOENT')throw error;}
+ if(adminPasswordHash&&!/^scrypt-v1\$[0-9a-f]{32}\$[0-9a-f]{128}$/.test(adminPasswordHash))throw new Error('Invalid administrator password hash file');
  const server=http.createServer(async(req,res)=>{
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Cross-Origin-Resource-Policy','same-origin');
   res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
