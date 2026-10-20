@@ -1,3 +1,33 @@
+## Estado vigente: código OAuth desplegado; Google pendiente de credenciales · 20/10/2026
+
+Instalado y verificado directamente mediante Desktop Commander en srv1841004:
+b9969f8c468a15a7bc77409f862caf13d98596e2, árbol35157551f9b9d9e0685145fd357787adb757eeb9.
+Anterior6da5a3d. Oficial avanzó mediante lease desde080fe98, sin force. Despliegue
+systemd sues-editor-update-20261020-131347-725ebeca: SUCCESS/exitCode0 y systemd0.
+HTTPS200; API401 sin sesión; salud available y cola0/0/0. Cuatro trabajos y155
+archivos originales idénticos por SHA antes/después, incluida contraseña privada.
+
+239 tests+check PASS local y en copia aislada del VPS (Node/Git host22.23.3,
+FFmpeg real de imagen existente);28 Python infraestructura simulada PASS.
+Chromium145 escritorio/móvil: contraseña, ojos, emergencia, persistencia y OAuth
+con HTTPS local/proveedor RSA SUSTITUTO PASS. Intentos iniciales de QA VPS fallidos
+por herramientas/disco/permisos del arnés se documentan; no se cuentan como PASS.
+No se ha introducido la contraseña real de Carlos ni probado Google vivo.
+
+Backup privado verificado: /opt/sues-video-setup/update-backup-20261020-131350-17153,
+TAR SHA256 df38087e10b0ef076c1c5deb9053d9962684a91c22adcfca9a2b9ed7bb967505.
+Contenedor anterior conservado para rollback; no se realizó reversión innecesaria.
+Sin gastos, paquetes nuevos ni cambios en WAC/WhatsApp/Caddy/DNS/otras apps.
+
+Google NO ACTIVO: no hay credenciales privadas; botón desactivado con explicación,
+contraseña y enlace de emergencia operativos. Work Google Cloud devuelve Site
+Unavailable, también tras recarga. Falta creación/autorización del cliente web y
+login Google real; callback https://editor.suesholistics.com/api/auth/google/callback .
+Solo cuenta carlossuess@gmail.com y scopes openid/email. No pegar secretos al chat.
+Informe y límites: docs/SUES_GOOGLE_LOGIN_20261020.md. Esta evidencia sustituye
+las entradas antiguas que dejaban pendiente el despliegue del login por correo.
+
+---
 ## Google OAuth preparado y probado localmente · 20/10/2026
 
 Base oficial080fe98; VPS observado directamente usa6da5a3d, contraseña configurada,
