@@ -1,3 +1,28 @@
+## Desbloqueo e integración verificados · 20/10/2026
+
+Código oficial: 71399e1c9ac6a7da1b586c50b8dae5d93651050b; árbol
+29523d4dba89ac4fc113b0fabe1c61ceaebb79a8. Integra F6 renderer-text
+3aaf56b3 (incluye capability/preflight); timeline-guard apunta al mismo SHA.
+223 pruebas Node/check y20 Python PASS, repetidas sobre commit remoto.
+Render FFmpeg real24s1080×1920/H264/AAC, decodePASS/originalintacto,
+fuente sintética y tiempos QA sin ASR. No validación de producción.
+
+Conector GitHub lee/escribe correctamente; Git directo sin credenciales push.
+Sin cambios de permisos ni reconexión. Chromium145 bloqueado al abrir socket
+por política del entorno; matriz/player no ejecutados con éxito. Cambios
+frontend posteriores a1178 conservados en su rama babc6a54, sin integrar.
+
+Lanzador systemd con logs/estado/código real/locks/checksum y diagnóstico
+sin parar el editor. Actualizador conserva contenedor fallido y verifica
+recuperación.20testsPython simulan Docker/systemd/red, no son operacionesVPS.
+Entrega a Carlos: --diagnose, NO instalación. VersiónVPS actual desconocida;
+fd168 reportada, intento1178 sin verificar. GETHTTPS200; HEAD404 no es caída.
+Backup/rollback remotos no ejecutados. Guía, ramas, hashes y límites:
+docs/SUES_BACKGROUND_PREFLIGHT_20261020.md. F6/F9/V1 abiertas; porcentajes
+no recalculados. Siguiente: ejecutar diagnóstico systemd, consultar resultado
+y revisar instalación real antes de desplegar. Sin gastos/WhatsApp/WAC/Caddy/DNS.
+
+---
 ## Misión Work · frontend de referencia · 19/10/2026
 
 Auditoría desde aa6e7c246a8de811ac2329d87936e9e84f091e9e; base oficial
