@@ -210,7 +210,10 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   for(const [i,m] of (plan.semantic?.motions??[]).filter(m=>m.backgroundTreatment).entries()){
     const r=m.backgroundTreatment,duration=m.end-m.start,fade=Math.min(r.fadeSeconds,duration/3),sigma=r.sigma/4;
     filters.push(`[${base}]split=2[focus-clear${i}][focus-input${i}]`);
-    filters.push(`[focus-input${i}]trim=start=${m.start}:end=${m.end},setpts=PTS-STARTPTS,scale=270:480,gblur=sigma=${sigma},scale=1080:1920,eq=brightness=-${r.dim},format=yuva420p,fade=t=in:st=0:d=${fade}:alpha=1,fade=t=out:st=${duration-fade}:d=${fade}:alpha=1,setpts=PTS+${m.start}/TB[focus-layer${i}]`);
+    // Keep both split branches on the same timeline. Trimming a late focus input
+    // stalls framesync until its first frame and buffers the full-resolution clear
+    // branch (hundreds of frames), exhausting the 1 GiB editor container.
+    filters.push(`[focus-input${i}]scale=270:480,gblur=sigma=${sigma},scale=1080:1920,eq=brightness=-${r.dim},format=yuva420p,fade=t=in:st=${m.start}:d=${fade}:alpha=1,fade=t=out:st=${m.end-fade}:d=${fade}:alpha=1[focus-layer${i}]`);
     filters.push(`[focus-clear${i}][focus-layer${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${m.start})*lt(t,${m.end})'[focus-composed${i}]`);base=`focus-composed${i}`;
   }
   const paper=technicalPaperFilters(plan.graphics??[],base,plan.globalTransitions??[]);filters.push(...paper.filters);base=paper.base;

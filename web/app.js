@@ -16,7 +16,7 @@ function showPlayer(view){
  $('source-video').hidden=preview||!original;$('video').hidden=!preview;$('placeholder').hidden=preview||original;
  $('view-original').setAttribute('aria-pressed',String(!preview));$('view-preview').setAttribute('aria-pressed',String(preview));
  $('player-label').textContent=preview?'Montaje previsualizado · listo para revisar':original?'Original · sin efectos':'Selecciona un vídeo para verlo aquí';
- if(preview)$('source-video').pause();else $('video').pause();
+ if(preview)$('source-video').pause();else{$('video').pause();originalPlaybackSupport();}
 }
 function originalVideo(url,name){
  if(localVideoURL&&!url.startsWith('blob:')){URL.revokeObjectURL(localVideoURL);localVideoURL=null;}
@@ -89,7 +89,9 @@ $('create').onclick=()=>work(async()=>{const job=await api('jobs','POST',{profil
 $('save').onclick=()=>work(async()=>{if(current.state==='DONE'){if(!previewDirty)return;const job=await api('jobs','POST',{profileId:current.profileId,settings:settings()});await select(job.id);}else{await api('jobs/'+current.id,'PATCH',{settings:settings()});await select(current.id);}});
 $('undo').onclick=()=>work(async()=>{if(current.state!=='DONE')await api('jobs/'+current.id+'/undo','POST',{});await select(current.id);});
 $('render').onclick=()=>work(async()=>{
- if(current.state==='DONE'){
+ if(current.state==='FAILED'){
+  const next=await api('jobs','POST',{profileId:current.profileId,settings:current.settings});await select(next.id);
+ }else if(current.state==='DONE'){
   if(!previewDirty){showPlayer('preview');return;}
   const next=await api('jobs','POST',{profileId:current.profileId,settings:settings()});await select(next.id);
  }else if(current.state==='PREVIEW_READY')await api('jobs/'+current.id,'PATCH',{settings:settings()});
@@ -130,6 +132,9 @@ $('export-from-settings').onclick=()=>$('render').click();
 for(const eventName of ['input','change'])$('adjustments-panel').addEventListener(eventName,event=>{if(event.target.id!=='caption-search')markPreviewDirty();});
 $('caption-search').oninput=()=>{const query=$('caption-search').value.trim().toLocaleLowerCase('es');let count=0;for(const row of $('captions').children){const match=!query||row.querySelector('textarea').value.toLocaleLowerCase('es').includes(query);row.hidden=!match;if(match)count++;}$('caption-search-status').textContent=query?count+' subtítulos encontrados':'';};
 $('upload-video').onchange=()=>{const file=$('upload-video').files[0];if(!file)return;if(localVideoURL)URL.revokeObjectURL(localVideoURL);localVideoURL=URL.createObjectURL(file);resetForNewSource(file.name);originalVideo(localVideoURL,file.name);$('selected-video-status').textContent=file.name+' · '+(file.size/1024/1024).toFixed(1)+' MiB · seleccionado, aún sin subir';};
+function originalPlaybackSupport(){const v=$('source-video');if(v.currentSrc&&v.readyState>=1&&v.videoWidth===0&&playerView!=='preview')$('player-label').textContent='Este navegador reproduce el audio, pero no la imagen del original. Previsualiza el montaje para verlo en formato compatible.';}
+$('source-video').addEventListener('loadeddata',originalPlaybackSupport);
+$('source-video').addEventListener('playing',originalPlaybackSupport);
 $('source-video').onerror=()=>{$('player-label').textContent='El navegador no puede reproducir este formato original. Si el análisis está disponible, crea la previsualización compatible.';};
 showTool('material');
 async function applyGroupingChange(){

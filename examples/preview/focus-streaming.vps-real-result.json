@@ -1,0 +1,29 @@
+{
+  "kind": "real-vps-isolated-render-comparison",
+  "productionJobsModified": false,
+  "sameExistingImage": true,
+  "sourceMountReadOnly": true,
+  "memoryLimitBytes": 1073741824,
+  "cpuLimit": 0.5,
+  "baseline": {
+    "exitCode": 1,
+    "oomKills": 1,
+    "memoryPeakBytes": 1073741824
+  },
+  "streaming": {
+    "exitCode": 0,
+    "oomKills": 0,
+    "memoryPeakBytes": 463597568,
+    "durationEncoded": 38.3,
+    "bytes": 18332121,
+    "codec": "h264",
+    "width": 1080,
+    "height": 1920,
+    "fps": "30/1",
+    "audioPresent": true,
+    "fullDecode": "pass",
+    "sourcePreserved": true,
+    "outputSha256": "2c26c0564cab764098164062589afa20f21fcca0b6d7ead8507154d3a2743404"
+  },
+  "externalCostUSD": 0
+}

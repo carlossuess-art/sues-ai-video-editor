@@ -23,7 +23,7 @@ test('font kits preserve legacy names, reject unknown families and refuse unread
 test('CALMA creates compact captions, evidence-bound emphasis and a timed blurred focus before caption compositing',()=>{
  const f=fixture();try{const p=prepareProject(loadProject(f.profiles.test));assert.equal(p.plan.policy.captions.font,'Montserrat');assert.ok(p.plan.captions.every(c=>c.wordIndexes.length<=3));assert.ok(p.plan.captions.some(c=>c.emphasisWordIndexes.length));
  const focus=p.plan.semantic.motions.find(m=>m.backgroundTreatment);assert.ok(focus);assert.equal(focus.backgroundTreatment.presenterOccludedIntentionally,true);assert.ok(focus.start>=2&&focus.end<=21);
- const filter=buildPreviewFilter(p.plan),ass=buildPreviewASS(p.plan);assert.ok(filter.indexOf('gblur=')<filter.indexOf('ass=filename='));assert.ok(filter.includes('alpha=1'));assert.ok(filter.includes(`trim=start=${focus.start}:end=${focus.end}`));assert.ok(ass.includes('Style: Caption,Montserrat,112,'));assert.ok(ass.includes('\\fscx100'));assert.ok(ass.includes('Style: Outro,Montserrat,44,'));
+ const filter=buildPreviewFilter(p.plan),ass=buildPreviewASS(p.plan);assert.ok(filter.indexOf('gblur=')<filter.indexOf('ass=filename='));assert.ok(filter.includes('alpha=1'));assert.ok(filter.includes(`fade=t=in:st=${focus.start}:`));assert.ok(ass.includes('Style: Caption,Montserrat,112,'));assert.ok(ass.includes('\\fscx100'));assert.ok(ass.includes('Style: Outro,Montserrat,44,'));
  const off=prepareProject(loadProject(f.profiles.test),{motions:false,zoomIntensity:0});assert.ok(!buildPreviewFilter(off.plan).includes('gblur='));
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });

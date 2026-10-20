@@ -1,0 +1,31 @@
+{
+  "kind": "real-local-chromium-hevc-warning",
+  "browser": "145.0.7632.6",
+  "checks": [
+    {
+      "device": "desktop",
+      "actualHEVC": true,
+      "failedPreviewRetryCreatesNewVersion": true,
+      "failedVersionUnchanged": true,
+      "renderer": "DELIBERATE LOCAL FAILURE ONLY",
+      "browserDecodesSource": false,
+      "unsupportedPictureExplained": true,
+      "previewActionAvailable": true,
+      "noOverflow": true
+    },
+    {
+      "device": "mobile",
+      "actualHEVC": true,
+      "failedPreviewRetryCreatesNewVersion": true,
+      "failedVersionUnchanged": true,
+      "renderer": "DELIBERATE LOCAL FAILURE ONLY",
+      "browserDecodesSource": false,
+      "unsupportedPictureExplained": true,
+      "previewActionAvailable": true,
+      "noOverflow": true
+    }
+  ],
+  "pageErrors": [],
+  "production": false,
+  "externalCostUSD": 0
+}
