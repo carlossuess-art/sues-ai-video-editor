@@ -1,0 +1,23 @@
+{
+  "kind": "local-ui-layout-fixture",
+  "checks": [
+    {
+      "device": "desktop",
+      "realJPEGPoster": true,
+      "playerRemainsVisible": true,
+      "promptVisible": true,
+      "noOverflow": true,
+      "rendering": "NOT TESTED; layout fixture only"
+    },
+    {
+      "device": "mobile",
+      "realJPEGPoster": true,
+      "playerRemainsVisible": true,
+      "promptVisible": true,
+      "noOverflow": true,
+      "rendering": "NOT TESTED; layout fixture only"
+    }
+  ],
+  "pageErrors": [],
+  "production": false
+}

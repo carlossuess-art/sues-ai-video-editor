@@ -1,3 +1,23 @@
+## Dashboard y director por instrucciones · 20/10/2026 · probado localmente
+
+Nuevo recorrido sobre el editor existente: inicio/Nuevo proyecto, nombre y
+plantilla, instrucciones opcionales, generación/revisión/exportación, historial
+de versiones dentro del proyecto. Originales antiguos agrupados sin reescribir.
+Interfaz oscura/cian, panel contextual y vídeo visible en móvil/escritorio.
+Instrucciones locales explícitas aplican ajustes reales; las desconocidas se
+rechazan completas. No LLM general, cortes semánticos ni análisis nuevo activado.
+No gastos ni nuevas dependencias. Detalles y límites:
+docs/SUES_PROJECT_DIRECTOR_UI_20261020.md.
+
+243 tests Node, check y diff --check PASS. Chromium145 real móvil/escritorio,
+tres renders FFmpeg sintéticos8s, play, descarga por botón SHA igual al preview,
+fuente intacta, persistencia, historial, búsqueda y combinación manual/prompt
+(escritorio). Layout final validado aparte con fixture, no otro render. Carlos
+confirma descarga móvil de su vídeo real en la versión anterior. Work nativo
+sigue limitado por protección de credenciales; no afirmar nuevo login visual.
+Integración/despliegue de esta UI pendientes al escribir esta entrada.
+
+---
 ## Work autenticado, render real desbloqueado y desplegado · 20/10/2026
 
 Código instalado9d8d07776f974b02cc74724b89b3b6b7e7a42e18, árbol

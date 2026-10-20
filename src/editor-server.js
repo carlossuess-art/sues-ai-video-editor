@@ -1,3 +1,4 @@
+import {planInstructions} from './instruction-director.js';
 import {googleAuth,readGoogleConfig,GOOGLE_CALLBACK} from './editor-google-auth.js';
 import {STYLE_VARIANTS} from './style-variants.js';
 import {ProjectRecovery} from './project-recovery.js';
@@ -143,19 +144,34 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/profiles'&&req.method==='GET'){const recovered=new Map(recoveries.list().map(r=>[r.profileId,r.title]));return json(res,200,Object.keys(profiles).map(id=>({id,title:recovered.has(id)?recovered.get(id)+' · recuperado':id.startsWith('upload-')?'Vídeo subido':id,template:'SUES_CALMA',mode:'existing-transcript-and-vision',ready:projectReady(profiles[id])})));}
     if(path==='/api/jobs'&&req.method==='GET')return json(res,200,jobs.list());
     if(path==='/api/jobs'&&req.method==='POST'){
-     const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{}));
+     const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|media|audit|undo))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|media|audit|undo|direct-plan|direct|poster))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
     if(!action&&req.method==='PATCH')return json(res,200,jobs.adjust(id,(await body(req)).settings));
+    if(['direct-plan','direct'].includes(action)&&req.method==='POST'){
+     const b=await body(req),source=jobs.get(id);
+     if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))throw Error('Espera a que termine la edición actual.');
+     const base=b.settings??source.settings,proposal=planInstructions(b.prompt??'',base);
+     if((proposal.changes.musicGain!==undefined||proposal.changes.musicEnabled===true)&&!base.musicAssetId&&!jobs.plan(id).manifest.audioSourceAvailable)proposal.notes=['Este material no tiene una pista musical preparada. Puedes elegir una en Música; el volumen no añadirá una canción por sí solo.'];
+     if(action==='direct-plan')return json(res,200,proposal);
+     if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId))throw Error('Identificador de petición no válido.');
+     const existing=[...jobs.jobs.values()].find(j=>j.parentId===id&&j.requestId===b.requestId);
+     if(existing)return json(res,200,existing.state==='PREVIEW_READY'?jobs.render(existing.id):jobs.view(existing));
+     if(!proposal.canApply)return json(res,422,{error:'Hay instrucciones que todavía no puedo ejecutar. Revisa la propuesta antes de generar.',proposal});
+     if(proposal.requiresResetConfirmation&&b.confirmReset!==true)return json(res,409,{error:proposal.warning,proposal});
+     const next=jobs.create(source.profileId,{...base,...proposal.changes},{parentId:id,requestId:b.requestId,instruction:{text:(b.prompt??'').trim(),actions:proposal.actions,at:new Date().toISOString()}});
+     return json(res,202,jobs.render(next.id));
+    }
     if(action==='acceptance'&&req.method==='POST')return json(res,200,await jobs.recordReview(id,await body(req)));
     if(action==='backup'&&req.method==='POST')return json(res,201,await jobs.backup(id));
     if(action==='backup'&&['GET','HEAD'].includes(req.method)){
      const file=jobs.backupMedia(id),size=statSync(file).size;let range;try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
      res.setHeader('Content-Type','application/x-tar');res.setHeader('Content-Disposition','attachment; filename="SUES_PROYECTO.tar"');res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();const stream=createReadStream(file,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
     }
+    if(action==='poster'&&req.method==='GET'){try{const file=await jobs.poster(id);res.setHeader('Content-Type','image/jpeg');return res.end(readFileSync(file));}catch{return json(res,404,{error:'Poster unavailable'});}}
     if(action==='review'&&req.method==='GET')return json(res,200,jobs.review(id));
     if(action==='plan'&&req.method==='GET')return json(res,200,jobs.plan(id));
     if(action==='audit'&&req.method==='GET')return json(res,200,await jobs.audit(id));
@@ -172,7 +188,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     }
     return json(res,405,{error:'Method not allowed'});
    }
-   const files={'/':['index.html','text/html; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon.svg':['icon.svg','image/svg+xml']};
+   const files={'/':['index.html','text/html; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8'],'/studio.css':['studio.css','text/css; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon.svg':['icon.svg','image/svg+xml']};
    if(req.method!=='GET'||!Object.hasOwn(files,path))return json(res,404,{error:'Not found'});
    const [file,type]=files[path];res.setHeader('Content-Type',type);res.end(readFileSync(join(WEB,file)));
   }catch(error){if(res.headersSent)return res.destroy();const safe=/not found|Unknown profile/i.test(error.message)?404:/busy|ready|changed|transition|owned|Adjustments|queue full|closing/.test(error.message)?409:400;json(res,safe,{error:error.code?'No se pudo acceder al recurso local configurado':error.message.replaceAll(directory,'[local]')});}

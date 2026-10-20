@@ -17,7 +17,7 @@ const now=()=>new Date().toISOString();
 export class EditorJobs{
  constructor({directory,profiles,renderer=RENDER_SCRIPT,maxQueued=16,autoStart=true,storage}){
   if(!Number.isInteger(maxQueued)||maxQueued<1||maxQueued>100)throw new Error('maxQueued 1..100');
-  this.backupBusy=new Set();this.maxQueued=maxQueued;this.autoStart=autoStart;this.closing=false;this.retryTimer=null;
+  this.backupBusy=new Set();this.posterBusy=new Map();this.maxQueued=maxQueued;this.autoStart=autoStart;this.closing=false;this.retryTimer=null;
   this.directory=resolve(directory);this.profiles=profiles;this.renderer=renderer;this.children=new Map();this.jobs=new Map();
   mkdirSync(this.directory,{recursive:true,mode:0o700});
   this.storeLock=this.acquireLock('store.lock');
@@ -40,13 +40,24 @@ export class EditorJobs{
  save(job){const dir=join(this.directory,job.id),tmp=join(dir,'.job-'+randomUUID()+'.json');mkdirSync(dir,{recursive:true,mode:0o700});writeFileSync(tmp,JSON.stringify(job,null,2)+'\n',{mode:0o600});renameSync(tmp,join(dir,'job.json'));}
  transition(job,state){if(!canTransition(job.state,state))throw new Error(`Invalid transition ${job.state} -> ${state}`);job.state=state;job.updatedAt=now();job.history.push({state,at:job.updatedAt});this.save(job);}
  get(id){this.dir(id);return this.jobs.get(id);}
- view(job){return {id:job.id,profileId:job.profileId,title:job.title,state:job.state,revision:job.revision??0,backupReady:!!job.backup&&job.backup.revision===job.revision,backupBusy:this.backupBusy.has(job.id),editorialReview:job.editorialReview??null,canUndo:job.state==='PREVIEW_READY'&&(job.undo?.length??0)>0,progress:renderProgress(join(this.dir(job.id),'render-'+(job.attempt??1),'ffmpeg-progress.txt'),job.summary?.duration,job.state),storageReady:!!job.artifact,queuePosition:job.state==='QUEUED'?this.queued().findIndex(j=>j.id===job.id)+1:null,createdAt:job.createdAt,updatedAt:job.updatedAt,settings:job.settings,summary:job.summary,fingerprint:job.fingerprint,error:job.error??null,cancelRequested:job.cancelRequested??false,attempt:job.attempt??0,history:job.history};}
+ view(job){return {id:job.id,profileId:job.profileId,projectId:job.projectId??job.profileId,projectTitle:job.projectTitle??job.title,parentId:job.parentId??null,instructions:job.instructions??[],title:job.title,state:job.state,revision:job.revision??0,backupReady:!!job.backup&&job.backup.revision===job.revision,backupBusy:this.backupBusy.has(job.id),editorialReview:job.editorialReview??null,canUndo:job.state==='PREVIEW_READY'&&(job.undo?.length??0)>0,progress:renderProgress(join(this.dir(job.id),'render-'+(job.attempt??1),'ffmpeg-progress.txt'),job.summary?.duration,job.state),storageReady:!!job.artifact,queuePosition:job.state==='QUEUED'?this.queued().findIndex(j=>j.id===job.id)+1:null,createdAt:job.createdAt,updatedAt:job.updatedAt,settings:job.settings,summary:job.summary,fingerprint:job.fingerprint,error:job.error??null,cancelRequested:job.cancelRequested??false,attempt:job.attempt??0,history:job.history};}
  review(id){const {manifest,director}=this.plan(id);return editorReview(manifest,director,this.get(id).settings);}
  health(){return {version:'1.0',mode:'local-worker',status:this.closing?'stopping':'available',queue:{rendering:this.children.size,waiting:this.queued().length,saving:this.publishing.size,capacity:this.maxQueued},storage:{provider:'private-local',remote:false},dependencyReadiness:'use-editor-doctor'};}
  list(){return [...this.jobs.values()].map(j=>this.view(j)).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));}
- create(profileId,settings={}){
+ create(profileId,settings={},metadata={}){
   if(!Object.hasOwn(this.profiles,profileId))throw new Error('Unknown profile');
+  const parent=metadata.parentId?this.get(metadata.parentId):null;
+  if(parent&&parent.profileId!==profileId)throw Error('Una versión debe conservar el material de su proyecto.');
+  const projectTitle=metadata.projectTitle??parent?.projectTitle;
+  if(projectTitle!==undefined&&(typeof projectTitle!=='string'||!projectTitle.trim()||projectTitle.length>120))throw Error('El nombre del proyecto admite entre 1 y 120 caracteres.');
   const project=this.loadProfile(profileId),prepared=prepareProject(project,settings),id=randomUUID(),job={id,profileId,title:project.title,state:'DRAFT',createdAt:now(),updatedAt:now(),history:[{state:'DRAFT',at:now()}],settings:prepared.settings,fingerprint:prepared.fingerprint};
+  job.projectId=parent?(parent.projectId??parent.profileId):metadata.newProject?id:profileId;
+  job.projectTitle=projectTitle?.trim()??parent?.title??project.title;
+  job.parentId=parent?.id??null;
+  job.instructions=structuredClone(parent?.instructions??[]);
+  // Instructions are appended only by the validated director endpoint.
+  if(metadata.instruction){job.instructions.push(metadata.instruction);job.instructions=job.instructions.slice(-50);}
+  if(metadata.requestId)job.requestId=metadata.requestId;
   this.jobs.set(id,job);this.save(job);this.transition(job,'UPLOADED');this.transition(job,'ANALYZING');
   try{writePreparedBundle(project,prepared,join(this.dir(id),'bundle-1'));job.bundle='bundle-1';job.bundleDigest=bundleDigest(join(this.dir(id),job.bundle));job.revision=1;job.summary=this.summary(prepared);this.transition(job,'PLANNED');this.transition(job,'PREVIEW_READY');return this.view(job);}
   catch(error){job.error=error.message;this.transition(job,'FAILED');throw error;}
@@ -161,6 +172,16 @@ export class EditorJobs{
   }catch(error){job.error='Guardado pendiente: '+error.message;this.transition(job,'PUBLISH_FAILED');}
   finally{this.publishing.delete(job.id);setImmediate(()=>this.drain());}
  }
+ async poster(id){
+  const job=this.get(id);if(job.state!=='DONE')throw Error('Poster unavailable');
+  const target=join(this.dir(id),'poster.jpg');try{if(statSync(target).isFile())return target;}catch{}
+  if(this.posterBusy.has(id))return this.posterBusy.get(id);
+  if(this.children.size||this.queued().length||this.publishing.size||this.closing)throw Error('Poster deferred while the editor is busy');
+  const predecessors=[...this.posterBusy.values()];const pending=(async()=>{await Promise.allSettled(predecessors);if(this.children.size||this.queued().length||this.closing)throw Error('Poster deferred while the editor is busy');const temp=join(this.dir(id),'.poster-'+randomUUID()+'.jpg');try{
+   const source=await this.media(id);await promisify(execFile)('ffmpeg',['-v','error','-threads','1','-ss','0.3','-i',source,'-frames:v','1','-vf','scale=480:-2','-threads','1','-y',temp],{timeout:15000,maxBuffer:65536});renameSync(temp,target);return target;
+  }finally{rmSync(temp,{force:true});this.posterBusy.delete(id);}})();
+  this.posterBusy.set(id,pending);void pending.catch(()=>{}).finally(()=>this.posterBusy.delete(id));return pending;
+ }
  async recordReview(id,value){const job=this.get(id);if(job.state!=='DONE')throw new Error('Video not ready for review');const audit=await this.audit(id);job.editorialReview=editorialAcceptance(value,{fingerprint:job.fingerprint,outputSha256:audit.outputSha256});this.save(job);return job.editorialReview;}
  async backup(id){
   const job=this.get(id);if(!['PREVIEW_READY','DONE'].includes(job.state))throw new Error('Project not ready for backup');if(this.backupBusy.has(id))throw new Error('Backup busy');
@@ -175,5 +196,5 @@ export class EditorJobs{
  backupMedia(id){const job=this.get(id),b=job.backup;if(!b||b.revision!==job.revision||!/^[-a-f0-9]{36}\.tar$/.test(b.file))throw new Error('Backup not ready');const path=join(this.dir(id),'backups',b.file);if(statSync(path).size!==b.bytes||fileSha256(path)!==b.sha256)throw new Error('Backup integrity changed');return path;}
  async media(id){const job=this.get(id);if(job.state!=='DONE')throw new Error('Video not ready');if(job.artifact)return this.storage.resolve(job.artifact,this.storageContext(job));return join(this.dir(id),job.output);}
  async audit(id){const job=this.get(id);if(job.state!=='DONE')throw new Error('Video not ready');const path=job.auditArtifact?await this.storage.resolve(job.auditArtifact,this.storageContext(job)):(await this.media(id)).replace(/\.mp4$/,'.audit.json');return JSON.parse(readFileSync(path,'utf8'));}
- async close(){this.closing=true;clearTimeout(this.retryTimer);const waits=[];for(const [id,child]of this.children){waits.push(new Promise(r=>child.once('close',r)));this.cancel(id);}await Promise.all(waits);while(this.publishing.size||this.backupBusy.size)await new Promise(r=>setTimeout(r,10));if(this.storeLock){unlinkSync(this.storeLock);this.storeLock=null;}}
+ async close(){this.closing=true;clearTimeout(this.retryTimer);const waits=[];for(const [id,child]of this.children){waits.push(new Promise(r=>child.once('close',r)));this.cancel(id);}await Promise.all(waits);while(this.publishing.size||this.backupBusy.size)await new Promise(r=>setTimeout(r,10));await Promise.allSettled([...this.posterBusy.values()]);if(this.storeLock){unlinkSync(this.storeLock);this.storeLock=null;}}
 }

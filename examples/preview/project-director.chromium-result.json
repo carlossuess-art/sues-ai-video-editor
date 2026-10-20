@@ -1,0 +1,39 @@
+{
+  "kind": "local-synthetic-project-director-chromium",
+  "browser": "145.0.7632.6",
+  "checks": [
+    {
+      "device": "desktop",
+      "dashboardGroupsVersions": true,
+      "newProjectNamed": true,
+      "unsupportedInstructionDoesNotRender": true,
+      "promptAppliesRealSettings": true,
+      "manualAndPromptCompose": "pass",
+      "historyAndReload": true,
+      "actualRender": true,
+      "playback": true,
+      "downloadMatchesPreviewSHA256": "c96d17d9d4bc7ddbf2251a21cd62df81c0dfd74df9f713c17e236aba97701079",
+      "fullDecode": "pass",
+      "sourcePreserved": true,
+      "noOverflow": true
+    },
+    {
+      "device": "mobile",
+      "dashboardGroupsVersions": true,
+      "newProjectNamed": true,
+      "unsupportedInstructionDoesNotRender": true,
+      "promptAppliesRealSettings": true,
+      "manualAndPromptCompose": "not-run",
+      "historyAndReload": true,
+      "actualRender": true,
+      "playback": true,
+      "downloadMatchesPreviewSHA256": "c96d17d9d4bc7ddbf2251a21cd62df81c0dfd74df9f713c17e236aba97701079",
+      "fullDecode": "pass",
+      "sourcePreserved": true,
+      "noOverflow": true
+    }
+  ],
+  "pageErrors": [],
+  "externalCostUSD": 0,
+  "production": false
+}
