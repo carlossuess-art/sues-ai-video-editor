@@ -12,6 +12,7 @@ import {VideoIntake,projectConfig,projectReady} from './video-intake.js';
 import {RENDERED_MOTIONS} from './semantic-render.js';
 import {MOTION_ALIASES} from './foundation-integration.js';
 import {EditorJobs} from './editor-jobs.js';
+import {authorizedEmail,verifyPassword,createLoginLimiter} from './editor-password-auth.js';
 const WEB=resolve(dirname(fileURLToPath(import.meta.url)),'../web');
 const eq=(a,b)=>typeof a==='string'&&Buffer.byteLength(a)===Buffer.byteLength(b)&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
 export function parseRange(value,size){
@@ -40,6 +41,8 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
   const fd=openSync(file,'r'),head=Buffer.alloc(12);try{readSync(fd,head,0,12,0);}finally{closeSync(fd);}
   res.setHeader('Content-Type',head.subarray(0,4).equals(Buffer.from([0x1a,0x45,0xdf,0xa3]))?'video/webm':'video/mp4');res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();const stream=createReadStream(file,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
  };
+ const loginLimiter=createLoginLimiter();
+ const adminPasswordHash=process.env.SUES_ADMIN_PASSWORD_HASH||'';
  const server=http.createServer(async(req,res)=>{
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Cross-Origin-Resource-Policy','same-origin');
   res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
@@ -47,6 +50,17 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
    if(req.headers.host!==expectedHost)return json(res,403,{error:'Host rejected'});
    if(req.headers.origin&&req.headers.origin!==origin)return json(res,403,{error:'Origin rejected'});
    const url=new URL(req.url,origin),path=url.pathname;
+   if(path==='/api/login'&&req.method==='POST'){
+    if(!adminPasswordHash)return json(res,503,{error:'Inicio de sesión pendiente de configuración'});
+    const key=req.socket.remoteAddress||'unknown';
+    if(!loginLimiter.allowed(key))return json(res,429,{error:'Demasiados intentos. Espera 15 minutos.'});
+    let credentials;try{credentials=await body(req,4096);}catch{return json(res,400,{error:'Solicitud no válida'});}
+    const valid=authorizedEmail(credentials.email)&&verifyPassword(credentials.password,adminPasswordHash);
+    if(!valid){loginLimiter.fail(key);return json(res,401,{error:'Correo o contraseña incorrectos'});}
+    loginLimiter.clear(key);
+    res.setHeader('Set-Cookie',`sues_session=${token}; HttpOnly; SameSite=Strict; Path=/${publicOrigin?'; Secure':''}`);
+    return json(res,200,{ok:true});
+   }
    if(path==='/api/session'&&req.method==='POST'){
     if(!eq(req.headers.authorization,`Bearer ${token}`))return json(res,401,{error:'Session required'});
     res.setHeader('Set-Cookie',`sues_session=${token}; HttpOnly; SameSite=Strict; Path=/${publicOrigin?'; Secure':''}`);return json(res,200,{ok:true});
