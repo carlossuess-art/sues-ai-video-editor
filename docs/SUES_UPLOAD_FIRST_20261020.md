@@ -45,4 +45,20 @@ sin errores JS ni overflow, con capturas revisadas.
 
 La primera corrección de orden se desplegó como a55e57d con systemd SUCCESS/0,
 backup verificado y215 archivos anteriores intactos. Esta ampliación de briefs
-está probada localmente y pendiente de integrar/desplegar al escribir este punto.
+se instaló como2f44a708a88ce8ced0d698ce3a2c1448f4c717dd, árbol
+8d2454afafeadbc4e7bdccbeed93c524d21145f1, idéntico al checkout probado.
+Integración con lease desdea55e57d,sin force. systemd
+sues-editor-update-20261020-183710-a533b295 SUCCESS/exitCode0,Resultsuccess/status0.
+HTTPS200,API401 sin sesión/200 privada;cuatro recursos públicos yseis archivos
+instalados comparados por SHA.215 archivos previos intactos,cinco trabajos,
+cola0/0/0. Comprobación de endpoint brief con ID inexistente devuelve404 y
+Upload not found sin escribir metadatos;el primer diagnóstico esperaba400,
+se corrigió esa expectativa,no el servicio.
+
+Backup /opt/sues-video-setup/update-backup-20261020-183713-23841/editor-state.tar,
+SHA256108ffdcd2445e2252181eebc99fef5bd9dc68e412665625b4a54cc8c86c4cc8e
+recalculado después. Contenedor anterior
+a55e57d:sues-video-editor-before-update-20261020-183713-23841 conservado exited
+para rollback. No reversión innecesaria,login visual Work nuevo ni render de
+producción en este ensayo. No cambios de otras aplicaciones/costes/dependencias.
+Evidencia examples/preview/upload-first.vps-result.json.

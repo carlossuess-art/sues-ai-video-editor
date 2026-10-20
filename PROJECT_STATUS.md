@@ -1,3 +1,27 @@
+## Subir → confirmación verde → enviar prompt · desplegado20/10/2026
+
+Instalado2f44a708a88ce8ced0d698ce3a2c1448f4c717dd, árbol
+8d2454afafeadbc4e7bdccbeed93c524d21145f1. Anteriora55e57d(primera corrección
+ya instalada). systemd sues-editor-update-20261020-183710-a533b295:SUCCESS,
+exitCode0,Resultsuccess/status0. HTTPS200, API401 sin sesión/200 privada;
+4 recursos públicos y6 archivos instalados con SHA idénticos al código probado.
+215 archivos persistentes anteriores intactos,5 trabajos,cola0/0/0.
+Backup verificado /opt/sues-video-setup/update-backup-20261020-183713-23841,
+TAR SHA256108ffdcd2445e2252181eebc99fef5bd9dc68e412665625b4a54cc8c86c4cc8e;
+contenedor anterior conservado para rollback. No cambios de otras aplicaciones.
+
+Nuevo proyecto empieza por Subir vídeo,selector/subida directa y barra/mensaje
+verde únicamente tras201 validado. Después prompt/Enviar prompt y,tras propuesta,
+herramientas/generación. También guarda el encargo privado de vídeos sin análisis:
+proyecto pendiente en dashboard,recarga y reapertura sin perderlo. No presenta
+el guardado como análisis/edición ejecutados. El análisis nuevo sigue pendiente.
+244 Node/check PASS local. Chromium145 real móvil/escritorio con HTTP/FFprobe,
+fallo/reintento,201 demorado,verde,orden,guardado y recarga PASS. Este ensayo sólo
+encola la generación,no ejecuta renderer. No nuevo login visual Work,que sigue
+limitado por protección de credenciales. Sin modelos,dependencias o costes nuevos.
+Informe docs/SUES_UPLOAD_FIRST_20261020.md;evidencias upload-first.*.json.
+
+---
 ## Prompt guardado también para vídeos pendientes de análisis · 20/10/2026
 
 Primera corrección de orden instaladaa55e57d(systemd SUCCESS/0); ampliación local:

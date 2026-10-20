@@ -1,0 +1,30 @@
+{
+  "commit": "2f44a708a88ce8ced0d698ce3a2c1448f4c717dd",
+  "tree": "8d2454afafeadbc4e7bdccbeed93c524d21145f1",
+  "state": "SUCCESS",
+  "exitCode": 0,
+  "unit": "sues-editor-update-20261020-183710-a533b295",
+  "https": 200,
+  "testedResourceHashesMatch": 6,
+  "publicResourceHashesMatch": 4,
+  "unauthenticatedAPI": 401,
+  "authenticatedAPI": 200,
+  "briefRouteRejectsUnknownUpload": 404,
+  "originalPersistentFiles": 215,
+  "unchangedPersistentFiles": 215,
+  "jobs": 5,
+  "queue": {
+    "rendering": 0,
+    "waiting": 0,
+    "saving": 0,
+    "capacity": 16
+  },
+  "container": "running",
+  "backup": "/opt/sues-video-setup/update-backup-20261020-183713-23841",
+  "backupSHA256": "108ffdcd2445e2252181eebc99fef5bd9dc68e412665625b4a54cc8c86c4cc8e",
+  "rollbackContainer": "sues-video-editor-before-update-20261020-183713-23841",
+  "rollbackContainerState": "exited",
+  "productionBrowserLoginRetested": false,
+  "rendererExecuted": false,
+  "externalCostUSD": 0
+}
