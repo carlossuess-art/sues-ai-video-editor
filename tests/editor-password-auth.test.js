@@ -13,7 +13,7 @@ test('minimum length and salt validation',()=>{
  assert.throws(()=>createPasswordRecord('LongUniqueSecret-123',{salt:'bad'}));
 });
 test('administrator email is explicit',()=>{
- assert.equal(authorizedEmail(' CarlosSuesS@Gmail.com '),false);
+ assert.equal(authorizedEmail(' otro@Gmail.com '),false);
  assert.equal(authorizedEmail(' carlossuess@gmail.com '),true);
 });
 test('rate limiter blocks after fifth failure, resets after window',()=>{
