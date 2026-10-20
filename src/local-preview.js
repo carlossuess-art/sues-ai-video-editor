@@ -197,7 +197,7 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   for(const s of spans){
     const i=s.index,vin=n>1?`sv${i}`:'0:v',ain=n>1?`sa${i}`:'0:a';
     const framing=plan.camera.mode==='full-frame-fit'?'scale=1080:1920:force_original_aspect_ratio=decrease:force_divisible_by=2:flags=lanczos,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=0x081219':`crop=w=${width}:h=${height}:x='${x}':y='${y}':exact=1`;
-    filters.push(`[${vin}]trim=start=${s.sourceIn}:end=${s.sourceOut},${framing},setpts=PTS-${s.sourceIn}/TB,${plan.camera.mode==='full-frame-fit'?'':'scale=1080:1920:flags=lanczos,'}setsar=1,fps=fps=30:start_time=0,format=yuv420p[v${i}]`);
+    filters.push(`[${vin}]trim=start=${s.sourceIn}:end=${s.sourceOut},${framing},setpts=PTS-${s.sourceIn}/TB,${plan.camera.mode==='full-frame-fit'?'':'scale=1080:1920:flags=lanczos,'}setsar=1,fps=fps=30:start_time=0,${plan.camera.mode==='full-frame-fit'?`tpad=stop_mode=clone:stop_duration=${s.sourceOut-s.sourceIn},trim=duration=${s.sourceOut-s.sourceIn},`:''}format=yuv420p[v${i}]`);
     if(hasAudio)filters.push(`[${ain}]atrim=start=${s.sourceIn}:end=${s.sourceOut},asetpts=PTS-${s.sourceIn}/TB,aresample=48000:async=1:first_pts=0[a${i}]`);
   }
   filters.push(`${spans.map((_,i)=>`[v${i}]${hasAudio?`[a${i}]`:''}`).join('')}concat=n=${n}:v=1:a=${hasAudio?1:0}[base]${hasAudio?'[audio]':''}`);

@@ -31,7 +31,7 @@ test('offline mailbox is private, idempotent, bound to source, restartable and f
   writeFileSync(join(mailbox,u.id+'.result.json'),JSON.stringify(result));writeFileSync(join(mailbox,u.id+'.status.json'),JSON.stringify({state:'COMPLETE'}));
   const done=await (await fetch(url+endpoint,{headers})).json();assert.equal(done.upload.state,'READY');assert.equal(done.upload.brief.styleId,'SUES_DOPAMIN');assert.equal(done.upload.brief.projectTitle,'Viaje');
   const project=loadProject(join(directory,'uploads',u.id+'.project.json')),prepared=prepareProject(project,{styleId:'SUES_DOPAMIN'}),filter=buildPreviewFilter(prepared.plan);
-  assert.equal(prepared.director.decisions.length,0);assert.equal(prepared.plan.camera.mode,'full-frame-fit');assert.match(filter,/force_original_aspect_ratio=decrease/);assert.match(filter,/pad=1080:1920/);assert.doesNotMatch(filter,/crop=w=/);assert.equal(prepared.plan.duration,24);assert.equal(prepared.director.audit.omittedWords,0);
+  assert.equal(prepared.director.decisions.length,0);assert.equal(prepared.plan.camera.mode,'full-frame-fit');assert.match(filter,/force_original_aspect_ratio=decrease/);assert.match(filter,/pad=1080:1920/);assert.match(filter,/tpad=stop_mode=clone:stop_duration=24,trim=duration=24/);assert.doesNotMatch(filter,/crop=w=/);assert.equal(prepared.plan.duration,24);assert.equal(prepared.director.audit.omittedWords,0);
   assert.deepEqual(readFileSync(join(directory,'uploads',u.id+'.video')),original);assert.equal(app.jobs.list().length,0);
   assert.equal(projectConfig(join(directory,'uploads',u.id+'.project.json')).source.sha256,u.id);
   assert.equal((await request()).status,202);

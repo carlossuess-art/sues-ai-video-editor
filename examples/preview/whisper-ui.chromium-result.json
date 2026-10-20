@@ -11,8 +11,9 @@
       "unsupportedPromptExplicit": true,
       "templateOnlyRequiresExplicitClick": true,
       "actualRender": true,
+      "audioLongerThanVideoPreserved": true,
       "fullDecode": true,
-      "downloadMatchesPreview": "ca170b0bdde593367519293bb879c57e059258089d48806a83014f8b0e370100",
+      "downloadMatchesPreview": "ffc10e224ec691d22889e5fb175b29d71c93c91686cd55cb7142d7e16054bfdc",
       "originalIntact": true,
       "noOverflow": true
     },
@@ -25,8 +26,9 @@
       "unsupportedPromptExplicit": true,
       "templateOnlyRequiresExplicitClick": true,
       "actualRender": true,
+      "audioLongerThanVideoPreserved": true,
       "fullDecode": true,
-      "downloadMatchesPreview": "3b1f8c727327f4fcb434bd4e572696aba3c635ee54c076c790aca769e436a29c",
+      "downloadMatchesPreview": "327d3616a7b7513d5a8eabecfe3d82eb01428a61022d33cc115564e6303e1f63",
       "originalIntact": true,
       "noOverflow": true
     }

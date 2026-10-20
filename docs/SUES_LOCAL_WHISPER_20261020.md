@@ -66,3 +66,12 @@ No cambiar Caddy,DNS,WAC,WhatsApp u otros servicios.
 
 Despliegue de código y MP4 real de la fuente nueva: pendientes al escribir esta
 sección. Actualizar abajo sólo con resultados observados, no con simulaciones.
+
+## Corrección detectada por la fuente real
+
+La fuente tiene vídeo12.933333s(388fotogramas) y audio12.979955s; formato
+12.979956s. Primera ejecución candidata falló honestamente con Output duration
+drift exceeds one frame. No se relajó el control:full-frame-fit conserva el último
+fotograma con tpad y recorta a la duración del segmento. Mantiene toda la voz,
+no acelera ni inventa movimiento. Regresión Chromium con vídeo8s/audio8.05s,
+MP4 y decodificación reales;se vuelve a probar la fuente privada en VPS.
