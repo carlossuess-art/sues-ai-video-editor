@@ -1,3 +1,17 @@
+## Corrección: subir primero, prompt después · 20/10/2026 · validada localmente
+
+Nuevo proyecto abre con Subir vídeo como primera acción. Selector+subida en un
+solo recorrido, progreso real y verde/Subida completada únicamente tras201 del
+servidor. Después aparece prompt/Enviar prompt; herramientas y generación sólo
+tras una propuesta compatible. Errores no se muestran como éxito. Material sin
+análisis guardado se explica y no puede enviar todavía. No cambia motor/deps.
+243 Node/check PASS. Chromium145 real móvil/escritorio:archivo inválido/reintento,
+HTTP+FFprobe,progreso/201 retrasado,verde,orden,recarga y fuente desconocida PASS.
+Ensayo no ejecuta renderer:solicitud sólo QUEUED con ajustes correctos.
+Informe docs/SUES_UPLOAD_FIRST_20261020.md; JSON upload-first.chromium-result.json.
+Integración/despliegue pendientes; último instalado240632a.
+
+---
 ## Dashboard y director desplegados y verificados · 20/10/2026
 
 Instalado240632a7d969919ce402e072da8297fd1c5a7299, árbol

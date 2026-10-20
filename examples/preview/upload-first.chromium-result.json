@@ -1,0 +1,39 @@
+{
+  "kind": "real-local-chromium-upload-first",
+  "checks": [
+    {
+      "device": "desktop",
+      "uploadFirst": true,
+      "buttonOpensPickerAndUploads": true,
+      "invalidVideoDoesNotComplete": true,
+      "promptHiddenUntilServerAccepts": true,
+      "completedGreenBar100": true,
+      "promptBeforeTools": true,
+      "promptSubmissionDoesNotRender": true,
+      "queuedSettingsCorrect": true,
+      "promptStepSurvivesReload": true,
+      "unknownSourceAnalysisLimitExplained": true,
+      "sourcePreserved": true,
+      "renderer": "NOT EXECUTED",
+      "production": false
+    },
+    {
+      "device": "mobile",
+      "uploadFirst": true,
+      "buttonOpensPickerAndUploads": true,
+      "invalidVideoDoesNotComplete": true,
+      "promptHiddenUntilServerAccepts": true,
+      "completedGreenBar100": true,
+      "promptBeforeTools": true,
+      "promptSubmissionDoesNotRender": true,
+      "queuedSettingsCorrect": true,
+      "promptStepSurvivesReload": true,
+      "unknownSourceAnalysisLimitExplained": true,
+      "sourcePreserved": true,
+      "renderer": "NOT EXECUTED",
+      "production": false
+    }
+  ],
+  "pageErrors": [],
+  "externalCostUSD": 0
+}
