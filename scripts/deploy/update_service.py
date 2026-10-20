@@ -14,6 +14,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import uuid
 import urllib.request
 
 ROOT = Path('/opt/sues-video-setup')
@@ -97,6 +98,39 @@ def health():
         raise RuntimeError('El editor no está disponible')
     if any(state['queue'][key] for key in ('rendering', 'waiting', 'saving')) or any(j.get('backupBusy') for j in jobs):
         raise RuntimeError('Hay trabajos activos; esperar antes de actualizar')
+    return state
+
+
+def setup_candidate(path):
+    path = Path(path)
+    expected = ROOT / 'login-credentials'
+    if path.parent != expected or expected.is_symlink() or path.is_symlink():
+        raise RuntimeError('Ruta de credencial preparada inesperada')
+    info = path.stat()
+    if info.st_uid != 0 or info.st_mode & 0o077 or not path.is_file():
+        raise RuntimeError('Permisos de credencial preparada inseguros')
+    value = path.read_bytes()
+    record = json.loads(value)
+    if record.get('version') != 1 or not re.fullmatch('[a-f0-9]{64}', record.get('tokenSha256', '')) or not isinstance(record.get('expiresAt'), int) or not time.time() < record['expiresAt'] <= time.time() + 3600:
+        raise RuntimeError('Enlace de configuración inválido o caducado')
+    return value
+
+
+def install_credential(value, name):
+    access = ROOT / 'editor/access'
+    if access.is_symlink() or not access.is_dir():
+        raise RuntimeError('Directorio de acceso inesperado')
+    target = access / name
+    if target.is_symlink():
+        raise RuntimeError('Archivo de acceso inesperado')
+    temporary = access / ('setup-install-' + uuid.uuid4().hex)
+    with temporary.open('xb') as stream:
+        stream.write(value)
+        stream.flush()
+        os.fsync(stream.fileno())
+    temporary.chmod(0o600)
+    os.chown(temporary, 1000, 1000)
+    temporary.replace(target)
 
 
 def helper(release):
@@ -108,7 +142,7 @@ def helper(release):
     return module
 
 
-def main(sha, diagnostic=False):
+def main(sha, diagnostic=False, setup_record=None):
     os.umask(0o077)
     if os.geteuid() != 0 or not re.fullmatch('[a-f0-9]{40}', sha):
         raise RuntimeError('Se requiere root y un commit de 40 caracteres')
@@ -116,6 +150,15 @@ def main(sha, diagnostic=False):
         raise RuntimeError('Directorio de instalación inesperado')
     with (ROOT / 'service.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        prepared_setup = setup_candidate(setup_record) if setup_record else None
+        setup_target = ROOT / 'editor/access/admin-setup.json'
+        if setup_target.is_symlink():
+            raise RuntimeError('Archivo de contraseña inesperado')
+        previous_setup = setup_target.read_bytes() if setup_target.exists() else None
+        password_target = ROOT / 'editor/access/admin-password-hash'
+        if password_target.is_symlink():
+            raise RuntimeError('Archivo de contraseña inesperado')
+        previous_password = password_target.read_bytes() if password_target.exists() else None
         old = inspect()
         if not old['State']['Running']:
             raise RuntimeError('El editor debe estar arrancado')
@@ -127,7 +170,7 @@ def main(sha, diagnostic=False):
         old_release = Path(mounts['/app']['Source'])
         old_sha = run('git', '-c', 'safe.directory=' + str(old_release), '-C', str(old_release), 'rev-parse', 'HEAD').stdout.strip()
         print('Versión instalada: ' + old_sha + '\nVersión aprobada: ' + sha, flush=True)
-        if old_sha == sha and not diagnostic:
+        if old_sha == sha and not diagnostic and prepared_setup is None:
             health()
             if helper(old_release).status('https://' + HOST + '/', resolve=HOST + ':443:127.0.0.1') != '200':
                 raise RuntimeError('HTTPS no disponible')
@@ -186,11 +229,16 @@ def main(sha, diagnostic=False):
         (backup / 'previous-commit.txt').write_text(old_sha + '\n')
         previous = EDITOR + '-before-update-' + stamp
         renamed = False
+        setup_changed = False
         try:
             print('Preparación verificada. Actualizando editor...', flush=True)
             run('docker', 'stop', '--time', '45', EDITOR)
             state_sha = backup_state(backup)
             print('Copia privada verificada SHA256: ' + state_sha, flush=True)
+            if prepared_setup is not None:
+                install_credential(prepared_setup, 'admin-setup.json')
+                setup_changed = True
+                print('Configuración de un solo uso instalada; no contiene contraseña.', flush=True)
             run('docker', 'rename', EDITOR, previous)
             renamed = True
             (backup / 'editor-container.txt').write_text(previous + '\n')
@@ -198,7 +246,9 @@ def main(sha, diagnostic=False):
             run('docker', 'start', EDITOR)
             for _ in range(20):
                 try:
-                    health()
+                    ready = health()
+                    if prepared_setup is not None and not (ready.get('passwordSetupConfigured') or ready.get('passwordLoginConfigured')):
+                        raise RuntimeError('La configuración privada del login no está disponible')
                     if module.status('http://127.0.0.1:3010/api/health', host=HOST) != '401':
                         raise RuntimeError('La API ha perdido autenticación')
                     if module.status('https://' + HOST + '/', resolve=HOST + ':443:127.0.0.1') != '200':
@@ -215,6 +265,16 @@ def main(sha, diagnostic=False):
             print('Recarga la web. Copia anterior conservada en ' + str(backup))
         except BaseException:
             print('Fallo: recuperando contenedor anterior...', flush=True)
+            if setup_changed:
+                if previous_setup is None:
+                    if setup_target.exists():
+                        setup_target.rename(backup / 'new-setup.failed')
+                else:
+                    install_credential(previous_setup, 'admin-setup.json')
+                if password_target.exists() and password_target.read_bytes() != previous_password:
+                    password_target.rename(backup / 'new-password.failed')
+                if previous_password is not None:
+                    install_credential(previous_password, 'admin-password-hash')
             if renamed:
                 # Preserve a failed container for diagnosis; never delete its data.
                 exists = run('docker', 'inspect', EDITOR, check=False)
@@ -239,10 +299,13 @@ def main(sha, diagnostic=False):
 
 if __name__ == '__main__':
     try:
-        diagnostic = len(sys.argv) == 3 and sys.argv[1] == '--diagnose'
-        if len(sys.argv) != 2 and not diagnostic:
-            raise RuntimeError('Uso: python3 update_service.py [--diagnose] COMMIT40')
-        main(sys.argv[-1], diagnostic=diagnostic)
+        import argparse
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--diagnose', action='store_true')
+        parser.add_argument('--setup-record')
+        parser.add_argument('commit')
+        args = parser.parse_args()
+        main(args.commit, diagnostic=args.diagnose, setup_record=args.setup_record)
     except Exception as error:
         print('ERROR: ' + str(error), file=sys.stderr)
         sys.exit(1)

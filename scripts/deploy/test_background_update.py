@@ -65,6 +65,15 @@ class BackgroundTests(unittest.TestCase):
             latest = json.loads((base / 'latest.json').read_text())
             self.assertEqual(json.loads((Path(latest['directory']) / 'result.json').read_text())['stage'], 'systemd-launch')
 
+    def test_worker_forwards_only_private_record_path_not_enrollment_link(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp);data=b'# updater fixture';checksum=hashlib.sha256(data).hexdigest()
+            with patch.object(background, 'BASE', base), patch.object(background.urllib.request, 'urlopen', return_value=io.BytesIO(data)), patch.object(background.subprocess, 'run', return_value=SimpleNamespace(returncode=0)) as execute:
+                self.assertEqual(background.worker('a'*40,checksum,base,mode='deploy',setup_record='/private/pending'),0)
+            self.assertIn('--setup-record',execute.call_args.args[0])
+            self.assertIn('/private/pending',execute.call_args.args[0])
+            self.assertNotIn('--diagnose',execute.call_args.args[0])
+
     def test_invalid_release_is_rejected(self):
         with self.assertRaises(RuntimeError):
             background.validate('main', 'b' * 64)

@@ -1,0 +1,43 @@
+{
+  "kind": "real-local-chromium-password-login",
+  "browser": "145.0.7632.6",
+  "checks": [
+    {
+      "device": "desktop",
+      "realForm": true,
+      "setupOneTime": true,
+      "setupConfirmation": true,
+      "passwordEyeAllFields": true,
+      "wrongPassword": true,
+      "passwordCleared": true,
+      "loginByEnter": true,
+      "reload": true,
+      "browserAndServerRestart": true,
+      "persistentCookie": true,
+      "logout": true,
+      "emergencyLink": true,
+      "projectsPreserved": true,
+      "noOverflow": true
+    },
+    {
+      "device": "mobile",
+      "realForm": true,
+      "setupOneTime": true,
+      "setupConfirmation": true,
+      "passwordEyeAllFields": true,
+      "wrongPassword": true,
+      "passwordCleared": true,
+      "loginByEnter": true,
+      "reload": true,
+      "browserAndServerRestart": true,
+      "persistentCookie": true,
+      "logout": true,
+      "emergencyLink": true,
+      "projectsPreserved": true,
+      "noOverflow": true
+    }
+  ],
+  "pageErrors": [],
+  "production": false,
+  "externalCostUSD": 0
+}

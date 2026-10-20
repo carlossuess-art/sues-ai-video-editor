@@ -208,3 +208,7 @@ output{color:var(--cyan)}
 .login-screen input{width:100%;min-height:44px;background:#081b29;color:#fff;border:1px solid #426277;border-radius:9px;padding:10px}
 .login-screen .primary{min-height:48px;margin-top:12px}
 #login-message{min-height:1.4em}
+
+[hidden]{display:none!important}.login-screen{max-width:480px;margin:3rem auto}.login-screen input{width:100%;box-sizing:border-box}.login-screen button{min-height:44px}.login-recovery{margin-top:1.5rem}.login-recovery p{line-height:1.5}#logout{margin-left:auto}
+
+.password-field{display:flex;align-items:stretch;gap:8px}.password-field input{min-width:0;flex:1}.password-toggle{flex:0 0 46px;display:flex;align-items:center;justify-content:center;padding:8px}.password-toggle[aria-pressed="true"]{color:var(--gold);border-color:var(--gold)}

@@ -12,7 +12,8 @@ import {VideoIntake,projectConfig,projectReady} from './video-intake.js';
 import {RENDERED_MOTIONS} from './semantic-render.js';
 import {MOTION_ALIASES} from './foundation-integration.js';
 import {EditorJobs} from './editor-jobs.js';
-import {authorizedEmail,verifyPassword,createLoginLimiter} from './editor-password-auth.js';
+import {loginSetup} from './editor-login-setup.js';
+import {authorizedEmail,verifyPasswordAsync,createLoginLimiter,passwordSessions,SESSION_SECONDS,validPasswordRecord} from './editor-password-auth.js';
 const WEB=resolve(dirname(fileURLToPath(import.meta.url)),'../web');
 const eq=(a,b)=>typeof a==='string'&&Buffer.byteLength(a)===Buffer.byteLength(b)&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
 export function parseRange(value,size){
@@ -27,13 +28,21 @@ async function body(req,maxBytes=65536){
  const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>maxBytes)throw new Error('Request too large');chunks.push(chunk);}
  const value=JSON.parse(Buffer.concat(chunks).toString());if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash')}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
   if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.pathname!=='/'||parsed.search||parsed.hash||parsed.origin!==publicOrigin)throw new Error('Canonical HTTPS origin required');
   origin=parsed.origin;
  }
+ const loginLimiter=createLoginLimiter();
+ let adminPasswordHash='';
+ try{adminPasswordHash=readFileSync(passwordFile,'utf8').trim();}catch(error){if(error.code!=='ENOENT')throw error;}
+ if(adminPasswordHash&&!validPasswordRecord(adminPasswordHash))throw new Error('Invalid administrator password hash file');
+ let sessions=passwordSessions(token,adminPasswordHash);
+ const setup=loginSetup(passwordFile);
+ let loginBusy=0;
+ const cookie=value=>`sues_session=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_SECONDS}${publicOrigin?'; Secure':''}`;
  const jobs=new EditorJobs({directory,profiles,renderer,storage});let intake,assets,recoveries;try{assets=new MediaLibrary(join(directory,'assets'),{probe:assetProbe});jobs.assetResolver=(id,kind)=>assets.resolve(id,kind);recoveries=new ProjectRecovery(join(directory,'recoveries'),profiles);intake=new VideoIntake(join(directory,'uploads'),profiles,{probe:intakeProbe});}catch(error){void jobs.close();throw error;}let expectedHost;
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
  const sourceStream=(req,res,file)=>{
@@ -41,11 +50,6 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
   const fd=openSync(file,'r'),head=Buffer.alloc(12);try{readSync(fd,head,0,12,0);}finally{closeSync(fd);}
   res.setHeader('Content-Type',head.subarray(0,4).equals(Buffer.from([0x1a,0x45,0xdf,0xa3]))?'video/webm':'video/mp4');res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();const stream=createReadStream(file,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
  };
- const loginLimiter=createLoginLimiter();
- const passwordFile=join(directory,'access','admin-password-hash');
- let adminPasswordHash='';
- try{adminPasswordHash=readFileSync(passwordFile,'utf8').trim();}catch(error){if(error.code!=='ENOENT')throw error;}
- if(adminPasswordHash&&!/^scrypt-v1\$[0-9a-f]{32}\$[0-9a-f]{128}$/.test(adminPasswordHash))throw new Error('Invalid administrator password hash file');
  const server=http.createServer(async(req,res)=>{
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Cross-Origin-Resource-Policy','same-origin');
   res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
@@ -53,25 +57,42 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
    if(req.headers.host!==expectedHost)return json(res,403,{error:'Host rejected'});
    if(req.headers.origin&&req.headers.origin!==origin)return json(res,403,{error:'Origin rejected'});
    const url=new URL(req.url,origin),path=url.pathname;
-   if(path==='/api/login'&&req.method==='POST'){
-    if(!adminPasswordHash)return json(res,503,{error:'Inicio de sesión pendiente de configuración'});
+   if(path==='/api/password/setup'&&req.method==='POST'){
+    if(req.headers['x-sues-request']!=='editor')return json(res,403,{error:'Request header required'});
     const key=req.socket.remoteAddress||'unknown';
     if(!loginLimiter.allowed(key))return json(res,429,{error:'Demasiados intentos. Espera 15 minutos.'});
+    let value;try{value=await body(req,4096);}catch{return json(res,400,{error:'Solicitud no válida'});}
+    loginLimiter.fail(key);
+    if(value.password!==value.confirmation)return json(res,400,{error:'Las contraseñas no coinciden'});
+    try{adminPasswordHash=setup.apply(value.token,value.password);}catch(error){return json(res,400,{error:error.code?'No se pudo guardar el acceso de forma segura':error.message});}
+    sessions=passwordSessions(token,adminPasswordHash);loginLimiter.clear(key);
+    res.setHeader('Set-Cookie',cookie(sessions.issue()));
+    return json(res,200,{ok:true});
+   }
+   if(path==='/api/login'&&req.method==='POST'){
+    if(req.headers['x-sues-request']!=='editor')return json(res,403,{error:'Request header required'});
+    if(!adminPasswordHash)return json(res,503,{error:'Inicio de sesión pendiente de configuración. Usa tu enlace privado o configura el acceso en el servidor.'});
+    const key=req.socket.remoteAddress||'unknown';
+    if(!loginLimiter.allowed(key)||loginBusy>=2)return json(res,429,{error:'Demasiados intentos. Espera 15 minutos.'});
     let credentials;try{credentials=await body(req,4096);}catch{return json(res,400,{error:'Solicitud no válida'});}
-    const valid=authorizedEmail(credentials.email)&&verifyPassword(credentials.password,adminPasswordHash);
-    if(!valid){loginLimiter.fail(key);return json(res,401,{error:'Correo o contraseña incorrectos'});}
+    if(!loginLimiter.allowed(key)||loginBusy>=2)return json(res,429,{error:'Demasiados intentos. Espera 15 minutos.'});
+    loginLimiter.fail(key);loginBusy++;
+    let valid=false;
+    try{const passwordOK=await verifyPasswordAsync(credentials.password,adminPasswordHash);valid=authorizedEmail(credentials.email)&&passwordOK;}finally{loginBusy--;}
+    if(!valid)return json(res,401,{error:'Correo o contraseña incorrectos'});
     loginLimiter.clear(key);
-    res.setHeader('Set-Cookie',`sues_session=${token}; HttpOnly; SameSite=Strict; Path=/${publicOrigin?'; Secure':''}`);
+    res.setHeader('Set-Cookie',cookie(sessions.issue()));
     return json(res,200,{ok:true});
    }
    if(path==='/api/session'&&req.method==='POST'){
     if(!eq(req.headers.authorization,`Bearer ${token}`))return json(res,401,{error:'Session required'});
-    res.setHeader('Set-Cookie',`sues_session=${token}; HttpOnly; SameSite=Strict; Path=/${publicOrigin?'; Secure':''}`);return json(res,200,{ok:true});
+    res.setHeader('Set-Cookie',cookie(token));return json(res,200,{ok:true});
    }
    if(path.startsWith('/api/')){
     const cookie=/(?:^|;\s*)sues_session=([^;]+)/.exec(req.headers.cookie??'')?.[1];
-    if(!eq(cookie,token))return json(res,401,{error:'Session required'});
+    if(!eq(cookie,token)&&!sessions.valid(cookie))return json(res,401,{error:'Session required'});
     if(!['GET','HEAD'].includes(req.method)&&req.headers['x-sues-request']!=='editor')return json(res,403,{error:'Request header required'});
+    if(path==='/api/logout'&&req.method==='POST'){res.setHeader('Set-Cookie',`sues_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${publicOrigin?'; Secure':''}`);return json(res,200,{ok:true});}
     if(path==='/api/fonts'&&req.method==='GET')return json(res,200,fontCatalog());
     const fontMatch=/^\/api\/fonts\/([a-z-]+)\/(file|license)$/.exec(path);
     if(fontMatch&&['GET','HEAD'].includes(req.method)){const f=fontDownload(fontMatch[1],fontMatch[2]);if(!f)return json(res,404,{error:'Font not found'});const bytes=readFileSync(f.path);res.setHeader('Content-Type',f.contentType);res.setHeader('Content-Disposition',`attachment; filename="${f.filename}"`);res.setHeader('Content-Length',bytes.length);res.writeHead(200);return res.end(req.method==='HEAD'?undefined:bytes);}
@@ -98,7 +119,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     const analysisMatch=/^\/api\/uploads\/([a-f0-9]{64})\/analysis$/.exec(path);
     if(analysisMatch&&req.method==='POST'){if(jobs.list().some(j=>j.profileId==='upload-'+analysisMatch[1]))throw new Error('Analysis owned by existing jobs; restore original assets');return json(res,200,intake.importAnalysis(analysisMatch[1],await body(req,2*1024*1024)));}
     if(path==='/api/uploads'&&req.method==='POST'){req.setTimeout(120000);return json(res,201,await intake.receive(req,{name:url.searchParams.get('name')}));}
-    if(path==='/api/health'&&req.method==='GET')return json(res,200,jobs.health());
+    if(path==='/api/health'&&req.method==='GET')return json(res,200,{...jobs.health(),passwordLoginConfigured:!!adminPasswordHash,passwordSetupConfigured:setup.available()});
     if(path==='/api/design'&&req.method==='GET'){
      const id=url.searchParams.get('profileId');if(!Object.hasOwn(profiles,id))return json(res,404,{error:'Unknown profile'});
      const config=projectConfig(profiles[id]),read=p=>JSON.parse(readFileSync(p,'utf8')),brand=read(config.brandKitPath),template=read(config.templatePath),catalog=read(config.catalogPath);

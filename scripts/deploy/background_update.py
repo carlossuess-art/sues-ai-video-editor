@@ -29,7 +29,7 @@ def validate(commit, checksum):
         raise RuntimeError('Commit o SHA256 inválido')
 
 
-def worker(commit, checksum, directory, mode='diagnose'):
+def worker(commit, checksum, directory, mode='diagnose', setup_record=None):
     """Exit status mirrors the real updater, including signals and download failure."""
     validate(commit, checksum)
     directory = Path(directory)
@@ -51,6 +51,8 @@ def worker(commit, checksum, directory, mode='diagnose'):
             args = [sys.executable, '-u', str(updater)]
             if mode == 'diagnose':
                 args.append('--diagnose')
+            if setup_record:
+                args += ['--setup-record', setup_record]
             code = subprocess.run([*args, commit], check=False).returncode
             if code < 0:
                 code = 128 - code
@@ -68,7 +70,7 @@ def worker(commit, checksum, directory, mode='diagnose'):
     return code
 
 
-def launch(commit, checksum, mode='diagnose'):
+def launch(commit, checksum, mode='diagnose', setup_record=None):
     validate(commit, checksum)
     if os.geteuid() != 0 or ROOT.is_symlink() or not ROOT.is_dir():
         raise RuntimeError('Se requiere root y la instalación existente')
@@ -90,7 +92,7 @@ def launch(commit, checksum, mode='diagnose'):
                 print('Ya hay una operación en segundo plano: ' + previous['unit'])
                 return
             result = Path(previous['directory']) / 'result.json'
-            if previous['commit'] == commit and previous.get('mode') == mode and result.exists() and json.loads(result.read_text()).get('state') == 'SUCCESS':
+            if not setup_record and previous['commit'] == commit and previous.get('mode') == mode and result.exists() and json.loads(result.read_text()).get('state') == 'SUCCESS':
                 print('Esta operación ya terminó correctamente. Consulta el resultado.')
                 return
         identity = time.strftime('%Y%m%d-%H%M%S') + '-' + uuid.uuid4().hex[:8]
@@ -108,16 +110,20 @@ def launch(commit, checksum, mode='diagnose'):
                 '--property=StandardOutput=append:' + str(directory / 'run.log'),
                 '--property=StandardError=append:' + str(directory / 'run.log'),
                 sys.executable, '-u', str(runner), '--worker', '--' + mode, commit, checksum, str(directory)]
+        if setup_record:
+            args += ['--setup-record', setup_record]
         completed = subprocess.run(args, capture_output=True, text=True, check=False)
         if completed.returncode:
             atomic_json(directory / 'result.json', {'commit': commit, 'state': 'ERROR', 'exitCode': completed.returncode, 'stage': 'systemd-launch'})
             raise RuntimeError('systemd rechazó el lanzamiento; editor intacto. Código ' + str(completed.returncode))
         print('EN SEGUNDO PLANO: ' + unit + '\nPuedes cerrar la terminal. Registros: ' + str(directory))
+        return True
 
 
 def main():
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--setup-record')
     parser.add_argument('--worker', action='store_true')
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument('--diagnose', action='store_true')
@@ -129,8 +135,8 @@ def main():
     if args.worker:
         if not args.directory:
             parser.error('directory required')
-        return worker(args.commit, args.checksum, args.directory, 'diagnose' if args.diagnose else 'deploy')
-    launch(args.commit, args.checksum, 'diagnose' if args.diagnose else 'deploy')
+        return worker(args.commit, args.checksum, args.directory, 'diagnose' if args.diagnose else 'deploy', args.setup_record)
+    launch(args.commit, args.checksum, 'diagnose' if args.diagnose else 'deploy', args.setup_record)
     return 0
 
 
