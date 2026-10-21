@@ -7,7 +7,7 @@ export function planInstructions(text, base = {}) {
  for(const raw of clauses){
   const s=raw.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().replace(/[¡!¿?]/g,'').trim();
   let m;
-  if((m=/^(?:usa |usar |estilo |plantilla |cambia a |cambiar a )?(?:sues )?(calma|dopamin|impacto|explica|historia)$/.exec(s)))add('styleId','SUES_'+m[1].toUpperCase(),'Estilo '+m[1].toUpperCase());
+  if((m=/^(?:usa |usar |estilo |plantilla |cambia a |cambiar a )?(?:sues )?(calma|dopamin|dinamica|impacto|explica|historia)$/.exec(s)))add('styleId','SUES_'+(m[1]==='dinamica'?'DOPAMIN':m[1].toUpperCase()),'Estilo '+m[1].toUpperCase());
   else if(/^(?:sin musica|quita(?:r)? (?:la )?musica|desactiva(?:r)? (?:la )?musica)$/.test(s))add('musicEnabled',false,'Sin música');
   else if(/^(?:con musica|activa(?:r)? (?:la )?musica)$/.test(s))add('musicEnabled',true,'Música activada, si hay una pista disponible');
   else if((m=/^(?:volumen de (?:la )?)?musica (?:al |a )?(\d{1,2})\s*%$/.exec(s))){if(+m[1]>18)unsupported.push(raw+' (máximo actual: 18 %)');else{add('musicGain',+m[1]/100,'Música al '+m[1]+' %');add('musicEnabled',true,'Música activada, si hay una pista disponible');}}

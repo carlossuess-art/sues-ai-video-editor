@@ -15,9 +15,10 @@ const LEXICON=new Map([
 ]);
 export function validateEditorSettings(settings={}){
  assert(settings&&typeof settings==='object'&&!Array.isArray(settings),'settings object');
- assert(Object.keys(settings).every(k=>['sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','profileImages','styleId','elements'].includes(k)),'unknown setting');
+ assert(Object.keys(settings).every(k=>['autoRecipe','sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','profileImages','styleId','elements'].includes(k)),'unknown setting');
  validateElements(settings.elements);
- const value={sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ const value={autoRecipe:false,sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ assert(typeof value.autoRecipe==='boolean','autoRecipe boolean');
  value.sfxEvents=validateSfxEvents(value.sfxEvents);
  assert(typeof value.sfxEnabled==='boolean'&&Number.isFinite(value.sfxGain)&&value.sfxGain>=0&&value.sfxGain<=.7,'sfx settings');
  assert(Number.isFinite(value.zoomIntensity)&&value.zoomIntensity>=0&&value.zoomIntensity<=1,'zoomIntensity 0..1');

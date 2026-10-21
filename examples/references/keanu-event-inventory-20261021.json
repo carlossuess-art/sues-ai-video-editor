@@ -1,0 +1,248 @@
+{
+  "version": 1,
+  "reference": "deckeanu-keanu-primary",
+  "sourceSha256": "5c839646c2746cc5f7616290d8e50b812bcccd94accdef35a427d3ff247ef384",
+  "duration": 64.2,
+  "review": "Entire timeline reviewed as 128 samples at 2fps plus prior dossier windows at 0.1s. Not an original project or full frame-accurate EDL.",
+  "mainVisualBlocks": [
+    {
+      "kind": "photo",
+      "start": 0.3,
+      "end": 2.3,
+      "description": "Keanu y maletín"
+    },
+    {
+      "kind": "money",
+      "start": 3.3,
+      "end": 4.9,
+      "description": "Billetes / estorbo"
+    },
+    {
+      "kind": "background",
+      "start": 6.8,
+      "end": 8.5,
+      "description": "Matrix detrás del sujeto"
+    },
+    {
+      "kind": "money",
+      "start": 8.7,
+      "end": 9.8,
+      "description": "Billetes / fortuna"
+    },
+    {
+      "kind": "photo",
+      "start": 9.8,
+      "end": 11.2,
+      "description": "Isla"
+    },
+    {
+      "kind": "card",
+      "start": 13.1,
+      "end": 15.4,
+      "description": "Equipo efectos y maquillaje"
+    },
+    {
+      "kind": "card",
+      "start": 21.4,
+      "end": 22.9,
+      "description": "Top Secret"
+    },
+    {
+      "kind": "photo",
+      "start": 27.8,
+      "end": 29.1,
+      "description": "Keanu / libertad"
+    },
+    {
+      "kind": "photo",
+      "start": 31.8,
+      "end": 32.9,
+      "description": "Keanu comiendo"
+    },
+    {
+      "kind": "photo",
+      "start": 32.9,
+      "end": 34.5,
+      "description": "Keanu metro"
+    },
+    {
+      "kind": "card",
+      "start": 38.6,
+      "end": 42.1,
+      "description": "Rico / experto"
+    },
+    {
+      "kind": "money",
+      "start": 44.2,
+      "end": 46.2,
+      "description": "Billetes / banco"
+    },
+    {
+      "kind": "object",
+      "start": 50.7,
+      "end": 53.2,
+      "description": "Candado cerrado a abierto"
+    },
+    {
+      "kind": "object",
+      "start": 53.2,
+      "end": 55.3,
+      "description": "Cadenas"
+    },
+    {
+      "kind": "cta",
+      "start": 60.3,
+      "end": 62.6,
+      "description": "Avatar suma a check"
+    }
+  ],
+  "finishingEvents": [
+    {
+      "kind": "global-blur",
+      "start": 4.9,
+      "end": 5.5
+    },
+    {
+      "kind": "radial-return",
+      "start": 15.4,
+      "end": 15.9
+    },
+    {
+      "kind": "localized-flare",
+      "start": 19.0,
+      "end": 19.9
+    },
+    {
+      "kind": "warm-flash",
+      "start": 29.1,
+      "end": 29.5
+    },
+    {
+      "kind": "warm-flash",
+      "start": 42.1,
+      "end": 42.5
+    },
+    {
+      "kind": "global-blur",
+      "start": 48.5,
+      "end": 48.9
+    },
+    {
+      "kind": "warm-flash",
+      "start": 55.3,
+      "end": 55.8
+    },
+    {
+      "kind": "fade-out",
+      "start": 63.7,
+      "end": 64.2
+    }
+  ],
+  "counts": {
+    "mainVisualBlocks": 15,
+    "byKind": {
+      "photo": 5,
+      "money": 3,
+      "background": 1,
+      "card": 3,
+      "object": 2,
+      "cta": 1
+    },
+    "finishingEvents": 8,
+    "visualBlocksPerMinute": 14.02,
+    "finishingEventsPerMinute": 7.48
+  },
+  "unverifiedCounts": {
+    "cameraCuts": null,
+    "zoomIns": null,
+    "zoomOuts": null,
+    "soundEffects": null,
+    "captionChanges": null
+  },
+  "limitations": [
+    "Zooms, reframing and speech cuts must not be inferred from generic scene detection or caption changes.",
+    "Audio onset candidates do not identify or count SFX in a mixed stereo track. Prior dossier did not verify listening.",
+    "Layer entries/exits and letter animation are additional sub-events, not additional whole-scene cuts."
+  ],
+  "quietWindows": [
+    [
+      15.9,
+      18.9
+    ],
+    [
+      22.9,
+      25.3
+    ],
+    [
+      29.5,
+      31.8
+    ],
+    [
+      42.5,
+      44.2
+    ],
+    [
+      58.7,
+      60.3
+    ]
+  ],
+  "templatePolicy": "Use narrative cues and contrast, not identical events at fixed intervals. CALMA keeps the shared visual language at lower density. No promise of matching every reference effect.",
+  "cameraMinimum": {
+    "zoomIns": 4,
+    "zoomOuts": 6,
+    "completeCount": false,
+    "method": "Normalized gradient template matching of a static wall picture at 5fps; template 45x45 at t2.8, 270x480. Scales0.5–1.4 step0.025; restricted to visible-background windows. Manual review of trajectories; movements >=about10%. No face model.",
+    "motions": [
+      {
+        "direction": "in",
+        "start": 5.6,
+        "end": 6.2
+      },
+      {
+        "direction": "out",
+        "start": 17.8,
+        "end": 18.8
+      },
+      {
+        "direction": "out",
+        "start": 25.4,
+        "end": 26.4
+      },
+      {
+        "direction": "in",
+        "start": 26.6,
+        "end": 27.0
+      },
+      {
+        "direction": "out",
+        "start": 29.6,
+        "end": 31.6
+      },
+      {
+        "direction": "out",
+        "start": 35.2,
+        "end": 37.0
+      },
+      {
+        "direction": "out",
+        "start": 46.8,
+        "end": 48.4
+      },
+      {
+        "direction": "in",
+        "start": 56.0,
+        "end": 56.6
+      },
+      {
+        "direction": "out",
+        "start": 57.4,
+        "end": 58.2
+      },
+      {
+        "direction": "in",
+        "start": 59.4,
+        "end": 60.2
+      }
+    ]
+  }
+}

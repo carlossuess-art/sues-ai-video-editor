@@ -1,3 +1,29 @@
+## Candidato de flujo dinámico y base de recursos V2 · 21/10/2026
+
+Retomado tras el corte de cuota. Leídos completos los tres documentos V2 de Drive;
+fuentes y alcance en docs/SUES_DYNAMIC_FLOW_AND_RESOURCE_V2.md. Especificación
+copiada como diseño, sin presentar máscaras, stems ni Director LLM como instalados.
+
+Incluye Editar vídeo con dos rutas, plantilla antes del análisis, revisión obligatoria
+antes de generar y comparación CALMA/DINÁMICA por versiones. Receta local opt-in,
+recuento de elementos y evidencia del Keanu de 64.2 s con límites de observación.
+No se sustituye la voz ni se corta metraje. DINÁMICA permanece experimental.
+
+Base V2 en banco existente: esquema Ajv2020, metadatos laterales atómicos, catálogo
+privado sin rutas/pruebas y resolver de 14 alias inicialmente ausentes; ningún alias
+mapeado o recurso aprobado automáticamente. Inventario idempotente sin alterar
+registros o medios anteriores; selección manual previa conservada.
+
+257 tests PASS y check PASS. Cuatro MP4 sintéticos previos en escritorio/móvil,
+decodificación/descarga/original/padre correctos; QA de invalidación de revisión en
+ambas pantallas. Pruebas V2 de identidad, derechos, capacidades, duplicados,
+persistencia y acceso HTTP. La aceptación creativa y F6/F9/V1 siguen abiertas.
+
+Estado de esta entrada: candidato probado, aún no afirma despliegue. Servicio
+instalado anterior d30023f. Tras desplegar, registrar SHA, backup y comprobación real.
+Sin nuevas dependencias, APIs de pago ni cambios de WAC/DNS/Caddy.
+
+---
 ## Motions externos desplegados y verificados · 21/10/2026
 
 Instalado d30023f664aef3ad483fac89913a132be2925013, árbol

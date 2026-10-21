@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suesholistics.com/schemas/asset-metadata-v2.json",
+  "title": "SUES AI Editor Asset Metadata V2 (propuesta, no desplegada)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "assetId", "kind", "lifecycle", "origin", "sha256", "license", "semantics", "constraints", "approvedForProduction"],
+  "properties": {
+    "schemaVersion": {"const": "sues-asset-metadata/v2"},
+    "assetId": {"type": "string", "minLength": 1},
+    "logicalAlias": {"type": ["string", "null"]},
+    "kind": {"enum": ["sfx", "music", "stem", "image", "video", "motion", "font", "lut", "overlay"]},
+    "lifecycle": {"enum": ["discovered", "verified", "converted", "integrated", "approved", "rejected"]},
+    "origin": {"type": "string", "minLength": 1},
+    "sha256": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"},
+    "privateStorageRef": {"type": ["string", "null"]},
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rightsStatus", "commercialUseAllowed"],
+      "properties": {
+        "rightsStatus": {"enum": ["verified", "unverified", "restricted", "forbidden"]},
+        "commercialUseAllowed": {"type": "boolean"},
+        "attribution": {"type": ["string", "null"]},
+        "proofRef": {"type": ["string", "null"]},
+        "restrictions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "technical": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "durationSec": {"type": "number", "minimum": 0},
+        "width": {"type": "integer", "minimum": 1},
+        "height": {"type": "integer", "minimum": 1},
+        "fps": {"type": "number", "exclusiveMinimum": 0},
+        "sampleRateHz": {"type": "integer", "minimum": 8000},
+        "channels": {"type": "integer", "minimum": 1},
+        "bpm": {"type": ["number", "null"]},
+        "key": {"type": ["string", "null"]},
+        "integratedLufs": {"type": ["number", "null"]},
+        "truePeakDbtp": {"type": ["number", "null"]},
+        "hasAlpha": {"type": "boolean"}
+      }
+    },
+    "semantics": {
+      "type": "object",
+      "required": ["narrativeRoles", "emotionTags", "profileCompatibility"],
+      "properties": {
+        "narrativeRoles": {"type": "array", "items": {"type": "string"}},
+        "emotionTags": {"type": "array", "items": {"type": "string"}},
+        "profileCompatibility": {"type": "array", "items": {"enum": ["DOPAMIN", "CALMA", "ELEMENTS"]}},
+        "energyRange": {"type": "array", "prefixItems": [{"type": "number", "minimum": 0, "maximum": 1}, {"type": "number", "minimum": 0, "maximum": 1}], "minItems": 2, "maxItems": 2}
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "required": ["requiredCapabilities", "faceExclusion"],
+      "properties": {
+        "requiredCapabilities": {"type": "array", "items": {"type": "string"}},
+        "faceExclusion": {"type": "boolean"},
+        "safeZonePolicy": {"type": ["string", "null"]},
+        "maxIntensity": {"type": "number", "minimum": 0, "maximum": 1},
+        "minIntervalSec": {"type": "number", "minimum": 0},
+        "fallbackAlias": {"type": ["string", "null"]}
+      }
+    },
+    "approvedForProduction": {"type": "boolean"},
+    "previewRef": {"type": ["string", "null"]},
+    "testReportRef": {"type": ["string", "null"]},
+    "knownLimitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [
+    {"if": {"properties": {"approvedForProduction": {"const": true}}, "required": ["approvedForProduction"]}, "then": {"properties": {"lifecycle": {"const": "approved"}, "license": {"properties": {"rightsStatus": {"const": "verified"}, "commercialUseAllowed": {"const": true}}}}}}
+  ]
+}

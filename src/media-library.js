@@ -5,6 +5,7 @@ import {randomUUID,createHash} from 'node:crypto';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {fileSha256} from './local-pipeline.js';
+import {validateAssetMetadata,publicAssetMetadata,RESERVED_SFX_ALIASES} from './asset-metadata.js';
 const run=promisify(execFile),HASH=/^[a-f0-9]{64}$/,MAX=40*1024*1024;
 const regular=p=>{try{const s=lstatSync(p);return s.isFile()&&!s.isSymbolicLink();}catch{return false;}};
 export class MediaLibrary{
@@ -15,6 +16,41 @@ export class MediaLibrary{
  }
  records(){return readdirSync(this.directory).filter(n=>/^[a-f0-9]{64}\.json$/.test(n)).map(n=>{const r=JSON.parse(readFileSync(join(this.directory,n),'utf8'));if(r.id!==n.slice(0,-5)||!HASH.test(r.id)||!['image','audio','sfx'].includes(r.kind)||!['owned','licensed'].includes(r.rights)||!Number.isInteger(r.bytes)||r.bytes<1||r.bytes>MAX)throw new Error('Asset metadata invalid');return r;});}
  list(){return this.records().map(({id,kind,title,rights,bytes,duration,width,height,mimeType,createdAt})=>({id,kind,title,rights,bytes,duration,width,height,mimeType,createdAt}));}
+ metadata(id){
+  const asset=this.resolve(id),path=join(this.directory,'metadata-v2',id+'.json');
+  const dir=join(this.directory,'metadata-v2');if(existsSync(dir)&&lstatSync(dir).isSymbolicLink())throw Error('Directorio de metadatos no seguro.');
+  if(!existsSync(path))return null;
+  if(!regular(path)||lstatSync(path).size>65536)throw Error('Metadatos V2 no seguros.');
+  return validateAssetMetadata(JSON.parse(readFileSync(path,'utf8')),asset);
+ }
+ saveMetadata(id,value){
+  const asset=this.resolve(id),metadata=validateAssetMetadata(value,asset),content=JSON.stringify(metadata)+'\n';
+  if(Buffer.byteLength(content)>65536)throw Error('Metadatos V2 demasiado grandes.');
+  const dir=join(this.directory,'metadata-v2');mkdirSync(dir,{recursive:true,mode:0o700});
+  if(lstatSync(dir).isSymbolicLink())throw Error('Directorio de metadatos no seguro.');
+  if(metadata.logicalAlias&&this.records().some(r=>r.id!==id&&this.metadata(r.id)?.logicalAlias===metadata.logicalAlias))throw Error('El alias ya está asociado a otro recurso.');
+  const temporary=join(dir,'.'+randomUUID()+'.tmp');
+  try{writeFileSync(temporary,content,{flag:'wx',mode:0o600});renameSync(temporary,join(dir,id+'.json'));}finally{if(existsSync(temporary))unlinkSync(temporary);}
+  return publicAssetMetadata(metadata);
+ }
+ semanticCatalog(){
+  const rows=this.records().map(asset=>({asset,metadata:this.metadata(asset.id)}));
+  return {schema:'sues-resource-catalog/v2',assets:rows.map(({asset:r,metadata:m})=>({id:r.id,kind:r.kind,title:r.title,metadata:publicAssetMetadata(m),status:m?.approvedForProduction?'approved':'unavailable'})),aliases:RESERVED_SFX_ALIASES.map(alias=>this.aliasFromRows(alias,rows))};
+ }
+ resolveAlias(alias,{capabilities=[],profile}={}){
+  return this.aliasFromRows(alias,this.records().map(asset=>({asset,metadata:this.metadata(asset.id)})),{capabilities,profile});
+ }
+ aliasFromRows(alias,rows,{capabilities=[],profile}={}){
+  const matches=rows.filter(r=>r.metadata?.logicalAlias===alias);
+  if(matches.length!==1)return {alias,status:'unavailable',reason:matches.length?'ambiguous-alias':'unmapped-alias'};
+  const {asset,metadata:m}=matches[0];
+  if(!m.approvedForProduction)return {alias,status:'unavailable',reason:'not-approved'};
+  if(profile&&!m.semantics.profileCompatibility.includes(profile))return {alias,status:'unavailable',reason:'profile-incompatible'};
+  const missing=m.constraints.requiredCapabilities.filter(c=>!capabilities.includes(c));
+  if(missing.length)return {alias,status:'unavailable',reason:'missing-capability',missing};
+  // metadata() rechecks the actual file hash through resolve(); never return a placeholder/path.
+  return {alias,status:'available',assetId:asset.id,sha256:asset.id,kind:asset.kind};
+ }
  resolve(id,kind){
   if(!HASH.test(id))throw new Error('Asset not found');const item=this.records().find(r=>r.id===id);if(!item||kind&&item.kind!==kind)throw new Error('Asset not found');const path=join(this.directory,id+'.media');
   if(!regular(path)||lstatSync(path).size!==item.bytes||fileSha256(path)!==id)throw new Error('Asset integrity changed');return {...item,sha256:id,assetId:id,localFile:path};

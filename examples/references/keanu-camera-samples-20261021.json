@@ -1,0 +1,1087 @@
+[
+  {
+    "time": 0.0,
+    "confidence": 0.943,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 0.2,
+    "confidence": 0.954,
+    "relativeScale": 0.775,
+    "x": 76,
+    "y": 114
+  },
+  {
+    "time": 2.4,
+    "confidence": 0.571,
+    "relativeScale": 0.5,
+    "x": 95,
+    "y": 153
+  },
+  {
+    "time": 2.6,
+    "confidence": 0.797,
+    "relativeScale": 0.95,
+    "x": 62,
+    "y": 83
+  },
+  {
+    "time": 2.8,
+    "confidence": 0.996,
+    "relativeScale": 1.0,
+    "x": 59,
+    "y": 77
+  },
+  {
+    "time": 3.0,
+    "confidence": 0.952,
+    "relativeScale": 1.025,
+    "x": 58,
+    "y": 75
+  },
+  {
+    "time": 3.2,
+    "confidence": 0.952,
+    "relativeScale": 1.0,
+    "x": 58,
+    "y": 75
+  },
+  {
+    "time": 5.6,
+    "confidence": 0.929,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 5.8,
+    "confidence": 0.946,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 6.0,
+    "confidence": 0.939,
+    "relativeScale": 0.775,
+    "x": 75,
+    "y": 111
+  },
+  {
+    "time": 6.2,
+    "confidence": 0.929,
+    "relativeScale": 0.825,
+    "x": 73,
+    "y": 108
+  },
+  {
+    "time": 6.4,
+    "confidence": 0.937,
+    "relativeScale": 0.825,
+    "x": 73,
+    "y": 108
+  },
+  {
+    "time": 6.6,
+    "confidence": 0.927,
+    "relativeScale": 0.825,
+    "x": 73,
+    "y": 108
+  },
+  {
+    "time": 11.4,
+    "confidence": 0.905,
+    "relativeScale": 0.8,
+    "x": 74,
+    "y": 110
+  },
+  {
+    "time": 11.6,
+    "confidence": 0.917,
+    "relativeScale": 0.8,
+    "x": 73,
+    "y": 107
+  },
+  {
+    "time": 11.8,
+    "confidence": 0.977,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 12.0,
+    "confidence": 0.966,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 12.2,
+    "confidence": 0.965,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 12.4,
+    "confidence": 0.964,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 12.6,
+    "confidence": 0.965,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 12.8,
+    "confidence": 0.965,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 16.0,
+    "confidence": 0.975,
+    "relativeScale": 0.95,
+    "x": 62,
+    "y": 83
+  },
+  {
+    "time": 16.2,
+    "confidence": 0.974,
+    "relativeScale": 0.95,
+    "x": 62,
+    "y": 83
+  },
+  {
+    "time": 16.4,
+    "confidence": 0.974,
+    "relativeScale": 0.95,
+    "x": 62,
+    "y": 83
+  },
+  {
+    "time": 16.6,
+    "confidence": 0.974,
+    "relativeScale": 0.95,
+    "x": 62,
+    "y": 83
+  },
+  {
+    "time": 16.8,
+    "confidence": 0.974,
+    "relativeScale": 0.95,
+    "x": 62,
+    "y": 83
+  },
+  {
+    "time": 17.0,
+    "confidence": 0.973,
+    "relativeScale": 0.95,
+    "x": 62,
+    "y": 83
+  },
+  {
+    "time": 17.2,
+    "confidence": 0.973,
+    "relativeScale": 0.95,
+    "x": 62,
+    "y": 83
+  },
+  {
+    "time": 17.4,
+    "confidence": 0.973,
+    "relativeScale": 0.95,
+    "x": 62,
+    "y": 83
+  },
+  {
+    "time": 17.6,
+    "confidence": 0.974,
+    "relativeScale": 0.95,
+    "x": 62,
+    "y": 83
+  },
+  {
+    "time": 17.8,
+    "confidence": 0.935,
+    "relativeScale": 0.95,
+    "x": 62,
+    "y": 84
+  },
+  {
+    "time": 18.0,
+    "confidence": 0.957,
+    "relativeScale": 0.925,
+    "x": 64,
+    "y": 87
+  },
+  {
+    "time": 18.2,
+    "confidence": 0.961,
+    "relativeScale": 0.875,
+    "x": 69,
+    "y": 99
+  },
+  {
+    "time": 18.4,
+    "confidence": 0.974,
+    "relativeScale": 0.8,
+    "x": 74,
+    "y": 109
+  },
+  {
+    "time": 18.6,
+    "confidence": 0.952,
+    "relativeScale": 0.775,
+    "x": 76,
+    "y": 114
+  },
+  {
+    "time": 18.8,
+    "confidence": 0.931,
+    "relativeScale": 0.775,
+    "x": 77,
+    "y": 116
+  },
+  {
+    "time": 20.0,
+    "confidence": 0.931,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 20.2,
+    "confidence": 0.931,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 20.4,
+    "confidence": 0.932,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 20.6,
+    "confidence": 0.931,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 20.8,
+    "confidence": 0.931,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 21.0,
+    "confidence": 0.931,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 21.2,
+    "confidence": 0.931,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 23.0,
+    "confidence": 0.91,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 23.2,
+    "confidence": 0.952,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 23.4,
+    "confidence": 0.96,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 23.6,
+    "confidence": 0.961,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 23.8,
+    "confidence": 0.961,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 24.0,
+    "confidence": 0.96,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 24.2,
+    "confidence": 0.962,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 24.4,
+    "confidence": 0.961,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 24.6,
+    "confidence": 0.961,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 24.8,
+    "confidence": 0.961,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 25.0,
+    "confidence": 0.96,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 25.2,
+    "confidence": 0.96,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 25.4,
+    "confidence": 0.977,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 25.6,
+    "confidence": 0.939,
+    "relativeScale": 0.8,
+    "x": 74,
+    "y": 110
+  },
+  {
+    "time": 25.8,
+    "confidence": 0.928,
+    "relativeScale": 0.775,
+    "x": 77,
+    "y": 116
+  },
+  {
+    "time": 26.0,
+    "confidence": 0.979,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 26.2,
+    "confidence": 0.942,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 26.4,
+    "confidence": 0.934,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 26.6,
+    "confidence": 0.925,
+    "relativeScale": 0.725,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 26.8,
+    "confidence": 0.955,
+    "relativeScale": 0.775,
+    "x": 75,
+    "y": 111
+  },
+  {
+    "time": 27.0,
+    "confidence": 0.929,
+    "relativeScale": 0.825,
+    "x": 73,
+    "y": 108
+  },
+  {
+    "time": 27.2,
+    "confidence": 0.979,
+    "relativeScale": 0.825,
+    "x": 73,
+    "y": 107
+  },
+  {
+    "time": 27.4,
+    "confidence": 0.961,
+    "relativeScale": 0.825,
+    "x": 73,
+    "y": 107
+  },
+  {
+    "time": 27.6,
+    "confidence": 0.959,
+    "relativeScale": 0.825,
+    "x": 73,
+    "y": 107
+  },
+  {
+    "time": 29.6,
+    "confidence": 0.886,
+    "relativeScale": 0.875,
+    "x": 68,
+    "y": 96
+  },
+  {
+    "time": 29.8,
+    "confidence": 0.886,
+    "relativeScale": 0.875,
+    "x": 68,
+    "y": 96
+  },
+  {
+    "time": 30.0,
+    "confidence": 0.886,
+    "relativeScale": 0.875,
+    "x": 68,
+    "y": 96
+  },
+  {
+    "time": 30.2,
+    "confidence": 0.885,
+    "relativeScale": 0.875,
+    "x": 68,
+    "y": 96
+  },
+  {
+    "time": 30.4,
+    "confidence": 0.911,
+    "relativeScale": 0.875,
+    "x": 68,
+    "y": 97
+  },
+  {
+    "time": 30.6,
+    "confidence": 0.957,
+    "relativeScale": 0.875,
+    "x": 70,
+    "y": 101
+  },
+  {
+    "time": 30.8,
+    "confidence": 0.923,
+    "relativeScale": 0.8,
+    "x": 75,
+    "y": 112
+  },
+  {
+    "time": 31.0,
+    "confidence": 0.938,
+    "relativeScale": 0.75,
+    "x": 77,
+    "y": 116
+  },
+  {
+    "time": 31.2,
+    "confidence": 0.957,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 31.4,
+    "confidence": 0.939,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 31.6,
+    "confidence": 0.935,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 34.6,
+    "confidence": 0.934,
+    "relativeScale": 0.9,
+    "x": 65,
+    "y": 89
+  },
+  {
+    "time": 34.8,
+    "confidence": 0.935,
+    "relativeScale": 0.9,
+    "x": 65,
+    "y": 89
+  },
+  {
+    "time": 35.0,
+    "confidence": 0.926,
+    "relativeScale": 0.9,
+    "x": 65,
+    "y": 90
+  },
+  {
+    "time": 35.2,
+    "confidence": 0.955,
+    "relativeScale": 0.925,
+    "x": 65,
+    "y": 90
+  },
+  {
+    "time": 35.4,
+    "confidence": 0.93,
+    "relativeScale": 0.9,
+    "x": 66,
+    "y": 93
+  },
+  {
+    "time": 35.6,
+    "confidence": 0.942,
+    "relativeScale": 0.875,
+    "x": 69,
+    "y": 99
+  },
+  {
+    "time": 35.8,
+    "confidence": 0.941,
+    "relativeScale": 0.8,
+    "x": 73,
+    "y": 107
+  },
+  {
+    "time": 36.0,
+    "confidence": 0.933,
+    "relativeScale": 0.775,
+    "x": 75,
+    "y": 111
+  },
+  {
+    "time": 36.2,
+    "confidence": 0.903,
+    "relativeScale": 0.775,
+    "x": 76,
+    "y": 113
+  },
+  {
+    "time": 36.4,
+    "confidence": 0.925,
+    "relativeScale": 0.775,
+    "x": 77,
+    "y": 115
+  },
+  {
+    "time": 36.6,
+    "confidence": 0.93,
+    "relativeScale": 0.775,
+    "x": 77,
+    "y": 116
+  },
+  {
+    "time": 36.8,
+    "confidence": 0.926,
+    "relativeScale": 0.725,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 37.0,
+    "confidence": 0.978,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 37.2,
+    "confidence": 0.935,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 37.4,
+    "confidence": 0.942,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 37.6,
+    "confidence": 0.937,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 37.8,
+    "confidence": 0.933,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 38.0,
+    "confidence": 0.936,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 38.2,
+    "confidence": 0.936,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 38.4,
+    "confidence": 0.936,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 42.6,
+    "confidence": 0.938,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 42.8,
+    "confidence": 0.936,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 43.0,
+    "confidence": 0.936,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 43.2,
+    "confidence": 0.936,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 43.4,
+    "confidence": 0.937,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 43.6,
+    "confidence": 0.937,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 43.8,
+    "confidence": 0.931,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 44.0,
+    "confidence": 0.928,
+    "relativeScale": 0.725,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 46.4,
+    "confidence": 0.98,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 46.6,
+    "confidence": 0.939,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 46.8,
+    "confidence": 0.918,
+    "relativeScale": 0.85,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 47.0,
+    "confidence": 0.935,
+    "relativeScale": 0.8,
+    "x": 73,
+    "y": 107
+  },
+  {
+    "time": 47.2,
+    "confidence": 0.923,
+    "relativeScale": 0.825,
+    "x": 73,
+    "y": 108
+  },
+  {
+    "time": 47.4,
+    "confidence": 0.948,
+    "relativeScale": 0.8,
+    "x": 74,
+    "y": 110
+  },
+  {
+    "time": 47.6,
+    "confidence": 0.925,
+    "relativeScale": 0.8,
+    "x": 75,
+    "y": 111
+  },
+  {
+    "time": 47.8,
+    "confidence": 0.974,
+    "relativeScale": 0.775,
+    "x": 76,
+    "y": 113
+  },
+  {
+    "time": 48.0,
+    "confidence": 0.965,
+    "relativeScale": 0.775,
+    "x": 76,
+    "y": 114
+  },
+  {
+    "time": 48.2,
+    "confidence": 0.938,
+    "relativeScale": 0.75,
+    "x": 77,
+    "y": 115
+  },
+  {
+    "time": 48.4,
+    "confidence": 0.969,
+    "relativeScale": 0.75,
+    "x": 77,
+    "y": 116
+  },
+  {
+    "time": 49.0,
+    "confidence": 0.937,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 117
+  },
+  {
+    "time": 49.2,
+    "confidence": 0.927,
+    "relativeScale": 0.725,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 49.4,
+    "confidence": 0.931,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 49.6,
+    "confidence": 0.972,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 49.8,
+    "confidence": 0.98,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 50.0,
+    "confidence": 0.965,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 50.2,
+    "confidence": 0.94,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 50.4,
+    "confidence": 0.935,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 50.6,
+    "confidence": 0.941,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 56.0,
+    "confidence": 0.919,
+    "relativeScale": 0.775,
+    "x": 77,
+    "y": 116
+  },
+  {
+    "time": 56.2,
+    "confidence": 0.972,
+    "relativeScale": 0.85,
+    "x": 71,
+    "y": 103
+  },
+  {
+    "time": 56.4,
+    "confidence": 0.95,
+    "relativeScale": 0.85,
+    "x": 70,
+    "y": 100
+  },
+  {
+    "time": 56.6,
+    "confidence": 0.92,
+    "relativeScale": 0.875,
+    "x": 69,
+    "y": 99
+  },
+  {
+    "time": 56.8,
+    "confidence": 0.925,
+    "relativeScale": 0.875,
+    "x": 69,
+    "y": 98
+  },
+  {
+    "time": 57.0,
+    "confidence": 0.926,
+    "relativeScale": 0.875,
+    "x": 69,
+    "y": 98
+  },
+  {
+    "time": 57.2,
+    "confidence": 0.927,
+    "relativeScale": 0.875,
+    "x": 69,
+    "y": 98
+  },
+  {
+    "time": 57.4,
+    "confidence": 0.926,
+    "relativeScale": 0.875,
+    "x": 69,
+    "y": 98
+  },
+  {
+    "time": 57.6,
+    "confidence": 0.918,
+    "relativeScale": 0.85,
+    "x": 70,
+    "y": 100
+  },
+  {
+    "time": 57.8,
+    "confidence": 0.965,
+    "relativeScale": 0.775,
+    "x": 76,
+    "y": 113
+  },
+  {
+    "time": 58.0,
+    "confidence": 0.925,
+    "relativeScale": 0.725,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 58.2,
+    "confidence": 0.941,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 58.4,
+    "confidence": 0.94,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 58.6,
+    "confidence": 0.94,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 58.8,
+    "confidence": 0.939,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 59.0,
+    "confidence": 0.941,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 59.2,
+    "confidence": 0.943,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 59.4,
+    "confidence": 0.945,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 59.6,
+    "confidence": 0.961,
+    "relativeScale": 0.75,
+    "x": 77,
+    "y": 116
+  },
+  {
+    "time": 59.8,
+    "confidence": 0.927,
+    "relativeScale": 0.825,
+    "x": 72,
+    "y": 105
+  },
+  {
+    "time": 60.0,
+    "confidence": 0.938,
+    "relativeScale": 0.875,
+    "x": 70,
+    "y": 100
+  },
+  {
+    "time": 60.2,
+    "confidence": 0.97,
+    "relativeScale": 0.875,
+    "x": 69,
+    "y": 99
+  },
+  {
+    "time": 62.8,
+    "confidence": 0.582,
+    "relativeScale": 0.5,
+    "x": 181,
+    "y": 135
+  },
+  {
+    "time": 63.0,
+    "confidence": 0.789,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 117
+  },
+  {
+    "time": 63.2,
+    "confidence": 0.973,
+    "relativeScale": 0.75,
+    "x": 78,
+    "y": 118
+  },
+  {
+    "time": 63.4,
+    "confidence": 0.945,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 63.6,
+    "confidence": 0.945,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 63.8,
+    "confidence": 0.942,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  },
+  {
+    "time": 64.0,
+    "confidence": 0.939,
+    "relativeScale": 0.725,
+    "x": 79,
+    "y": 119
+  }
+]

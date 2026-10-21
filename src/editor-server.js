@@ -1,4 +1,5 @@
 import {externalCatalog,reviewExternalPlan} from './external-edit-plan.js';
+import {prepareProject} from './local-pipeline.js';
 import {planInstructions} from './instruction-director.js';
 import {LocalAnalysis} from './local-analysis.js';
 import {googleAuth,readGoogleConfig,GOOGLE_CALLBACK} from './editor-google-auth.js';
@@ -116,6 +117,10 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     const fontMatch=/^\/api\/fonts\/([a-z-]+)\/(file|license)$/.exec(path);
     if(fontMatch&&['GET','HEAD'].includes(req.method)){const f=fontDownload(fontMatch[1],fontMatch[2]);if(!f)return json(res,404,{error:'Font not found'});const bytes=readFileSync(f.path);res.setHeader('Content-Type',f.contentType);res.setHeader('Content-Disposition',`attachment; filename="${f.filename}"`);res.setHeader('Content-Length',bytes.length);res.writeHead(200);return res.end(req.method==='HEAD'?undefined:bytes);}
     if(path==='/api/assets'&&req.method==='GET')return json(res,200,assets.list());
+    if(path==='/api/resource-catalog'&&req.method==='GET')return json(res,200,assets.semanticCatalog());
+    const assetMetadataMatch=/^\/api\/assets\/([a-f0-9]{64})\/metadata$/.exec(path);
+    if(assetMetadataMatch&&req.method==='GET'){const resource=assets.semanticCatalog().assets.find(a=>a.id===assetMetadataMatch[1]);return json(res,resource?200:404,resource??{error:'Recurso ausente'});}
+    if(assetMetadataMatch&&req.method==='PUT')return json(res,200,assets.saveMetadata(assetMetadataMatch[1],await body(req,65536)));
     if(path==='/api/assets'&&req.method==='POST'){req.setTimeout(120000);return json(res,201,await assets.receive(req,{kind:url.searchParams.get('kind'),rights:url.searchParams.get('rights'),title:url.searchParams.get('name')}));}
     const assetMatch=/^\/api\/assets\/([a-f0-9]{64})\/media$/.exec(path);
     if(assetMatch&&['GET','HEAD'].includes(req.method)){
@@ -184,6 +189,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))throw Error('Espera a que termine la edición actual.');
      const base=b.settings??source.settings,proposal=planInstructions(b.prompt??'',base);
      if((proposal.changes.musicGain!==undefined||proposal.changes.musicEnabled===true)&&!base.musicAssetId&&!jobs.plan(id).manifest.audioSourceAvailable)proposal.notes=['Este material no tiene una pista musical preparada. Puedes elegir una en Música; el volumen no añadirá una canción por sí solo.'];
+     if(proposal.canApply){const prepared=prepareProject(jobs.loadProfile(source.profileId),{...base,...proposal.changes});proposal.editionCounts=prepared.plan.editionCounts;proposal.recipe=prepared.plan.templateRecipe;proposal.notes=[...(proposal.notes??[]),'La propuesta conserva la voz y todos sus tiempos. Los gráficos se eligen por reglas de texto; el director semántico completo sigue pendiente.'];}
      if(action==='direct-plan')return json(res,200,proposal);
      if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId))throw Error('Identificador de petición no válido.');
      const existing=[...jobs.jobs.values()].find(j=>j.parentId===id&&j.requestId===b.requestId);

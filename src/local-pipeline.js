@@ -1,3 +1,4 @@
+import {buildTemplateRecipe,editionCounts} from './template-recipe.js';
 import {prepareCustomSfx} from './custom-sfx.js';
 import {prepareSubjectLayers} from './subject-layers.js';
 import {prepareElements} from './elements.js';
@@ -20,7 +21,7 @@ import {buildAutomaticDirector,validateEditorSettings} from './automatic-directo
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
-export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['custom-sfx.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
+export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['template-recipe.js','custom-sfx.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
 export function fileSha256(path){const fd=openSync(path,'r'),hash=createHash('sha256'),buffer=Buffer.allocUnsafe(1024*1024);try{let size;while((size=readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,size));return hash.digest('hex');}finally{closeSync(fd);}}
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
@@ -56,6 +57,9 @@ export function prepareProject(project,settings={}){
  const base=prepareLocalPreview({...inputs,segments:automatic.segments});
  for(const id of Object.keys(options.captionOverrides))if(!base.captions.some(c=>c.id===id))throw new Error(`Unknown caption: ${id}`);
  const editedCaptions=base.captions.map(c=>Object.hasOwn(options.captionOverrides,c.id)?{...c,text:options.captionOverrides[c.id].trim(),lines:wrapCaption(options.captionOverrides[c.id].trim(),base.policy.captions.maxCharsPerLine),source:'manual',originalText:c.text}:c);
+ const recipe=buildTemplateRecipe({...base,captions:editedCaptions},options);
+ const effectiveCards=options.graphicCards.length?options.graphicCards:recipe.cards;
+ const effectiveTransitions=options.transitions.length?options.transitions:recipe.transitions;
  const manual=[];
  for(const id of options.highlightCaptions){
   const c=editedCaptions.find(c=>c.id===id);if(!c)throw new Error(`Unknown highlight caption: ${id}`);
@@ -65,7 +69,7 @@ export function prepareProject(project,settings={}){
   manual.push({type:'motion',start:c.start,end,reason:`Frase elegida por usuario: ${id}`,rule:'user-caption-quote-v1',params:{motionId:'QUOTE_CARD_01',bindings:{quote:c.text},semanticReason:'reflection'},evidence:{method:'user-caption-selection',captionId:id,sourceWordIndexes:c.wordIndexes,captionStart:c.start,captionEnd:c.end,displayEnd:end,textOrigin:c.source==='manual'?'user-edited-caption':'transcript-caption',originalText:c.originalText??c.text}});
  }
  const chosenMotions=motionChoicesToDecisions(options.motionChoices,{...base,captions:editedCaptions},options.motions);
- const candidates=[...automatic.decisions.filter(d=>(!manual.length&&!options.graphicCards.length&&!chosenMotions.length&&!options.elements)||d.type!=='motion'),...manual,...chosenMotions].sort((a,b)=>a.start-b.start||a.end-b.end);
+ const candidates=[...automatic.decisions.filter(d=>(!manual.length&&!effectiveCards.length&&!chosenMotions.length&&!options.elements)||d.type!=='motion'),...manual,...chosenMotions].sort((a,b)=>a.start-b.start||a.end-b.end);
  let decisions=[],plan=base;
  for(const candidate of candidates){
   try{
@@ -87,7 +91,7 @@ export function prepareProject(project,settings={}){
   c.keyword={displayWordIndex:value.word,...(c.source!=='manual'?{sourceWordIndex:c.wordIndexes[value.word]}:{}),level:value.level,style:value.style,method:'explicit-editor-choice'};
   if(!hierarchyLayout(c,plan.policy.captions,plan.layout.caption))throw new Error('La palabra elegida no cabe legible al doble de tamaño. Elige otra o acorta el texto.');
  }
- Object.assign(plan,prepareGraphicBlocks(options.graphicCards,options.transitions,plan,options.motions));
+ Object.assign(plan,prepareGraphicBlocks(effectiveCards,effectiveTransitions,plan,options.motions));
  plan.depthText=options.motions?prepareDepthText(inputs.depthText,plan):[];
  plan.finishFade=finishFadeFor(plan);
  plan.audioSourceAvailable=!!project.inputs.backgroundAudio||!!options.musicAssetId;
@@ -96,6 +100,7 @@ export function prepareProject(project,settings={}){
  if(inputs.subjectLayers)plan.subjectLayers=options.motions?prepareSubjectLayers(inputs.subjectLayers,plan):[];
  plan.customSfx=prepareCustomSfx(options.sfxEvents,plan.duration,asset);resourceBindings.soundAssets=plan.customSfx.assets;
  plan.soundEffects=prepareSoundEffects(plan,options);
+ plan.templateRecipe=recipe;plan.editionCounts=editionCounts(plan);
  if(plan.soundEffects.events.length||plan.customSfx.events.length){plan.pending=plan.pending.filter(p=>p!=='music-and-sfx');plan.pending.push('sound-design-human-review');}
  const director={...automatic,...(manual.length||chosenMotions.length?{selection:'offline-lexical-baseline-with-user-review-v1'}:{}),decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length,manualHighlights:manual.length,manualMotions:chosenMotions.length}};
  plan.automaticDirector=director.audit;
