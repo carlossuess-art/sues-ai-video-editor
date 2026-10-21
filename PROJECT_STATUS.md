@@ -1,3 +1,33 @@
+## SFX nativos probados · 21/10/2026 · pendiente de despliegue de este bloque
+
+Nueva biblioteca kind=sfx (0,03–30 s), cues por segundo y ganancia individual,
+selección/escucha en UI y operaciones sfx en planes externos. Música conserva
+sus límites. No activa los efectos procedurales al importar sonidos explícitos.
+Máximo40cues/3simultáneos; sin truncado implícito ni rutas/URLs del plan.
+Fingerprint, renderer y backup portable incluyen recursos y hashes; restauración
+sin biblioteca probada. Sidechain usa la mezcla existente y limitador sin auto gain.
+
+252tests Node PASS/0skip; npm run check PASS; Python compila. FFmpeg real comprueba
+colocación por muestras, ducking bajo voz, mezcla con música y SFX procedurales,
+muestras finitas, limitador y conservación fuera de cues. MP4 generado24s/fullDecode,
+sourcePreserved, dos cues/una entrada: SHA256
+520667df1c3ec91d122af588bf5b2b6572ec80077484d7618fd6055f32b3700e.
+Chromium151.0.7922.34 en contenedor QA temporal del VPS, móvil393x852/escritorio1440x1000:
+subida/escucha/SFXRange206, añadir/quitar, plan externo/recursoausente/operación
+incompatible, revisión invalidada al cambiar texto, MP4 real/descarga igual,
+original/versión padre intactos, sin overflow ni errores JS. Vídeo generado y
+análisis fixture; no aceptación creativa ni Director LLM. Las dependencias de
+navegador sólo se instalaron en el contenedor QA desechable, no en el editor/host.
+
+13originales únicos transferidos al VPS y verificados contra hashes del inventario;
+normalizados48kHz/estéreo/PCM16 sin amplificar ni alargar. Privados fuera deGit.
+Tres sonidos cámara, siete teclado, dos whoosh y un riser. Procedencia CreatorClub
+de material existente; declaración de licencia, no auditoría jurídica individual.
+La música de práctica y MOGRT/CapCut no se importan. Despliegue/importación y
+verificaciónHTTPS/integridad pendientes en este commit; instalado anterior9febcdf.
+Ver docs/SUES_CUSTOM_SFX.md. F6/F9/V1 continúan abiertas.
+
+---
 ## Banco de recursos · inventario real y plan · 20/10/2026
 
 Acceso Google aCreatorClub completado yverificado;curso71contenidos. Descargas

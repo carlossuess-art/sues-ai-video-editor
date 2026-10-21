@@ -24,6 +24,8 @@ export async function createProjectBackup(project,prepared,directory){
   if(inputs.depthText){write('analysis/depth-text.json',inputs.depthText);config.depthTextPath='analysis/depth-text.json';}
   const music=prepared.resourceBindings?.backgroundAudio;
   if(music){const localFile=await copy(music.localFile,'media/music.media');config.backgroundAudio={...music,localFile};}
+  config.soundAssets=[];
+  for(const [i,a]of (prepared.resourceBindings?.soundAssets??[]).entries())config.soundAssets.push({...a,localFile:await copy(a.localFile,'media/sfx-'+i+'.media',a.sha256)});
   config.illustrations=[];
   for(const [i,item]of (prepared.resourceBindings?.illustrations??[]).entries()){const localFile=await copy(item.localFile,'media/image-'+i+'.media',item.sha256);config.illustrations.push({...item,localFile});}
   for(const name of fontFiles(prepared.plan.policy.captions.font))await copy(join(project.fontDirectory,name),'fonts/'+name);
@@ -40,7 +42,7 @@ export function verifyProjectBackup(directory){
  for(const entry of manifest.files){assert(Number.isSafeInteger(entry.bytes)&&entry.bytes>=0&&typeof entry.sha256==='string'&&/^[a-f0-9]{64}$/.test(entry.sha256),'invalid entry size/hash');assert(typeof entry.path==='string'&&/^[a-zA-Z0-9_./-]+$/.test(entry.path)&&!entry.path.startsWith('/')&&entry.path.split('/').every(part=>part&&part!=='.'&&part!=='..')&&!seen.has(entry.path),'invalid entry path');seen.add(entry.path);const path=join(root,entry.path),actual=realpathSync(path);assert(actual.startsWith(realpathSync(root)+sep)&&lstatSync(path).isFile()&&!lstatSync(path).isSymbolicLink(),'entry outside backup');assert(lstatSync(path).size===entry.bytes&&fileSha256(path)===entry.sha256,'file hash mismatch: '+entry.path);bytes+=entry.bytes;assert(bytes<=2*1024**3,'backup size limit');}
  const inspectFiles=dir=>{for(const name of readdirSync(dir)){const path=join(dir,name),info=lstatSync(path);assert(!info.isSymbolicLink(),'symlinks forbidden');if(info.isDirectory())inspectFiles(path);else{assert(info.isFile(),'non-file entry');const rel=relative(root,path).split(sep).join('/');assert(rel==='backup-manifest.json'||seen.has(rel),'unlisted file: '+rel);}}};inspectFiles(root);
  for(const name of ['project.json','settings.json','media/original.media'])assert(seen.has(name),'required file missing');
- const config=JSON.parse(readFileSync(join(root,'project.json'),'utf8'));const paths=[...Object.entries(config).filter(([k])=>k.endsWith('Path')).map(([,v])=>v),...(config.backgroundAudio?[config.backgroundAudio.localFile]:[]),...(config.illustrations??[]).map(i=>i.localFile)];
+ const config=JSON.parse(readFileSync(join(root,'project.json'),'utf8'));const paths=[...Object.entries(config).filter(([k])=>k.endsWith('Path')).map(([,v])=>v),...(config.backgroundAudio?[config.backgroundAudio.localFile]:[]),...(config.illustrations??[]).map(i=>i.localFile),...(config.soundAssets??[]).map(i=>i.localFile)];
  assert(paths.every(path=>seen.has(path))&&config.fontDirectory==='fonts','configuration points outside verified files');
  if(config.subjectLayersPath){const data=JSON.parse(readFileSync(join(root,config.subjectLayersPath),'utf8'));const nested=[data.matte?.localFile,...(data.events??[]).map(e=>e.localFile)];assert(nested.every(path=>typeof path==='string'&&seen.has(path)),'subject layer points outside verified files');}
  return {valid:true,files:manifest.files.length,bytes,codeCommit:manifest.codeCommit,workingTreeDirty:manifest.workingTreeDirty};

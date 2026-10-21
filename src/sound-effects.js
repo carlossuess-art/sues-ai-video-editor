@@ -1,3 +1,4 @@
+import {customSfxFilter} from './custom-sfx.js';
 import {secretRevealTime} from './graphic-timing.js';
 import {backgroundAudioFilter} from './audio-mix.js';
 const assert=(ok,msg)=>{if(!ok)throw Error('Sound effects: '+msg);};
@@ -35,9 +36,10 @@ export function soundEffectsFilter(sfx,duration,base){
  return filters;
 }
 export function renderAudioFilters(plan,musicIndex,{hasAudio=true}={}){
- const active=!!plan.soundEffects?.events?.length;assert(hasAudio||!active&&!plan.audioMix,'effects require original audio');
- const music=backgroundAudioFilter(plan.audioMix,musicIndex);
- if(!active)return music;
- const base=plan.audioMix?'before-sfx-audio':'audio';
- return [...music.map(f=>f.replaceAll('[mixed-audio]','[before-sfx-audio]')),...soundEffectsFilter(plan.soundEffects,plan.duration,base)];
+ const procedural=!!plan.soundEffects?.events?.length,custom=!!plan.customSfx?.events?.length;
+ assert(hasAudio||!procedural&&!custom&&!plan.audioMix,'effects require original audio');
+ let filters=backgroundAudioFilter(plan.audioMix,musicIndex),mixed=!!plan.audioMix;
+ if(procedural){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-sfx-audio]'));filters.push(...soundEffectsFilter(plan.soundEffects,plan.duration,mixed?'before-sfx-audio':'audio'));mixed=true;}
+ if(custom){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-custom-audio]'));filters.push(...customSfxFilter(plan.customSfx,plan.duration,musicIndex+(plan.audioMix?1:0),mixed?'before-custom-audio':'audio'));}
+ return filters;
 }

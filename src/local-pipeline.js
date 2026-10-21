@@ -1,3 +1,4 @@
+import {prepareCustomSfx} from './custom-sfx.js';
 import {prepareSubjectLayers} from './subject-layers.js';
 import {prepareElements} from './elements.js';
 import {visualProfile} from './style-variants.js';
@@ -19,7 +20,7 @@ import {buildAutomaticDirector,validateEditorSettings} from './automatic-directo
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
-export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
+export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['custom-sfx.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
 export function fileSha256(path){const fd=openSync(path,'r'),hash=createHash('sha256'),buffer=Buffer.allocUnsafe(1024*1024);try{let size;while((size=readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,size));return hash.digest('hex');}finally{closeSync(fd);}}
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
@@ -27,6 +28,7 @@ export function loadProject(configPath){
  const path=realpathSync(configPath),config=read(path),base=dirname(path);
  const local=p=>realpathSync(resolve(base,p));
  const inputs={template:read(local(config.templatePath)),brand:read(local(config.brandKitPath)),transcript:read(local(config.transcriptPath)),camera:read(local(config.cameraPath)),visionFrames:read(local(config.visionPath)).frames,catalog:read(local(config.catalogPath)),source:config.source,...(config.backgroundAudio?{backgroundAudio:{...config.backgroundAudio,localFile:local(config.backgroundAudio.localFile)}}:{})};
+ inputs.soundAssets=(config.soundAssets??[]).map(a=>{const localFile=local(a.localFile);if(fileSha256(localFile)!==a.sha256||a.assetId!==a.sha256)throw new Error('SFX SHA256 mismatch');return {...a,localFile};});
  const illustrations=(config.illustrations??[]).map(item=>{const localFile=local(item.localFile),sha256=fileSha256(localFile);if(item.sha256!==sha256)throw new Error('Illustration SHA256 mismatch');return {...item,localFile};});inputs.illustrations=illustrations;
  if(config.subjectLayersPath){
   const data=read(local(config.subjectLayersPath));
@@ -44,7 +46,7 @@ export function loadProject(configPath){
 }
 export function prepareProject(project,settings={}){
  const options=validateEditorSettings(settings),inputs={...project.inputs,template:applyStyleVariant(structuredClone(project.inputs.template),options.styleId)};if(inputs.template.captions.mode==='short-groups')inputs.template.captions.maxWords=options.captionWords;
- const selectedAssets=[];const asset=(id,kind)=>{if(typeof project.resolveAsset!=='function')throw new Error('La biblioteca de recursos no está conectada a este proyecto');const value=project.resolveAsset(id,kind);selectedAssets.push({id,sha256:value.sha256,kind});return value;};
+ const selectedAssets=[];const asset=(id,kind)=>{const bound=kind==='sfx'?project.inputs.soundAssets?.find(a=>a.assetId===id):null;if(bound){if(fileSha256(bound.localFile)!==bound.sha256)throw new Error('SFX integrity changed');selectedAssets.push({id,sha256:bound.sha256,kind});return bound;}if(typeof project.resolveAsset!=='function')throw new Error('La biblioteca de recursos no está conectada a este proyecto');const value=project.resolveAsset(id,kind);selectedAssets.push({id,sha256:value.sha256,kind});return value;};
  if(options.musicAssetId){const m=asset(options.musicAssetId,'audio');if(m.duration<inputs.source.duration)throw new Error('La música es más corta que el vídeo. Elige una pista completa.');inputs.backgroundAudio={assetId:m.assetId,rights:m.rights,localFile:m.localFile,gain:.12};}
  if(!options.profileImages)inputs.illustrations=[];
  for(const e of options.imageEvents){const a=asset(e.assetId,'image');inputs.illustrations=[...(inputs.illustrations??[]),{assetId:a.assetId,rights:a.rights,role:'illustration',localFile:a.localFile,sha256:a.sha256,sourceSha256:project.boundHashes.source,timeSpace:'edit-timeline',start:e.start,end:e.end,placement:'auto-subject',motion:'slow-push',box:{left:120,right:900,top:140,bottom:420},featherPx:100,fadeSeconds:Math.min(.3,(e.end-e.start)/3)}];}
@@ -92,8 +94,9 @@ export function prepareProject(project,settings={}){
  plan.illustrations=prepareIllustrations(options.motions?(inputs.illustrations??[]):[],plan,inputs.visionFrames);
  if(options.elements)plan.elements=prepareElements(options.elements,plan,{enabled:options.motions,profile:visualProfile(options.styleId)});
  if(inputs.subjectLayers)plan.subjectLayers=options.motions?prepareSubjectLayers(inputs.subjectLayers,plan):[];
+ plan.customSfx=prepareCustomSfx(options.sfxEvents,plan.duration,asset);resourceBindings.soundAssets=plan.customSfx.assets;
  plan.soundEffects=prepareSoundEffects(plan,options);
- if(plan.soundEffects.events.length){plan.pending=plan.pending.filter(p=>p!=='music-and-sfx');plan.pending.push('sound-design-human-review');}
+ if(plan.soundEffects.events.length||plan.customSfx.events.length){plan.pending=plan.pending.filter(p=>p!=='music-and-sfx');plan.pending.push('sound-design-human-review');}
  const director={...automatic,...(manual.length||chosenMotions.length?{selection:'offline-lexical-baseline-with-user-review-v1'}:{}),decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length,manualHighlights:manual.length,manualMotions:chosenMotions.length}};
  plan.automaticDirector=director.audit;
  plan.pending=plan.pending.filter(p=>p!=='automated-director-selection');plan.pending.push('llm-semantic-director-and-human-review');

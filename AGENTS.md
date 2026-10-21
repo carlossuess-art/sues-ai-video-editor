@@ -218,3 +218,12 @@ faster-whisper/base/int8 aislada; no amplía autorización a otros modelos,
 LLM, MediaPipe, nuevos proveedores de pago ni otras aplicaciones. Mantener
 backup verificado, límites de recursos y distinguir transcripción de dirección
 semántica. La transcripción automática requiere revisión humana.
+
+## Sonidos privados por tiempo · 21/10/2026
+
+Leer docs/SUES_CUSTOM_SFX.md. Tipo sfx separado de música, sfxEvents explícitos
+con tiempo/ganancia; no activar sonidos procedurales por importar un cue.
+Copias portables incluyen sonidos únicos verificados y restauran sin biblioteca.
+Catálogo externo publica sólo IDs disponibles al usuario autenticado. No nuevos
+modelos ni importación de MOGRT; procedencia declarada no equivale a licencia
+auditada por archivo. Mantener originales y medios comerciales fuera de Git.

@@ -1,3 +1,4 @@
+import {validateSfxEvents} from './custom-sfx.js';
 import {validateElements} from './elements.js';
 import {STYLE_VARIANTS,visualProfile} from './style-variants.js';
 import {validateMotionChoices} from './motion-overlays.js';
@@ -14,9 +15,10 @@ const LEXICON=new Map([
 ]);
 export function validateEditorSettings(settings={}){
  assert(settings&&typeof settings==='object'&&!Array.isArray(settings),'settings object');
- assert(Object.keys(settings).every(k=>['sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','profileImages','styleId','elements'].includes(k)),'unknown setting');
+ assert(Object.keys(settings).every(k=>['sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','profileImages','styleId','elements'].includes(k)),'unknown setting');
  validateElements(settings.elements);
- const value={sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ const value={sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ value.sfxEvents=validateSfxEvents(value.sfxEvents);
  assert(typeof value.sfxEnabled==='boolean'&&Number.isFinite(value.sfxGain)&&value.sfxGain>=0&&value.sfxGain<=.7,'sfx settings');
  assert(Number.isFinite(value.zoomIntensity)&&value.zoomIntensity>=0&&value.zoomIntensity<=1,'zoomIntensity 0..1');
  assert([1,2,3].includes(value.captionWords),'captionWords 1, 2 or 3');
