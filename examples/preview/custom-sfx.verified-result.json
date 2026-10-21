@@ -1,0 +1,15 @@
+{
+  "kind": "custom-sfx-release-verification",
+  "date": "2026-10-21",
+  "installedCommit": "e80c2e5ce10f7d27b72586ae1a9f375601392c95",
+  "previousInstalledCommit": "9febcdfbf2d9f641a455af958a7d1970d47298b5",
+  "tests": {"node": 252, "passed": 252, "failed": 0, "skipped": 0, "check": "pass", "pythonCompile": "pass"},
+  "audioQA": {"sampleAccurateCue": true, "duckingUnderVoice": true, "samplesOutsideCuesPreserved": true, "limiterNoAutoGain": true, "musicProceduralAndCustomCombined": true, "portableRestoreWithoutLibrary": true},
+  "generatedMediaQA": {"mp4Count": 3, "durationSeconds": 24, "fullDecode": "pass", "sourcePreserved": true, "includesPersonalVideoRender": false, "fixtureFaceAnalysis": true},
+  "browserQA": {"version": "151.0.7922.34", "viewports": [{"width": 1440, "height": 1000}, {"width": 393, "height": 852}], "missingResourceBlocked": true, "unsupportedOperationBlocked": true, "staleReviewInvalidated": true, "sfxUiAddRemove": true, "downloadMatchesRenderedMp4": true, "sourceAndParentUnchanged": true, "noHorizontalOverflow": true, "pageErrors": []},
+  "productionQA": {"https": 200, "containerRunning": true, "oomKilled": false, "sfxCount": 13, "privateRanges": 206, "anonymousAudio": 401, "realProjectReadOnlyReview": true, "jobsPreserved": 6, "oldFilesChecked": 259, "missingFiles": 0, "identicalOldFiles": 258, "expectedChangedFile": "jobs/uploads/asr/worker.json", "desktopAndMobileBrowser": true, "all13AudioMetadataDecoded": true, "auditionPlaybackAdvances": true, "auditionKeepsPreviewClean": true, "controlsVisibleAfterPanelScroll": true, "sessionAfterReload": true, "noProductionJobCreated": true},
+  "deployment": {"unit": "sues-editor-update-20261021-064234-b82d11e4", "result": "SUCCESS", "exitCode": 0, "execMainStatus": 0, "whisperRestarted": true, "backupSha256": "b7ee8653725a075bb90cde950e34f5e409e5d7e02013fe99afb82a66d7c81fea", "bankBackupSha256": "f4e817fca77b0dfb3f81fabfe82d10c4302ad203c2e6f211a6f057dd23944bfd", "previousContainerRetained": true, "rollbackExecuted": false},
+  "limitations": ["Human listening and creative approval pending", "No new LLM Director", "No MOGRT or CapCut preset adaptation", "No individual license audit"],
+  "externalCostUSD": 0,
+  "humanAcceptance": false
+}

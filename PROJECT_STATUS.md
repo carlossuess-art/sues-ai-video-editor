@@ -1,4 +1,55 @@
-## SFX nativos probados · 21/10/2026 · pendiente de despliegue de este bloque
+## Banco SFX desplegado y verificado · 21/10/2026
+
+Código instalado e80c2e5ce10f7d27b72586ae1a9f375601392c95, árbol
+0a68585897350acf2c3c797db49efb7394d9d443; anterior 9febcdfbf2d9f641a455af958a7d1970d47298b5.
+Oficial actualizada mediante lease desde f70a144, sin force.
+El commit integrado conserva el padre y permite revisión/reversión.
+
+Despliegue systemd sues-editor-update-20261021-064234-b82d11e4: SUCCESS/exitCode0,
+Result=success/ExecMainStatus0. Supervisor sues-sfx-deploy-20261021-e80c2e5 también
+SUCCESS/0; lock exclusivo, independiente de la terminal. Launcher/updater fijados
+y SHA256 comprobados. Whisper pausado durante backup y reiniciado activo.
+Backup completo: /opt/sues-video-setup/update-backup-20261021-064236-30014/editor-state.tar
+SHA256 b7ee8653725a075bb90cde950e34f5e409e5d7e02013fe99afb82a66d7c81fea.
+Anterior contenedor retenido: sues-video-editor-before-update-20261021-064236-30014.
+Rollback requiere código+estado del mismo backup, guardando primero trabajo
+posterior. No ha sido necesario ejecutar rollback real.
+
+13 sonidos importados por API HTTPS privada;3 cámara / 7 teclado / 2 whoosh / 1 riser.
+Originales y normalizados privados con hashes/procedencia fuera deGit. Conversión
+48kHz/estéreo/PCM16, sin amplificación ni padding. Procedencia declarada de material
+CreatorClub existente; no licencia individual auditada. No música de práctica ni
+MOGRT/CapCut importados. Copia adicional del banco26 archivos comprobados:
+/opt/sues-video-setup/sfx-private-20261021/bank-assets.tar
+SHA256 f4e817fca77b0dfb3f81fabfe82d10c4302ad203c2e6f211a6f057dd23944bfd.
+
+252 pruebas Node tests y check PASS; renderer Python compila. Tres MP4 generados de 24 s con
+FFmpeg/decodificación completa (uno de mezcla música+procedurales+SFX, otros dos
+por navegador móvil/escritorio). Colocación por muestras, ganancia, atenuación bajo
+voz, restauración portable sin biblioteca y alteración de hashes comprobadas.
+Chromium151.0.7922.34: móvil 393×852 / escritorio 1440×1000, recurso ausente / operación
+incompatible / revisión caducada bloqueados, añadir/quitar/escuchar SFX, ejecución de plan,
+descarga idéntica al MP4, padre y original intactos y sin desbordamiento horizontal ni errores JS.
+
+Producción: contenedor running/OOMfalse, HTTPS200;13 audios Range206 y401 sin sesión;
+catálogo real con 13 SFX y revisión readonly de whoosh a 2.125 s aprobada sobre proyecto
+existente, sin ejecutar ni crear otro trabajo. Navegador sobre HTTPS real en móvil
+y escritorio: sesión privada tras recargar, proyecto existente abierto,13 metadatos
+de audio decodificados y reproducción de audición avanza. Elegir/escuchar no ensucia
+vista previa. Pruebas de render con vídeo generado/análisis fixture; no nuevo render
+del vídeo personal ni aceptación sonora humana. Se preservan 6 trabajos y 259 archivos:
+0 bajas / 258 idénticos, único cambio esperado jobs/uploads/asr/worker.json (heartbeat).
+Resultados privados: sfx-private-20261021/{import-result.json,production-browser/result.json,
+browser/result.json}; log completo background-update/20261021-064234-b82d11e4/run.log.
+Herramientas de navegador confinadas a QA temporal, sin dependencias nuevas en app.
+Sin llamadas IA de pago, cambios de Caddy/DNS/WhatsApp/WAC ni otros servicios.
+
+Siguiente: selección/escucha humana del banco y adaptar 3–5 motions compatibles;
+MOGRT requiere adaptación, no carga directa. Director LLM propio, profundidad
+corporal general y F6/F9/V1 siguen abiertos. Ver docs/SUES_CUSTOM_SFX.md.
+
+---
+## Registro previo a despliegue · SFX probados · 21/10/2026
 
 Nueva biblioteca kind=sfx (0,03–30 s), cues por segundo y ganancia individual,
 selección/escucha en UI y operaciones sfx en planes externos. Música conserva
