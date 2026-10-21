@@ -43,3 +43,12 @@ Sin nuevos renders por ese fallo del arnés y sin costes de API.
 La prueba de navegador del candidato usa el backend real y app.js interceptado
 localmente; comprueba el cambio CALMA→DINÁMICA en un DONE y su revisión obligatoria.
 La prueba posterior sin intercepción deberá verificar la release instalada.
+
+## Comprobación final de producción
+
+Corrección instalada 73d673bf7c67079ee6900916f2e0f12841cf5ab7 y verificada en
+Chromium escritorio/móvil SIN intercepción de app.js. Flujo DONE corregido,
+revisión invalidada al cambiar sonido/estilo, MP4 reproducible, sin overflow ni
+trabajo nuevo/ajuste guardado por QA. Se preservan8trabajos/13SFX y351archivos previos
+(sólo cambia heartbeat). Backup coherente con esas comparativas disponible;
+no se sobrescribieron ni se regeneraron los MP4 para actualizar la interfaz.

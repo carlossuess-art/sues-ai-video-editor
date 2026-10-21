@@ -1,3 +1,41 @@
+## Release final verificada · 21/10/2026 · flujo y comparación
+
+Código instalado 73d673bf7c67079ee6900916f2e0f12841cf5ab7; árbol
+7ea585fc20053efa9a0c46426a594d4c01848b71. Incluye corrección DONE y medición de
+audio. Docs posteriores no cambian código instalado. systemd
+sues-editor-update-20261021-125350-51ab6dce y supervisor
+sues-dynamic-v2-fix-deploy-20261021-73d673b SUCCESS/exitCode0/Resultsuccess.
+Backup completo update-backup-20261021-125352-38127/editor-state.tar,
+SHA2569feca9e23c428a7ab9f2897381a98aacd2cc1f11ca78387bfb8083b53c062121.
+Anterior conservado para rollback código+estado de la misma copia; mantener primero
+trabajos posteriores. Sin rollback real ni intervención de otras aplicaciones.
+
+Producción HTTPS200/catálogo401 sin sesión, editor running/OOMfalse/Whisper activo.
+351archivos anteriores comprobados:0bajas/350idénticos; sólo heartbeat cambia.
+8trabajos y13SFX preservados,13fichasV2 pendientes y14aliases unavailable;
+inventario idempotente.9archivos código/esquema instalados iguales al candidato.
+
+Chromium final SOBRE CÓDIGO INSTALADO (testedAppOverride:false), desktop1440x1000
+y móvil393x852: dos rutas, plantilla antes de análisis, MP4 real decodificado,
+DONE cambioCALMA→DINÁMICA habilita generación sólo tras revisión, sonido invalida
+revisión, exportación inicial disponible, sin overflow/erroresJS ni nuevo trabajo
+o modificación del DONE. Evidencia privada dynamic-qa-20261021/production/browser-result.json.
+No confundir con prueba previa con app.js interceptado; ambas constan separadas.
+
+Dos comparativas reales DONE, fuente/padre intactos, fullDecode pass y descarga
+idéntica por hash,38.30s frente38.31s planificados (<1frame),1080x1920/30. Muestras
+visuales revisadas en escritorio/móvil y12frames/versión. CALMA2cicloszoom/1tarjeta/
+0transiciones/1SFX; DINÁMICA3/2/2/4.0cortes. Voz continua. Audio medido -28.07LUFS:
+NO pasa banda V2 orientativa, sin normalización/aceptación humana. Mono medido,
+no escuchado. Informe docs/SUES_REAL_COMPARISON_20261021.md y QA privada
+ dynamic-v2-real-media-qa.json. Comparativas no alteradas por corrección UI.
+
+257tests de base PASS/check y regresión navegador final PASS. Sin APIs de pago,
+modelos nuevos ni dependencias. Director completo, visión general/máscaras, recursos
+revisados/licenciados y mastering siguen pendientes. F6/F9/V1 abiertas; esta release
+no equivale a plantilla Keanu100%. Roadmap Drive actualizado con resultados reales.
+
+---
 ## Flujo desplegado y dos comparativas reales · 21/10/2026
 
 Instalado 086a9aae75af01c7919774aaaab0fb00d1c3ec8e (árbol e21feaf79129888aebf1b245aff1403b6d45c7ae).
