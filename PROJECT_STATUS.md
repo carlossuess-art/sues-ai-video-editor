@@ -1,3 +1,32 @@
+## Flujo desplegado y dos comparativas reales · 21/10/2026
+
+Instalado 086a9aae75af01c7919774aaaab0fb00d1c3ec8e (árbol e21feaf79129888aebf1b245aff1403b6d45c7ae).
+Despliegue SUCCESS, HTTPS200/API401, Whisper activo,285 archivos previos sin bajas;
+sólo cambia heartbeat. Backup verificado update-backup-20261021-123230-36270,
+SHA256 707081336a85e328757280ba8f579a6cb70cfa18b328c13e80f7352c9cd98f23.
+Se conservan6trabajos/13SFX y se añaden2versiones por encargo para comparar.
+13fichas V2 creadas sin alterar medios ni registros anteriores; repetición idempotente,
+ninguna aprobación ni alias asignado.14aliases siguen unavailable.
+
+CALMA9c42517b y DINÁMICA6bb280d8: mismo bruto38.31s, DONE, voz/padre intactos,
+H2641080x1920/30,fullDecode pass y descarga idéntica. Recuentos, hashes audiovisuales,
+medidas y límites en docs/SUES_REAL_COMPARISON_20261021.md. Loudness -28.07LUFS
+ambas: FUERA de banda orientativa, sin normalización ni aceptación humana inventada.
+Referencia Keanu medida -22.12LUFS/-2.83dBTP. QA de mono no sustituye escucha.
+
+Esta iteración corrige3líneas de UI: cambio de plantilla/sonido o activación de receta
+marca cambios pendientes en DONE y exige revisión antes de generar. Prueba Chromium
+con backend real y app.js candidato interceptado: escritorio/móvil PASS, sin crear
+otro trabajo, guardar ajustes o registrar aceptación. El primer arnés asumía que
+un DONE sin cambios debía habilitar render; se corrigió esa expectativa. Caso real
+cambio de estilo reproducido y corregido. También se esperó visibilidad del editor
+para evitar carrera de inicialización; no se alteró estado cliente para simular éxito.
+Check PASS;257tests de la base. Script de regresión smoke_completed_job.mjs y
+auditoría de audio medidos con tono, silencio y referencia real. Esta entrada aún
+no afirma desplegada la corrección UI; registrar release/backup y QA sin override.
+F6/F9/V1 abiertas. Sin costes externos, dependencias nuevas o cambios de otras apps.
+
+---
 ## Candidato de flujo dinámico y base de recursos V2 · 21/10/2026
 
 Retomado tras el corte de cuota. Leídos completos los tres documentos V2 de Drive;

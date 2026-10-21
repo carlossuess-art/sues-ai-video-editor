@@ -417,7 +417,7 @@ $('back-projects').onclick=()=>{showView('dashboard');history.replaceState(null,
 document.querySelector('.brand').onclick=event=>{event.preventDefault();if(!$('logout').hidden){showView('dashboard');history.replaceState(null,'',location.pathname);}};
 window.addEventListener('beforeunload',event=>{if(hasUnsavedChanges()){event.preventDefault();event.returnValue='';}});
 
-$('new-project-style').onchange=()=>{$('style-id').value=$('new-project-style').value;automaticReviewKey=null;syncEditRoute();};
+$('new-project-style').onchange=()=>{$('style-id').value=$('new-project-style').value;if(current)markPreviewDirty();automaticReviewKey=null;syncEditRoute();};
 
 $('show-versions').onclick=()=>{showTool('material');$('material-options').open=true;$('saved-jobs').open=true;$('saved-jobs').scrollIntoView({behavior:'smooth',block:'center'});};
 
@@ -464,6 +464,7 @@ function chooseEditRoute(route){
  $('new-project-style').value=current?.settings.styleId??$('new-project-style').value;
  $('style-id').value=$('new-project-style').value;
  $('recipe-sounds').checked=current?.settings.autoRecipe?current.settings.sfxEnabled:true;
+ if(route==='automatic'&&current&&!current.settings.autoRecipe)markPreviewDirty();
  syncEditRoute();
 }
 $('choose-automatic').onclick=()=>chooseEditRoute('automatic');
@@ -483,4 +484,4 @@ $('compare-styles').onclick=()=>work(async()=>{
 });
 
 function automaticKey(){return JSON.stringify({id:current?.id,settings:proposalBase(),prompt:$('director-prompt').value.trim()});}
-$('recipe-sounds').onchange=()=>{automaticReviewKey=null;syncEditRoute();};
+$('recipe-sounds').onchange=()=>{if(current)markPreviewDirty();automaticReviewKey=null;syncEditRoute();};

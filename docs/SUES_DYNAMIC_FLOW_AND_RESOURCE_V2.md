@@ -72,3 +72,22 @@ HTTP privado y rechazo atómico. Ninguna API de pago ni dependencia añadida.
 
 Pendiente: mapear por escucha/licencia los recursos, beats semánticos LLM, análisis
 espacial general, máscaras, stems musicales y nuevas operaciones con contrato y QA.
+
+## Iteración de un MP4 terminado y medición de audio
+
+La revisión sobre producción detectó que el selector nuevo de plantilla y el de
+sonidos no marcaban cambios pendientes al partir de DONE. Ahora invalidan revisión
+y exportación anterior hasta generar otra versión; el botón de generar se habilita
+tras revisar la propuesta nueva. Activar receta en un DONE anterior también marca
+el cambio. `smoke_completed_job.mjs` comprueba el flujo real en escritorio/móvil sin
+renderizar otra vez ni escribir ajustes; permite probar un app.js candidato con
+intercepción local antes del despliegue. No confundir esa variante con código ya
+instalado: la ejecución sin override es la comprobación final de producción.
+
+`scripts/audio/audit_mix.py` usa mediciones input_* de FFmpeg loudnorm y plegado
+mono, con hash antes/después y sin guardar audio procesado. Objetivos configurables;
+el silencio devuelve medidas no finitas como null y nunca pasa. Verificado con tono
+estéreo y silencio mono, además de la referencia real. El plegado medido no sustituye
+la escucha ni una revisión de fase. La referencia Keanu mide -22.12 LUFS y -2.83 dBTP;
+su mezcla no satisface la banda orientativa V2 -16..-14 y no se normaliza por ello.
+Evidencia numérica ligada al hash en keanu-audio-measurement-20261021.json.

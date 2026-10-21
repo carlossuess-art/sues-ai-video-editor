@@ -1,0 +1,25 @@
+{
+  "schema": "sues-audio-measurement/v1",
+  "sha256": "5c839646c2746cc5f7616290d8e50b812bcccd94accdef35a427d3ff247ef384",
+  "channels": 2,
+  "input": {
+    "integratedLufs": -22.12,
+    "truePeakDbtp": -2.83,
+    "loudnessRangeLu": 6.6,
+    "thresholdLufs": -32.39
+  },
+  "monoFold": {
+    "integratedLufs": -25.74,
+    "truePeakDbtp": -3.6,
+    "loudnessRangeLu": 5.5,
+    "thresholdLufs": -36.0
+  },
+  "targets": {
+    "minIntegratedLufs": -16,
+    "maxIntegratedLufs": -14,
+    "maxTruePeakDbtp": -1
+  },
+  "withinTargets": false,
+  "audioModified": false,
+  "humanAudibilityReview": "pending"
+}
