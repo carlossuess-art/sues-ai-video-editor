@@ -1,3 +1,53 @@
+## Publicación y despliegue autorizados · 21/10/2026
+
+Carlos responde «Autorizo» a subir este candidato a GitHub y desplegarlo con
+copia de seguridad. El bloqueo de autorización del registro anterior queda
+resuelto. Aún no acredita despliegue; comprobar resultado del actualizador y QA.
+
+---
+## Cuatro motions nativos por plan externo · candidato probado · 21/10/2026
+
+Rama local feat/external-motions-20261021; código43bcba0 y ajuste de fixture861041b,
+basados en oficial15fcfe83. No publicados ni fusionados; producción siguee80c2e5.
+Nueva acción motion para QUOTE_CARD_01, NUMBER_BADGE_GOLD_01, STRIKE_TEXT_01 y
+DIVIDER_LINE_01. Son renderizadores SUES existentes, no cuatro MOGRT convertidos.
+Catálogo con IDs/condiciones y disponibilidad; tiempo/texto por caption, incluidas
+correcciones del mismo plan. Requiere análisis facial; Whisper solo bloqueado.
+Conflictos, límite3citas/5elecciones, números1–99, apertura/cierre, geometría,
+duplicados, comandos que ocultan efectos y revisión obsoleta rechazan el conjunto.
+Se mantienen controles/deshacer/historial y versión anterior, sin nuevos modelos.
+
+254pruebas Node y npm run check PASS. Dos MP4 completos24s mediante navegador
+Chromium151:1440x1000/393x852. Cuatro motions, imagen/música realmente subidas,
+destello17.27s, texto corregido, borrador recuperado, revisión invalidada al cambiar
+texto, versión nueva, descarga idéntica, fullDecode, fuente/padre intactos,
+controles manuales reconocen3elecciones+1cita ysin overflow/erroresJS.
+Vídeo generado/tono y análisis facial de fixture: QA técnica, no nueva inferencia
+ni aprobación creativa. Montserrat real conservada. Cuatro fotogramas revisados.
+MP4 escritorio16174558bytes/SHA256b5d8fbe622aa5f6d1b20a2a88a7f44560b6100255baa8144f180ec78b41cb3f8;
+móvil16174547bytes/SHA2569e143e31909dcb6b43c894d6d3918ba8eb6c5a12e378e94f83d2996372c3e366.
+Evidencia examples/preview/external-motions.chromium-result.json; guía
+ docs/SUES_EXTERNAL_MOTIONS.md; script smoke_external_motions.mjs.
+
+QA aislada en /opt/sues-video-setup/external-motions-work-20261021 y resultados
+external-motions-qa-20261021. Librerías Chrome sólo en contenedor desechable;
+no host/app. Primer arranque no leyó herramientas por permisos; segundo sin
+librerías; tercer ensayo detectó5captions en fixture que esperaba4: acortada
+frase de prueba conforme al envoltorio existente y repetidos ambos dispositivos
+correctamente. Esos intentos fallidos no cuentan comoPASS. No deps nuevas de app.
+
+Bloqueo real: revisión automática rechazó git push por requerir autorización
+explícita de publicación. Segundo intento también rechazado tras comprobar URL
+origin idéntica al repo indicado y permiso admin mediante conector. No se usa
+otra vía para publicar/desplegar. Cambios y pruebas conservados; próxima acción:
+obtener autorización explícita para subir este candidato y desplegarlo con backup,
+después publicación/integración/release fija y QA privada de producción.
+No se ha reiniciado producción ni realizado backup nuevo de despliegue, porque
+no se ha desplegado. Sin costes externos ni cambios de otras aplicaciones.
+Adaptación Creator Club, director LLM propio, cuerpo general y F6/F9/V1 abiertos.
+Sin nuevos porcentajes ni necesidad de prueba audiovisual deCarlos en este bloque.
+
+---
 ## Banco SFX desplegado y verificado · 21/10/2026
 
 Código instalado e80c2e5ce10f7d27b72586ae1a9f375601392c95, árbol

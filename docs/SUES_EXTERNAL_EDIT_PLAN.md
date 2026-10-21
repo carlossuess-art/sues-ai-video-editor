@@ -1,3 +1,5 @@
+> 21/10/2026: [Cuatro motions nativos por caption](SUES_EXTERNAL_MOTIONS.md) disponibles en planes externos; no conversión MOGRT. SFX puntuales ya integrados según SUES_CUSTOM_SFX.md. Los registros siguientes son históricos.
+
 # Importar un plan de edición externo · 20/10/2026
 
 Dos recorridos distintos: la app prepara la edición con sus controles actuales,

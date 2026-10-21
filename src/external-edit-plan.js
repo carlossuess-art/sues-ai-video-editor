@@ -1,13 +1,15 @@
 import {createHash} from 'node:crypto';
 import {prepareProject} from './local-pipeline.js';
+import {applyExternalMotion,externalMotionCatalog} from './external-motions.js';
 const fail=message=>{throw Error(message);};
 const keys=(value,allowed)=>value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).every(k=>allowed.includes(k));
 export function externalCatalog(project,settings,assets=[]){
  const prepared=prepareProject(project,settings),p=prepared.plan;
  return {schema:'sues-edit-plan/v1',sourceSha256:p.source.sha256,duration:p.duration,timeSpace:'original-seconds',
   instructions:'Devuelve sólo JSON con schema, sourceSha256 y operations. Usa exclusivamente acciones y recursos descritos. No inventes IDs. Marca tus ideas no ejecutables como type: unsupported con description. Los tiempos son segundos del original; no hay cortes ni cambio de velocidad. El plan modifica la versión actual y conserva sus ajustes no mencionados. No cambies estilo ni agrupación al corregir captions.',
-  actions:{sfx:{type:'sfx',resourceId:'ID de recurso kind=sfx',start:2,gain:.3,limit:'Hasta 40 sonidos, máximo tres simultáneos. Gain 0–0.7. El sonido completo debe caber; se baja durante la voz. Independiente de los SFX sintetizados de motions.'},transition:{type:'transition',resourceId:'warm',start:2,duration:.4,limit:'Hasta tres destellos; duración fija 0.4 s; sin solaparse ni invadir cierre. Requiere motions activados.'},image:{type:'image',resourceId:'ID de imagen de assets',start:3,end:5,limit:'Hasta seis imágenes; 0.6–8 s cada una. Requiere análisis facial existente para colocar sin tapar caras. No disponible con Whisper solo/plano completo. No seguimiento ni posición libre.'},music:{type:'music',resourceId:'ID de audio de assets',gain:.1,duck:true,limit:'Pista completa, tan larga como el vídeo; gain 0–0.18. No SFX puntuales.'},caption:{type:'caption',captionId:'seg-001',text:'Texto corregido',limit:'Conserva tiempos; hasta 52 caracteres.'},command:{type:'command',text:'menos zoom',limit:'Sólo controles globales: sin música, música al 10 %, menos zoom, sin zoom, con/sin recursos animados, con/sin efectos de sonido. No son eventos puntuales.'}},
-  existingEvents:[...(p.customSfx?.events??[]).map(e=>({type:'sfx',resourceId:e.assetId,start:e.start,end:e.end,gain:e.gain})),...(p.semantic?.motions??[]).map(e=>({type:'motion',start:e.start,end:e.end})),...(p.globalTransitions??[]).map(e=>({type:e.type,start:e.start,end:e.end})),...(p.illustrations??[]).map(e=>({type:'image',start:e.start,end:e.end}))],
+  actions:{motion:{type:'motion',resourceId:'QUOTE_CARD_01',captionId:'ID real de captions',limit:'Usa los IDs de motionResources. Texto y tiempos proceden del caption, incluida su corrección. Requiere análisis facial y motions activos; hasta tres citas y cinco elecciones de los otros tipos. Sin posición libre ni duración inventada. Conflictos bloquean el plan.'},sfx:{type:'sfx',resourceId:'ID de recurso kind=sfx',start:2,gain:.3,limit:'Hasta 40 sonidos, máximo tres simultáneos. Gain 0–0.7. El sonido completo debe caber; se baja durante la voz. Independiente de los SFX sintetizados de motions.'},transition:{type:'transition',resourceId:'warm',start:2,duration:.4,limit:'Hasta tres destellos; duración fija 0.4 s; sin solaparse ni invadir cierre. Requiere motions activados.'},image:{type:'image',resourceId:'ID de imagen de assets',start:3,end:5,limit:'Hasta seis imágenes; 0.6–8 s cada una. Requiere análisis facial existente para colocar sin tapar caras. No disponible con Whisper solo/plano completo. No seguimiento ni posición libre.'},music:{type:'music',resourceId:'ID de audio de assets',gain:.1,duck:true,limit:'Pista completa, tan larga como el vídeo; gain 0–0.18. No SFX puntuales.'},caption:{type:'caption',captionId:'seg-001',text:'Texto corregido',limit:'Conserva tiempos; hasta 52 caracteres.'},command:{type:'command',text:'menos zoom',limit:'Sólo controles globales: sin música, música al 10 %, menos zoom, sin zoom, con/sin recursos animados, con/sin efectos de sonido. No son eventos puntuales.'}},
+  motionResources:externalMotionCatalog(p),
+  existingEvents:[...(p.customSfx?.events??[]).map(e=>({type:'sfx',resourceId:e.assetId,start:e.start,end:e.end,gain:e.gain})),...(p.semantic?.motions??[]).map(e=>({type:'motion',resourceId:e.params.motionId,start:e.start,end:e.end})),...(p.globalTransitions??[]).map(e=>({type:e.type,start:e.start,end:e.end})),...(p.illustrations??[]).map(e=>({type:'image',start:e.start,end:e.end}))],
   unsupported:['cortes y velocidad','seguimiento de ojos/cuerpo','desenfoque selectivo','posición libre de imágenes','recursos externos, URLs o código'],assets:assets.map(({id,kind,title,duration})=>({id,kind,title,...(duration?{duration}:{})})),captions:p.captions.map(({id,start,end,text})=>({id,start,end,text})),
   example:{schema:'sues-edit-plan/v1',sourceSha256:p.source.sha256,operations:[{type:'transition',resourceId:'warm',start:2,duration:.4}]}};
 }
@@ -21,13 +23,18 @@ export function parseExternalPlan(text){
 export function reviewExternalPlan(text,{project,settings,assets=[],commandPlanner}){
  const imported=parseExternalPlan(text),baseline=prepareProject(project,settings),manifest=baseline.plan;
  if(imported.sourceSha256!==manifest.source.sha256)fail('Este plan pertenece a otro vídeo. Copia las instrucciones del proyecto correcto.');
- const next=structuredClone(settings),rows=[],seen=new Set();
+ const next=structuredClone(settings),rows=[],seen=new Set(),motionCaptions=new Set();
  for(const [index,op]of imported.operations.entries()){
   const row={index:index+1,status:'ready',description:''};rows.push(row);
   try{
    if(!op||typeof op!=='object'||Array.isArray(op))fail('Operación inválida.');
    const signature=JSON.stringify(op);if(seen.has(signature))fail('Operación duplicada.');seen.add(signature);
-   if(op.type==='transition'){
+   if(op.type==='motion'){
+    if(!externalMotionCatalog(manifest).some(m=>m.id===op.resourceId)||manifest.camera.mode==='full-frame-fit')row.status='unsupported';
+    if(motionCaptions.has(op.captionId))fail('No añadas dos motions al mismo subtítulo en un plan.');
+    motionCaptions.add(op.captionId);
+    row.description=applyExternalMotion(op,next,manifest);
+   }else if(op.type==='transition'){
     if(!keys(op,['type','resourceId','start','duration'])||op.resourceId!=='warm') {row.status='unsupported';fail('Transición no preparada; disponible: warm (destello cálido).');}
     if(!Number.isFinite(op.start)||op.start<0||op.duration!==.4||op.start+.4>manifest.duration-manifest.policy.outro.duration)fail('Tiempo inválido o dentro del cierre. Duración del destello: 0.4 s.');
     next.transitions=[...(next.transitions??[]),{type:'warm',start:op.start}];row.description=`Destello cálido: ${op.start}–${op.start+.4} s`;
@@ -57,7 +64,7 @@ export function reviewExternalPlan(text,{project,settings,assets=[],commandPlann
  if(rows.every(r=>r.status==='ready')){
   try{
    prepared=prepareProject(project,next);
-   if((next.transitions?.length||next.imageEvents?.length)&&next.motions===false)fail('Activa los recursos animados para mostrar transiciones e imágenes.');
+   if((next.transitions?.length||next.imageEvents?.length||imported.operations.some(o=>o.type==='motion'))&&next.motions===false)fail('Activa los recursos animados para mostrar motions, transiciones e imágenes.');
    if(imported.operations.some(o=>o.type==='command'&&/m[uú]sica/i.test(o.text))&&next.musicEnabled&&!prepared.plan.audioSourceAvailable)fail('No hay pista musical: elige un recurso de audio de la biblioteca.');
   }catch(error){const detail=/resource overlaps motion card/.test(error.message)?'La imagen coincide con un recurso animado existente. Elige otro intervalo.':/transitions overlap/.test(error.message)?'Hay transiciones solapadas. Separa sus tiempos.':error.message;notes.push('El montaje completo no es compatible: '+detail);}
  }

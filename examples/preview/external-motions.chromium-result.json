@@ -1,0 +1,68 @@
+{
+  "kind": "generated-media-external-motions-qa",
+  "browser": "151.0.7922.34",
+  "checks": [
+    {
+      "device": "desktop",
+      "missingResourceBlocked": true,
+      "unsupportedOperationBlocked": true,
+      "staleReviewInvalidated": true,
+      "exactFlashSecond": 17.27,
+      "captionCorrection": true,
+      "nativeMotions": [
+        "QUOTE_CARD_01",
+        "NUMBER_BADGE_GOLD_01",
+        "STRIKE_TEXT_01",
+        "DIVIDER_LINE_01"
+      ],
+      "nativeCaptionTiming": true,
+      "montserrat": true,
+      "realUploadedImageAndAudio": true,
+      "syntheticFaceAnalysis": true,
+      "realRender": true,
+      "fullDecode": true,
+      "downloadMatches": true,
+      "parentUnchanged": true,
+      "sourceUnchanged": true,
+      "manualEditRetainsExactTimes": true,
+      "noOverflow": true
+    },
+    {
+      "device": "mobile",
+      "missingResourceBlocked": true,
+      "unsupportedOperationBlocked": true,
+      "staleReviewInvalidated": true,
+      "exactFlashSecond": 17.27,
+      "captionCorrection": true,
+      "nativeMotions": [
+        "QUOTE_CARD_01",
+        "NUMBER_BADGE_GOLD_01",
+        "STRIKE_TEXT_01",
+        "DIVIDER_LINE_01"
+      ],
+      "nativeCaptionTiming": true,
+      "montserrat": true,
+      "realUploadedImageAndAudio": true,
+      "syntheticFaceAnalysis": true,
+      "realRender": true,
+      "fullDecode": true,
+      "downloadMatches": true,
+      "parentUnchanged": true,
+      "sourceUnchanged": true,
+      "manualEditRetainsExactTimes": true,
+      "noOverflow": true
+    }
+  ],
+  "errors": [],
+  "externalCostUSD": 0,
+  "artifacts": {
+    "desktop.mp4": {
+      "bytes": 16174558,
+      "sha256": "b5d8fbe622aa5f6d1b20a2a88a7f44560b6100255baa8144f180ec78b41cb3f8"
+    },
+    "mobile.mp4": {
+      "bytes": 16174547,
+      "sha256": "9e143e31909dcb6b43c894d6d3918ba8eb6c5a12e378e94f83d2996372c3e366"
+    }
+  }
+}
