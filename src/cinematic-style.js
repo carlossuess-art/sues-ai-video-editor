@@ -19,6 +19,35 @@ export function validateCinematicStyle(style){
 
 // Input slots already refer to EDIT timeline time, not source PTS. No AI/API runs here.
 // Inventory is caller-supplied metadata; this function does not verify media bytes.
+// Explicit user/Gemini selections use the existing presenter/voice-preserving renderer.
+ // Manual choices are never labeled semantically inferred or visually approved.
+export function buildExplicitBrollPlan({policy,duration,events=[]}){
+  validateCinematicStyle(policy?.visualStyle);
+  assert(Array.isArray(events)&&events.length<=3,'up to three B-roll clips');
+  const rules=policy.visualStyle.broll,closing=Math.max(rules.closingPresenterSeconds,policy.outro?.duration??0);
+  let previousEnd=-Infinity,coverage=0;const used=new Set(),decisions=[];
+  for(const e of events){
+    const length=e.end-e.start,sourceIn=e.sourceIn??0;
+    assert(finite(e.start)&&finite(e.end)&&finite(sourceIn)&&finite(e.mediaDuration)&&
+      e.start>=0&&e.end<=duration&&length>=rules.minShot&&length<=rules.maxShot&&
+      sourceIn>=0&&sourceIn+length<=e.mediaDuration+1e-6,'clip time or source bounds');
+    assert(e.start>=rules.openingPresenterSeconds&&e.end<=duration-closing,'presenter opening/closing');
+    assert(e.start-previousEnd>=rules.minPresenterGap,'presenter gap between clips');
+    assert(!used.has(e.assetId),'no repeated B-roll within same edit');
+    assert(typeof e.reason==='string'&&e.reason.trim().length>=5&&e.reason.length<=160,'explicit narrative reason required');
+    assert(/^[a-f0-9]{64}$/.test(e.assetId)&&typeof e.localFile==='string'&&e.localFile.startsWith('/'),'verified private source required');
+    previousEnd=e.end;coverage+=length;used.add(e.assetId);
+    assert(coverage<=duration*rules.maxCoverage+1e-6,'B-roll coverage budget');
+    decisions.push({type:'broll',assetId:e.assetId,sourceRef:e.assetId,
+      sourceIn,sourceOut:sourceIn+length,start:e.start,end:e.end,layout:'full-frame',reason:e.reason,
+      originalVoice:true,sourceAudio:false,captions:'preserve',localFile:e.localFile,
+      selection:'explicit-user-or-reviewed-external-plan',semanticConfidence:'not-inferred'});
+  }
+  return {version:'1.0',templateId:policy.templateId,brandKitId:policy.brandKitId,
+    timeSpace:'edit-timeline',duration,decisions,coverage:coverage/duration,
+    defaultVisual:'presenter',originalVoice:true,renderReady:!!decisions.length,
+    pending:['visual-acceptance','verify-media-and-portrait-fit']};
+}
 export function buildCinematicBrollPlan({policy,duration,slots=[],assets=[]}){
   validateCinematicStyle(policy?.visualStyle);
   assert(finite(duration)&&duration>0,'duration');

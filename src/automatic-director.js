@@ -15,9 +15,9 @@ const LEXICON=new Map([
 ]);
 export function validateEditorSettings(settings={}){
  assert(settings&&typeof settings==='object'&&!Array.isArray(settings),'settings object');
- assert(Object.keys(settings).every(k=>['autoRecipe','sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','profileImages','styleId','elements'].includes(k)),'unknown setting');
+ assert(Object.keys(settings).every(k=>['autoRecipe','sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','videoEvents','profileImages','styleId','elements'].includes(k)),'unknown setting');
  validateElements(settings.elements);
- const value={autoRecipe:false,sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ const value={autoRecipe:false,sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],videoEvents:[],profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
  assert(typeof value.autoRecipe==='boolean','autoRecipe boolean');
  value.sfxEvents=validateSfxEvents(value.sfxEvents);
  assert(typeof value.sfxEnabled==='boolean'&&Number.isFinite(value.sfxGain)&&value.sfxGain>=0&&value.sfxGain<=.7,'sfx settings');
@@ -27,6 +27,17 @@ export function validateEditorSettings(settings={}){
  assert(value.musicAssetId===null||typeof value.musicAssetId==='string'&&/^[a-f0-9]{64}$/.test(value.musicAssetId),'music asset id');
  assert(typeof value.profileImages==='boolean'&&Array.isArray(value.imageEvents)&&value.imageEvents.length<=6,'image settings');
  for(const e of value.imageEvents)assert(e&&Object.keys(e).every(k=>['assetId','start','end'].includes(k))&&typeof e.assetId==='string'&&/^[a-f0-9]{64}$/.test(e.assetId)&&Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.start>=0&&e.end-e.start>=.6&&e.end-e.start<=8,'image event invalid');
+ assert(Array.isArray(value.videoEvents)&&value.videoEvents.length<=3,'maximum three B-roll clips');
+ let lastEnd=-Infinity;const videoIds=new Set();
+ for(const e of value.videoEvents){
+  assert(e&&Object.keys(e).every(k=>['assetId','start','end','sourceIn','reason'].includes(k))&&
+   typeof e.assetId==='string'&&/^[a-f0-9]{64}$/.test(e.assetId)&&!videoIds.has(e.assetId)&&
+   Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.end>e.start&&e.start>=lastEnd&&
+   (e.sourceIn===undefined||Number.isFinite(e.sourceIn)&&e.sourceIn>=0)&&
+   typeof e.reason==='string'&&e.reason.trim().length>=5&&e.reason.length<=160,
+   'B-roll event invalid or overlapping');
+  lastEnd=e.end;videoIds.add(e.assetId);
+ }
  validateGraphicSettings(value.graphicCards,value.transitions);
  validateMotionChoices(value.motionChoices);
  assert(!value.graphicCards.length||!value.highlightCaptions.length,'Elige citas destacadas o tarjetas gráficas en esta versión, no ambas.');

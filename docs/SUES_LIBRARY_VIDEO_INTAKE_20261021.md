@@ -33,3 +33,18 @@ El servidor ya conserva inventario oficial privado en `/opt/sues-video-setup/edi
 5. Desplegar solo con backup completo, prueba API real y capacidad de rollback, y actualizar ROADMAP / PROJECT_STATUS.md con evidencias.
 
 Coste externo 0. No se han contratado servicios.
+
+
+## Complemento verificado: B-roll solicitado por Gemini y MP4 real · 21/10/2026
+
+**DESARROLLO AISLADO, NO DESPLEGADO**. Sobre la ingesta privada ya probada, se conectaron `videoEvents` del plan al compositor `selectedMedia` existente; NO se ha creado motor paralelo ni se ha reconstruido CALMA/DOPAMIN/ELEMENTS. `src/cinematic-style.js` valida motivos explícitos, intervalos, duración y límites de plantilla, tres B-rolls máximo, plano completo, inicio/cierre protegidos, sin clips solapados ni reutilización de un mismo recurso. El audio original y los subtítulos se conservan. `src/external-edit-plan.js` expone la operación `broll` a Gemini; los recursos se identifican exclusivamente por SHA-256 de la biblioteca privada, nunca por URLs arbitrarias ni rutas de usuario. Revisión completa antes de crear una nueva versión, con rechazo explícito de recursos ausentes o archivos overlay usados como vídeos.
+
+El contrato mantiene las restricciones CALMA actuales: 2,5–6 segundos por B-roll, al menos tres segundos de presentador entre dos clips y cobertura máxima del 40%. Esto no supone selección semántica autónoma: la correspondencia entre B-roll y frase la determina la instrucción externa que el usuario revisa. Superponer objetos sobre el sujeto, alfa, zoom en B-roll, seguimiento y efectos de voz continúan pendientes.
+
+**EXPORTACIÓN REAL AISLADA: PASS.** Fuente real existente en el editor de 12.979956 s, con audio original; recurso de prueba generado en el contenedor, 4,2 s, ID SHA256 `fa3e5b064fc4909a5e9af38214ecfe524a276b669f3539be61bcbc02222a988a`, insertado del segundo 5 al 8 mediante una operación Gemini JSON autorizada. Exportado MP4 real 1080×1920, 30 fps, duración codificada 12.966667 s, H.264+audio, hash de salida `5b02d01735fec1d0e43e2f8df493d938776c6ae1c86afb9f20f079c375e3c533`, audit.fullDecode PASS, audit.broll=1, voz original presente y subtítulos=4; `sourcePreserved` true. El vídeo de apoyo usado es sintético de QA, NO uno de los comprados y NO la demostración estética F9. No usar QA como ejemplo de acabado cinematográfico.
+
+El backup portable del proyecto se amplió para incluir B-roll seleccionado en el tar con medios y hash; prueba de restauración de fuente y ajustes pasó sin referencia a la cuenta externa. `tests/manual-broll-integration.test.js` añade cuatro casos: límites de estilo, Gemini/compilador, backup/restauración, API HTTP autenticada y creación de versión nueva sin modificar anterior.
+
+Pruebas actualizadas en imagen de QA sin acceso a red: suite 263/264 PASS, 1 fallo de entorno en prueba Git `safe.directory` porque el contenedor carece de Git; `tests/deploy-service.test.js` pasa 2/2 en host VPS, además de `node scripts/check.mjs`. Por tanto, 264 casos se contrastaron con distintos entornos, pero no afirmar 264/264 en un solo contenedor.
+
+**LIMITACIONES Y SIGUIENTE BLOQUE:** realizar miniaturas y revisión visual humana del montaje de prueba; seleccionar y recuperar B-rolls REALES de los 309 ficheros y de fuentes originales ya compradas, no el sintético; preparar la conversión segura de overlays con o sin transparencia; verificar mezcla SFX y voz; después CI/backup completo/merge/despliegue y prueba sobre `https://editor.suesholistics.com`. Los scripts y pruebas de este trabajo no alteraron original, media store o servicios productivos. Coste de servicios externos 0.

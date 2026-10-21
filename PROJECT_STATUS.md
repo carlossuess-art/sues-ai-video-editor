@@ -1,3 +1,15 @@
+## Biblioteca: Gemini puede insertar B-roll en un MP4 de QA · 21/10/2026
+
+**Rama de trabajo**: `feat/library-video-assets-20261021` basada en producción `73d673b`; **NO mergeada NI desplegada**. El cambio previo de importación de recursos ahora conecta un tipo nuevo `videoEvents` con el compositor `selectedMedia` existente. Gemini puede incluir `{type:"broll",resourceId:"<sha256>",start:5,end:8,reason:"..."}`; la revisión comprueba ID contra biblioteca privada y reglas de estilo. Se conserva la voz original y los subtítulos al montar el plano completo; hasta tres clips, máximo 40% de metraje, proteger apertura/cierre, validación de duraciones y separación. No se infiere que los recursos sean visualmente pertinentes ni que haya selección LLM autónoma.
+
+**Evidencia MP4**: fuente real con audio del propio editor, 12.979956 s; B-roll SINTÉTICO de QA insertado 5–8 s, duración fuente 4.2s, SHA256 `fa3e5b064fc4909a5e9af38214ecfe524a276b669f3539be61bcbc02222a988a`; exportado `/opt/sues-video-setup/library-qa/20261021/broll-real-export-test.mp4` (solo prueba interna). MP4 H.264 1080x1920 30fps, duración 12.966667 s, audio presente, 4 grupos de subtítulos, vídeo original preservado, decodificación completa PASS, SHA256 de salida `5b02d01735fec1d0e43e2f8df493d938776c6ae1c86afb9f20f079c375e3c533`. El vídeo sintético NO demuestra calidad cinematográfica ni sustituye la Fase 9.
+
+**Pruebas**: cuatro nuevos casos `tests/manual-broll-integration.test.js` PASS (límites B-roll, plan Gemini→línea de tiempo, backup portable y REST autenticado/versionado). Regresión global en contenedor QA: 263/264 PASS, fallo único de Git ausente dentro de contenedor; test específico en VPS anfitrión 2/2 PASS. `node scripts/check.mjs` y `git diff --check` OK. No efectos en producción, no gastos. Copias de seguridad existentes de metadatos preservadas. `docs/SUES_LIBRARY_VIDEO_INTAKE_20261021.md` contiene procedimiento y limitaciones.
+
+**Próximo hito**: incorporar un B-roll REAL comprado mediante copia autorizada, confirmar frame/safe zones y mezcla con voz/SFX en exportación, diseñar overlays avanzados sobre sujeto sin invadir cara; verificar copia completa y rollback, después fusionar y desplegar. 309 ficheros de Drive siguen indexados sin copia masiva; 13 SFX actuales intactos. F6/F9/V1 abiertas y porcentajes sin modificación.
+
+---
+
 ## Biblioteca privada · video y overlays · candidato no desplegado · 21/10/2026
 
 Rama GitHub `feat/library-video-assets-20261021`, primer commit remoto `8bd46d8ece5611c049371231c43c540a0add547b`, árbol `a03cfec89beea5dbf0f2bfb2bbee38e0417423fc`. Base inalterada `73d673bf7c67079ee6900916f2e0f12841cf5ab7` = producción previa confirmada; ESTA RAMA NO ESTÁ DESPLEGADA.

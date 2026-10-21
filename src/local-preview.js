@@ -16,7 +16,7 @@ import {prepareSemanticRender,semanticZoomFilter} from './semantic-render.js';
 import {buildTimeMap,mapCameraToEdit} from './time-map.js';
 import {mapWordsToTimeline,segmentWords} from './transcript.js';
 import {compileTemplatePolicy} from './template.js';
-import {buildCinematicBrollPlan} from './cinematic-style.js';
+import {buildCinematicBrollPlan,buildExplicitBrollPlan} from './cinematic-style.js';
 import {validateSafePlacement,PORTRAIT_SAFE_ZONES} from './vision.js';
 const assert=(ok,msg)=>{if(!ok)throw new Error(`Local preview: ${msg}`);};
 const finite=Number.isFinite;
@@ -55,7 +55,7 @@ function validateCamera(camera,width,height){
   }
 }
 
-export function prepareLocalPreview({template,brand,transcript,camera,source,segments,slots=[],assets=[],mediaBindings={},director,visionFrames=[],catalog=[],backgroundAudio}){
+export function prepareLocalPreview({template,brand,transcript,camera,source,segments,slots=[],assets=[],mediaBindings={},manualBroll=[],director,visionFrames=[],catalog=[],backgroundAudio}){
   assert(source&&finite(source.duration)&&Number.isInteger(source.width)&&Number.isInteger(source.height),'source');
   assert(Math.abs(source.duration-transcript.sourceDuration)<.05,'transcript/source duration');
   validateCamera(camera,source.width,source.height);
@@ -70,10 +70,10 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
     assert(validateSafePlacement(box,key==='caption'?PORTRAIT_SAFE_ZONES.captions:PORTRAIT_SAFE_ZONES.content),'safe layout');
     assert(box.right<=PORTRAIT_SAFE_ZONES.avoid.right.left,'right UI avoidance');
   }
-  const broll=buildCinematicBrollPlan({policy,duration:timeMap.duration,slots,assets});
+  const broll=manualBroll.length?buildExplicitBrollPlan({policy,duration:timeMap.duration,events:manualBroll}):buildCinematicBrollPlan({policy,duration:timeMap.duration,slots,assets});
   assert(assets.every(a=>a.role!=='style-reference'&&a.brollEligible!==false),'reference media cannot become B-roll');
   const selectedMedia=broll.decisions.filter(d=>d.type==='broll').map(d=>{
-    const path=Object.hasOwn(mediaBindings,d.sourceRef)?mediaBindings[d.sourceRef]:null;
+    const path=d.localFile??(Object.hasOwn(mediaBindings,d.sourceRef)?mediaBindings[d.sourceRef]:null);
     assert(typeof path==='string'&&path.length>0,'B-roll requires verified renderer bindings');
     return {...d,localFile:path};
   });
