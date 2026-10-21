@@ -40,3 +40,11 @@ scripts/app/smoke_external_motions.mjs realiza QA de escritorio/móvil con víde
 sintéticos, análisis facial de fixture, cuatro motions, imagen/música subidas por
 HTTP, render completo, descarga y fuente/padre intactos. No equivale a aceptación
 creativa ni transcripción/seguimiento facial nuevos. F6/F9/V1 siguen abiertos.
+
+## Instalación verificada · 21/10/2026
+
+Release d30023f664aef3ad483fac89913a132be2925013 instalada con copia completa
+verificada y contenedor anterior conservado. HTTPS/API privada correctos;
+las cuatro operaciones compiladas sobre proyecto real y Whisper solo bloqueado.
+Se conservan seis trabajos y 13 SFX; sin otro render personal ni nueva aceptación
+creativa. Detalles de copia, pruebas y límites en PROJECT_STATUS.md.

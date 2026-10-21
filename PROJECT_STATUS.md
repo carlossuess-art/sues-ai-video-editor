@@ -1,3 +1,38 @@
+## Motions externos desplegados y verificados · 21/10/2026
+
+Instalado d30023f664aef3ad483fac89913a132be2925013, árbol
+d7d638344dd4e8fc9917e37682f18029519f9f7b; anterior e80c2e5.
+Publicación autorizada expresamente por Carlos. Conector GitHub utilizado tras
+git push sin credenciales locales; árbol publicado idéntico al candidato probado.
+Rama feat/external-motions-20261021 conservada y oficial actualizada con lease
+desde15fcfe83, sin force. 254tests/check y dos MP4 Chromium previos corresponden
+a este árbol; no se repiten renders de prueba innecesarios.
+
+systemd sues-editor-update-20261021-082649-a2a92d7f y supervisor
+sues-native-motions-deploy-20261021-d30023f: SUCCESS/exitCode0/Resultsuccess.
+Whisper detenido durante copia y reiniciado activo. Backup completo verificado:
+ /opt/sues-video-setup/update-backup-20261021-082652-34073/editor-state.tar
+SHA256302625bcffeac10287f95a1e32de1d085a7696da5d3dbaf5593f01159484449c.
+Contenedor anterior retenido para rollback de código+estado del mismo backup;
+guardar primero cualquier trabajo posterior. No reversión real necesaria.
+
+HTTPS200/API401 sin sesión, contenedor running/OOMfalse y cinco archivos de
+código/tests/QA SHA idénticos al candidato probado. Catálogos reales incluyen
+cuatro motions; revisión privada de cada uno aprobada sobre un proyecto existente
+y bloqueo de Whisper solo comprobado. Operaciones de revisión únicamente: sin
+nuevo render personal, borrador ni versión creados. Se conservan6trabajos y13SFX.
+285archivos previos comprobados:0bajas/284idénticos; sólo cambia heartbeat
+jobs/uploads/asr/worker.json. Backup verificado también contraSHA del TAR.
+Resultado privado motions-production-qa.json; log background-update/
+20261021-082649-a2a92d7f/run.log. No nuevo QA visual de navegador de producción;
+navegador y MP4 reales del candidato constan abajo.
+
+El bloqueo de autorización está resuelto y el cambio está desplegado. Siguiente:
+adaptar recursos CreatorClub y completar análisis espacial para vídeos nuevos;
+director LLM propio, cuerpo general y F6/F9/V1 siguen abiertos. Sin porcentajes
+nuevos, costes externos ni cambios de otras aplicaciones.
+
+---
 ## Publicación y despliegue autorizados · 21/10/2026
 
 Carlos responde «Autorizo» a subir este candidato a GitHub y desplegarlo con
