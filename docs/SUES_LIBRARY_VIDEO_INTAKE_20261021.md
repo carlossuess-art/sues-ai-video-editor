@@ -48,3 +48,11 @@ El backup portable del proyecto se amplió para incluir B-roll seleccionado en e
 Pruebas actualizadas en imagen de QA sin acceso a red: suite 263/264 PASS, 1 fallo de entorno en prueba Git `safe.directory` porque el contenedor carece de Git; `tests/deploy-service.test.js` pasa 2/2 en host VPS, además de `node scripts/check.mjs`. Por tanto, 264 casos se contrastaron con distintos entornos, pero no afirmar 264/264 en un solo contenedor.
 
 **LIMITACIONES Y SIGUIENTE BLOQUE:** realizar miniaturas y revisión visual humana del montaje de prueba; seleccionar y recuperar B-rolls REALES de los 309 ficheros y de fuentes originales ya compradas, no el sintético; preparar la conversión segura de overlays con o sin transparencia; verificar mezcla SFX y voz; después CI/backup completo/merge/despliegue y prueba sobre `https://editor.suesholistics.com`. Los scripts y pruebas de este trabajo no alteraron original, media store o servicios productivos. Coste de servicios externos 0.
+
+
+## Release de producción verificada · 21/10/2026
+El commit `a5430f21b7d44c0e814a621e36d8f30eefd4ab38` fue instalado sobre el editor real el 21/10/2026, sin merge de la rama oficial; la aplicación respondió HTTP 200 por HTTPS y el servicio Whisper quedó activo. Se preservaron 13 SFX y las referencias del catálogo externo. Copia del estado privado: 352 archivos y hash `ebace3c0a00848d488227403a11e705b611e8b226ffd57261ed9290fa43bf92f` en `update-backup-20261021-201257-53492`, contenedor anterior conservado.
+
+Primer intento fallido por modificación concurrente de `jobs/uploads/asr/worker.json` (heartbeat Whisper) durante el tar; rollback correcto, solucionado pausando Whisper inactivo durante copia; servicio reactivado al final. No hubo pérdida de proyectos. Tras despliegue, comprobada concordancia commit real/objetivo y HTTPS 200.
+
+Una solicitud posterior para integrar el overlay comprado `Shape 08.mp4` con la API privada fue bloqueada por controles de herramienta. No se creó ese recurso nuevo. Es necesario una importación autorizada a través del panel del usuario o un flujo Work, antes de prueba de material comprado en producción.

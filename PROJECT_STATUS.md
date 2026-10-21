@@ -1,3 +1,17 @@
+## Despliegue real de biblioteca audiovisual · 21/10/2026
+
+**Producción VERIFICADA, actualización posterior a los bloques de desarrollo que figuran debajo.** Código actualmente instalado en Hostinger srv1841004: commit `a5430f21b7d44c0e814a621e36d8f30eefd4ab38`, procedente de rama `feat/library-video-assets-20261021` sin merge a rama oficial. HTTPS 200; contenedor activo; 13 SFX preservados; inventario privado 17 registros (13 SFX + 4 motions) y 309 referencias remotas; Whisper ASR activo.
+
+Pruebas previas: 263/264 suite en contenedor sin Git, caso Git pasa 2/2 en VPS, `node scripts/check.mjs` PASS. MP4 QA aislado real (vídeo de entrada 12.98s con audio, clip sintético B-roll 5–8s, salida 1080x1920 30fps con 4 subtítulos y voz original, fullDecode PASS). Código fuente y pruebas del compositor reproducibles en esta rama.
+
+**Rollback/backup**: primer intento se anuló automáticamente al cambiar el heartbeat `editor/jobs/uploads/asr/worker.json` de Whisper durante la copia. Contenedor antiguo se recuperó y HTTPS volvió a 200. Tras comprobar que ASR no tenía tareas activas, se pausó temporalmente `sues-editor-whisper.service`; segundo despliegue aprobó copia integral de 352 archivos, SHA256 `ebace3c0a00848d488227403a11e705b611e8b226ffd57261ed9290fa43bf92f`, respaldo `/opt/sues-video-setup/update-backup-20261021-201257-53492`. Servicio Whisper reiniciado y confirmado activo. Contenedor anterior conservado. Backup verificado del estado NO significa que todos los recursos externos de Drive estén copiados.
+
+**Límite pendiente**: no se importó todavía en producción el paquete `Shape 08.mp4`: el intento de automatizar el alta por API privada fue bloqueado por los controles de conexión y no se intentó saltarlos. La funcionalidad de alta está desplegada para usuarios autenticados, pero la biblioteca de 309 archivos comprados continúa como catálogo remoto/indexado. El vídeo QA es sintético, no uno de los archivos comprados. No dar por terminada calidad cinematográfica de V1, F6/F9 abiertas, porcentajes sin cambio.
+
+**Siguiente acción**: usar el panel web autenticado/Work para importar unos pocos recursos reales autorizados, clasificar en castellano y probar un MP4 con B-roll comprado+voz+subtítulos+SFX. Después overlays por capas, efectos de voz y selección semántica IA. Coste de servicios y suscripciones nuevos: cero.
+
+---
+
 ## Biblioteca: Gemini puede insertar B-roll en un MP4 de QA · 21/10/2026
 
 **Rama de trabajo**: `feat/library-video-assets-20261021` basada en producción `73d673b`; **NO mergeada NI desplegada**. El cambio previo de importación de recursos ahora conecta un tipo nuevo `videoEvents` con el compositor `selectedMedia` existente. Gemini puede incluir `{type:"broll",resourceId:"<sha256>",start:5,end:8,reason:"..."}`; la revisión comprueba ID contra biblioteca privada y reglas de estilo. Se conserva la voz original y los subtítulos al montar el plano completo; hasta tres clips, máximo 40% de metraje, proteger apertura/cierre, validación de duraciones y separación. No se infiere que los recursos sean visualmente pertinentes ni que haya selección LLM autónoma.
