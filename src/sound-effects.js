@@ -1,4 +1,5 @@
 import {customSfxFilter} from './custom-sfx.js';
+import {voiceEffectsFilter} from './voice-effects.js';
 import {secretRevealTime} from './graphic-timing.js';
 import {backgroundAudioFilter} from './audio-mix.js';
 const assert=(ok,msg)=>{if(!ok)throw Error('Sound effects: '+msg);};
@@ -36,10 +37,15 @@ export function soundEffectsFilter(sfx,duration,base){
  return filters;
 }
 export function renderAudioFilters(plan,musicIndex,{hasAudio=true}={}){
- const procedural=!!plan.soundEffects?.events?.length,custom=!!plan.customSfx?.events?.length;
- assert(hasAudio||!procedural&&!custom&&!plan.audioMix,'effects require original audio');
- let filters=backgroundAudioFilter(plan.audioMix,musicIndex),mixed=!!plan.audioMix;
- if(procedural){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-sfx-audio]'));filters.push(...soundEffectsFilter(plan.soundEffects,plan.duration,mixed?'before-sfx-audio':'audio'));mixed=true;}
- if(custom){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-custom-audio]'));filters.push(...customSfxFilter(plan.customSfx,plan.duration,musicIndex+(plan.audioMix?1:0),mixed?'before-custom-audio':'audio'));}
+ const procedural=!!plan.soundEffects?.events?.length,custom=!!plan.customSfx?.events?.length,voice=!!plan.voiceEffects?.events?.length;
+ assert(hasAudio||!procedural&&!custom&&!voice&&!plan.audioMix,'effects require original audio');
+ let filters=voiceEffectsFilter(plan.voiceEffects,plan.duration);
+ const input=voice?'voice-styled':'audio';
+ const background=backgroundAudioFilter(plan.audioMix,musicIndex).map(f=>f.replaceAll('[audio]',`[${input}]`));
+ filters.push(...background);
+ let mixed=!!plan.audioMix;
+ if(procedural){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-sfx-audio]'));filters.push(...soundEffectsFilter(plan.soundEffects,plan.duration,mixed?'before-sfx-audio':input));mixed=true;}
+ if(custom){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-custom-audio]'));filters.push(...customSfxFilter(plan.customSfx,plan.duration,musicIndex+(plan.audioMix?1:0),mixed?'before-custom-audio':input));mixed=true;}
+ if(voice&&!mixed)filters.push('[voice-styled]anull[mixed-audio]');
  return filters;
 }

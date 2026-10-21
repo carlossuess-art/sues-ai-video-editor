@@ -1,3 +1,13 @@
+## FASE 6 · FX de voz cinematográficos implementados y probados · 21/10/2026
+
+**Desarrollo no desplegado aún** · rama `feat/cinematic-voice-presets-20261021`. Dos presets que se insertan por instrucciones de Gemini en intervalos precisos: `cinematic-echo` y `vintage-tv` (voz de televisión antigua con ruido procedimental separado); el audio original y subtítulos mantienen sus tiempos. Las reglas limitan 4 eventos de 0,7–6 s, intensidad 0,1–0,85, con 150 ms entre efectos y entrada/salida suavizadas. Sin suscripciones, recursos externos ni nueva aplicación. Archivo técnico: `docs/SUES_VOICE_PRESETS_V1_20261021.md`.
+
+**Pruebas**: 4 nuevas pruebas específicas, 14/14 conjunto focalizado PASS. Regresión completa de 268 casos: 267/268 PASS dentro del contenedor FFmpeg, única prueba que necesita Git fuera de imagen pasó 2/2 en host VPS. `node scripts/check.mjs` y `git diff --check` PASAN. MP4 de prueba real con voz y B-roll sintético, eco 1,1–3,1 s, TV 8,6–10,5 s, H264 1080×1920/30fps, duración 12,966667 s, 4 grupos de captions, audioPresent true y fullDecode PASS. No es demo de calidad cinematográfica y no implica creatividad aceptada.
+
+**Riesgo pendiente**: picos medidos 0,0 dB en salida de QA con FX y en baseline. Pendiente margen True Peak/masterización y escucha humana. Los 309 recursos antiguos siguen indexados, no importados; los 13 SFX existentes siguen preservados. Versión realmente publicada antes de este bloque `a5430f21b7d44c0e814a621e36d8f30eefd4ab38`. Próximo hito: preflight backup y despliegue seguro si corresponde, luego importar B-roll comprado y ensayo en app pública. No cambiar porcentaje F6/F9/V1 sin roadmap.
+
+---
+
 ## Despliegue real de biblioteca audiovisual · 21/10/2026
 
 **Producción VERIFICADA, actualización posterior a los bloques de desarrollo que figuran debajo.** Código actualmente instalado en Hostinger srv1841004: commit `a5430f21b7d44c0e814a621e36d8f30eefd4ab38`, procedente de rama `feat/library-video-assets-20261021` sin merge a rama oficial. HTTPS 200; contenedor activo; 13 SFX preservados; inventario privado 17 registros (13 SFX + 4 motions) y 309 referencias remotas; Whisper ASR activo.

@@ -1,5 +1,6 @@
 import {buildTemplateRecipe,editionCounts} from './template-recipe.js';
 import {prepareCustomSfx} from './custom-sfx.js';
+import {prepareVoiceEffects} from './voice-effects.js';
 import {prepareSubjectLayers} from './subject-layers.js';
 import {prepareElements} from './elements.js';
 import {visualProfile} from './style-variants.js';
@@ -21,7 +22,7 @@ import {buildAutomaticDirector,validateEditorSettings} from './automatic-directo
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
-export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['template-recipe.js','custom-sfx.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
+export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['template-recipe.js','custom-sfx.js','voice-effects.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
 export function fileSha256(path){const fd=openSync(path,'r'),hash=createHash('sha256'),buffer=Buffer.allocUnsafe(1024*1024);try{let size;while((size=readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,size));return hash.digest('hex');}finally{closeSync(fd);}}
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
@@ -106,6 +107,8 @@ export function prepareProject(project,settings={}){
  if(inputs.subjectLayers)plan.subjectLayers=options.motions?prepareSubjectLayers(inputs.subjectLayers,plan):[];
  plan.customSfx=prepareCustomSfx(options.sfxEvents,plan.duration,asset);resourceBindings.soundAssets=plan.customSfx.assets;
  plan.soundEffects=prepareSoundEffects(plan,options);
+ plan.voiceEffects=prepareVoiceEffects(options.voiceEvents,plan.duration);
+ if(plan.voiceEffects.events.length){plan.pending.push('voice-processing-human-listening-review');}
  plan.templateRecipe=recipe;plan.editionCounts=editionCounts(plan);
  if(plan.soundEffects.events.length||plan.customSfx.events.length){plan.pending=plan.pending.filter(p=>p!=='music-and-sfx');plan.pending.push('sound-design-human-review');}
  const director={...automatic,...(manual.length||chosenMotions.length?{selection:'offline-lexical-baseline-with-user-review-v1'}:{}),decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length,manualHighlights:manual.length,manualMotions:chosenMotions.length}};
