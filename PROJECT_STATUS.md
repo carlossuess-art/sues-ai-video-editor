@@ -1,3 +1,15 @@
+## RELEASE VERIFICADA · FX de voz en producción · 21/10/2026
+
+El bloque de presets que aparece como «desarrollo» más abajo **YA FUE DESPLEGADO** en VPS Hostinger. Commit exacto instalado y comprobado en el contenedor: `56b686ff3bc284431528f2612219115632d4670a`, rama `feat/cinematic-voice-presets-20261021`, sin merge a rama oficial. HTTPS 200; rutas `/api/assets`, `/api/resource-catalog` y `/api/jobs` responden 401 SIN sesión; Whisper ASR active; 13 SFX originales y 309 fuentes de Drive indexadas se conservan.
+
+Auditoría: exportación MP4 previa aislada con B-roll sintético, dos efectos de voz, 4 captions, audio presente y fullDecode PASS; suite de 268 tests, 267/268 en Docker con único caso Git ausente, prueba Git 2/2 en VPS. `check.mjs` PASS. El audio mantiene volumen medio de referencia (-20.8 dB baseline versus -20.7 dB con FX), pero el true peak/masterización y la aceptación estética auditiva siguen pendientes; picos 0.0dB no son un máster final apto para publicación profesional.
+
+Despliegue por `scripts/deploy/update_service.py`: diagnóstico previo PASS, cola inactiva, Whisper sin transcripciones activas pausado únicamente durante la copia y reactivado; copia integral de estado 352 archivos verificados, SHA256 `f9dae667a11701408edaed6b1f22ec9abeb710e25566e21aa66af20d6aa1f194`, ruta `/opt/sues-video-setup/update-backup-20261021-215916-56757`; contenedor anterior conservado y rollback disponible. No se tocó la cuenta de terceros, Creator Club, biblioteca comprada ni configuraciones ajenas al editor. Gastos nuevos 0€.
+
+Documentos: `docs/SUES_VOICE_PRESETS_V1_20261021.md`, Roadmap Maestro https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit y Biblioteca Maestra https://docs.google.com/document/d/1EFK4TtTmi3ToWKfl5qGQC7TvEmCL4zIWuR0apdRotAA/edit. Próxima acción exacta: incorporar por sesión autorizada un B-roll real adquirido, ejecutar Gemini plan con recursos reales y presets, revisar muestras al oído y picos/volumen, después añadir lights/overlays por capas. Fase 6/9/V1 todavía no cerrada, porcentaje no actualizado.
+
+---
+
 ## FASE 6 · FX de voz cinematográficos implementados y probados · 21/10/2026
 
 **Desarrollo no desplegado aún** · rama `feat/cinematic-voice-presets-20261021`. Dos presets que se insertan por instrucciones de Gemini en intervalos precisos: `cinematic-echo` y `vintage-tv` (voz de televisión antigua con ruido procedimental separado); el audio original y subtítulos mantienen sus tiempos. Las reglas limitan 4 eventos de 0,7–6 s, intensidad 0,1–0,85, con 150 ms entre efectos y entrada/salida suavizadas. Sin suscripciones, recursos externos ni nueva aplicación. Archivo técnico: `docs/SUES_VOICE_PRESETS_V1_20261021.md`.

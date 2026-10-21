@@ -30,3 +30,12 @@ Esta rama es independiente de `feat/library-video-assets-20261021`; parte del ú
 ## Próximo hito
 
 Probar integración y seguridad del release, respaldo completo con Whisper en reposo, desplegar si no hay riesgo y verificar la web real. Incorporar desde sesión autorizada B-roll comprado, verificar uso desde Gemini con SFX y FX de voz, revisar audio con auriculares/móvil, fijar nivel de picos (ideal <= -1 dBTP), después elementos detrás del sujeto y Director IA semántico.
+
+
+## Actualización del estado real tras implantación
+
+El commit `56b686ff3bc284431528f2612219115632d4670a` está **efectivamente desplegado** en `editor.suesholistics.com`: verificación del ID exacto en `servicio-commit.txt` y Git del release montado; HTTPS 200, rutas privadas 401 sin autenticación y Whisper ASR activo. Versión anterior sigue en backup recuperable.
+
+Despliegue tras diagnóstico PASS y ausencia de trabajos en cola. Whisper se detuvo temporalmente sin tareas activas para evitar cambios concurrentes de heartbeat durante respaldo, reactivado al final. Copia completa validada: 352 archivos; SHA256 `f9dae667a11701408edaed6b1f22ec9abeb710e25566e21aa66af20d6aa1f194`; directorio `/opt/sues-video-setup/update-backup-20261021-215916-56757`. Coste adicional de procesamiento contratado 0.
+
+**No confundir** la exportación QA con edición creativa aprobada, audio masterizado o medios de terceros importados. Biblioteca histórica de 309 archivos permanece como catálogo de fuentes; el alta automatizada de los primeros recursos comprados sigue bloqueada por controles de la conexión.
