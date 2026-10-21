@@ -1,3 +1,19 @@
+## Biblioteca privada · video y overlays · candidato no desplegado · 21/10/2026
+
+Rama GitHub `feat/library-video-assets-20261021`, primer commit remoto `8bd46d8ece5611c049371231c43c540a0add547b`, árbol `a03cfec89beea5dbf0f2bfb2bbee38e0417423fc`. Base inalterada `73d673bf7c67079ee6900916f2e0f12841cf5ab7` = producción previa confirmada; ESTA RAMA NO ESTÁ DESPLEGADA.
+
+Se amplía, sin sustituir, `src/media-library.js` a `video` y `overlay` privados MP4/MOV, 0,2–90 segundos, 40 MiB/archivo, códecs permitidos y FFprobe sin URLs externas, límite de cantidad anterior conservado. Continúan hash, almacenamiento seguro, autentificación/rangos y metadatos V2 sin aprobar automáticamente. Se habilita la previsualización/ingesta en UI con aviso «pendiente de incorporar al montaje». No existen todavía nuevas operaciones de vídeo en planes externos ni inserción desde biblioteca en render.
+
+Evidencias reales: `Shape 08.mp4` de cuenta Terapias, 173536 bytes y SHA256 `dc1b3f104c1a6292fcf7aba6a5c958c931a14e0e3eb1e7e35ab3ef255c9d31fb` se probó localmente, 1920×1080/24fps/1,125s; lleva pista de código de tiempo `tmcd` y fue permitida mediante regla específica. No hay importación de esa muestra a producción. 13 SFX antiguos y cuatro motions intactos; catálogo VPS privado `official-library-v1.json` (17 recursos operativos y 309 archivos externos referenciados por colecciones).
+
+Pruebas: 8/8 focalizadas PASS; test completo 259/260 en contenedor aislado con RAM temporal suficiente. El único fallo corresponde a prueba de Git `safe.directory`, ya que la imagen de test carece de Git; esa prueba y la de despliegue pasan 2/2 en host VPS, con `node scripts/check.mjs` PASS. Total de 260 casos acreditados entre entornos, NO afirmar 260/260 en un único contenedor. Sin despliegue, modificación de trabajos, compra, IA externa ni nuevas suscripciones. Backup previo de metadatos: `/opt/sues-video-setup/library-backups/20261021-2028/asset-records-and-v2-metadata.tar` SHA256 `9a432b353237a6d14fd24e9f52eb5beac3985401f05667e96495a2ba86703b90`; no es backup integral de medios.
+
+Documentación: `docs/SUES_LIBRARY_VIDEO_INTAKE_20261021.md`. Google Drive índice maestro: https://docs.google.com/document/d/1EFK4TtTmi3ToWKfl5qGQC7TvEmCL4zIWuR0apdRotAA/edit . Enlaces a 309 piezas compradas/documentadas, pero todavía no todas accesibles en motor.
+
+Siguiente acción exacta: vincular clips `video` del catálogo al contrato de `selectedMedia` (B-roll que el renderer YA sabe componer cuando existe vínculo verificado), añadir tiempos/selección compatibles con seguridad y F9, recuperar pequeños lotes vía transferencia autorizada, probar una voz real + B-roll + subtítulos + SFX en MP4, respaldar/deplegar solo tras aceptación técnica completa. F6/F9/V1 continúan abiertas; NO se actualiza porcentaje.
+
+---
+
 ## Flujo desplegado y dos comparativas reales · 21/10/2026
 
 Instalado 086a9aae75af01c7919774aaaab0fb00d1c3ec8e (árbol e21feaf79129888aebf1b245aff1403b6d45c7ae).
