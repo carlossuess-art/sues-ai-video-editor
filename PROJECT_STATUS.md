@@ -1,3 +1,19 @@
+## F6/F7 · Director con caché privada, UI de revisión y preflight preventivo · 22/10/2026
+
+Desarrollo aislado sin cambios de producción: el Director recorre la transcripción con timestamps y consulta el catálogo de 24 entradas (20 medios/4 motions) y 309 índices de Drive con **un solo parseo por petición** en lugar de repetir lectura por frase. Sugerencias exclusivamente de vídeos, imágenes y overlays, nunca SFX, audio, motions nativos ni fuentes remotas; siempre `needsHumanReview:true` y sin autoinserción. En la interfaz Edición automática se agregó panel desplegable de sugerencias para la versión seleccionada; no altera el proyecto hasta que exista flujo de revisión/aplicación autorizado.
+
+Preflight read-only `library_access_preflight.py` integrado en `update_service.py` antes de descarga/parada del contenedor e incluso en comprobación idempotente; detecta si el UID1000 no puede leer bibliotecas. En VPS real verificó 21 entradas de medios + 9 del índice sin acceso, **30/71**. La reparación sigue bloqueada por la conexión; no se ha realizado ni intentado eludir. Tests focalizados de preflight/caché/cues/HTTP/workflow **8/8 PASS**; suite integral de esta rama en Docker **282/284 PASS**, dos casos de Git fallan solo en Docker por imposibilidad de ejecutar el binario temporal y pasan **2/2 en VPS anfitrión**; `node scripts/check.mjs`, Python compile y `git diff --check` PASS. No afirmar 284/284 en un único contenedor. Guía `docs/SUES_PRIVATE_LIBRARY_ACCESS_PREFLIGHT_20261022.md`.
+
+Estado de producción permanece `120ffb059d025f0318b2cabbff98a0242822a185`, HTTPS 200, Whisper activo, backup SHA256 verificado y rollback disponible. Rama de código actualizada localmente hasta revisión/publicación; último remoto antes de este bloque `9c91909363c6c7f85a435bc0e473766a9f0388bb`. F6/F7/F9 abiertas, global oficial 48 %, sin costes nuevos. Próxima acción: desbloqueo autorizado de permisos sin cambiar confidencialidad, QA de endpoints autenticados, despliegue reversible cuando los controles permitan y prueba creativa vertical.
+
+---
+
+## SEGURIDAD · preflight UID/GID biblioteca + filtro de sugerencias · 22/10/2026
+
+Se añadió auditoría no destructiva de permisos `scripts/deploy/library_access_preflight.py` para que `scripts/deploy/update_service.py` aborte **antes de descargar/reiniciar** si el UID1000 no puede leer medios e índices. Sobre la biblioteca privada actual detectó **62 entradas de assets con 21 bloqueadas y 9 entradas de índice con 9 bloqueadas**, total 30 de 71; no se tocó ninguno. Tests aislados 3/3 PASS para usuario propio/ajeno, bloqueo de lectura, enlace simbólico y sugerencias por tipo. Director ya no confunde `native-motion` con B-roll: solo `video`, `overlay` o `image`. Documentación en `docs/SUES_PRIVATE_LIBRARY_ACCESS_PREFLIGHT_20261022.md`. La corrección real de propiedad continúa bloqueada por controles de seguridad de la conexión; no se ha sorteado ni aplicado. Bloqueo mantiene API de biblioteca no funcional hasta intervención autorizada. Cambio de código solo en desarrollo, pendiente de publicación/regresión; producción sigue `120ffb059d` intacta. F6/F7/F9 sin aceptación; global oficial 48 %.
+
+---
+
 ## CIERRE PROVISIONAL · PUBLICACIÓN Y BLOQUEO OPERATIVO · 22/10/2026
 
 GitHub rama `feat/library-ambient-overlays-mastering-20261021` publica **`61b08b416a229f3449f7b0fe3880998161a12009`**, incluyendo el Director de sugerencias no automáticas (commit intermedio 7edd62a) y el análisis cuantitativo DOPAMIN (61b08b). La rama no está fusionada con main. Producción sigue en **`120ffb059d025f0318b2cabbff98a0242822a185`**, comprobado en el VPS, no en 61b08b. Sin nuevo despliegue por bloqueo en los permisos de biblioteca.

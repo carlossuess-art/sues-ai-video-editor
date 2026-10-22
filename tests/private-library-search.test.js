@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtempSync,mkdirSync,writeFileSync,rmSync,symlinkSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {searchPrivateLibrary} from '../src/private-library-search.js';
+import {loadPrivateLibraryIndex,searchPrivateLibrary} from '../src/private-library-search.js';
 test('search is ranked, authenticated-route compatible, and never automatically approved',()=>{
  const jobs=mkdtempSync(join(tmpdir(),'sues-private-library-')),lib=join(jobs,'library');
  try{
@@ -24,6 +24,21 @@ test('search is ranked, authenticated-route compatible, and never automatically 
   const y=searchPrivateLibrary(jobs,'revelación');assert.equal(y.results[0].creativeApproval,'approved');
   assert.throws(()=>searchPrivateLibrary(jobs,'x',{limit:21}));
   assert.throws(()=>searchPrivateLibrary(jobs,'x'.repeat(251)));
+ }finally{rmSync(jobs,{recursive:true,force:true});}
+});
+test('a validated in-memory index can serve multiple narrative searches without repeat disk reads',()=>{
+ const jobs=mkdtempSync(join(tmpdir(),'sues-index-reuse-')),lib=join(jobs,'library');
+ try{
+  mkdirSync(lib);
+  writeFileSync(join(lib,'official-library-v1.json'),JSON.stringify({runtimeItems:[
+   {id:'A',titleEs:'Sendero y esperanza',keywords:['transformación'],kind:'video',storedInEditor:true}
+  ]}));
+  writeFileSync(join(lib,'purchased-source-index-309-v1.json'),JSON.stringify({items:[]}));
+  const snapshot=loadPrivateLibraryIndex(jobs);
+  rmSync(lib,{recursive:true});
+  const result=searchPrivateLibrary(jobs,'transformación',{index:snapshot});
+  assert.equal(result.results[0].id,'A');
+  assert.throws(()=>searchPrivateLibrary(jobs,'transformación'),/ENOENT/);
  }finally{rmSync(jobs,{recursive:true,force:true});}
 });
 test('refuses symlinked private index to avoid arbitrary-file reads',()=>{

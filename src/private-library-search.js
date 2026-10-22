@@ -18,12 +18,18 @@ const safeJSON=(p,maxBytes)=>{
  const s=lstatSync(p);if(!s.isFile()||s.isSymbolicLink()||s.size<2||s.size>maxBytes)throw Error('Unsafe private library index');
  return JSON.parse(readFileSync(p,'utf8'));
 };
-export function searchPrivateLibrary(jobsDirectory,query,{limit=8}={}){
- if(typeof query!=='string'||!query.trim()||query.length>250||!Number.isInteger(limit)||limit<1||limit>20)throw Error('Consulta no válida');
- const root=resolve(jobsDirectory,'library'),d=lstatSync(root);if(!d.isDirectory()||d.isSymbolicLink())throw Error('Private library index unavailable');
+export function loadPrivateLibraryIndex(jobsDirectory){
+ const root=resolve(jobsDirectory,'library'),d=lstatSync(root);
+ if(!d.isDirectory()||d.isSymbolicLink())throw Error('Private library index unavailable');
  const official=safeJSON(join(root,'official-library-v1.json'),2*1024*1024);
  const remote=safeJSON(join(root,'purchased-source-index-309-v1.json'),6*1024*1024);
  if(!Array.isArray(official.runtimeItems)||!Array.isArray(remote.items))throw Error('Invalid library index');
+ return {official,remote};
+}
+export function searchPrivateLibrary(jobsDirectory,query,{limit=8,index}={}){
+ if(typeof query!=='string'||!query.trim()||query.length>250||!Number.isInteger(limit)||limit<1||limit>20)throw Error('Consulta no válida');
+ const {official,remote}=index??loadPrivateLibraryIndex(jobsDirectory);
+ if(!Array.isArray(official?.runtimeItems)||!Array.isArray(remote?.items))throw Error('Invalid library index');
  const exact=tokens(query),expanded=new Set(exact);
  for(const word of exact)for(const w of (SYNONYMS[word]??[]))expanded.add(w);
  const results=[];

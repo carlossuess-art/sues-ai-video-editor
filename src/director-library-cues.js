@@ -1,10 +1,12 @@
 import {validateTranscript} from './transcript.js';
-import {searchPrivateLibrary} from './private-library-search.js';
+import {loadPrivateLibraryIndex,searchPrivateLibrary} from './private-library-search.js';
 
 // Deterministic, review-only staging for Director IA. No provider calls or auto insertion.
 export function proposeLibraryCues(jobsDirectory,transcript,{limit=6}={}){
  validateTranscript(transcript);
  if(!Number.isInteger(limit)||limit<1||limit>8)throw Error('Límite de sugerencias no válido');
+ // One bounded disk read per request, not another 309-entry JSON parse per phrase.
+ const index=loadPrivateLibraryIndex(jobsDirectory);
  const cues=[],words=transcript.words,closing=Math.max(0,transcript.sourceDuration-3);
  let i=0,scans=0;
  while(i<words.length&&cues.length<limit&&scans<120){
@@ -16,9 +18,9 @@ export function proposeLibraryCues(jobsDirectory,transcript,{limit=6}={}){
   const slice=words.slice(startIndex,endIndex+1);
   const start=slice[0].start,end=slice.at(-1).end,text=slice.map(w=>w.text).join(' ');
   if(start<1||start>=closing||end-start<.4||text.length>250)continue;
-  const search=searchPrivateLibrary(jobsDirectory,text,{limit:8});
+  const search=searchPrivateLibrary(jobsDirectory,text,{limit:8,index});
   const candidates=search.results
-   .filter(r=>r.availability==='private-operational'&&!['sfx','audio'].includes(r.kind))
+   .filter(r=>r.availability==='private-operational'&&['video','overlay','image'].includes(r.kind))
    .slice(0,3)
    .map(({id,title,kind,score,creativeApproval})=>({assetId:id,title,kind,score,
      catalogueApproval:creativeApproval,needsHumanReview:true}));

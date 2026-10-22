@@ -450,6 +450,11 @@ function syncEditRoute(){
  $('prepare-external').hidden=!!current;
  $('external-catalog').disabled=!current||busy;$('external-review').disabled=!current||busy;
  $('compare-styles').disabled=!current||busy;
+ $('director-suggestion-panel').hidden=!current||editingRoute!=='automatic';
+ $('suggest-resources').disabled=!current||busy;
+ if($('resource-suggestions').dataset.jobId!==String(current?.id??'')){
+  $('resource-suggestions').replaceChildren();$('resource-suggestions').dataset.jobId=String(current?.id??'');
+ }
  if(editingRoute==='automatic'){$('render').disabled=$('render').disabled||!current||busy||automaticReviewKey!==automaticKey();$('review-instructions').textContent=current?'Analizar y preparar propuesta':'Analizar vídeo';$('director-title').textContent='Edición automática';}
  else if(editingRoute==='external')$('director-title').textContent='Tu plan de edición';
  else $('director-title').textContent='Elige cómo editar tu vídeo';
@@ -485,3 +490,23 @@ $('compare-styles').onclick=()=>work(async()=>{
 
 function automaticKey(){return JSON.stringify({id:current?.id,settings:proposalBase(),prompt:$('director-prompt').value.trim()});}
 $('recipe-sounds').onchange=()=>{if(current)markPreviewDirty();automaticReviewKey=null;syncEditRoute();};
+
+$('suggest-resources').onclick=()=>work(async()=>{
+ if(!current?.id)throw Error('Prepara primero el vídeo y su transcripción.');
+ const selectedId=current.id,box=$('resource-suggestions');
+ box.replaceChildren(node('p','Buscando coincidencias en recursos privados instalados…'));
+ const result=await api('jobs/'+encodeURIComponent(selectedId)+'/library-cues?limit=6');
+ if(current?.id!==selectedId)return;
+ box.replaceChildren();
+ if(result.approvedToAutoPublish!==false)throw Error('La propuesta no confirma el requisito de revisión.');
+ if(!result.cues.length){box.append(node('p','No hay coincidencias fiables en la biblioteca instalada. No se añadirán efectos de relleno.','small'));return;}
+ box.append(node('p','Sugerencias para revisar: no están insertadas en el vídeo.','small'));
+ for(const cue of result.cues){
+  const details=node('details'),summary=node('summary',cue.start.toFixed(1)+'–'+cue.end.toFixed(1)+' s · '+cue.transcriptQuote),list=node('ul');
+  for(const candidate of cue.candidates){
+   if(!candidate.needsHumanReview||!['video','overlay','image'].includes(candidate.kind))continue;
+   list.append(node('li',candidate.title+' · '+candidate.kind+' · '+(candidate.catalogueApproval==='approved'?'Catalogado, revisar composición':'Pendiente de aprobación visual')));
+  }
+  details.append(summary,list);box.append(details);
+ }
+});

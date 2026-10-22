@@ -16,6 +16,7 @@ import tempfile
 import time
 import uuid
 import urllib.request
+from library_access_preflight import assert_library_readable
 
 ROOT = Path('/opt/sues-video-setup')
 EDITOR = 'sues-video-editor'
@@ -172,11 +173,14 @@ def main(sha, diagnostic=False, setup_record=None):
         print('Versión instalada: ' + old_sha + '\nVersión aprobada: ' + sha, flush=True)
         if old_sha == sha and not diagnostic and prepared_setup is None:
             health()
+            assert_library_readable(ROOT / 'editor')
             if helper(old_release).status('https://' + HOST + '/', resolve=HOST + ':443:127.0.0.1') != '200':
                 raise RuntimeError('HTTPS no disponible')
             print('El editor ya usa esta versión; sin reinicio.')
             return
         health()
+        permission_report = assert_library_readable(ROOT / 'editor')
+        print('Biblioteca legible por el runtime: ' + str(permission_report['examined']), flush=True)
         print('Cola inactiva. Descargando exclusivamente el commit aprobado.', flush=True)
         release = Path(tempfile.mkdtemp(prefix='release-update.', dir=ROOT))
         run('git', 'init', str(release))
