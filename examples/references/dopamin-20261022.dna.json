@@ -36,6 +36,7 @@
       "foreground-graphics"
     ],
     "observation": "one-second-interval-contact-sheet",
+    "measuredVisualChangesRef": "dopamin-20261022.measured.json",
     "measuredCutRate": null,
     "verifiedSFXCount": null,
     "verifiedRotoscoping": false

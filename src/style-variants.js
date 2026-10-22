@@ -15,6 +15,6 @@ export function applyStyleVariant(template,id){
 // Relative editorial budgets, not measured event counts from the reference.
 // Manual choices and speech cues are never dropped to meet a density target.
 export function visualProfile(id){
- if(id==='SUES_DOPAMIN')return {id:'DOPAMIN',reference:'deckeanu-keanu-primary',intensity:1,frequency:1,zoomGap:1,secondsPerZoom:7.5,maxZoomEvents:6};
+ if(id==='SUES_DOPAMIN')return {id:'DOPAMIN',reference:'deckeanu-keanu-primary',supplementalReference:'dopamin-diegonxt-20261022',intensity:1,frequency:1,zoomGap:1,secondsPerZoom:7.5,maxZoomEvents:6};
  return {id:id==='SUES_CALMA'?'CALMA':id.replace('SUES_',''),reference:'deckeanu-keanu-primary',intensity:.5,frequency:.5,zoomGap:2,secondsPerZoom:15,maxZoomEvents:3};
 }

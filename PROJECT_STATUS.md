@@ -1,3 +1,9 @@
+## REFERENCE QA · DOPAMIN cuantificado · 22/10/2026
+
+Fuente privada original en Drive `1nf9lPujkKSjIrcLTQEIh6Dvi0reViPAP`. Mediciones FFmpeg sobre 55,912604s 1080×1920/29,97fps: detector de grandes cambios visuales a umbrales scene 0,20/0,32/0,45 = 45/25/13 eventos, equivalente 48,3/26,8/14,0 candidatos por minuto; NO se equiparan a cortes reales por presencia de animaciones, flashes y overlays. Muestreo HSV 56 cuadros (1 fps): mediana de píxeles de rojo saturado 27,53 %, rojo ≥15 % en 35/56 cuadros, mediana píxeles oscuros 60,34 %. Métodos y limitaciones en `docs/SUES_DOPAMIN_MEASURED_20261022.md` y `examples/references/dopamin-20261022.measured.json`. Copia privada en Drive canónico de las mismas fichas. Código DOPAMIN `visualProfile` referencia nuevo ID complementario sin sustituir Keanu, sin alterar frecuencias ni disparar efectos por tiempo. Tests focalizados de perfiles/Director/ELEMENTS 15/15 PASS. NO es aceptación estética F9 ni cortes minutados humanos. Esta medición y metadatos todavía NO desplegados; se suman a desarrollo, sin incremento porcentual oficial.
+
+---
+
 ## BLOQUE 22/10 · Director con sugerencias narrativas; bloqueo de permisos en biblioteca desplegada
 
 Producción ya actualizada a commit remoto `120ffb059d025f0318b2cabbff98a0242822a185`, rama `feat/library-ambient-overlays-mastering-20261021`, HTTPS 200, Whisper active, backup íntegro verificado `update-backup-20261022-205749-81951` SHA256 `68f16be2c4e18639c527e604081aab3d8809bd069b81f1da3c3ebe5732ca0310`. Suite 276/278 PASS en Docker, otros 2/2 tests de git PASS en host. Fuente publicada y árbol idéntico al candidato local.

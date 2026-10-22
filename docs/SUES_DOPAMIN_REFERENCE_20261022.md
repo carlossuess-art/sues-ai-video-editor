@@ -11,7 +11,7 @@ Original, ficha audiovisual, manifiesto y contacto visual preservados en **Googl
 - Paleta rojo/negro con highlights cálidos; variaciones puntuales verdes.
 - Jerarquía fluida: textos XL cuando importa, sin grandes rótulos constantes.
 
-No se han medido cortes/minuto ni SFX específicos ni se ha verificado la técnica de rotoscopia. La ficha JSON conserva métricas verificadas y separa observaciones cualitativas.
+Se realizó medición de **cambios visuales candidatos** con FFmpeg: 45 con umbral 0,20; 25 con 0,32; 13 con 0,45, sobre 55,912604s. Esto **NO** equivale a cortes editoriales identificados; destellos, motion y rótulos también disparan el detector. Medición/limitaciones: `docs/SUES_DOPAMIN_MEASURED_20261022.md` y `examples/references/dopamin-20261022.measured.json`. No se han medido los cortes reales/minuto, ni SFX específicos, ni se ha verificado rotoscopia.
 
 ## Implementación prevista
 - Añadir esta referencia al motor compartido de estilo DOPAMIN como objetivo de **densidad y narrativa**, manteniendo el Keanu como referencia del motor visual.

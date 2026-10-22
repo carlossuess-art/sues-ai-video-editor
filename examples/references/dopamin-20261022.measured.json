@@ -1,0 +1,170 @@
+{
+  "schema": "sues-reference-temporal-measurement/v1",
+  "referenceId": "dopamin-diegonxt-20261022",
+  "source": {
+    "filename": "VID_20261022_101557_201.mp4",
+    "durationSeconds": 55.912604,
+    "width": 1080,
+    "height": 1920,
+    "fps": 29.97002997002997,
+    "videoCodec": "hevc",
+    "audioCodec": "aac"
+  },
+  "measurement": {
+    "method": "FFmpeg select gt(scene,threshold) on 180x320 scaled video; frames filtered by HSV on 1fps sample",
+    "strongVisualChangeThresholds": {
+      "0.20": {
+        "visualChangeCandidates": 45,
+        "candidatesPerMinute": 48.3,
+        "timestampsSeconds": [
+          0.2,
+          0.267,
+          3.337,
+          6.473,
+          6.54,
+          9.776,
+          10.277,
+          13.947,
+          20.153,
+          21.255,
+          23.924,
+          25.325,
+          28.161,
+          28.328,
+          28.395,
+          28.495,
+          28.695,
+          29.329,
+          29.563,
+          29.663,
+          29.863,
+          30.43,
+          30.831,
+          30.931,
+          31.031,
+          31.131,
+          31.231,
+          31.732,
+          31.999,
+          32.099,
+          32.299,
+          32.466,
+          32.532,
+          33.0,
+          33.967,
+          37.471,
+          37.638,
+          38.505,
+          39.106,
+          39.773,
+          40.474,
+          41.208,
+          42.042,
+          46.346,
+          50.517
+        ],
+        "medianCandidateGapSeconds": 0.501,
+        "perTenSeconds": {
+          "00-10": 6,
+          "10-20": 2,
+          "20-30": 13,
+          "30-40": 19,
+          "40-50": 4,
+          "50-56": 1
+        }
+      },
+      "0.32": {
+        "visualChangeCandidates": 25,
+        "candidatesPerMinute": 26.8,
+        "timestampsSeconds": [
+          0.2,
+          0.267,
+          3.337,
+          6.473,
+          6.54,
+          13.947,
+          20.153,
+          21.255,
+          23.924,
+          25.325,
+          28.328,
+          29.563,
+          29.663,
+          30.43,
+          31.732,
+          31.999,
+          32.099,
+          32.466,
+          33.0,
+          38.505,
+          39.106,
+          39.773,
+          40.474,
+          41.208,
+          50.517
+        ],
+        "medianCandidateGapSeconds": 0.935,
+        "perTenSeconds": {
+          "00-10": 5,
+          "10-20": 1,
+          "20-30": 7,
+          "30-40": 9,
+          "40-50": 2,
+          "50-56": 1
+        }
+      },
+      "0.45": {
+        "visualChangeCandidates": 13,
+        "candidatesPerMinute": 14.0,
+        "timestampsSeconds": [
+          0.2,
+          0.267,
+          3.337,
+          6.473,
+          21.255,
+          29.563,
+          29.663,
+          31.999,
+          39.106,
+          39.773,
+          40.474,
+          41.208,
+          50.517
+        ],
+        "medianCandidateGapSeconds": 2.703,
+        "perTenSeconds": {
+          "00-10": 4,
+          "10-20": 0,
+          "20-30": 3,
+          "30-40": 3,
+          "40-50": 2,
+          "50-56": 1
+        }
+      }
+    },
+    "colorSample": {
+      "samples": 56,
+      "sampleSpacingSeconds": 1,
+      "medianRedFraction": 0.2753,
+      "meanRedFraction": 0.2681,
+      "redDominantSampleCount": 35,
+      "medianDarkPixelFraction": 0.6034
+    },
+    "knownLimitations": [
+      "Visual change flags include flash, animations, subtitles, screen transitions, not just editorial cuts",
+      "HSV fractions are approximate thresholds on resized frames; they are not a professional grade palette",
+      "Audio SFX events and spoken semantics were not identified",
+      "Analysis intentionally does not extract/redistribute footage"
+    ]
+  },
+  "editorialGuidance": {
+    "baseReference": "Keanu Reeves layered cinematic engine",
+    "complementaryReference": "diego.nxt DOPAMIN editing intensity",
+    "rules": [
+      "Always trigger by transcript/narrative evidence, not periodic scheduling",
+      "Keep foreground face and title safe zones clear",
+      "Use intensity statistics as style evidence, NOT instructions to force cuts",
+      "No assumption about rotoscoping/occlusion unless visible masks are validated"
+    ]
+  }
+}
