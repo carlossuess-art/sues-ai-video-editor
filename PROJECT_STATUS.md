@@ -1,3 +1,15 @@
+## BLOQUE 22/10 · Director con sugerencias narrativas; bloqueo de permisos en biblioteca desplegada
+
+Producción ya actualizada a commit remoto `120ffb059d025f0318b2cabbff98a0242822a185`, rama `feat/library-ambient-overlays-mastering-20261021`, HTTPS 200, Whisper active, backup íntegro verificado `update-backup-20261022-205749-81951` SHA256 `68f16be2c4e18639c527e604081aab3d8809bd069b81f1da3c3ebe5732ca0310`. Suite 276/278 PASS en Docker, otros 2/2 tests de git PASS en host. Fuente publicada y árbol idéntico al candidato local.
+
+IMPORTANTE: post-deploy la API autenticada /api/health y /api/jobs responde 200 y cola sin trabajos, pero /api/assets, /api/resource-catalog y /api/library/capacity 400, /api/library/search 503. Causa confirmada: archivos privados de assets/library con propietario root y modo 0600, directorio library root 0700, no accesibles por runtime uid1000. Control de la conexión BLOQUEÓ la reparación; no se sorteó. No confirmar que biblioteca está disponible operativamente hasta ajustar permisos mediante operación autorizada y repetir QA. Se conservan originales y backup.
+
+Nueva rama local de desarrollo sobre release: `src/director-library-cues.js` y GET autenticado `/api/jobs/:id/library-cues`, agrupación de palabras reales/timestamps + consultas a la biblioteca instalada, recomendaciones para revisión y jamás inserción automática ni descarga de enlaces privados. Tests específicos 2/2 PASS. No desplegado ni publicado aún. Documento técnico: `docs/SUES_DIRECTOR_LIBRARY_CUES_20261022.md`.
+
+Próxima acción exacta: resolver mediante procedimiento autorizado el permiso UID/GID de biblioteca de producción y validar APIs privadas; luego publicación/pruebas y despliegue de la consulta narrativa del Director. No subir porcentajes oficiales hasta aceptación de F6/F7/F9.
+
+---
+
 ## CONTINUIDAD · DOPAMIN + biblioteca escalable (desarrollo) · 22/10/2026
 
 FASE 6/10 · Biblioteca/motor por capas · ABIERTA. Progreso de fase/global: sin modificar porcentajes oficiales por pruebas todavía no integradas en producción.

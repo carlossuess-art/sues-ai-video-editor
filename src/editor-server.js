@@ -8,6 +8,7 @@ import {ProjectRecovery} from './project-recovery.js';
 import {fontCatalog,fontDownload} from './font-catalog.js';
 import {MediaLibrary} from './media-library.js';
 import {searchPrivateLibrary} from './private-library-search.js';
+import {proposeLibraryCues} from './director-library-cues.js';
 import {GRAPHIC_BLOCKS,GLOBAL_TRANSITIONS} from './graphic-blocks.js';
 import http from 'node:http';
 import {readFileSync,statSync,createReadStream,openSync,readSync,closeSync,existsSync,writeFileSync,renameSync} from 'node:fs';
@@ -167,7 +168,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|poster))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|library-cues|poster))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
@@ -177,6 +178,12 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      if(req.method==='GET')return json(res,200,existsSync(file)?JSON.parse(readFileSync(file,'utf8')):{text:''});
      const b=await body(req);if(typeof b.text!=='string'||b.text.length>30000)throw Error('El plan admite hasta 30000 caracteres.');
      const draft={text:b.text,updatedAt:new Date().toISOString()},temporary=file+'.tmp';writeFileSync(temporary,JSON.stringify(draft),{mode:0o600});renameSync(temporary,file);return json(res,200,draft);
+    }
+    if(action==='library-cues'&&req.method==='GET'){
+     const job=jobs.get(id),limit=url.searchParams.has('limit')?Number(url.searchParams.get('limit')):6;
+     if(!Number.isInteger(limit)||limit<1||limit>8)return json(res,400,{error:'Límite de sugerencias no válido'});
+     try{return json(res,200,proposeLibraryCues(directory,jobs.loadProfile(job.profileId).inputs.transcript,{limit}));}
+     catch(error){if(['ENOENT','EACCES','EPERM'].includes(error.code))return json(res,503,{error:'El índice privado de recursos no está disponible'});throw error;}
     }
     if(action==='external-catalog'&&req.method==='GET'){const source=jobs.get(id);const semantics=new Map(assets.semanticCatalog().assets.map(a=>[a.id,a.metadata]));
       const described=assets.list().map(a=>({...a,emotions:semantics.get(a.id)?.semantics?.emotionTags??[],
