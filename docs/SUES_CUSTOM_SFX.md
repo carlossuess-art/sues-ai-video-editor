@@ -2,8 +2,9 @@
 
 La biblioteca distingue `sfx` (0,03–30 s) de `audio` musical (3–600 s).
 Ambos conservan el límite de 40 MiB y requieren procedencia declarada. La
-biblioteca privada admite 24 recursos en total, deduplica por SHA256 y verifica
-el archivo al resolverlo. Los archivos comerciales y sus enlaces no van en Git.
+biblioteca privada admite hasta 128 recursos en la rama experimental del 22/10,
+con cuota agregada de 2 GiB; producción sigue con el límite de 24 hasta un
+despliegue verificado. Deduplica por SHA256 y verifica el archivo al resolverlo. Los archivos comerciales y sus enlaces no van en Git.
 
 En SFX se puede elegir y escuchar un sonido, indicar su inicio y volumen, añadirlo
 y quitarlo. Guardar y generar una vista previa permite escuchar la mezcla real.

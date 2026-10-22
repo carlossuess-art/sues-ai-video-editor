@@ -7,6 +7,7 @@ import {STYLE_VARIANTS} from './style-variants.js';
 import {ProjectRecovery} from './project-recovery.js';
 import {fontCatalog,fontDownload} from './font-catalog.js';
 import {MediaLibrary} from './media-library.js';
+import {searchPrivateLibrary} from './private-library-search.js';
 import {GRAPHIC_BLOCKS,GLOBAL_TRANSITIONS} from './graphic-blocks.js';
 import http from 'node:http';
 import {readFileSync,statSync,createReadStream,openSync,readSync,closeSync,existsSync,writeFileSync,renameSync} from 'node:fs';
@@ -117,7 +118,14 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     const fontMatch=/^\/api\/fonts\/([a-z-]+)\/(file|license)$/.exec(path);
     if(fontMatch&&['GET','HEAD'].includes(req.method)){const f=fontDownload(fontMatch[1],fontMatch[2]);if(!f)return json(res,404,{error:'Font not found'});const bytes=readFileSync(f.path);res.setHeader('Content-Type',f.contentType);res.setHeader('Content-Disposition',`attachment; filename="${f.filename}"`);res.setHeader('Content-Length',bytes.length);res.writeHead(200);return res.end(req.method==='HEAD'?undefined:bytes);}
     if(path==='/api/assets'&&req.method==='GET')return json(res,200,assets.list());
+    if(path==='/api/library/capacity'&&req.method==='GET')return json(res,200,assets.capacity());
     if(path==='/api/resource-catalog'&&req.method==='GET')return json(res,200,assets.semanticCatalog());
+    if(path==='/api/library/search'&&req.method==='GET'){
+     const q=url.searchParams.get('q')??'',limit=url.searchParams.has('limit')?Number(url.searchParams.get('limit')):8;
+     if(!q.trim()||q.length>250||!Number.isInteger(limit)||limit<1||limit>20)return json(res,400,{error:'Consulta o límite no válido'});
+     try{return json(res,200,searchPrivateLibrary(directory,q,{limit}));}
+     catch(error){return json(res,503,{error:'Índice privado de biblioteca no disponible'});}
+    }
     const assetMetadataMatch=/^\/api\/assets\/([a-f0-9]{64})\/metadata$/.exec(path);
     if(assetMetadataMatch&&req.method==='GET'){const resource=assets.semanticCatalog().assets.find(a=>a.id===assetMetadataMatch[1]);return json(res,resource?200:404,resource??{error:'Recurso ausente'});}
     if(assetMetadataMatch&&req.method==='PUT')return json(res,200,assets.saveMetadata(assetMetadataMatch[1],await body(req,65536)));
@@ -170,7 +178,11 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      const b=await body(req);if(typeof b.text!=='string'||b.text.length>30000)throw Error('El plan admite hasta 30000 caracteres.');
      const draft={text:b.text,updatedAt:new Date().toISOString()},temporary=file+'.tmp';writeFileSync(temporary,JSON.stringify(draft),{mode:0o600});renameSync(temporary,file);return json(res,200,draft);
     }
-    if(action==='external-catalog'&&req.method==='GET'){const source=jobs.get(id);return json(res,200,externalCatalog(jobs.loadProfile(source.profileId),source.settings,assets.list()));}
+    if(action==='external-catalog'&&req.method==='GET'){const source=jobs.get(id);const semantics=new Map(assets.semanticCatalog().assets.map(a=>[a.id,a.metadata]));
+      const described=assets.list().map(a=>({...a,emotions:semantics.get(a.id)?.semantics?.emotionTags??[],
+        narrativeRoles:semantics.get(a.id)?.semantics?.narrativeRoles??[],
+        creativeApproval:semantics.get(a.id)?.approvedForProduction===true?'approved':'review-required'}));
+      return json(res,200,externalCatalog(jobs.loadProfile(source.profileId),source.settings,described));}
     if(['external-review','external-execute'].includes(action)&&req.method==='POST'){
      const b=await body(req),source=jobs.get(id);
      if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))throw Error('Espera a que termine la edición actual.');

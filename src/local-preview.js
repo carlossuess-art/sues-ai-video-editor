@@ -210,6 +210,16 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   }
   const subject=subjectLayerFilters(plan.subjectLayers??[],base,1+plan.selectedMedia.length+(plan.illustrations?.length??0));filters.push(...subject.filters);base=subject.base;
   const illustrated=illustrationFilters(plan.illustrations??[],base,1+plan.selectedMedia.length);filters.push(...illustrated.filters);base=illustrated.base;
+  for(const [i,a] of (plan.ambientOverlays??[]).entries()){
+    const input=1+plan.selectedMedia.length+(plan.illustrations?.length??0)+2*(plan.subjectLayers?.length??0)+i;
+    const duration=Number((a.end-a.start).toFixed(6)),fade=Math.min(.12,duration/4);
+    const alpha=Number(a.intensity.toFixed(4));
+    // Animate imported black-background effect below the middle line; captions are composed later.
+    // This is deliberately NOT subject occlusion/rotoscoping. Require visual review.
+    filters.push(`[${input}:v]trim=start=${a.sourceIn}:end=${a.sourceOut},setpts=PTS-STARTPTS,scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960,setsar=1,fps=fps=30,format=rgba,colorkey=0x000000:0.1:0.08,colorchannelmixer=aa=${alpha},fade=t=in:d=${fade}:alpha=1,fade=t=out:st=${Number((duration-fade).toFixed(6))}:d=${fade}:alpha=1,setpts=PTS+${a.start}/TB[ambient${i}]`);
+    filters.push(`[${base}][ambient${i}]overlay=x=0:y=960:eof_action=pass:repeatlast=0:enable='gte(t,${a.start})*lt(t,${a.end})'[ambient-composed${i}]`);
+    base=`ambient-composed${i}`;
+  }
   for(const [i,m] of (plan.semantic?.motions??[]).filter(m=>m.backgroundTreatment).entries()){
     const r=m.backgroundTreatment,duration=m.end-m.start,fade=Math.min(r.fadeSeconds,duration/3),sigma=r.sigma/4;
     filters.push(`[${base}]split=2[focus-clear${i}][focus-input${i}]`);
@@ -224,6 +234,6 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   if(hasTransitions){const global=globalTransitionFilters(plan.globalTransitions,'captioned');filters.push(...global.filters,`[${global.base}]null[${plan.finishFade?'finish-input':'video'}]`);}
   if(plan.finishFade){const f=plan.finishFade;filters.push(`[${hasTransitions?'finish-input':'captioned'}]fade=t=out:st=${f.start}:d=${f.duration}[video]`);}
   assert(!plan.audioMix||hasAudio,'background music requires original voice track');
-  filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0)+2*(plan.subjectLayers?.length??0),{hasAudio}));
+  filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0) +2*(plan.subjectLayers?.length??0)+(plan.ambientOverlays?.length??0),{hasAudio}));
   return filters.join(';\n')+'\n';
 }

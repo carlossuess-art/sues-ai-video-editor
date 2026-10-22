@@ -1,0 +1,59 @@
+{
+  "schema": "sues-edit-reference/v1",
+  "id": "dopamin-diegonxt-20261022",
+  "role": "style-reference-only",
+  "profile": "DOPAMIN",
+  "intensityTarget": 1,
+  "source": {
+    "filename": "VID_20261022_101557_201.mp4",
+    "driveFileId": "1nf9lPujkKSjIrcLTQEIh6Dvi0reViPAP",
+    "driveFolderId": "147twZ2YKpU1-ZHlVgp_MNLa3kPM18KH9",
+    "sha256": "a1d218840777b5b8e440b67c379f86bf3ca3474817775133c2c371c2787f94aa",
+    "durationSeconds": 55.912604,
+    "bytes": 32851859,
+    "width": 1080,
+    "height": 1920,
+    "fps": 29.97002997,
+    "codec": "hevc",
+    "audioCodec": "aac",
+    "creatorVisible": "diego.nxt",
+    "rights": "style-reference-not-cleared-for-redistribution"
+  },
+  "visualDNA": {
+    "palette": [
+      "red",
+      "black",
+      "white",
+      "warm-yellow",
+      "occasional-green"
+    ],
+    "devices": [
+      "kinetic-titles",
+      "glowing-semantic-highlights",
+      "depth-layers",
+      "software-cutaways",
+      "meaningful-broll",
+      "foreground-graphics"
+    ],
+    "observation": "one-second-interval-contact-sheet",
+    "measuredCutRate": null,
+    "verifiedSFXCount": null,
+    "verifiedRotoscoping": false
+  },
+  "creativeRules": {
+    "trigger": "spoken-meaning-and-transcript-timestamps",
+    "avoidFixedIntervals": true,
+    "preserveFace": true,
+    "respectSafeZones": true,
+    "useExistingBrandKit": true,
+    "styleCalibration": "high-density-not-all-effects-on-every-shot"
+  },
+  "inheritance": {
+    "engine": "Keanu-Reeves-layered-visual-engine",
+    "related": [
+      "CALMA",
+      "ELEMENTS"
+    ]
+  },
+  "status": "reference-recorded-not-production-render-integrated"
+}

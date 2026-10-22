@@ -47,5 +47,10 @@ export function renderAudioFilters(plan,musicIndex,{hasAudio=true}={}){
  if(procedural){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-sfx-audio]'));filters.push(...soundEffectsFilter(plan.soundEffects,plan.duration,mixed?'before-sfx-audio':input));mixed=true;}
  if(custom){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-custom-audio]'));filters.push(...customSfxFilter(plan.customSfx,plan.duration,musicIndex+(plan.audioMix?1:0),mixed?'before-custom-audio':input));mixed=true;}
  if(voice&&!mixed)filters.push('[voice-styled]anull[mixed-audio]');
+ if(plan.mastering?.enabled){
+  const upstream=filters.length?'pre-master-audio':'audio';
+  if(filters.length)filters=filters.map(f=>f.replaceAll('[mixed-audio]','[pre-master-audio]'));
+  filters.push(`[${upstream}]volume=-1.8dB,alimiter=limit=0.97:level=0:latency=1,atrim=duration=${plan.duration}[mixed-audio]`);
+ }
  return filters;
 }

@@ -16,12 +16,13 @@ const LEXICON=new Map([
 ]);
 export function validateEditorSettings(settings={}){
  assert(settings&&typeof settings==='object'&&!Array.isArray(settings),'settings object');
- assert(Object.keys(settings).every(k=>['autoRecipe','sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','videoEvents','voiceEvents','profileImages','styleId','elements'].includes(k)),'unknown setting');
+ assert(Object.keys(settings).every(k=>['autoRecipe','sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','videoEvents','overlayEvents','voiceEvents','masteringEnabled','profileImages','styleId','elements'].includes(k)),'unknown setting');
  validateElements(settings.elements);
- const value={autoRecipe:false,sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],videoEvents:[],voiceEvents:[],profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ const value={autoRecipe:false,sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],videoEvents:[],overlayEvents:[],voiceEvents:[],masteringEnabled:false,profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
  assert(typeof value.autoRecipe==='boolean','autoRecipe boolean');
  value.sfxEvents=validateSfxEvents(value.sfxEvents);
  value.voiceEvents=validateVoiceEvents(value.voiceEvents);
+ assert(typeof value.masteringEnabled==='boolean','masteringEnabled boolean');
  assert(typeof value.sfxEnabled==='boolean'&&Number.isFinite(value.sfxGain)&&value.sfxGain>=0&&value.sfxGain<=.7,'sfx settings');
  assert(Number.isFinite(value.zoomIntensity)&&value.zoomIntensity>=0&&value.zoomIntensity<=1,'zoomIntensity 0..1');
  assert([1,2,3].includes(value.captionWords),'captionWords 1, 2 or 3');
@@ -39,6 +40,19 @@ export function validateEditorSettings(settings={}){
    typeof e.reason==='string'&&e.reason.trim().length>=5&&e.reason.length<=160,
    'B-roll event invalid or overlapping');
   lastEnd=e.end;videoIds.add(e.assetId);
+ }
+ assert(Array.isArray(value.overlayEvents)&&value.overlayEvents.length<=2,'máximo dos capas ambientales');
+ let previousOverlayEnd=-Infinity;
+ for(const e of value.overlayEvents){
+  assert(e&&Object.keys(e).every(k=>['assetId','start','end','sourceIn','intensity','reason'].includes(k))&&
+    typeof e.assetId==='string'&&/^[a-f0-9]{64}$/.test(e.assetId)&&
+    Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.start>=0&&
+    e.end-e.start>=.4&&e.end-e.start<=2.5&&
+    Number.isFinite(e.intensity)&&e.intensity>=.05&&e.intensity<=.35&&
+    (e.sourceIn===undefined||Number.isFinite(e.sourceIn)&&e.sourceIn>=0)&&
+    typeof e.reason==='string'&&e.reason.trim().length>=5&&e.reason.length<=160&&
+    e.start>=previousOverlayEnd+.2,'capa ambiental inválida o superpuesta');
+  previousOverlayEnd=e.end;
  }
  validateGraphicSettings(value.graphicCards,value.transitions);
  validateMotionChoices(value.motionChoices);

@@ -7,15 +7,19 @@ import {promisify} from 'node:util';
 import {fileSha256} from './local-pipeline.js';
 import {validateAssetMetadata,publicAssetMetadata,RESERVED_SFX_ALIASES} from './asset-metadata.js';
 const run=promisify(execFile),HASH=/^[a-f0-9]{64}$/,MAX=40*1024*1024;
+const ASSET_LIMIT=128,LIBRARY_BYTE_LIMIT=2*1024*1024*1024;
 const regular=p=>{try{const s=lstatSync(p);return s.isFile()&&!s.isSymbolicLink();}catch{return false;}};
 export class MediaLibrary{
- constructor(directory,{probe}={}){
+ constructor(directory,{probe,maxAssets=ASSET_LIMIT,maxLibraryBytes=LIBRARY_BYTE_LIMIT}={}){
+  if(!Number.isSafeInteger(maxAssets)||maxAssets<1||maxAssets>ASSET_LIMIT||!Number.isSafeInteger(maxLibraryBytes)||maxLibraryBytes<1||maxLibraryBytes>LIBRARY_BYTE_LIMIT)throw Error('Límites de biblioteca no válidos');
+  this.maxAssets=maxAssets;this.maxLibraryBytes=maxLibraryBytes;
   this.directory=resolve(directory);mkdirSync(this.directory,{recursive:true,mode:0o700});if(lstatSync(this.directory).isSymbolicLink())throw new Error('Invalid asset directory');
   this.probe=probe??(async (path,kind)=>JSON.parse((await run('ffprobe',['-v','error','-protocol_whitelist','file,pipe','-format_whitelist',kind==='image'?'image2,png_pipe,jpeg_pipe,webp_pipe,bmp_pipe':(['video','overlay'].includes(kind)?'mov,mp4,m4a,3gp,3g2,mj2':'wav,mp3,mov,ogg,flac,aac'),'-show_streams','-show_format','-of','json',path],{timeout:15000,maxBuffer:1024*1024})).stdout));
   for(const name of readdirSync(this.directory))if(/^\.asset-incoming-[a-f0-9-]+$/.test(name))unlinkSync(join(this.directory,name));
  }
  records(){return readdirSync(this.directory).filter(n=>/^[a-f0-9]{64}\.json$/.test(n)).map(n=>{const r=JSON.parse(readFileSync(join(this.directory,n),'utf8'));if(r.id!==n.slice(0,-5)||!HASH.test(r.id)||!['image','audio','sfx','video','overlay'].includes(r.kind)||!['owned','licensed'].includes(r.rights)||!Number.isInteger(r.bytes)||r.bytes<1||r.bytes>MAX)throw new Error('Asset metadata invalid');return r;});}
  list(){return this.records().map(({id,kind,title,rights,bytes,duration,width,height,mimeType,createdAt,fps,hasAlpha,hasAudio})=>({id,kind,title,rights,bytes,duration,width,height,mimeType,createdAt,...(fps?{fps}:{}),...(hasAlpha!==undefined?{hasAlpha}:{}),...(hasAudio!==undefined?{hasAudio}:{})}));}
+ capacity(){const items=this.records(),usedBytes=items.reduce((sum,item)=>sum+item.bytes,0);return {installed:items.length,maxAssets:this.maxAssets,remainingSlots:Math.max(0,this.maxAssets-items.length),usedBytes,maxBytes:this.maxLibraryBytes,remainingBytes:Math.max(0,this.maxLibraryBytes-usedBytes)};}
  metadata(id){
   const asset=this.resolve(id),path=join(this.directory,'metadata-v2',id+'.json');
   const dir=join(this.directory,'metadata-v2');if(existsSync(dir)&&lstatSync(dir).isSymbolicLink())throw Error('Directorio de metadatos no seguro.');
@@ -87,7 +91,8 @@ export class MediaLibrary{
     const format=info.format?.format_name??'';props={duration,mimeType:format==='wav'?'audio/wav':format==='mp3'?'audio/mpeg':format==='flac'?'audio/flac':format==='ogg'?'audio/ogg':format.includes('mov')?'audio/mp4':'audio/aac'};
    }
    const id=hash.digest('hex'),entries=this.records(),prior=entries.find(r=>r.id===id);if(prior){if(prior.kind!==kind||prior.rights!==rights)throw new Error('El recurso ya existe con otra procedencia declarada');this.resolve(id,kind);return this.list().find(r=>r.id===id);}
-   if(entries.length>=24)throw new Error('Límite de 24 recursos alcanzado');
+   if(entries.length>=this.maxAssets)throw new Error('Límite de '+this.maxAssets+' recursos alcanzado');
+   if(entries.reduce((sum,item)=>sum+item.bytes,0)+bytes>this.maxLibraryBytes)throw new Error('Cuota total de la biblioteca alcanzada');
    const path=join(this.directory,id+'.media');if(existsSync(path)){if(!regular(path)||fileSha256(path)!==id)throw new Error('Asset integrity changed');}else linkSync(temporary,path);
    const record={id,kind,title:title.trim(),rights,bytes,createdAt:new Date().toISOString(),...props},metadata=join(this.directory,id+'.json'),tempMeta=join(this.directory,'.asset-incoming-'+randomUUID());
    try{writeFileSync(tempMeta,JSON.stringify(record)+'\n',{flag:'wx',mode:0o600});renameSync(tempMeta,metadata);}finally{if(existsSync(tempMeta))unlinkSync(tempMeta);}

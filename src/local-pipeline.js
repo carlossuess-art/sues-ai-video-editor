@@ -30,6 +30,7 @@ export function loadProject(configPath){
  const path=realpathSync(configPath),config=read(path),base=dirname(path);
  const local=p=>realpathSync(resolve(base,p));
  const inputs={template:read(local(config.templatePath)),brand:read(local(config.brandKitPath)),transcript:read(local(config.transcriptPath)),camera:read(local(config.cameraPath)),visionFrames:read(local(config.visionPath)).frames,catalog:read(local(config.catalogPath)),source:config.source,...(config.backgroundAudio?{backgroundAudio:{...config.backgroundAudio,localFile:local(config.backgroundAudio.localFile)}}:{})};
+ inputs.overlayAssets=(config.overlayAssets??[]).map(a=>{const localFile=local(a.localFile);if(fileSha256(localFile)!==a.sha256||a.assetId!==a.sha256||a.kind!=='overlay')throw new Error('Overlay SHA256 mismatch');return {...a,localFile};});
  inputs.videoAssets=(config.videoAssets??[]).map(a=>{const localFile=local(a.localFile);if(fileSha256(localFile)!==a.sha256||a.assetId!==a.sha256||a.kind!=='video')throw new Error('B-roll SHA256 mismatch');return {...a,localFile};});
  inputs.soundAssets=(config.soundAssets??[]).map(a=>{const localFile=local(a.localFile);if(fileSha256(localFile)!==a.sha256||a.assetId!==a.sha256)throw new Error('SFX SHA256 mismatch');return {...a,localFile};});
  const illustrations=(config.illustrations??[]).map(item=>{const localFile=local(item.localFile),sha256=fileSha256(localFile);if(item.sha256!==sha256)throw new Error('Illustration SHA256 mismatch');return {...item,localFile};});inputs.illustrations=illustrations;
@@ -49,7 +50,7 @@ export function loadProject(configPath){
 }
 export function prepareProject(project,settings={}){
  const options=validateEditorSettings(settings),inputs={...project.inputs,template:applyStyleVariant(structuredClone(project.inputs.template),options.styleId)};if(inputs.template.captions.mode==='short-groups')inputs.template.captions.maxWords=options.captionWords;
- const selectedAssets=[];const asset=(id,kind)=>{const bound=kind==='sfx'?project.inputs.soundAssets?.find(a=>a.assetId===id):kind==='video'?project.inputs.videoAssets?.find(a=>a.assetId===id):null;if(bound){if(fileSha256(bound.localFile)!==bound.sha256)throw new Error('SFX integrity changed');selectedAssets.push({id,sha256:bound.sha256,kind});return bound;}if(typeof project.resolveAsset!=='function')throw new Error('La biblioteca de recursos no está conectada a este proyecto');const value=project.resolveAsset(id,kind);selectedAssets.push({id,sha256:value.sha256,kind});return value;};
+ const selectedAssets=[];const asset=(id,kind)=>{const bound=kind==='sfx'?project.inputs.soundAssets?.find(a=>a.assetId===id):kind==='video'?project.inputs.videoAssets?.find(a=>a.assetId===id):kind==='overlay'?project.inputs.overlayAssets?.find(a=>a.assetId===id):null;if(bound){if(fileSha256(bound.localFile)!==bound.sha256)throw new Error('SFX integrity changed');selectedAssets.push({id,sha256:bound.sha256,kind});return bound;}if(typeof project.resolveAsset!=='function')throw new Error('La biblioteca de recursos no está conectada a este proyecto');const value=project.resolveAsset(id,kind);selectedAssets.push({id,sha256:value.sha256,kind});return value;};
  if(options.musicAssetId){const m=asset(options.musicAssetId,'audio');if(m.duration<inputs.source.duration)throw new Error('La música es más corta que el vídeo. Elige una pista completa.');inputs.backgroundAudio={assetId:m.assetId,rights:m.rights,localFile:m.localFile,gain:.12};}
  if(!options.profileImages)inputs.illustrations=[];
  for(const e of options.imageEvents){const a=asset(e.assetId,'image');inputs.illustrations=[...(inputs.illustrations??[]),{assetId:a.assetId,rights:a.rights,role:'illustration',localFile:a.localFile,sha256:a.sha256,sourceSha256:project.boundHashes.source,timeSpace:'edit-timeline',start:e.start,end:e.end,placement:'auto-subject',motion:'slow-push',box:{left:120,right:900,top:140,bottom:420},featherPx:100,fadeSeconds:Math.min(.3,(e.end-e.start)/3)}];}
@@ -58,7 +59,16 @@ export function prepareProject(project,settings={}){
   return {assetId:a.assetId,sha256:a.sha256,localFile:a.localFile,rights:a.rights,mediaDuration:a.duration,
    sourceIn:e.sourceIn??0,start:e.start,end:e.end,reason:e.reason};
  });
- const resourceBindings={backgroundAudio:inputs.backgroundAudio,illustrations:inputs.illustrations??[],videoAssets:explicitBroll};
+ const overlayAssets=options.overlayEvents.map(e=>{
+  const a=asset(e.assetId,'overlay');
+  if(!['licensed','owned'].includes(a.rights)||a.kind!=='overlay'||a.assetId!==a.sha256||
+     !Number.isFinite(a.duration)||(e.sourceIn??0)+e.end-e.start>a.duration+1e-6)
+    throw new Error('Efecto luminoso no verificado o demasiado corto.');
+  return {assetId:a.assetId,sha256:a.sha256,kind:'overlay',localFile:a.localFile,
+    rights:a.rights,mediaDuration:a.duration,sourceIn:e.sourceIn??0,sourceOut:(e.sourceIn??0)+e.end-e.start,
+    start:e.start,end:e.end,intensity:e.intensity,reason:e.reason,placement:'lower-half',originalVoice:true};
+ });
+ const resourceBindings={backgroundAudio:inputs.backgroundAudio,illustrations:inputs.illustrations??[],videoAssets:explicitBroll,overlayAssets};
  if(!options.musicEnabled||options.musicGain===0)delete inputs.backgroundAudio;else if(inputs.backgroundAudio)inputs.backgroundAudio={...inputs.backgroundAudio,...(options.musicGain!==null?{gain:options.musicGain}:{}),duckEnabled:options.duckMusic};
  const automatic=buildAutomaticDirector({...inputs,settings:options}),rejections=[];
  const base=prepareLocalPreview({...inputs,segments:automatic.segments,manualBroll:explicitBroll});
@@ -106,6 +116,9 @@ export function prepareProject(project,settings={}){
  if(options.elements)plan.elements=prepareElements(options.elements,plan,{enabled:options.motions,profile:visualProfile(options.styleId)});
  if(inputs.subjectLayers)plan.subjectLayers=options.motions?prepareSubjectLayers(inputs.subjectLayers,plan):[];
  plan.customSfx=prepareCustomSfx(options.sfxEvents,plan.duration,asset);resourceBindings.soundAssets=plan.customSfx.assets;
+ plan.mastering={enabled:options.masteringEnabled,mode:'fixed-headroom',gainDb:-1.8,peakSafetyDb:-1.5,integratedLufsAcceptance:'pending-listening'};
+ plan.ambientOverlays=overlayAssets;
+ if(overlayAssets.length){plan.pending.push('ambient-overlays-visual-review');}
  plan.soundEffects=prepareSoundEffects(plan,options);
  plan.voiceEffects=prepareVoiceEffects(options.voiceEvents,plan.duration);
  if(plan.voiceEffects.events.length){plan.pending.push('voice-processing-human-listening-review');}

@@ -1,3 +1,33 @@
+## CONTINUIDAD · DOPAMIN + biblioteca escalable (desarrollo) · 22/10/2026
+
+FASE 6/10 · Biblioteca/motor por capas · ABIERTA. Progreso de fase/global: sin modificar porcentajes oficiales por pruebas todavía no integradas en producción.
+
+Referencia DOPAMIN 100 % nueva: vídeo autorizado como referencia visual por Carlos, `VID_20261022_101557_201.mp4`, 55,91 s, 1080×1920. Original privado y manifiesto depositados en carpeta original Google Drive `01_REFERENCIAS · ADN DE EDICIÓN` (ID `147twZ2YKpU1-ZHlVgp_MNLa3kPM18KH9`); original ID `1nf9lPujkKSjIrcLTQEIh6Dvi0reViPAP`. No se usa como recurso de render; Keanu mantiene su papel de motor visual maestro. Documentación: `docs/SUES_DOPAMIN_REFERENCE_20261022.md`, `examples/references/dopamin-20261022.dna.json`.
+
+En el worktree existente `feat/library-ambient-overlays-mastering-20261021` se preparó una búsqueda semántica autenticada (`GET /api/library/search`), que consulta 24 referencias oficiales y 309 fuentes históricas sin exponer enlaces privados, sin autoaprobación ni descargas. Primer commit **local** `b3d325506a30ed4a5d67bdbc782cf5908b28c746`.
+
+Continuación en desarrollo: cuota MediaLibrary **128 recursos / 2 GiB agregado** con límite individual 40 MiB intacto, endpoint de capacidad autenticado `GET /api/library/capacity` y tests de cantidad, bytes, deduplicación, acceso y parámetros. **La producción todavía tiene 24 plazas y 20 medios instalados**. Antes de esta ampliación: nuevos tests 3/3 PASS, suite host 267 PASS / 8 fallos por FFmpeg no instalado / 1 SKIP de 276; revalidación real FFmpeg focalizada en Docker 19/19 PASS. Con cuota: tests focalizados 8/8 PASS; `scripts/check.mjs` y diff --check PASS. Ver `docs/SUES_LIBRARY_CAPACITY_20261022.md`.
+
+No hay merge, publicación remota ni despliegue nuevo; producción vigente `56b686ff3bc284431528f2612219115632d4670a`, HTTPS 200 y Whisper activo. Próximo hito: publicación GitHub autorizada con verificación del árbol remoto, regresión integral con FFmpeg, backup/rollback y posible despliegue, después integración del buscador al Director IA y QA creativa con Reel propio. No hay gastos nuevos.
+
+---
+
+## FASE 6 · PRIMEROS DOS MEDIOS COMPRADOS RECUPERADOS + CAPAS Y MARGEN AUDIO · 21/10/2026
+
+**RECURSOS REALMENTE INCORPORADOS EN EL VPS PRIVADO**: 1 B-roll de reloj comprado (`clock (1).mp4`, 8.938.314 bytes; SHA256 `8f2cd474490e0b22b9cbb9aa3701ac0676c532c5e77c4a67f18c696113998c32`, 19.6s, 1920×1080), 1 overlay de chispas doradas compradas (`Sparks Pack 28.mp4`, 883.096 bytes; SHA256 `4d893b5a7b857886a678dc221ed99e04af4dd1680b0c1e35004ba0730bee3fe1`, 1.434s, 1920×1080). Derechos de uso privado declarados por Carlos, sin redistribución de archivos brutos a terceros. Fichas V2 en almacenamiento privado con `lifecycle: integrated`, `approvedForProduction:false` y `rightsStatus:unverified` por falta de revisión del alcance del contrato. Preservados 13 sonidos anteriores, 4 motions y 309 referencias a Drive; catálogo operativo total 19 registros (13 SFX, 4 motions, 1 vídeo, 1 overlay).
+
+Un tercer archivo de Light Leaks azul se RECUPERÓ Y INSPECCIONÓ en zona de QA pero aún NO entró en biblioteca operativa. Ningún otro archivo de ~18 GB transferido. Orígenes comprados en Drive de Terapias, originales intactos; SHA en destino comprobados. Backup previo de SFX/metadatos `/opt/sues-video-setup/library-backups/20261021-asset-before-real/assets-before-real.tar` 2.2MB, SHA256 `990afe03b916f4514d782502931a5f52be92e713d1914fd38395b5f5da78da3f`. Copia anterior de catálogo también guardada.
+
+**MP4 REAL CON B-ROLL COMPRADO**: QA de 13s con voz original y cuatro grupos de captions, reloj insertado 5–8s, whoosh existente a 4.75s, eco 1.1–3.1s y TV 8.6–10.5s, decodificación final PASS en 1080×1920. **MP4 CON CAPA DE CHISPAS**: se exportó misma fuente con chispas compradas 9.15–10.4s (compositadas en mitad inferior con intensidad .22), SFX, eco y TV. Auditoría completa de salida PASS, fuentes con hash verificado. **Inspección visual detectó franjas negras de fuente horizontal**, de modo que la colocación del overlay no cumple aún nivel creativo; no confundir composición técnica con aceptación ni rotoscopia.
+
+**MARGEN MASTERING QA**: nueva opción de margen final `masteringEnabled` (por defecto falso hasta revisión creativa), probada sobre MP4 real completo. EBU R128 True Peak/LUFS medido: antes −15.7 LUFS / −0.1 dBTP, después −17.5 LUFS / **−1.7 dBTP**. Correcta decodificación, voz/subtítulos conservados. No equivale a mastering dos pasadas ni aceptación auditiva humana.
+
+**RAMA DE CÓDIGO EN DESARROLLO**, aún NO desplegada: `feat/library-ambient-overlays-mastering-20261021`, hija de los presets ya publicados. `overlayEvents` limita dos clips, 0.4–2.5s, opacidad/intensidad .05–.35, filtro de fondo negro y restricción a mitad inferior, combinada con B-roll, SFX, voz y captions existentes. Implementación de plan Gemini, recurso privado por SHA256, backup portable, prueba de render y metadatos narrativos por emoción ofrecidos a Gemini. Revisión humana imprescindible para sujetos, ojos y safe zones. `masteringEnabled` es opt-in para evitar cambiar versiones anteriores. Tests focalizados 13/13 PASS. Suite general 272/273 PASS en contenedor, caso Git `safe.directory` necesita ejecución en host; prueba host 2/2 PASS; `scripts/check.mjs` PASS. Detalle técnico `docs/SUES_REAL_PURCHASED_LIBRARY_QA_20261021.md`.
+
+**Producción aún en** `56b686ff3bc284431528f2612219115632d4670a` hasta despliegue posterior. Próximo hito: verificar GitHub y desplegar nueva rama solo con backup íntegro/rollback y Whisper en reposo; luego QA con vídeos verticales reales y oclusión. Fase 6, F9 y V1 siguen abiertos, porcentajes sin cambiar. Gastos nuevos 0€.
+
+---
+
 ## RELEASE VERIFICADA · FX de voz en producción · 21/10/2026
 
 El bloque de presets que aparece como «desarrollo» más abajo **YA FUE DESPLEGADO** en VPS Hostinger. Commit exacto instalado y comprobado en el contenedor: `56b686ff3bc284431528f2612219115632d4670a`, rama `feat/cinematic-voice-presets-20261021`, sin merge a rama oficial. HTTPS 200; rutas `/api/assets`, `/api/resource-catalog` y `/api/jobs` responden 401 SIN sesión; Whisper ASR active; 13 SFX originales y 309 fuentes de Drive indexadas se conservan.
