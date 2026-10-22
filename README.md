@@ -20,6 +20,19 @@
 
 # SUES AI VIDEO EDITOR
 
+## Estado vigente · 22/10/2026
+
+Esta rama ya contiene más capacidades que la POC original. **No interpretar un commit como despliegue.**
+
+- **Producción Hostinger:** `120ffb059d025f0318b2cabbff98a0242822a185`, HTTPS 200, Whisper activo, ruta de trabajos funcional.
+- **GitHub desarrollo:** `61b08b416a229f3449f7b0fe3880998161a12009` en `feat/library-ambient-overlays-mastering-20261021` (sin merge a `main`), con propuestas del Director por timestamps y ADN DOPAMIN medido, todavía no desplegadas.
+- **Incidencia operativa:** recursos privados importados con permisos de propietario incompatibles con el usuario del editor. Las consultas autenticadas de catálogo/biblioteca aún no superan QA. Reparación de propiedad bloqueada por los controles de la conexión; no eludirlos ni abrir permisos públicos. Copia privada previa y recuperación disponibles.
+- **Pruebas:** 279/281 en Docker con dos pruebas de Git no ejecutables dentro de ese contenedor, que pasan 2/2 en VPS.
+- **V1:** Fase 9 no aceptada, global oficial 48 % sin sumar trabajo experimental.
+- **Documentos recientes:** [propuestas del Director](docs/SUES_DIRECTOR_LIBRARY_CUES_20261022.md), [medición DOPAMIN](docs/SUES_DOPAMIN_MEASURED_20261022.md), [estado técnico detallado](PROJECT_STATUS.md), [Roadmap Maestro](https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit).
+
+---
+
 Editor SUES en desarrollo: CALMA con cámara/captions/motions, Director léxico
 offline y estudio local del worker Work. La arquitectura objetivo sigue siendo
 cloud-first; no se exige al PC de Carlos realizar el trabajo pesado.

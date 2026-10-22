@@ -1,3 +1,13 @@
+## CIERRE PROVISIONAL · PUBLICACIÓN Y BLOQUEO OPERATIVO · 22/10/2026
+
+GitHub rama `feat/library-ambient-overlays-mastering-20261021` publica **`61b08b416a229f3449f7b0fe3880998161a12009`**, incluyendo el Director de sugerencias no automáticas (commit intermedio 7edd62a) y el análisis cuantitativo DOPAMIN (61b08b). La rama no está fusionada con main. Producción sigue en **`120ffb059d025f0318b2cabbff98a0242822a185`**, comprobado en el VPS, no en 61b08b. Sin nuevo despliegue por bloqueo en los permisos de biblioteca.
+
+Suite integral más reciente: 281 casos en Docker, 279 PASS, 2 fallos por binario Git inaccesible en ese contenedor; 2/2 tests Git en host VPS PASS. Verificaciones específicas DOPAMIN, Director y ELEMENTS 15/15 PASS; `scripts/check.mjs` PASS. Informe de referencia `docs/SUES_DOPAMIN_MEASURED_20261022.md` guardado también en Drive canónico (IDs de documentación en Roadmap).
+
+BLOQUEO REAL: APIs de biblioteca autenticadas no disponibles por propiedad root de archivos privados con modo 0600 y directorio de índice 0700, no accesibles al proceso UID1000. Intento de corregir los metadatos de propiedad bloqueado por controles remotos; sin reintento por otro método. Se necesita ajuste autorizado limitado a esa biblioteca (sin permisos públicos) y QA HTTP con sesión. Mientras tanto código de recomendaciones todavía no desplegado y F6/F7/F9 abiertas. Global oficial 48 %, porcentajes no alterados. Próxima acción exacta: levantar bloqueo operativo de permisos, luego revalidar APIs, biblioteca, jobs y primer MP4 vertical; hacer QA de Director, overlays y DOPAMIN.
+
+---
+
 ## REFERENCE QA · DOPAMIN cuantificado · 22/10/2026
 
 Fuente privada original en Drive `1nf9lPujkKSjIrcLTQEIh6Dvi0reViPAP`. Mediciones FFmpeg sobre 55,912604s 1080×1920/29,97fps: detector de grandes cambios visuales a umbrales scene 0,20/0,32/0,45 = 45/25/13 eventos, equivalente 48,3/26,8/14,0 candidatos por minuto; NO se equiparan a cortes reales por presencia de animaciones, flashes y overlays. Muestreo HSV 56 cuadros (1 fps): mediana de píxeles de rojo saturado 27,53 %, rojo ≥15 % en 35/56 cuadros, mediana píxeles oscuros 60,34 %. Métodos y limitaciones en `docs/SUES_DOPAMIN_MEASURED_20261022.md` y `examples/references/dopamin-20261022.measured.json`. Copia privada en Drive canónico de las mismas fichas. Código DOPAMIN `visualProfile` referencia nuevo ID complementario sin sustituir Keanu, sin alterar frecuencias ni disparar efectos por tiempo. Tests focalizados de perfiles/Director/ELEMENTS 15/15 PASS. NO es aceptación estética F9 ni cortes minutados humanos. Esta medición y metadatos todavía NO desplegados; se suman a desarrollo, sin incremento porcentual oficial.
