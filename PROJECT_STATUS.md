@@ -1,3 +1,17 @@
+## RESOLUCIÓN F6 · Biblioteca reparada y release desplegado · 23/10/2026
+
+**Producción verificada:** `f8bc446dc21e1a2718708447d4ffe2caec1d8ebf` instalado mediante `scripts/deploy/update_service.py` (no equivale a merge en `main`). Servidor srv1841004, HTTPS 200, Whisper activo. `/api/health` y `/api/jobs` 200 autenticados; cola 0 renderizando y 0 en espera antes del deploy.
+
+**Incidencia #8 resuelta:** Desktop Commander root restauró la propiedad de entradas root:root de las carpetas privadas `editor/jobs/assets` y `editor/jobs/library` a UID:GID 1000:1000 sin cambiar modos ni hacer públicos los archivos. Se verificó previamente backup completo y hash SHA256 `68f16be2c4e18639c527e604081aab3d8809bd069b81f1da3c3ebe5732ca0310`. El preflight de lectura UID1000 comprobó 62 entradas assets y 9 índice, bloqueadas **0/0**, `ready:true`, sin modificaciones adicionales. Las rutas autenticadas `/api/assets`, `/api/library/capacity`, `/api/resource-catalog` y `/api/library/search` devuelven HTTP **200**; 20 medios instalados, capacidad 128 / 2 GiB, búsqueda devuelve sugerencias sin aprobación automática; `GET /api/jobs/:id/library-cues` HTTP 200 con `approvedToAutoPublish:false`. Sin cookie válida APIs privadas devuelven **401**. HEAD de media privado autenticado 200.
+
+**Nuevo respaldo y rollback:** `/opt/sues-video-setup/update-backup-20261023-052537-102969/editor-state.tar` validado SHA256 `a8d2d17c30f251eddb949cd619f21feb0a02776317dbfd67b6b2886447602688`; release anterior conservado por actualizador.
+
+**Prueba real de render, sintética (no aceptación F9):** `scripts/templates/smoke_local_preview.mjs` en Docker aislado, salida MP4 12s y `result.json` en `/opt/sues-video-setup/library-qa/smoke-deploy-20261023/`, PASS. B-roll visual rojo solo en 3–6s, azul antes/después; voz de 440Hz preservada y tono B-roll de 1700Hz omitido. Ratio 3,2333e-7. No se editaron proyectos reales del usuario. Suite de rama anterior 282/284 PASS en Docker (dos pruebas Git 2/2 en host). La aceptación estética de vídeo DOPAMIN y las fases F7/F9 siguen abiertas. Porcentajes oficiales sin variación: global 48 %, no inventar avance.
+
+**Siguiente acción:** QA con vídeo propio de Carlos en flujo completo (subida, análisis, propuesta, retoque, preview, MP4), validar seguridad visual de captions/ojos/mascaras, aumentar contenido aprobado de biblioteca por lotes con licencia y pasar aceptación F9. No hay gasto nuevo.
+
+---
+
 ## F6/F7 · Director con caché privada, UI de revisión y preflight preventivo · 22/10/2026
 
 Desarrollo aislado sin cambios de producción: el Director recorre la transcripción con timestamps y consulta el catálogo de 24 entradas (20 medios/4 motions) y 309 índices de Drive con **un solo parseo por petición** en lugar de repetir lectura por frase. Sugerencias exclusivamente de vídeos, imágenes y overlays, nunca SFX, audio, motions nativos ni fuentes remotas; siempre `needsHumanReview:true` y sin autoinserción. En la interfaz Edición automática se agregó panel desplegable de sugerencias para la versión seleccionada; no altera el proyecto hasta que exista flujo de revisión/aplicación autorizado.

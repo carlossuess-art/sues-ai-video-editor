@@ -20,14 +20,14 @@
 
 # SUES AI VIDEO EDITOR
 
-## Estado vigente · 22/10/2026
+## Estado vigente · 23/10/2026
 
 Esta rama ya contiene más capacidades que la POC original. **No interpretar un commit como despliegue.**
 
-- **Producción Hostinger:** `120ffb059d025f0318b2cabbff98a0242822a185`, HTTPS 200, Whisper activo, ruta de trabajos funcional.
-- **GitHub desarrollo:** `61b08b416a229f3449f7b0fe3880998161a12009` en `feat/library-ambient-overlays-mastering-20261021` (sin merge a `main`), con propuestas del Director por timestamps y ADN DOPAMIN medido, todavía no desplegadas.
-- **Incidencia operativa:** recursos privados importados con permisos de propietario incompatibles con el usuario del editor. Las consultas autenticadas de catálogo/biblioteca aún no superan QA. Reparación de propiedad bloqueada por los controles de la conexión; no eludirlos ni abrir permisos públicos. Copia privada previa y recuperación disponibles.
-- **Pruebas:** 279/281 en Docker con dos pruebas de Git no ejecutables dentro de ese contenedor, que pasan 2/2 en VPS.
+- **Producción Hostinger:** `f8bc446dc21e1a2718708447d4ffe2caec1d8ebf`, HTTPS 200, Whisper activo, biblioteca privada y rutas de trabajos probadas. Backup verificado y rollback preparado. Incidencia #8 cerrada el 23/10/2026.
+- **GitHub y producción:** `f8bc446dc21e1a2718708447d4ffe2caec1d8ebf` en `feat/library-ambient-overlays-mastering-20261021`; rama desplegada en VPS. Sigue sin merge a `main`. Contiene Director por timestamps, ADN DOPAMIN medido, panel de sugerencias y protección de biblioteca.
+- **Biblioteca recuperada:** el 23/10/2026 se corrigió la propiedad de sus dos carpetas privadas con Desktop Commander autorizado sin ampliar modos. Auditoría UID1000 `ready:true`, accesos bloqueados 0/71; APIs de catálogo, búsqueda, capacidad y media 200 con sesión y 401 sin sesión. [Incidencia #8](https://github.com/carlossuess-art/sues-ai-video-editor/issues/8) cerrada.
+- **Pruebas:** 282/284 en Docker con dos pruebas de Git que pasan 2/2 en VPS. Tras el deploy, el render sintético aislado de 12 segundos generó MP4 y conservó la voz (PASS); aún falta prueba de aceptación con vídeo real.
 - **V1:** Fase 9 no aceptada, global oficial 48 % sin sumar trabajo experimental.
 - **Documentos recientes:** [propuestas del Director](docs/SUES_DIRECTOR_LIBRARY_CUES_20261022.md), [medición DOPAMIN](docs/SUES_DOPAMIN_MEASURED_20261022.md), [estado técnico detallado](PROJECT_STATUS.md), [Roadmap Maestro](https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit).
 
