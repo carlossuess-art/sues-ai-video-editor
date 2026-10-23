@@ -82,12 +82,13 @@ export function prepareSemanticRender({director,policy,camera,timeMap,visionFram
   maxCombinedZoom=Math.max(maxCombinedZoom,c.zoom*z);frames++;
  }
  const overlaps=(a,b)=>Math.min(a.right,b.right)>Math.max(a.left,b.left)&&Math.min(a.bottom,b.bottom)>Math.max(a.top,b.top);
- const slots=[200,480,760,1010].map(top=>({left:120,right:900,top,bottom:top+150}));
+ const defaultSlots=[200,480,760,1010].map(top=>({left:120,right:900,top,bottom:top+150}));
  for(const motion of motions){
-  if(motion.params.motionId==='QUOTE_CARD_01'&&policy.visualStyle?.resourceTreatment?.type==='blurred-focus'){
+  if(camera.mode!=='reviewed-region'&&motion.params.motionId==='QUOTE_CARD_01'&&policy.visualStyle?.resourceTreatment?.type==='blurred-focus'){
    assert(!motions.some(other=>other!==motion&&other.start<motion.end&&other.end>motion.start),'focus cards cannot overlap');
    motion.box={left:120,right:900,top:650,bottom:950};motion.backgroundTreatment={...policy.visualStyle.resourceTreatment,presenterOccludedIntentionally:true};continue;
   }
+  const slots=camera.mode==='reviewed-region'?[{left:120,right:900,top:motion.params.motionId==='DIVIDER_LINE_01'?1450:1380,bottom:1530}]:defaultSlots;
   motion.box=slots.find(box=>!(layout&&((captions.some(c=>c.start<motion.end&&c.end>motion.start)&&overlaps(box,layout.caption))||overlaps(box,layout.outro)))&&!motions.some(other=>other.box&&other.start<motion.end&&other.end>motion.start&&overlaps(box,other.box))&&
    Array.from({length:Math.ceil((motion.end-motion.start)*30)},(_,i)=>motion.start+i/30).every(t=>{
     const {sourceTime}=at(t),face=faces.reduce((a,b)=>Math.abs(b.time-sourceTime)<Math.abs(a.time-sourceTime)?b:a).face;
@@ -97,7 +98,7 @@ export function prepareSemanticRender({director,policy,camera,timeMap,visionFram
   assert(motion.box,'no safe motion placement');
   motion.placement={strategy:'stable-region-existing-face-track',marginPx:48,sampledAtFps:30,bodySegmentation:false};
  }
- return {timeSpace:'edit-timeline',events,zooms,motions,anchors,audit:{frames,maxCombinedZoom,captionFaceChecks,outroFaceChecks,faceMethod:'nearest existing detection projected per output frame; not new inference'}};
+ return {timeSpace:'edit-timeline',events,zooms,motions,anchors,audit:{frames,maxCombinedZoom,captionFaceChecks,outroFaceChecks,faceMethod:camera.mode==='reviewed-region'?'manually reviewed conservative region; fixed anchor; no automatic tracking':'nearest existing detection projected per output frame; not new inference'}};
 }
 
 export function semanticZoomFilter(semantic){

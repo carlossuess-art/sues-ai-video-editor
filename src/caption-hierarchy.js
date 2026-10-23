@@ -1,5 +1,5 @@
 import {keywordPreset} from './text-presets.js';
-import {fitCaptionSize} from './font-kits.js';
+import {textAdvance,fitCaptionSize} from './font-kits.js';
 const normalize=text=>text.toLocaleLowerCase('es').replace(/[^\p{L}\p{N}]/gu,'');
 const STOP=new Set('a al algo aunque con de del dime el ella en eres es esta este ha has hay la las lo los me mi no o para pero por porque que quien quién se si siempre sin su te todos tras tu tus un una y aún'.split(' '));
 
@@ -17,6 +17,17 @@ export function hierarchyLayout(caption,policy,box){
  if(!caption.keyword)return null;
  const parts=caption.text.split(/\s+/),at=caption.keyword.displayWordIndex??caption.wordIndexes.indexOf(caption.keyword.sourceWordIndex);if(at<0||at>=parts.length||caption.keyword.displayWordIndex===undefined&&parts.length!==caption.wordIndexes.length)return null;
  const preset=keywordPreset(caption.keyword);policy={...policy,...(preset.scaleX?{scaleX:preset.scaleX}:{})};
+ if(policy.inlineGroups){
+  const ratio=policy.hierarchy?.ratio??14/12;
+  let size=policy.fontSize??104,rows;
+  do{
+   const widths=parts.map((word,i)=>textAdvance(i===at&&policy.keywordUppercase?word.toLocaleUpperCase('es'):word,{...policy,fontRole:i===at?'keyword':'normal'},size*(i===at?ratio:1)));
+   const gap=textAdvance(' ',policy,size),total=widths.reduce((a,b)=>a+b,0)+gap*(parts.length-1);
+   if(total<=box.right-box.left){let x=(box.left+box.right-total)/2;rows=parts.map((word,i)=>{const row={text:i===at&&policy.keywordUppercase?word.toLocaleUpperCase('es'):word,size:size*(i===at?ratio:1),x:x+widths[i]/2,y:(box.top+box.bottom)/2,role:i===at?'keyword':'companion'};x+=widths[i]+gap;return row;});break;}
+   size--;
+  }while(size>=64);
+  return rows??null;
+ }
  const before=parts.slice(0,at).join(' '),hero=policy.keywordUppercase?parts[at].toLocaleUpperCase('es'):parts[at],after=parts.slice(at+1).join(' '),three=!!before&&!!after,ratio=policy.hierarchy?.ratio??2;
  const desired=ratio===2?(three?128:144):(policy.fontSize??96)*ratio;let heroSize;
  try{heroSize=fitCaptionSize([hero],{...policy,fontRole:preset.italic?'keywordItalic':'keyword',fontSize:desired},box.right-box.left);}catch(error){if(error.message==='Caption cannot fit at a readable size')return null;throw error;}

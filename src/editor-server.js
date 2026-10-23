@@ -1,3 +1,4 @@
+import {reviewInstructionExecution} from './instruction-execution.js';
 import {externalCatalog,reviewExternalPlan} from './external-edit-plan.js';
 import {prepareProject} from './local-pipeline.js';
 import {planInstructions} from './instruction-director.js';
@@ -207,8 +208,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      const b=await body(req),source=jobs.get(id);
      if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))throw Error('Espera a que termine la edición actual.');
      const base=b.settings??source.settings,proposal=planInstructions(b.prompt??'',base);
-     if((proposal.changes.musicGain!==undefined||proposal.changes.musicEnabled===true)&&!base.musicAssetId&&!jobs.plan(id).manifest.audioSourceAvailable)proposal.notes=['Este material no tiene una pista musical preparada. Puedes elegir una en Música; el volumen no añadirá una canción por sí solo.'];
-     if(proposal.canApply){const prepared=prepareProject(jobs.loadProfile(source.profileId),{...base,...proposal.changes});proposal.editionCounts=prepared.plan.editionCounts;proposal.recipe=prepared.plan.templateRecipe;proposal.notes=[...(proposal.notes??[]),'La propuesta conserva la voz y todos sus tiempos. Los gráficos se eligen por reglas de texto; el director semántico completo sigue pendiente.'];}
+     if(proposal.canApply){const prepared=prepareProject(jobs.loadProfile(source.profileId),{...base,...proposal.changes});Object.assign(proposal,reviewInstructionExecution(proposal,prepared.plan));}
      if(action==='direct-plan')return json(res,200,proposal);
      if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId))throw Error('Identificador de petición no válido.');
      const existing=[...jobs.jobs.values()].find(j=>j.parentId===id&&j.requestId===b.requestId);

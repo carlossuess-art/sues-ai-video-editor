@@ -1,3 +1,4 @@
+import {validateReviewedFraming,validateZoomEvents} from './reviewed-framing.js';
 import {validateSfxEvents} from './custom-sfx.js';
 import {validateVoiceEvents} from './voice-effects.js';
 import {validateElements} from './elements.js';
@@ -16,9 +17,10 @@ const LEXICON=new Map([
 ]);
 export function validateEditorSettings(settings={}){
  assert(settings&&typeof settings==='object'&&!Array.isArray(settings),'settings object');
- assert(Object.keys(settings).every(k=>['autoRecipe','sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','videoEvents','overlayEvents','voiceEvents','masteringEnabled','profileImages','styleId','elements'].includes(k)),'unknown setting');
+ assert(Object.keys(settings).every(k=>['reviewedFraming','zoomEvents','autoRecipe','sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','videoEvents','overlayEvents','voiceEvents','masteringEnabled','profileImages','styleId','elements'].includes(k)),'unknown setting');
  validateElements(settings.elements);
- const value={autoRecipe:false,sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],videoEvents:[],overlayEvents:[],voiceEvents:[],masteringEnabled:false,profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ const value={reviewedFraming:null,zoomEvents:[],autoRecipe:false,sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],videoEvents:[],overlayEvents:[],voiceEvents:[],masteringEnabled:false,profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ value.reviewedFraming=validateReviewedFraming(value.reviewedFraming);value.zoomEvents=validateZoomEvents(value.zoomEvents);
  assert(typeof value.autoRecipe==='boolean','autoRecipe boolean');
  value.sfxEvents=validateSfxEvents(value.sfxEvents);
  value.voiceEvents=validateVoiceEvents(value.voiceEvents);

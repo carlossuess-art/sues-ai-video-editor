@@ -1,3 +1,4 @@
+import {applyReviewedFraming,explicitZoomDecisions} from './reviewed-framing.js';
 import {buildTemplateRecipe,editionCounts} from './template-recipe.js';
 import {prepareCustomSfx} from './custom-sfx.js';
 import {prepareVoiceEffects} from './voice-effects.js';
@@ -22,7 +23,7 @@ import {buildAutomaticDirector,validateEditorSettings} from './automatic-directo
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
-export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['template-recipe.js','custom-sfx.js','voice-effects.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
+export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['reviewed-framing.js','template-recipe.js','custom-sfx.js','voice-effects.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
 export function fileSha256(path){const fd=openSync(path,'r'),hash=createHash('sha256'),buffer=Buffer.allocUnsafe(1024*1024);try{let size;while((size=readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,size));return hash.digest('hex');}finally{closeSync(fd);}}
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
@@ -49,7 +50,8 @@ export function loadProject(configPath){
  return {boundHashes,fontHashes,configPath:path,sourcePath,fontDirectory,inputs,title:config.title??'SUES · CALMA'};
 }
 export function prepareProject(project,settings={}){
- const options=validateEditorSettings(settings),inputs={...project.inputs,template:applyStyleVariant(structuredClone(project.inputs.template),options.styleId)};if(inputs.template.captions.mode==='short-groups')inputs.template.captions.maxWords=options.captionWords;
+ const options=validateEditorSettings(settings);let inputs={...project.inputs,template:applyStyleVariant(structuredClone(project.inputs.template),options.styleId)};if(inputs.template.captions.mode==='short-groups')inputs.template.captions.maxWords=options.captionWords;
+ inputs=applyReviewedFraming(inputs,options.reviewedFraming);
  const selectedAssets=[];const asset=(id,kind)=>{const bound=kind==='sfx'?project.inputs.soundAssets?.find(a=>a.assetId===id):kind==='video'?project.inputs.videoAssets?.find(a=>a.assetId===id):kind==='overlay'?project.inputs.overlayAssets?.find(a=>a.assetId===id):null;if(bound){if(fileSha256(bound.localFile)!==bound.sha256)throw new Error('SFX integrity changed');selectedAssets.push({id,sha256:bound.sha256,kind});return bound;}if(typeof project.resolveAsset!=='function')throw new Error('La biblioteca de recursos no está conectada a este proyecto');const value=project.resolveAsset(id,kind);selectedAssets.push({id,sha256:value.sha256,kind});return value;};
  if(options.musicAssetId){const m=asset(options.musicAssetId,'audio');if(m.duration<inputs.source.duration)throw new Error('La música es más corta que el vídeo. Elige una pista completa.');inputs.backgroundAudio={assetId:m.assetId,rights:m.rights,localFile:m.localFile,gain:.12};}
  if(!options.profileImages)inputs.illustrations=[];
@@ -86,13 +88,14 @@ export function prepareProject(project,settings={}){
   manual.push({type:'motion',start:c.start,end,reason:`Frase elegida por usuario: ${id}`,rule:'user-caption-quote-v1',params:{motionId:'QUOTE_CARD_01',bindings:{quote:c.text},semanticReason:'reflection'},evidence:{method:'user-caption-selection',captionId:id,sourceWordIndexes:c.wordIndexes,captionStart:c.start,captionEnd:c.end,displayEnd:end,textOrigin:c.source==='manual'?'user-edited-caption':'transcript-caption',originalText:c.originalText??c.text}});
  }
  const chosenMotions=motionChoicesToDecisions(options.motionChoices,{...base,captions:editedCaptions},options.motions);
- const candidates=[...automatic.decisions.filter(d=>(!manual.length&&!effectiveCards.length&&!chosenMotions.length&&!options.elements)||d.type!=='motion'),...manual,...chosenMotions].sort((a,b)=>a.start-b.start||a.end-b.end);
+ const candidates=[...automatic.decisions.filter(d=>(!options.zoomEvents.length||d.type!=='zoom')).filter(d=>(!manual.length&&!effectiveCards.length&&!chosenMotions.length&&!options.elements)||d.type!=='motion'),...manual,...chosenMotions,...explicitZoomDecisions(options.zoomEvents,base)].sort((a,b)=>a.start-b.start||a.end-b.end);
  let decisions=[],plan=base;
  for(const candidate of candidates){
   try{
    const next=[...decisions,candidate].sort((a,b)=>a.start-b.start||a.end-b.end);
    plan=prepareLocalPreview({...inputs,segments:automatic.segments,manualBroll:explicitBroll,director:{...automatic,decisions:next}});decisions=next;
   }catch(error){
+   if(candidate.rule==='user-zoom-choice-v1')throw new Error('Acercamiento no seguro: '+error.message);
    if(candidate.rule==='user-motion-choice-v1')throw new Error(`El recurso de ${candidate.start.toFixed(1)} s no cabe de forma segura: ${error.message}`);
    if(candidate.rule==='user-caption-quote-v1')throw new Error(`La frase de ${candidate.start.toFixed(1)} s no cabe de forma segura con estos ajustes. Elige otra frase.`);
    rejections.push({rule:candidate.rule,start:candidate.start,end:candidate.end,reason:error.message});

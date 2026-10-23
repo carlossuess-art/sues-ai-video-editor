@@ -55,7 +55,7 @@ function validateCamera(camera,width,height){
   }
 }
 
-export function prepareLocalPreview({template,brand,transcript,camera,source,segments,slots=[],assets=[],mediaBindings={},manualBroll=[],director,visionFrames=[],catalog=[],backgroundAudio}){
+export function prepareLocalPreview({template,brand,transcript,camera,source,segments,slots=[],assets=[],mediaBindings={},manualBroll=[],director,visionFrames=[],catalog=[],backgroundAudio,previewLayout=PREVIEW_LAYOUT}){
   assert(source&&finite(source.duration)&&Number.isInteger(source.width)&&Number.isInteger(source.height),'source');
   assert(Math.abs(source.duration-transcript.sourceDuration)<.05,'transcript/source duration');
   validateCamera(camera,source.width,source.height);
@@ -66,8 +66,8 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
   // Conservative blocks fit shared-kit line limits. No invented karaoke timings.
   const blocks=policy.captions.mode==='short-groups'?shortCaptionGroups(mapped.words,{maxWords:policy.captions.maxWords,maxChars:policy.captions.maxCharsPerLine,maxDuration:policy.captions.maxDuration}):segmentWords(mapped.words,{maxWords:6,maxChars:policy.captions.maxCharsPerLine*policy.captions.maxLines-10,maxDuration:4.5});
   const captions=blocks.map(b=>({...b,lines:wrapCaption(b.text,policy.captions.maxCharsPerLine,policy.captions.maxLines),wordCues:captionCues(b,mapped.words)}));
-  for(const [key,box]of Object.entries(PREVIEW_LAYOUT)){
-    assert(validateSafePlacement(box,key==='caption'?PORTRAIT_SAFE_ZONES.captions:PORTRAIT_SAFE_ZONES.content),'safe layout');
+  for(const [key,box]of Object.entries(previewLayout)){
+    assert(validateSafePlacement(box,key==='caption'&&camera.mode!=='reviewed-region'?PORTRAIT_SAFE_ZONES.captions:PORTRAIT_SAFE_ZONES.content),'safe layout');
     assert(box.right<=PORTRAIT_SAFE_ZONES.avoid.right.left,'right UI avoidance');
   }
   const broll=manualBroll.length?buildExplicitBrollPlan({policy,duration:timeMap.duration,events:manualBroll}):buildCinematicBrollPlan({policy,duration:timeMap.duration,slots,assets});
@@ -77,9 +77,9 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
     assert(typeof path==='string'&&path.length>0,'B-roll requires verified renderer bindings');
     return {...d,localFile:path};
   });
-  const semantic=prepareSemanticRender({director,policy,camera,timeMap,visionFrames,catalog,broll,captions,layout:PREVIEW_LAYOUT});
+  const semantic=prepareSemanticRender({director,policy,camera,timeMap,visionFrames,catalog,broll,captions,layout:previewLayout});
   return {version:'1.0',kind:'local-preview',source,policy,timeMap,camera,semantic,
-    cameraSpans:mapCameraToEdit(camera,timeMap),captions,broll,selectedMedia,layout:PREVIEW_LAYOUT,
+    cameraSpans:mapCameraToEdit(camera,timeMap),captions,broll,selectedMedia,layout:previewLayout,
     audioMix:prepareBackgroundAudio(backgroundAudio,timeMap.duration),duration:timeMap.duration,renderColors:{dark:brand.colors.dark},originalVoice:true,colorTreatment:'identity-natural',
     renderReady:true,productionReady:false,
     pending:['automated-director-selection','real-broll-visual-acceptance','music-and-sfx','full-audiovisual-acceptance','app-e2e']};
@@ -102,8 +102,8 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
     const white=assColor((plan.graphics??[]).some(g=>g.type!=='secret'&&c.start>=g.start-1e-6&&c.end<=g.end+1e-6)?plan.renderColors.dark:plan.policy.captions.color);
     const focus=c.source!=='manual'&&(plan.semantic?.motions??[]).find(m=>m.backgroundTreatment&&c.start>=m.start-1e-6&&c.end<=m.end+1e-6&&c.wordIndexes.every(index=>(m.evidence?.sourceWordIndexes??[]).includes(index)));if(focus||(plan.graphics??[]).some(g=>g.replacedCaptionIds?.includes(c.id)||!g.heading&&!g.bodyLines&&g.type!=='compare'&&g.captionId===c.id&&g.text===c.text))continue;
     const hierarchy=hierarchyLayout(c,plan.policy.captions,plan.layout.caption);
-    const p=plan.policy.captions,b=plan.layout.caption,normalSize=fitCaptionSize(c.lines,p);
-    const normalRows=c.lines.map((text,i)=>({text,size:normalSize,x:(b.left+b.right)/2,y:(b.top+b.bottom)/2+(i-(c.lines.length-1)/2)*normalSize*1.1,role:'companion'}));
+    const p=plan.policy.captions,b=plan.layout.caption,displayLines=p.inlineGroups?[c.text]:c.lines,normalSize=fitCaptionSize(displayLines,p);
+    const normalRows=displayLines.map((text,i)=>({text,size:normalSize,x:(b.left+b.right)/2,y:(b.top+b.bottom)/2+(i-(displayLines.length-1)/2)*normalSize*1.1,role:'companion'}));
     const progressive=progressiveRuns(c,hierarchy??normalRows,p);
     if(hierarchy||progressive){
       const p=plan.policy.captions,fade=p.fadeMs??60;

@@ -32,9 +32,9 @@ test('HTTP director rejects unknown requests without mutation; project ancestry,
   const snapshot=JSON.stringify(app.jobs.get(a.id)),count=app.jobs.list().length;
   assert.equal((await post('jobs/'+a.id+'/direct',{prompt:'menos zoom y elimina repeticiones',requestId:randomUUID()})).status,422);
   assert.equal(app.jobs.list().length,count);assert.equal(JSON.stringify(app.jobs.get(a.id)),snapshot);
-  const request={prompt:'música al 8 %; menos zoom',requestId:randomUUID()},path='jobs/'+a.id+'/direct';
+  const request={prompt:'sin música; menos zoom',requestId:randomUUID()},path='jobs/'+a.id+'/direct';
   const response=await post(path,request);assert.equal(response.status,202);const result=await response.json();
-  assert.equal(result.projectId,a.projectId);assert.equal(result.parentId,a.id);assert.equal(result.settings.musicGain,.08);assert.equal(result.settings.zoomIntensity,.75);assert.equal(result.instructions[0].text,request.prompt);
+  assert.equal(result.projectId,a.projectId);assert.equal(result.parentId,a.id);assert.equal(result.settings.musicEnabled,false);assert.equal(result.settings.zoomIntensity,.75);assert.equal(result.instructions[0].text,request.prompt);
   assert.equal((await (await post(path,request)).json()).id,result.id);assert.equal(app.jobs.list().length,count+1);assert.equal(JSON.stringify(app.jobs.get(a.id)),snapshot);
   assert.equal((await fetch(url+'/api/jobs/'+a.id+'/direct-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).status,401);
   await app.close();restarted=new EditorJobs({directory,profiles:f.profiles,autoStart:false});assert.equal(restarted.view(restarted.get(result.id)).instructions[0].text,request.prompt);assert.equal(restarted.view(restarted.get(old.id)).projectId,'test');

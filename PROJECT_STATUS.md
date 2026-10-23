@@ -1,3 +1,9 @@
+## EN DESARROLLO · Reparación DOPAMIN real · 24/10/2026
+
+Reproducida causa de captions-only sobre trabajo cb62a001: sin candidatos léxicos ni visión, sin pista musical asignada y SFX dependientes de eventos inexistentes. Preflight de instrucciones ahora comprueba efectos compilados; encuadre manual ligado al original y zooms explícitos incorporados sin modelos ni costes nuevos. Primera regresión local 290/290. Aún sin despliegue de este bloque ni candidato audiovisual validado. Ver docs/SUES_DOPAMIN_REPAIR_20261024.md. Oficial global 48 %, F6/F7/F9 abiertas.
+
+---
+
 ## PUBLICADO · Editor vertical DOPAMIN, instrucciones y streaming ágil · 23/10/2026
 
 **PRODUCCIÓN VPS confirmada:** Git SHA `a9219413ed2054130a4d18b4d66b2921f39f5e68` (versión anterior `f8bc446d` conservada). Proyecto existente, rama `feat/library-ambient-overlays-mastering-20261021`; NO merge a main. Backup previo a actualización verificado en `/opt/sues-video-setup/update-backup-20261023-064607-109940/editor-state.tar`, SHA256 `708a5bc1e40585e5014c8708a9e34cec443ce3d737e074b616a81ec5895e6f99`. Deploy mediante `scripts/deploy/update_service.py`, diagnóstico PASS, cola inactiva, Whisper activo y HTTPS 200 tras la copia.
