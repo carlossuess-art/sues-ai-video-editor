@@ -135,24 +135,52 @@ def render(source, bundle, output):
     fd, temporary = tempfile.mkstemp(prefix='.calma-', suffix='.mp4', dir=output.parent)
     os.close(fd)
     temporary = pathlib.Path(temporary)
+    video_temporary = None
+    separated = (bundle / 'video.ffscript').is_file() and (bundle / 'audio.ffscript').is_file() and bool(audio)
     try:
         command = ['ffmpeg', '-v', 'verbose', '-threads', '2', '-i', str(source)]
         for media in bound_media:
-            command += ['-i', str(media['path'])]
+            command += ['-threads', '2', '-i', str(media['path'])]
         for media in illustrations:
             command += ['-loop', '1', '-framerate', '30', '-i', str(media['path'])]
         for layer in subject_layers:
             command += ['-loop', '1', '-framerate', '30', '-i', str(layer['resource']), '-i', str(layer['mask'])]
         for overlay in overlays:
-            command += ['-i', str(overlay['path'])]
-        if music:
-            command += ['-i', str(music['path'])]
-        for sound in sounds:
-            command += ['-i', str(sound['path'])]
-        command += ['-filter_complex_threads', '1', '-filter_complex_script', 'filter.ffscript', '-map', '[video]']
-        if audio:
-            command += ['-map', '[mixed-audio]' if music or manifest.get('soundEffects', {}).get('events') or manifest.get('customSfx', {}).get('events') or manifest.get('voiceEffects', {}).get('events') or manifest.get('mastering', {}).get('enabled') else '[audio]']
-        command += ['-c:v', 'libx264', '-threads', '2', '-preset', 'veryfast', '-crf', '22', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-map_metadata', '-1', '-movflags', '+faststart', '-progress', str(output.parent / 'ffmpeg-progress.txt'), '-nostats', '-y', str(temporary)]
+            command += ['-threads', '2', '-i', str(overlay['path'])]
+        if separated:
+            # Visual-only encoding keeps the original audio and delayed SFX from
+            # advancing the shared decoder/concat and buffering portrait frames.
+            vfd, vpath = tempfile.mkstemp(prefix='.sues-video-', suffix='.mp4', dir=output.parent)
+            os.close(vfd)
+            video_temporary = pathlib.Path(vpath)
+            command += ['-filter_complex_threads', '1', '-filter_complex_script', 'video.ffscript',
+                        '-map', '[video]', '-an', '-c:v', 'libx264', '-threads', '2',
+                        '-preset', 'veryfast', '-crf', '22', '-pix_fmt', 'yuv420p',
+                        '-map_metadata', '-1', '-progress', str(output.parent / 'ffmpeg-progress.txt'),
+                        '-nostats', '-y', str(video_temporary)]
+            with (bundle / 'render-video.log').open('w') as log:
+                subprocess.run(command, cwd=bundle, stdout=log, stderr=subprocess.STDOUT, check=True)
+            command = ['ffmpeg', '-v', 'verbose', '-threads', '2', '-i', str(source)]
+            if music:
+                command += ['-threads', '2', '-i', str(music['path'])]
+            for sound in sounds:
+                command += ['-threads', '2', '-i', str(sound['path'])]
+            video_index = 1 + int(bool(music)) + len(sounds)
+            command += ['-threads', '2', '-i', str(video_temporary),
+                        '-filter_complex_threads', '1', '-filter_complex_script', 'audio.ffscript',
+                        '-map', str(video_index) + ':v:0', '-map', '[mixed-audio]',
+                        '-c:v', 'copy', '-c:a', 'aac', '-b:a', '128k', '-map_metadata', '-1',
+                        '-movflags', '+faststart', '-progress', str(output.parent / 'ffmpeg-audio-progress.txt'),
+                        '-nostats', '-y', str(temporary)]
+        else:
+            if music:
+                command += ['-threads', '2', '-i', str(music['path'])]
+            for sound in sounds:
+                command += ['-threads', '2', '-i', str(sound['path'])]
+            command += ['-filter_complex_threads', '1', '-filter_complex_script', 'filter.ffscript', '-map', '[video]']
+            if audio:
+                command += ['-map', '[mixed-audio]' if music or manifest.get('soundEffects', {}).get('events') or manifest.get('customSfx', {}).get('events') or manifest.get('voiceEffects', {}).get('events') or manifest.get('mastering', {}).get('enabled') else '[audio]']
+            command += ['-c:v', 'libx264', '-threads', '2', '-preset', 'veryfast', '-crf', '22', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-map_metadata', '-1', '-movflags', '+faststart', '-progress', str(output.parent / 'ffmpeg-progress.txt'), '-nostats', '-y', str(temporary)]
         with (bundle / 'render.log').open('w') as log:
             subprocess.run(command, cwd=bundle, stdout=log, stderr=subprocess.STDOUT, check=True)
         result = probe(temporary)
@@ -161,7 +189,7 @@ def render(source, bundle, output):
             raise ValueError('Unexpected output dimensions/rate')
         if abs(float(encoded['duration']) - manifest['duration']) > 1/30 + .001:
             raise ValueError('Output duration drift exceeds one frame')
-        subprocess.run(['ffmpeg', '-v', 'error', '-i', str(temporary), '-f', 'null', '-'], check=True)
+        subprocess.run(['ffmpeg', '-v', 'error', '-xerror', '-err_detect', 'explode', '-threads', '2', '-i', str(temporary), '-f', 'null', '-'], check=True)
         if any(digest(m['path']) != m['sha256'] for m in bound_media):
             raise ValueError('B-roll source changed during render')
         if any(digest(m['path']) != m['sha256'] for m in illustrations):
@@ -184,13 +212,15 @@ def render(source, bundle, output):
                  'subjectLayers': [{k: v for k, v in layer.items() if k not in ('mask', 'resource')} for layer in subject_layers], 'soundEffects': manifest.get('soundEffects'), 'customSfx': {'assets': [{k: v for k, v in s.items() if k != 'path'} for s in sounds], 'events': manifest.get('customSfx', {}).get('events', [])}, 'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'ambientOverlays': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False, 'visualAcceptance': False} for m in overlays], 'mastering': manifest.get('mastering'), 'voiceEffects': {'version': manifest.get('voiceEffects', {}).get('version'), 'events': manifest.get('voiceEffects', {}).get('events', []), 'humanListeningAccepted': False}, 'captions': len(manifest['captions']), 'illustrations': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in illustrations],
                  'font': {'family': expected_family, 'regularSha256': digest(font), 'boldSha256': digest(bold_font), 'extraFaces': extra_fonts},
                  'ffmpeg': subprocess.check_output(['ffmpeg', '-version'], text=True).splitlines()[0],
-                 'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
+                 'renderPasses': ['video', 'audio-mux'] if separated else ['legacy-combined'], 'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
         # Exclusive creation prevents a race from overwriting another output.
         os.link(temporary, output)
         output.with_suffix('.audit.json').write_text(json.dumps(audit, indent=2) + '\n')
         return audit
     finally:
         temporary.unlink(missing_ok=True)
+        if video_temporary is not None:
+            video_temporary.unlink(missing_ok=True)
 
 
 def main():

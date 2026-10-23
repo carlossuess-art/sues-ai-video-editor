@@ -237,3 +237,21 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0) +2*(plan.subjectLayers?.length??0)+(plan.ambientOverlays?.length??0),{hasAudio}));
   return filters.join(';\n')+'\n';
 }
+
+// Separate the visual graph from the voice/audio graph. Late audio sidechains
+// must not pull the shared A/V concat ahead and retain full-resolution frames.
+export function buildVideoPassFilter(plan,options={}){
+ const visual=structuredClone(plan);
+ visual.audioMix=null;visual.soundEffects={events:[]};visual.customSfx={events:[]};
+ visual.voiceEffects={events:[]};visual.mastering={enabled:false};
+ return buildPreviewFilter(visual,{...options,hasAudio:false});
+}
+export function buildAudioPassFilter(plan){
+ const spans=plan.timeMap.spans,filters=[];
+ if(spans.length>1)filters.push(`[0:a]asplit=${spans.length}${spans.map((_,i)=>`[source-a${i}]`).join('')}`);
+ for(const [i,s]of spans.entries())filters.push(`[${spans.length>1?'source-a'+i:'0:a'}]atrim=start=${s.sourceIn}:end=${s.sourceOut},asetpts=PTS-${s.sourceIn}/TB,aresample=48000:async=1:first_pts=0[a${i}]`);
+ filters.push(`${spans.map((_,i)=>`[a${i}]`).join('')}concat=n=${spans.length}:v=0:a=1[audio]`);
+ const mixed=renderAudioFilters(plan,1,{hasAudio:true});
+ filters.push(...(mixed.length?mixed:['[audio]anull[mixed-audio]']));
+ return filters.join(';\n')+'\n';
+}

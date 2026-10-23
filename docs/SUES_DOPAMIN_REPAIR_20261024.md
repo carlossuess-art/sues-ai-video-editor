@@ -26,3 +26,11 @@ La aceptación creativa corresponde a Carlos. F6/F7/F9 siguen abiertas, global o
 Planes JSON admiten escenas `card` explícitas con el compositor existente, anunciando que cubren al presentador de forma intencional. El control global de zoom modifica o desactiva los acercamientos explícitos sin perder su motivo. La UI conserva encuadre/zooms, B-roll, overlays, voz, mastering y la tercera línea gráfica al ajustar otros campos. El reproductor diferencia versiones sin zooms/gráficos; service worker v20. Se refuerza la revisión de comandos dentro de planes externos y la prueba HTTP demuestra 422 sin nueva versión cuando falta música solicitada.
 
 Primer plan privado del maestro preparado: cuatro ciclos de zoom, dos escenas gráficas, dos planos de apoyo, una capa de luz, tres transiciones, siete SFX y música propia derivada de 70s con ducking. No equivale a presencia audiovisual verificada hasta revisar su MP4; render en curso. Región/ancla revisadas manualmente, no detección automática ni máscara.
+
+## Incidencia real de memoria y separación de pases
+
+La primera iteración monolítica fue terminada por SIGKILL. El kernel del VPS confirmó un OOM de cgroup con ~1.035.864 KiB RSS; el contenedor de QA tenía 1 GiB, igual que el editor. No cuenta como MP4 final ni como PASS. Se conserva el log. El servicio web no se interrumpió.
+
+Se añade render en dos pases a bundles nuevos: vídeo compuesto sin el grafo de audio; después mezcla de voz, música y SFX y mux con copia del vídeo codificado. Se limita la concurrencia de decodificadores y de la comprobación final. Los dos grafos adicionales entran en el digest del bundle. Los bundles antiguos conservan la ruta compatible; los originales nunca se sobrescriben. La nueva decodificación final usa `-xerror -err_detect explode`: no acepta un retorno 0 con errores de decodificación ignorados.
+
+Prueba real nueva bajo RLIMIT_AS de 1 GiB: MP4 20s, voz 440Hz, música 250Hz y SFX privado 880Hz a los 14s; las tres componentes están presentes en audio decodificado, fuente intacta y dos pases registrados. 292/292 tests locales y check aprobados. Esto valida el mecanismo, no la calidad creativa del maestro; el replay real en VPS sigue pendiente.

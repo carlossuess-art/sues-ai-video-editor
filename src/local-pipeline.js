@@ -20,7 +20,7 @@ import {resolve,dirname,join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {buildAutomaticDirector,validateEditorSettings} from './automatic-director.js';
-import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,wrapCaption} from './local-preview.js';
+import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,buildVideoPassFilter,buildAudioPassFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
 export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['reviewed-framing.js','template-recipe.js','custom-sfx.js','voice-effects.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
@@ -140,6 +140,8 @@ export function writePreparedBundle(project,prepared,outputDirectory){
  for(const [file,value]of [['manifest.json',prepared.plan],['director.json',prepared.director],['settings.json',prepared.settings]])writeFileSync(join(out,file),JSON.stringify(value,null,2)+'\n');
  writeFileSync(join(out,'captions.ass'),buildPreviewASS(prepared.plan));
  writeFileSync(join(out,'filter.ffscript'),buildPreviewFilter(prepared.plan));
+ writeFileSync(join(out,'video.ffscript'),buildVideoPassFilter(prepared.plan));
+ writeFileSync(join(out,'audio.ffscript'),buildAudioPassFilter(prepared.plan));
  cpSync(project.fontDirectory,join(out,'fonts'),{recursive:true});
  writeFileSync(join(out,'preparation.json'),JSON.stringify({fingerprint:prepared.fingerprint,engine:'local-pipeline-v1',costUSD:0,productionReady:false},null,2)+'\n');
  return out;
