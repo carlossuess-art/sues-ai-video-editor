@@ -1,3 +1,19 @@
+## PUBLICADO · Reparación DOPAMIN y mezcla de voz · 23/10/2026 UTC
+
+Código y VPS: `1cf07c3e2ffd320fbbebf1d117c25c248299dca3`, rama documentada, sin merge a main. Flujo real en la web: Dar instrucciones → revisión de 35 operaciones → versión independiente → MP4 exportado y comprobado. Iteración 03: `95dd39c1-ea53-4c88-88f1-62b80fa3698d`, 68,6491 s, SHA256 `901c26f10b24002698f5cc05f35a2e39abc2f4ed3fcd707b6dd28baa486314d9`. La edición incorpora zooms narrativos, tarjetas, B-roll, overlay, transiciones, SFX y música; los recuentos no certifican calidad creativa.
+
+La iteración 02 midió -33,3 LUFS/-13,2 dBTP: mezcla demasiado baja. No se promueve como candidata final. Se publica normalización del audio original en dos pases antes de música/SFX, con ducking adaptado y auditoría de loudness real. Iteración 04 `cca3b1cf-2447-4cb8-a4af-df70c7cc51a9` iniciada con una sola operación voice-level, conservando los ajustes anteriores; comprobación final pendiente al escribir este estado.
+
+Render monolítico falló por OOM: separación vídeo/audio y decodificación estricta resuelven el fallo en MP4 completo. La UI conserva ajustes y recursos y recupera lecturas GET transitorias; las instrucciones se comprueban contra efectos compilados y se bloquean si faltan recursos. Encuadre manual revisado ligado al SHA, sin presentarlo como seguimiento facial/ocular.
+
+Pruebas: 294 PASS en contenedor; única prueba dependiente de Git ejecutada separadamente en host 1/1 (binario ausente en imagen). Python despliegue 29/29. Incluye CALMA y prueba MP4 de voz baja normalizada con música/SFX bajo límite de memoria. Diagnóstico/despliegue OK. Whisper activo; memoria 1,25 GiB conservada. HTTPS 200 y API privada sin sesión 401. Respaldo `/opt/sues-video-setup/update-backup-20261023-231111-119180`, SHA256 `d5ff048f3af7eb8133a3274f1db5353cb12475c708131ebbf7da0bcf8f37c5f2`.
+
+Original maestro conservado sin modificar/resubir. Iteración 02 en [Drive](https://drive.google.com/file/d/18DNjU2WEL5hGewtBD0RKXF2i9P2gkkZL/view), marcada como prueba. [Informe y comparación en carpeta de pruebas](https://docs.google.com/document/d/1YoBM1VbN9TpQvZXXtJjXDfvh5tUMbm9XM3Cr_3NYkOA/edit). Roadmap actualizado. Evidencia privada/VPS: `/opt/sues-video-setup/dopamin-qa-20261024`.
+
+**Bloqueo real:** el entorno principal de Work se desconectó: navegador y archivos locales no disponibles. Drive rechaza nuevas subidas con “no primary turn environment is available”. Continúa validación técnica en VPS; reproducción/escucha final, exportación de últimas versiones a Drive y aprobación creativa de Carlos pendientes. Global oficial **48 %**, F6/F7/F9 abiertas. No se declara criterio V1 ni Fase 9 superados.
+
+---
+
 ## EN DESARROLLO · Reparación DOPAMIN real · 24/10/2026
 
 Reproducida causa de captions-only sobre trabajo cb62a001: sin candidatos léxicos ni visión, sin pista musical asignada y SFX dependientes de eventos inexistentes. Preflight de instrucciones ahora comprueba efectos compilados; encuadre manual ligado al original y zooms explícitos incorporados sin modelos ni costes nuevos. Primera regresión local 290/290. Aún sin despliegue de este bloque ni candidato audiovisual validado. Ver docs/SUES_DOPAMIN_REPAIR_20261024.md. Oficial global 48 %, F6/F7/F9 abiertas.
