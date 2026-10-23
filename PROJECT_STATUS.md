@@ -1,3 +1,17 @@
+## PUBLICADO · Editor vertical DOPAMIN, instrucciones y streaming ágil · 23/10/2026
+
+**PRODUCCIÓN VPS confirmada:** Git SHA `a9219413ed2054130a4d18b4d66b2921f39f5e68` (versión anterior `f8bc446d` conservada). Proyecto existente, rama `feat/library-ambient-overlays-mastering-20261021`; NO merge a main. Backup previo a actualización verificado en `/opt/sues-video-setup/update-backup-20261023-064607-109940/editor-state.tar`, SHA256 `708a5bc1e40585e5014c8708a9e34cec443ce3d737e074b616a81ec5895e6f99`. Deploy mediante `scripts/deploy/update_service.py`, diagnóstico PASS, cola inactiva, Whisper activo y HTTPS 200 tras la copia.
+
+**FRONTEND:** subir original → plantilla CALMA o DOPAMIN exclusiva y bien identificada → `Dar instrucciones` habilitado (motor compatible existente) / `Edición automática · próximamente` desactivado (Director IA completo no desarrollado). Vista vertical real 9:16, 46 % de columna en desktop, responsive móvil; overlay `EDITANDO VÍDEO` durante cola/render/publicación, `VÍDEO ORIGINAL` hasta tener edición y `VÍDEO EDITADO` con previsualización y exportación cuando DONE. Service Worker shell v19. `preload=auto` y cache segura de hash SHA256 de medios subidos por firma dev/inode/tamaño/mtimeNs/ctimeNs: validación al primer Range y tras cualquier cambio de archivo.
+
+**PRUEBAS:** 11/11 focalizadas, 284/286 Docker y 2/2 de Git en host, `node scripts/check.mjs` PASS, `git diff --check` PASS. Postdeploy autenticado: HTML app.js studio.css sw.js v19 HTTP 200 con identificadores correctos, /health /jobs /assets /library/capacity /library/search /uploads HTTP 200, sin sesión las rutas privadas siguen 401. HTTP Range original subido existente de 34.175.827 bytes: tres solicitudes 206 de 65.536 bytes, tiempos desde VPS de 0,036/0,003/0,002 s. No se borraron ni cambiaron proyectos originales. No afirmar desaparición total de buffering en Android, solo causa probable optimizada y endpoint verificado.
+
+**LÍMITES:** no se ha hecho aún captura y revisión visual en navegador móvil ni aprobación de un vídeo real DOPAMIN, y la ruta de instrucciones sigue aplicando órdenes limitadas (no cine completo). F7 Director IA y F9 aceptación V1 pendientes, porcentaje oficial global 48 % sin incremento. Sin nuevos costes. [QA frontend](docs/FRONTEND_QA_20261023.md).
+
+**Siguiente acción exacta:** validar visualmente interfaz 9:16 y flujo en navegador Android autorizado, tras satisfacción del usuario probar un Reel real, revisar calidad narrativa, safe zones, captions, recursos, audio y aceptar Fase 9. No pedirle probar la interfaz anterior.
+
+---
+
 ## FRONTEND · Plantilla única + instrucciones + preview 9:16 · 23/10/2026
 
 Se ha corregido el flujo **subir vídeo → elegir CALMA/DOPAMIN → Dar instrucciones**, manteniendo «Edición automática» desactivada hasta construir el Director IA. Plantilla activa visible y persistente, reproductor de proporciones 9:16 (~46 % ancho estudio escritorio, responsive móvil), estados «VÍDEO ORIGINAL», «EDITANDO VÍDEO» y «VÍDEO EDITADO», previsualización/exportación después del render. La ruta de «Dar instrucciones» conserva el intérprete limitado existente; no simular un Director autónomo ni prometer reproducción cinematográfica 100 %.

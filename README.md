@@ -24,10 +24,10 @@
 
 Esta rama ya contiene más capacidades que la POC original. **No interpretar un commit como despliegue.**
 
-- **Producción Hostinger:** `f8bc446dc21e1a2718708447d4ffe2caec1d8ebf`, HTTPS 200, Whisper activo, biblioteca privada y rutas de trabajos probadas. Backup verificado y rollback preparado. Incidencia #8 cerrada el 23/10/2026.
-- **GitHub y producción:** `f8bc446dc21e1a2718708447d4ffe2caec1d8ebf` en `feat/library-ambient-overlays-mastering-20261021`; rama desplegada en VPS. Sigue sin merge a `main`. Contiene Director por timestamps, ADN DOPAMIN medido, panel de sugerencias y protección de biblioteca.
+- **Producción Hostinger:** `a9219413ed2054130a4d18b4d66b2921f39f5e68` (frontend vertical DOPAMIN y reproducción optimizada), HTTPS 200, Whisper activo, biblioteca privada y rutas de trabajos probadas. Backup SHA256 verificado y rollback preparado.
+- **GitHub y producción (código):** `a9219413ed2054130a4d18b4d66b2921f39f5e68` en `feat/library-ambient-overlays-mastering-20261021`. Sigue sin merge a `main`. UI subir → seleccionar plantilla → instrucciones; Director IA automático aún pendiente; visualización 9:16 y estados de edición diferenciados. Ver [QA frontend](docs/FRONTEND_QA_20261023.md).
 - **Biblioteca recuperada:** el 23/10/2026 se corrigió la propiedad de sus dos carpetas privadas con Desktop Commander autorizado sin ampliar modos. Auditoría UID1000 `ready:true`, accesos bloqueados 0/71; APIs de catálogo, búsqueda, capacidad y media 200 con sesión y 401 sin sesión. [Incidencia #8](https://github.com/carlossuess-art/sues-ai-video-editor/issues/8) cerrada.
-- **Pruebas:** 282/284 en Docker con dos pruebas de Git que pasan 2/2 en VPS. Tras el deploy, el render sintético aislado de 12 segundos generó MP4 y conservó la voz (PASS); aún falta prueba de aceptación con vídeo real.
+- **Pruebas:** 284/286 en Docker y 2/2 casos Git aprobados en host VPS. Postdeploy HTML/CSS/JS/SW comprobados; HTTP Range de un original de 34 MB respondió 206 en 0,036/0,003/0,002 segundos para tres fragmentos; aún falta reproducción continua real en Android y aceptación visual de un Reel.
 - **V1:** Fase 9 no aceptada, global oficial 48 % sin sumar trabajo experimental.
 - **Documentos recientes:** [propuestas del Director](docs/SUES_DIRECTOR_LIBRARY_CUES_20261022.md), [medición DOPAMIN](docs/SUES_DOPAMIN_MEASURED_20261022.md), [estado técnico detallado](PROJECT_STATUS.md), [Roadmap Maestro](https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit).
 
