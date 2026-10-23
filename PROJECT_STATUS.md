@@ -1,3 +1,15 @@
+## FRONTEND · Plantilla única + instrucciones + preview 9:16 · 23/10/2026
+
+Se ha corregido el flujo **subir vídeo → elegir CALMA/DOPAMIN → Dar instrucciones**, manteniendo «Edición automática» desactivada hasta construir el Director IA. Plantilla activa visible y persistente, reproductor de proporciones 9:16 (~46 % ancho estudio escritorio, responsive móvil), estados «VÍDEO ORIGINAL», «EDITANDO VÍDEO» y «VÍDEO EDITADO», previsualización/exportación después del render. La ruta de «Dar instrucciones» conserva el intérprete limitado existente; no simular un Director autónomo ni prometer reproducción cinematográfica 100 %.
+
+Se ha cambiado preload de vídeos a auto y optimizado `VideoIntake.media()`: primera lectura valida SHA256 y peticiones HTTP Range sucesivas reutilizan firma segura mientras dev/inode/size/mtimeNs/ctimeNs permanezcan invariables; alteraciones vuelven a verificar integridad. El Service Worker usa caché shell v19 sin guardar medios sensibles.
+
+QA de rama: 11/11 focalizados PASS, 2/2 tests Git deployment en host PASS, suite Docker 284/286 PASS (dos fallos por falta de ejecución de Git dentro del contenedor, ambos pasan en host). `node scripts/check.mjs`, `node --check web/app.js`, `git diff --check` PASS. No se ha medido todavía reproducción real en Android; no afirmar que los cortes se han resuelto al 100 % ni F9 completada. Documento `docs/FRONTEND_QA_20261023.md`.
+
+Siguiente acción: registrar GitHub SHA, `update_service.py --diagnose`, backup/rollback, deploy controlado y verificación autenticada de CSS/HTML/JS, HTTP Range, fuentes privadas, Whisper y render sintético; solo entonces indicar producción actualizada. Porcentajes oficiales sin cambio: global 48 %.
+
+---
+
 ## RESOLUCIÓN F6 · Biblioteca reparada y release desplegado · 23/10/2026
 
 **Producción verificada:** `f8bc446dc21e1a2718708447d4ffe2caec1d8ebf` instalado mediante `scripts/deploy/update_service.py` (no equivale a merge en `main`). Servidor srv1841004, HTTPS 200, Whisper activo. `/api/health` y `/api/jobs` 200 autenticados; cola 0 renderizando y 0 en espera antes del deploy.

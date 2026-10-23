@@ -1,7 +1,7 @@
 import {STYLE_VARIANTS} from './style-variants.js';
 import {
  mkdirSync,readFileSync,writeFileSync,readdirSync,lstatSync,existsSync,
- linkSync,unlinkSync,statfsSync,renameSync,rmSync
+ linkSync,unlinkSync,statfsSync,renameSync,rmSync,statSync
 } from 'node:fs';
 import {open,unlink} from 'node:fs/promises';
 import {resolve,dirname,join} from 'node:path';
@@ -42,7 +42,7 @@ export function projectReady(path){
 // HTTP never accepts filesystem paths, command strings, model keys or provider URLs.
 export class VideoIntake{
  constructor(directory,profiles,{probe}={}){
-  this.directory=resolve(directory);this.profiles=profiles;
+  this.directory=resolve(directory);this.profiles=profiles;this.verifiedVideoSignatures=new Map();
   this.probe=probe??(async path=>{
    const {stdout}=await run('ffprobe',['-v','error','-protocol_whitelist','file,pipe','-format_whitelist','mov,matroska,webm','-show_streams','-show_format','-of','json',path],{timeout:15000,maxBuffer:1024*1024});
    return JSON.parse(stdout);
@@ -99,7 +99,15 @@ export class VideoIntake{
  media(id){
   if(!HASH.test(id))throw new Error('Upload not found');
   const record=this.records().find(r=>r.sha256===id);if(!record)throw new Error('Upload not found');
-  const path=join(this.directory,id+'.video');if(!regular(path)||lstatSync(path).size!==record.bytes||fileSha256(path)!==id)throw new Error('Stored video integrity changed');
+  const path=join(this.directory,id+'.video');
+  if(!regular(path))throw new Error('Stored video integrity changed');
+  const st=statSync(path,{bigint:true});
+  if(st.size!==BigInt(record.bytes))throw new Error('Stored video integrity changed');
+  const signature=[st.dev,st.ino,st.size,st.mtimeNs,st.ctimeNs].join(':');
+  if(this.verifiedVideoSignatures.get(id)!==signature){
+   if(fileSha256(path)!==id)throw new Error('Stored video integrity changed');
+   this.verifiedVideoSignatures.set(id,signature);
+  }
   return path;
  }
  saveBrief(id,prompt,{projectTitle,styleId}={}){
