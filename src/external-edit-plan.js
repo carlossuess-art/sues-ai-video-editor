@@ -1,3 +1,4 @@
+import {reviewInstructionExecution} from './instruction-execution.js';
 import {createHash} from 'node:crypto';
 import {prepareProject} from './local-pipeline.js';
 import {applyExternalMotion,externalMotionCatalog} from './external-motions.js';
@@ -28,7 +29,7 @@ export function parseExternalPlan(text){
 export function reviewExternalPlan(text,{project,settings,assets=[],commandPlanner}){
  const imported=parseExternalPlan(text),baseline=prepareProject(project,settings);let manifest=baseline.plan;
  if(imported.sourceSha256!==manifest.source.sha256)fail('Este plan pertenece a otro vídeo. Copia las instrucciones del proyecto correcto.');
- const next=structuredClone(settings),rows=[],seen=new Set(),motionCaptions=new Set();
+ const commandChanges={};const next=structuredClone(settings),rows=[],seen=new Set(),motionCaptions=new Set();
  for(const [index,op]of imported.operations.entries()){
   const row={index:index+1,status:'ready',description:''};rows.push(row);
   try{
@@ -99,7 +100,7 @@ export function reviewExternalPlan(text,{project,settings,assets=[],commandPlann
    }else if(op.type==='command'){
     if(!keys(op,['type','text'])||typeof op.text!=='string')fail('Comando inválido.');
     const proposal=commandPlanner(op.text,next);if(!proposal.canApply||!proposal.actions.length||proposal.changes.styleId!==undefined||proposal.changes.captionWords!==undefined)fail('Comando no compatible. Mantén estilo y agrupación actuales.');
-    Object.assign(next,proposal.changes);row.description=proposal.actions.join('; ');
+    Object.assign(next,proposal.changes);Object.assign(commandChanges,proposal.changes);row.description=proposal.actions.join('; ');
    }else{row.status='unsupported';fail('Operación no soportada: '+String(op.description??op.type??'sin tipo').slice(0,150));}
   }catch(error){if(row.status==='ready')row.status='invalid';row.description=error.message;}
  }
@@ -107,8 +108,10 @@ export function reviewExternalPlan(text,{project,settings,assets=[],commandPlann
  if(rows.every(r=>r.status==='ready')){
   try{
    prepared=prepareProject(project,next);
+   const execution=reviewInstructionExecution({changes:commandChanges,canApply:true,unsupported:[]},prepared.plan);
+   if(!execution.canApply)fail(execution.unsupported.join(' '));
    if(imported.operations.some(o=>o.type==='zoom')&&!prepared.plan.semantic.zooms.length)fail('No se ha compilado el acercamiento solicitado.');
-   if((next.transitions?.length||next.imageEvents?.length||next.graphicCards?.length||imported.operations.some(o=>o.type==='motion'))&&next.motions===false)fail('Activa los recursos animados para mostrar motions, transiciones e imágenes.');
+   if(imported.operations.some(o=>['transition','image','card','motion'].includes(o.type))&&next.motions===false)fail('Activa los recursos animados para mostrar motions, transiciones e imágenes.');
    if(imported.operations.some(o=>o.type==='command'&&/m[uú]sica/i.test(o.text))&&next.musicEnabled&&!prepared.plan.audioSourceAvailable)fail('No hay pista musical: elige un recurso de audio de la biblioteca.');
   }catch(error){const detail=/resource overlaps motion card/.test(error.message)?'La imagen coincide con un recurso animado existente. Elige otro intervalo.':/transitions overlap/.test(error.message)?'Hay transiciones solapadas. Separa sus tiempos.':error.message;notes.push('El montaje completo no es compatible: '+detail);}
  }

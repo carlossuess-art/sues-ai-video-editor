@@ -24,6 +24,9 @@ export function planInstructions(text, base = {}) {
   else if(/^(?:sin imagenes de (?:la )?plantilla)$/.test(s))add('profileImages',false,'Ocultar imágenes de la plantilla');
   else unsupported.push(raw);
  }
+ if(changes.zoomIntensity!==undefined&&(base.zoomEvents??[]).length){
+  changes.zoomEvents=changes.zoomIntensity===0?[]:base.zoomEvents.map(e=>({...e,scale:Math.min(1.22,Math.max(1.04,1+(e.scale-1)*changes.zoomIntensity/(base.zoomIntensity||1)))}));
+ }
  const regroup=(changes.styleId!==undefined&&changes.styleId!==base.styleId)||(changes.captionWords!==undefined&&changes.captionWords!==(base.captionWords??3));
  const anchored=!!((base.elements?.items??[]).length||(base.motionChoices??[]).length||(base.graphicCards??[]).length||(base.transitions??[]).length||Object.keys(base.keywordOverrides??{}).length||Object.keys(base.captionOverrides??{}).length||(base.highlightCaptions??[]).length);
  if(regroup)Object.assign(changes,{elements:null,motionChoices:[],graphicCards:[],transitions:[],keywordOverrides:{},captionOverrides:{},highlightCaptions:[]});

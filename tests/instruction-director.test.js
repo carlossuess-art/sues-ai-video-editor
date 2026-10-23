@@ -16,6 +16,9 @@ test('instruction plans preserve manual settings, identify unsupported clauses a
  assert.equal(planInstructions('CALMA',base).requiresResetConfirmation,false);
  assert.equal(planInstructions('música suave y elimina repeticiones',base).canApply,false);
  for(const text of ['no quiero menos zoom','sin música pero añade una canción','música al 19 %','zoom al 101 %','hazlo viral','en este momento baja música'])assert.equal(planInstructions(text,base).canApply,false,text);
+ const explicit={zoomIntensity:.6,zoomEvents:[{start:12,end:15,scale:1.07,reason:'Cambio de argumento'}]};
+ assert.deepEqual(planInstructions('sin zoom',explicit).changes.zoomEvents,[]);
+ assert.ok(planInstructions('menos zoom',explicit).changes.zoomEvents[0].scale<1.07);
  assert.equal(planInstructions('',base).canApply,true);assert.throws(()=>planInstructions('x'.repeat(4001),base));
 });
 
@@ -31,6 +34,11 @@ test('HTTP director rejects unknown requests without mutation; project ancestry,
   const b=app.jobs.create('test',a.settings,{parentId:a.id});assert.equal(b.projectId,a.projectId);
   const snapshot=JSON.stringify(app.jobs.get(a.id)),count=app.jobs.list().length;
   assert.equal((await post('jobs/'+a.id+'/direct',{prompt:'menos zoom y elimina repeticiones',requestId:randomUUID()})).status,422);
+  assert.equal(app.jobs.list().length,count);assert.equal(JSON.stringify(app.jobs.get(a.id)),snapshot);
+  const missing={prompt:'música al 12 %',requestId:randomUUID()};
+  const blocked=await (await post('jobs/'+a.id+'/direct-plan',missing)).json();
+  assert.equal(blocked.canApply,false);assert.equal(blocked.execution.musicPresent,false);
+  assert.equal((await post('jobs/'+a.id+'/direct',missing)).status,422);
   assert.equal(app.jobs.list().length,count);assert.equal(JSON.stringify(app.jobs.get(a.id)),snapshot);
   const request={prompt:'sin música; menos zoom',requestId:randomUUID()},path='jobs/'+a.id+'/direct';
   const response=await post(path,request);assert.equal(response.status,202);const result=await response.json();

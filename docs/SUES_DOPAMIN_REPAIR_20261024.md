@@ -18,3 +18,11 @@ El trabajo `cb62a001-14e7-48d5-ab66-fbf3f6fd8bb1` tenía 88 captions y ningún e
 Base antes de cambios: 286/286 tests locales. Primera suite de reparación: 290/290; casos nuevos cubren reproducción del fallo, audio sin recurso, SHA equivocado, zoom sin encuadre, recorte inseguro y revisión atómica. Check/diff y nueva prueba audiovisual deben registrarse tras su ejecución.
 
 La aceptación creativa corresponde a Carlos. F6/F7/F9 siguen abiertas, global oficial 48 %. No atribuir esta revisión manual al futuro Director IA autónomo. Ningún coste externo nuevo.
+
+## Segunda revisión técnica
+
+291/291 pruebas locales, `npm run check`, sintaxis frontend y `git diff --check` aprobados. Suite VPS Docker inicial 289/290: único fallo por Git no instalado en esa imagen; el caso pasa 1/1 en el anfitrión VPS. El código de producción aún se debe verificar tras despliegue.
+
+Planes JSON admiten escenas `card` explícitas con el compositor existente, anunciando que cubren al presentador de forma intencional. El control global de zoom modifica o desactiva los acercamientos explícitos sin perder su motivo. La UI conserva encuadre/zooms, B-roll, overlays, voz, mastering y la tercera línea gráfica al ajustar otros campos. El reproductor diferencia versiones sin zooms/gráficos; service worker v20. Se refuerza la revisión de comandos dentro de planes externos y la prueba HTTP demuestra 422 sin nueva versión cuando falta música solicitada.
+
+Primer plan privado del maestro preparado: cuatro ciclos de zoom, dos escenas gráficas, dos planos de apoyo, una capa de luz, tres transiciones, siete SFX y música propia derivada de 70s con ducking. No equivale a presencia audiovisual verificada hasta revisar su MP4; render en curso. Región/ancla revisadas manualmente, no detección automática ni máscara.
