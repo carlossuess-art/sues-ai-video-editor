@@ -449,12 +449,12 @@ $('external-copy').onclick=()=>work(async()=>{try{await navigator.clipboard.writ
 $('external-review').onclick=()=>work(async()=>{invalidateExternal();if(!current)throw Error('Prepara primero el vídeo y su análisis.');if(previewDirty)throw Error('Guarda o descarta tus ajustes antes de importar el plan.');const text=$('external-plan-text').value;await api('jobs/'+current.id+'/external-draft','POST',{text});const result=await api('jobs/'+current.id+'/external-review','POST',{text});externalReview={...result,text,jobId:current.id};const box=$('external-result');box.append(node('strong',result.canApply?'Plan listo para ejecutar':'Plan guardado y pendiente: no se ejecutará parcialmente'));for(const r of result.rows)box.append(node('p',(r.status==='ready'?'✓ ':r.status==='missing-resource'?'Recurso ausente · ':'Pendiente · ')+r.description));for(const note of result.notes)box.append(node('p',note));$('external-execute').disabled=!result.canApply;$('external-execute').scrollIntoView({block:'center'});});
 $('external-execute').onclick=()=>work(async()=>{if(!externalReview?.canApply||externalReview.jobId!==current?.id||externalReview.text!==$('external-plan-text').value||previewDirty)throw Error('Comprueba de nuevo el plan antes de ejecutarlo.');externalRequest??=crypto.randomUUID();const job=await api('jobs/'+current.id+'/external-execute','POST',{text:externalReview.text,reviewId:externalReview.reviewId,requestId:externalRequest});await select(job.id);$('external-result').textContent='Plan enviado a la cola. Puedes cerrar esta pantalla; la edición continúa en el servidor.';});
 
-// One entry point, two routes. The template precedes analysis in automatic mode.
+// Dar instrucciones exposes global controls and the existing scene-plan review.
 function syncEditRoute(){
  const available=!!current||!!pendingUploadId,busy=working||analysisBusy||!!current&&['QUEUED','RENDERING','PUBLISHING'].includes(current.state);
  $('edit-video').hidden=true;$('edit-route-choices').hidden=!available;$('choose-external').disabled=!available||busy;$('choose-automatic').disabled=true;
  $('automatic-edit-panel').hidden=editingRoute!=='automatic';
- $('external-plan-panel').hidden=true;
+ $('external-plan-panel').hidden=!['automatic','external'].includes(editingRoute);
  if(editingRoute==='external')$('external-plan-panel').open=true;
  $('new-style-label').hidden=false;$('template-lock').dataset.active=$('new-project-style').value;$('active-template-label').textContent='PLANTILLA ACTIVA · '+($('new-project-style').value==='SUES_DOPAMIN'?'DOPAMIN':'CALMA');$('choose-external').setAttribute('aria-pressed',String(editingRoute==='automatic'));$('edit-mode-help').textContent=editingRoute==='automatic'?'Modo seleccionado: Dar instrucciones. El montaje seguirá la plantilla activa.':'Selecciona Dar instrucciones para continuar. El Director IA automático está en desarrollo.';
  $('prepare-external').hidden=!!current;

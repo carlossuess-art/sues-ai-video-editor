@@ -34,3 +34,7 @@ La primera iteración monolítica fue terminada por SIGKILL. El kernel del VPS c
 Se añade render en dos pases a bundles nuevos: vídeo compuesto sin el grafo de audio; después mezcla de voz, música y SFX y mux con copia del vídeo codificado. Se limita la concurrencia de decodificadores y de la comprobación final. Los dos grafos adicionales entran en el digest del bundle. Los bundles antiguos conservan la ruta compatible; los originales nunca se sobrescriben. La nueva decodificación final usa `-xerror -err_detect explode`: no acepta un retorno 0 con errores de decodificación ignorados.
 
 Prueba real nueva bajo RLIMIT_AS de 1 GiB: MP4 20s, voz 440Hz, música 250Hz y SFX privado 880Hz a los 14s; las tres componentes están presentes en audio decodificado, fuente intacta y dos pases registrados. 292/292 tests locales y check aprobados. Esto valida el mecanismo, no la calidad creativa del maestro; el replay real en VPS sigue pendiente.
+
+## Acceso al plan desde la interfaz
+
+Durante QA visual se detectó que `syncEditRoute` ocultaba siempre el panel del plan JSON, aunque el backend ya lo admitía. «Dar instrucciones» ahora conserva sus controles globales y muestra el desplegable «Plan por escenas · tiempos y recursos». No se habilita el futuro Director automático. Pruebas focalizadas del VPS de la nueva ruta: 8/8 PASS, incluido MP4 con voz/música/SFX bajo límite de memoria. Iteración 02 completa del maestro en curso.
