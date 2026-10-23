@@ -1,3 +1,10 @@
+RESULTADO TÉCNICO DE ITERACIÓN 04 · 23/10/2026 UTC
+Trabajo cca3b1cf-2447-4cb8-a4af-df70c7cc51a9 terminado. MP4 H264/AAC 1080×1920/30 fps, 68,634 s (original 68,6491 s; diferencia 15 ms), 27.431.231 bytes. SHA256 9631b26edbf0dc1979d37aff84da0f12b1d8d9329e95d188d998c8c84987ae8a. Decodificación completa estricta PASS y exportación HTTP 200 con bytes/hash idénticos. Original conserva su SHA obligatorio.
+Mezcla FINAL medida: -18,71 LUFS, -4,33 dBTP, LRA 2,40 LU. Son los valores input_i/input_tp del análisis del MP4; output_i/output_tp serían una renormalización hipotética, no el nivel del archivo entregado. Voz antes de mezcla: original -32,37 LUFS → -16,8 LUFS/-3 dBTP. Conserva la edición visual de iteración 03.
+Abrir esta versión: https://editor.suesholistics.com/?project=cca3b1cf-2447-4cb8-a4af-df70c7cc51a9
+Descarga MP4 privada (requiere sesión autorizada del editor): https://editor.suesholistics.com/api/jobs/cca3b1cf-2447-4cb8-a4af-df70c7cc51a9/media
+Pendientes obligatorios: reproducción y escucha completas de esta versión en Work, evaluación frente a referencias y aprobación creativa de Carlos. No se declara aceptación audiovisual ni Fase 9 superada. Subida de MP4 03/04 a Drive bloqueada por desconexión del entorno principal; archivos conservados en editor/VPS. Informe y versión 02 sí están en Drive. Global oficial 48 %, sin porcentaje de fase inventado.
+
 SUES AI VIDEO EDITOR · Reparación DOPAMIN y comparación verificable
 Estado operativo · 23/10/2026 UTC
 Fases 6/7/9 abiertas. Progreso global oficial: 48 %, sin incremento inferido. Fase 9 y aprobación creativa V1 exclusivamente pendientes de Carlos.
@@ -23,7 +30,7 @@ Iteración 02: MP4 completo, 68,6491 s, H264/AAC, 1080×1920, 30 fps, 27.364.381
 MP4 de comparación: https://drive.google.com/file/d/18DNjU2WEL5hGewtBD0RKXF2i9P2gkkZL/view
 Iteración 03: generada mediante la web, Dar instrucciones → revisión de 35 operaciones → ejecución → reproducción iniciada y exportación MP4 verificada. Trabajo 95dd39c1-ea53-4c88-88f1-62b80fa3698d, independiente del original. 27.391.990 bytes, SHA256 901c26f10b24002698f5cc05f35a2e39abc2f4ed3fcd707b6dd28baa486314d9. Decodificación completa válida y descarga idéntica al servidor. Contiene cuatro acercamientos narrativos, dos tarjetas, dos B-roll, un overlay, tres transiciones, siete SFX y 88 captions; los recuentos no certifican calidad creativa. Conserva mezcla anterior, por lo que NO es final.
 https://editor.suesholistics.com/?project=95dd39c1-ea53-4c88-88f1-62b80fa3698d
-Iteración 04: iniciada con la edición anterior y una sola instrucción adicional de nivelación de voz antes de mezclar. Trabajo cca3b1cf-2447-4cb8-a4af-df70c7cc51a9. En render al escribir este registro; NO se declara validada.
+Iteración 04: terminada y técnicamente comprobada; detalles medidos en la actualización inicial de este informe. Revisión audiovisual final pendiente.
 
 Audio y recursos
 Se usa ambiente propio de Drive, conservando su archivo original. Derivado de 70 segundos con crossfade y normalización, procedencia registrada en el VPS. Asset 69a50f1c603db7174edf80ff15b5bf79ca91a42b259cbec722b04cc23d66241f, gain 0,16 y ducking.
@@ -39,4 +46,4 @@ Evidencias y versiones conservadas en /opt/sues-video-setup/dopamin-qa-20261024.
 
 Bloqueo de revisión final
 Work dejó de disponer del entorno principal: navegador y archivos locales desconectados. El VPS y GitHub siguen accesibles. Drive rechaza subir las descargas de iteraciones 03/04 porque “no primary turn environment is available”. No se declara escucha final ni comparación creativa con Keanu aprobadas. La versión 02 ya está en la carpeta de pruebas; las versiones posteriores permanecen privadas en el editor/VPS.
-Siguiente acción: terminar y medir iteración 04, recuperar el navegador de Work, reproducirla completa con escucha, exportar a Drive y someterla a Carlos.
+Siguiente acción: recuperar el navegador de Work, reproducir iteración 04 completa con escucha, exportar a Drive y someterla a Carlos.

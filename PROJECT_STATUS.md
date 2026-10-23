@@ -1,3 +1,14 @@
+## ITERACIÓN 04 TERMINADA · Revisión audiovisual pendiente · 23/10/2026 UTC
+
+Trabajo cca3b1cf-2447-4cb8-a4af-df70c7cc51a9 terminado. MP4 H264/AAC 1080×1920/30 fps, 68,634 s (original 68,6491 s; diferencia 15 ms), 27.431.231 bytes. SHA256 9631b26edbf0dc1979d37aff84da0f12b1d8d9329e95d188d998c8c84987ae8a. Decodificación completa estricta PASS y exportación HTTP 200 con bytes/hash idénticos. Original conserva su SHA obligatorio.
+Mezcla FINAL medida: -18,71 LUFS, -4,33 dBTP, LRA 2,40 LU. Son los valores input_i/input_tp del análisis del MP4; output_i/output_tp serían una renormalización hipotética, no el nivel del archivo entregado. Voz antes de mezcla: original -32,37 LUFS → -16,8 LUFS/-3 dBTP. Conserva la edición visual de iteración 03.
+Abrir esta versión: https://editor.suesholistics.com/?project=cca3b1cf-2447-4cb8-a4af-df70c7cc51a9
+Descarga MP4 privada (requiere sesión autorizada del editor): https://editor.suesholistics.com/api/jobs/cca3b1cf-2447-4cb8-a4af-df70c7cc51a9/media
+Pendientes obligatorios: reproducción y escucha completas de esta versión en Work, evaluación frente a referencias y aprobación creativa de Carlos. No se declara aceptación audiovisual ni Fase 9 superada. Subida de MP4 03/04 a Drive bloqueada por desconexión del entorno principal; archivos conservados en editor/VPS. Informe y versión 02 sí están en Drive. Global oficial 48 %, sin porcentaje de fase inventado.
+
+
+---
+
 ## PUBLICADO · Reparación DOPAMIN y mezcla de voz · 23/10/2026 UTC
 
 Código y VPS: `1cf07c3e2ffd320fbbebf1d117c25c248299dca3`, rama documentada, sin merge a main. Flujo real en la web: Dar instrucciones → revisión de 35 operaciones → versión independiente → MP4 exportado y comprobado. Iteración 03: `95dd39c1-ea53-4c88-88f1-62b80fa3698d`, 68,6491 s, SHA256 `901c26f10b24002698f5cc05f35a2e39abc2f4ed3fcd707b6dd28baa486314d9`. La edición incorpora zooms narrativos, tarjetas, B-roll, overlay, transiciones, SFX y música; los recuentos no certifican calidad creativa.
