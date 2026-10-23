@@ -38,3 +38,11 @@ Prueba real nueva bajo RLIMIT_AS de 1 GiB: MP4 20s, voz 440Hz, música 250Hz y S
 ## Acceso al plan desde la interfaz
 
 Durante QA visual se detectó que `syncEditRoute` ocultaba siempre el panel del plan JSON, aunque el backend ya lo admitía. «Dar instrucciones» ahora conserva sus controles globales y muestra el desplegable «Plan por escenas · tiempos y recursos». No se habilita el futuro Director automático. Pruebas focalizadas del VPS de la nueva ruta: 8/8 PASS, incluido MP4 con voz/música/SFX bajo límite de memoria. Iteración 02 completa del maestro en curso.
+
+## Maestro completo verificado y revisión creativa intermedia
+
+Iteración 02 aislada completada en el VPS: 68,6491s, MP4 H.264/AAC 1080×1920/30fps, 27.364.381 bytes. Fuente SHA original intacta; decode estricto PASS, dos pases y sin costes externos. Pico cgroup medido 957.292.544 bytes (~913 MiB), 360,2s de ensayo incluyendo comprobaciones. No confundir con una versión ya ejecutada desde UI ni aprobación estética.
+
+La hoja de 18 fotogramas permitió detectar falta de contraste de captions sobre cielo del B-roll. Se añade un fondo oscuro solo durante la intersección caption/B-roll; prueba real de píxeles confirma presencia dentro y ausencia antes/después. Las tarjetas finales usan títulos editoriales relacionados con actividades/crecimiento en vez de fragmentos incompletos. Una segunda transcripción usa exclusivamente el modelo base-int8 local ya instalado, sin red/modelos/API nuevos y sin reemplazar análisis originales. Las correcciones manuales de captions mantienen sus intervalos; lectura/escucha humana final pendientes.
+
+Despliegue intermedio e39c323 en VPS verificado por actualizador, respaldo SHA256 97889b621784fe761d51b2203f51a7f52dbff5b1ad1ad66f877b16eb46e0015b en update-backup-20261023-224020-117102; Whisper reactivado. Ajuste final de contraste aún se debe publicar/desplegar y probar desde navegador.

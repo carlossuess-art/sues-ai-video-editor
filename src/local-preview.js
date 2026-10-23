@@ -101,6 +101,14 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   for(const c of plan.captions){
     const white=assColor((plan.graphics??[]).some(g=>g.type!=='secret'&&c.start>=g.start-1e-6&&c.end<=g.end+1e-6)?plan.renderColors.dark:plan.policy.captions.color);
     const focus=c.source!=='manual'&&(plan.semantic?.motions??[]).find(m=>m.backgroundTreatment&&c.start>=m.start-1e-6&&c.end<=m.end+1e-6&&c.wordIndexes.every(index=>(m.evidence?.sourceWordIndexes??[]).includes(index)));if(focus||(plan.graphics??[]).some(g=>g.replacedCaptionIds?.includes(c.id)||!g.heading&&!g.bodyLines&&g.type!=='compare'&&g.captionId===c.id&&g.text===c.text))continue;
+    // A bright stock sky can defeat a white caption even with a soft shadow.
+    // The backplate exists only over an active B-roll/caption intersection.
+    for(const media of plan.selectedMedia??[]){
+      const start=Math.max(c.start,media.start),end=Math.min(c.end,media.end);
+      if(end<=start)continue;
+      const b=plan.layout.caption,w=b.right-b.left+40,h=b.bottom-b.top,fade=Math.min(80,Math.round((end-start)*150));
+      event(0,start,end,'Caption',`{\\an7\\pos(${b.left-20},${b.top})\\p1\\bord0\\shad0\\1c&H191208&\\1a&H38&\\fad(${fade},${fade})}m 18 0 l ${w-18} 0 b ${w} 0 ${w} 0 ${w} 18 l ${w} ${h-18} b ${w} ${h} ${w} ${h} ${w-18} ${h} l 18 ${h} b 0 ${h} 0 ${h} 0 ${h-18} l 0 18 b 0 0 0 0 18 0`);
+    }
     const hierarchy=hierarchyLayout(c,plan.policy.captions,plan.layout.caption);
     const p=plan.policy.captions,b=plan.layout.caption,displayLines=p.inlineGroups?[c.text]:c.lines,normalSize=fitCaptionSize(displayLines,p);
     const normalRows=displayLines.map((text,i)=>({text,size:normalSize,x:(b.left+b.right)/2,y:(b.top+b.bottom)/2+(i-(displayLines.length-1)/2)*normalSize*1.1,role:'companion'}));
