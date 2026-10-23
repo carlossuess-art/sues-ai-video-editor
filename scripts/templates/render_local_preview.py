@@ -6,6 +6,8 @@ prepare_local_preview.mjs. Open Sans is supplied in bundle/fonts with its licens
 import argparse
 import hashlib
 import json
+import math
+import re
 import os
 import pathlib
 import subprocess
@@ -19,6 +21,34 @@ def probe(path):
 def digest(path):
     with path.open('rb') as f:
         return hashlib.file_digest(f, 'sha256').hexdigest()
+
+
+def loudness_stats(log):
+    blocks = re.findall(r'\{\s*"input_i"\s*:[\s\S]*?\}', log)
+    if not blocks:
+        raise ValueError('Loudness measurement unavailable')
+    data = json.loads(blocks[-1])
+    for key in ('input_i', 'input_tp', 'input_lra', 'input_thresh', 'target_offset'):
+        if not math.isfinite(float(data[key])):
+            raise ValueError('Voice loudness is not finite; check original audio')
+    return data
+
+
+def normalize_voice(source, output, settings):
+    if (settings.get('targetIntegratedLufs'), settings.get('targetTruePeakDb'), settings.get('targetLra')) != (-16, -3, 7):
+        raise ValueError('Unsupported voice loudness target')
+    target = 'loudnorm=I=-16:TP=-3:LRA=7'
+    first = subprocess.run(['ffmpeg', '-hide_banner', '-v', 'info', '-threads', '2', '-i', str(source), '-map', '0:a:0', '-af', target + ':print_format=json', '-f', 'null', '-'], capture_output=True, text=True, check=True)
+    measured = loudness_stats(first.stderr)
+    measured_filter = target + ':measured_I=' + measured['input_i'] + ':measured_TP=' + measured['input_tp'] + ':measured_LRA=' + measured['input_lra'] + ':measured_thresh=' + measured['input_thresh'] + ':offset=' + measured['target_offset'] + ':linear=true:print_format=json'
+    second = subprocess.run(['ffmpeg', '-hide_banner', '-v', 'info', '-threads', '2', '-i', str(source), '-map', '0:a:0', '-af', measured_filter, '-ar', '48000', '-c:a', 'pcm_s24le', '-y', str(output)], capture_output=True, text=True, check=True)
+    applied = loudness_stats(second.stderr)
+    if abs(float(applied['output_i']) + 16) > 1 or float(applied['output_tp']) > -2:
+        raise ValueError('Voice normalization missed the reviewed loudness/peak target')
+    return {'enabled': True, 'targetIntegratedLufs': -16, 'targetTruePeakDb': -3,
+            'inputIntegratedLufs': float(measured['input_i']), 'inputTruePeakDb': float(measured['input_tp']),
+            'outputIntegratedLufs': float(applied['output_i']), 'outputTruePeakDb': float(applied['output_tp']),
+            'normalizationType': applied.get('normalization_type'), 'humanListeningAccepted': False}
 
 
 def render(source, bundle, output):
@@ -136,7 +166,11 @@ def render(source, bundle, output):
     os.close(fd)
     temporary = pathlib.Path(temporary)
     video_temporary = None
+    normalized_temporary = None
+    normalization_audit = None
     separated = (bundle / 'video.ffscript').is_file() and (bundle / 'audio.ffscript').is_file() and bool(audio)
+    if manifest.get('voiceNormalization', {}).get('enabled') and not separated:
+        raise ValueError('Voice normalization requires the separated render bundle')
     try:
         command = ['ffmpeg', '-v', 'verbose', '-threads', '2', '-i', str(source)]
         for media in bound_media:
@@ -160,7 +194,14 @@ def render(source, bundle, output):
                         '-nostats', '-y', str(video_temporary)]
             with (bundle / 'render-video.log').open('w') as log:
                 subprocess.run(command, cwd=bundle, stdout=log, stderr=subprocess.STDOUT, check=True)
-            command = ['ffmpeg', '-v', 'verbose', '-threads', '2', '-i', str(source)]
+            voice_source = source
+            if manifest.get('voiceNormalization', {}).get('enabled'):
+                nfd, npath = tempfile.mkstemp(prefix='.sues-voice-', suffix='.wav', dir=output.parent)
+                os.close(nfd)
+                normalized_temporary = pathlib.Path(npath)
+                normalization_audit = normalize_voice(source, normalized_temporary, manifest['voiceNormalization'])
+                voice_source = normalized_temporary
+            command = ['ffmpeg', '-v', 'verbose', '-threads', '2', '-i', str(voice_source)]
             if music:
                 command += ['-threads', '2', '-i', str(music['path'])]
             for sound in sounds:
@@ -212,13 +253,15 @@ def render(source, bundle, output):
                  'subjectLayers': [{k: v for k, v in layer.items() if k not in ('mask', 'resource')} for layer in subject_layers], 'soundEffects': manifest.get('soundEffects'), 'customSfx': {'assets': [{k: v for k, v in s.items() if k != 'path'} for s in sounds], 'events': manifest.get('customSfx', {}).get('events', [])}, 'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'ambientOverlays': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False, 'visualAcceptance': False} for m in overlays], 'mastering': manifest.get('mastering'), 'voiceEffects': {'version': manifest.get('voiceEffects', {}).get('version'), 'events': manifest.get('voiceEffects', {}).get('events', []), 'humanListeningAccepted': False}, 'captions': len(manifest['captions']), 'illustrations': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in illustrations],
                  'font': {'family': expected_family, 'regularSha256': digest(font), 'boldSha256': digest(bold_font), 'extraFaces': extra_fonts},
                  'ffmpeg': subprocess.check_output(['ffmpeg', '-version'], text=True).splitlines()[0],
-                 'renderPasses': ['video', 'audio-mux'] if separated else ['legacy-combined'], 'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
+                 'voiceNormalization': normalization_audit, 'renderPasses': ['video', 'audio-mux'] if separated else ['legacy-combined'], 'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
         # Exclusive creation prevents a race from overwriting another output.
         os.link(temporary, output)
         output.with_suffix('.audit.json').write_text(json.dumps(audit, indent=2) + '\n')
         return audit
     finally:
         temporary.unlink(missing_ok=True)
+        if normalized_temporary is not None:
+            normalized_temporary.unlink(missing_ok=True)
         if video_temporary is not None:
             video_temporary.unlink(missing_ok=True)
 

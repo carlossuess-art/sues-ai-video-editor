@@ -82,6 +82,21 @@ class MigrationTests(unittest.TestCase):
                     self.assertEqual(yaml.safe_load(compose_path.read_text())['services']['caddy']['network_mode'], 'host')
                     self.assertTrue((root / 'https-backup-current.txt').exists())
 
+    def test_preserves_reviewed_memory_budget_without_changing_isolation(self):
+        old = {'Image': 'sha256:fixed',
+               'Config': {'Cmd': ['node', 'scripts/app/start.mjs', '/state/project.json', '/state/jobs', '3010'], 'User': '1000:1000', 'Env': []},
+               'HostConfig': {'NetworkMode': 'host', 'ReadonlyRootfs': True},
+               'Mounts': [{'Destination': d, 'Type': 'bind', 'Source': str(deploy.ROOT / str(i)), 'RW': d == '/state'} for i, d in enumerate(['/app', '/app/node_modules', '/state'])]}
+        for budget in (1024**3, 1280 * 1024**2):
+            old['HostConfig']['Memory'] = budget
+            args = deploy.editor_args(old)
+            self.assertEqual(args[args.index('--memory') + 1], str(budget))
+            self.assertIn('--read-only', args)
+            self.assertIn('no-new-privileges', args)
+        old['HostConfig']['Memory'] = 4 * 1024**3
+        with self.assertRaises(RuntimeError):
+            deploy.editor_args(old)
+
     def test_success(self):
         self.exercise()
 

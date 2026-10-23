@@ -15,6 +15,10 @@ class UpdateTests(unittest.TestCase):
             old_release = root / 'release.old'
             old_release.mkdir()
             (root / 'editor').mkdir()
+            (root / 'editor/jobs/assets').mkdir(parents=True)
+            (root / 'editor/jobs/library').mkdir()
+            for name in ('assets', 'library'):
+                (root / 'editor/jobs' / name).chmod(0o755)
             (root / 'editor/project.json').write_text('{"existing":"project"}')
             (old_release / 'package-lock.json').write_text('{}')
             original = 'a' * 40

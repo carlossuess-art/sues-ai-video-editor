@@ -6,7 +6,7 @@ export function validateSfxEvents(events=[]){
  assert(new Set(events.map(e=>JSON.stringify([e.assetId,e.start,e.gain]))).size===events.length,'sonido duplicado');
  return structuredClone(events);
 }
-export function prepareCustomSfx(events,duration,resolveAsset){
+export function prepareCustomSfx(events,duration,resolveAsset,{voiceNormalized=false}={}){
  validateSfxEvents(events);const assets=[],cues=[];
  for(const e of events){
   let index=assets.findIndex(a=>a.assetId===e.assetId);
@@ -15,10 +15,12 @@ export function prepareCustomSfx(events,duration,resolveAsset){
   cues.push({...e,end,input:index});
  }
  for(const e of cues)assert(cues.filter(c=>c.start<=e.start&&c.end>e.start).length<=3,'máximo tres sonidos simultáneos');
- return {assets,events:cues,ducking:true,humanListeningAccepted:false};
+ return {assets,events:cues,ducking:true,duck:voiceNormalized?{threshold:.12,ratio:2,attack:5,release:100}:{threshold:.03,ratio:4,attack:5,release:100},humanListeningAccepted:false};
 }
 export function customSfxFilter(sfx,duration,inputIndex,base){
  if(!sfx?.events?.length)return [];
+ const d=sfx.duck??{threshold:.03,ratio:4,attack:5,release:100};
+ assert([d.threshold,d.ratio,d.attack,d.release].every(Number.isFinite)&&d.threshold>0&&d.threshold<=1&&d.ratio>=1&&d.ratio<=8&&d.attack>=1&&d.attack<=100&&d.release>=50&&d.release<=1000,'duck profile');
  const filters=[`[${base}]asplit=2[custom-main][custom-key]`];
  for(const [i,a]of sfx.assets.entries()){
   const uses=sfx.events.map((e,j)=>e.input===i?j:-1).filter(j=>j>=0);
@@ -27,7 +29,7 @@ export function customSfxFilter(sfx,duration,inputIndex,base){
  sfx.events.forEach((e,i)=>{const d=sfx.assets[e.input].duration,fade=Math.min(.01,d/4);filters.push(`[custom-source${i}]afade=t=in:d=${fade},afade=t=out:st=${d-fade}:d=${fade},volume=${e.gain},adelay=${Math.round(e.start*48000)}S:all=1[custom-cue${i}]`);});
  filters.push(`anullsrc=r=48000:cl=stereo:d=${duration},aformat=sample_fmts=fltp[custom-silence]`);
  filters.push(`[custom-silence]${sfx.events.map((_,i)=>`[custom-cue${i}]`).join('')}amix=inputs=${sfx.events.length+1}:duration=first:dropout_transition=0:normalize=0[custom-bus]`);
- filters.push('[custom-bus][custom-key]sidechaincompress=threshold=0.03:ratio=4:attack=5:release=100:makeup=1[custom-ducked]');
+ filters.push('[custom-bus][custom-key]sidechaincompress=threshold='+d.threshold+':ratio='+d.ratio+':attack='+d.attack+':release='+d.release+':makeup=1[custom-ducked]');
  filters.push(`[custom-main][custom-ducked]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,alimiter=limit=0.95:level=0:latency=1,atrim=duration=${duration}[mixed-audio]`);
  return filters;
 }

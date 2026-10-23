@@ -44,3 +44,12 @@ test('explicit full-frame cards reuse the renderer and never silently disappear 
   assert.equal(review([{...card,heading:'x'.repeat(27)}]).canApply,false);
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });
+
+test('voice leveling is an explicit validated edit and does not require fabricated face analysis',()=>{
+ const f=fixture();try{
+  const project=loadProject(f.profiles.test);faceless(project);const settings=prepareProject(project).settings,catalog=externalCatalog(project,settings);
+  const review=value=>reviewExternalPlan(JSON.stringify({...catalog.example,operations:[{type:'voice-level',enabled:value}]}),{project,settings,commandPlanner:planInstructions});
+  assert.equal(review(true).canApply,true);assert.equal(review(true).changes.voiceNormalization,true);assert.equal(review(false).changes.voiceNormalization,false);assert.equal(review('true').canApply,false);
+  assert.throws(()=>validateEditorSettings({voiceNormalization:1}));
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
+});

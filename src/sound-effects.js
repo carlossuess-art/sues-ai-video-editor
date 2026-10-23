@@ -10,7 +10,7 @@ export const SOUND_PRESETS=Object.freeze({
  draw:{duration:.36,source:'anoisesrc=color=white:amplitude=0.055:seed=947:sample_rate=48000:duration=0.36,highpass=f=1500,lowpass=f=3500',attack:.015},
  neon:{duration:.3,source:"aevalsrc='(0.06*sin(2*PI*880*t)+0.03*sin(2*PI*1760*t))*exp(-12*t)':s=48000:d=0.3",attack:.008}
 });
-export function prepareSoundEffects(plan,{sfxEnabled=false,sfxGain=.35}={}){
+export function prepareSoundEffects(plan,{sfxEnabled=false,sfxGain=.35,voiceNormalization=false}={}){
  assert(typeof sfxEnabled==='boolean'&&Number.isFinite(sfxGain)&&sfxGain>=0&&sfxGain<=.7,'settings');
  const events=[],add=(preset,start,reason,weight=1)=>{start=Math.max(0,start);const duration=Math.min(SOUND_PRESETS[preset].duration,plan.duration-start);if(duration<.05||events.some(e=>Math.abs(e.start-start)<.08))return;events.push({preset,weight,start:Number(start.toFixed(6)),duration:Number(duration.toFixed(6)),reason,provenance:'original-procedural-sues-v1'});};
  if(sfxEnabled&&sfxGain>0){
@@ -19,11 +19,13 @@ export function prepareSoundEffects(plan,{sfxEnabled=false,sfxGain=.35}={}){
   for(const t of plan.globalTransitions??[])add('whoosh',t.start,'transition',t.type==='radialBurst'?1:t.type==='warm'?.75:.5);
   for(const m of plan.semantic?.motions??[])add('impact',m.start,'motion-entry');
  }
- assert(events.length<=40,'too many events');return {enabled:sfxEnabled,gain:sfxGain,events:events.sort((a,b)=>a.start-b.start),ducking:true,recipeVersion:'sues-original-sfx-v1',humanListeningAccepted:false};
+ assert(events.length<=40,'too many events');return {enabled:sfxEnabled,gain:sfxGain,events:events.sort((a,b)=>a.start-b.start),ducking:true,duck:voiceNormalization?{threshold:.12,ratio:2,attack:5,release:100}:{threshold:.03,ratio:4,attack:5,release:100},recipeVersion:'sues-original-sfx-v1',humanListeningAccepted:false};
 }
 export function soundEffectsFilter(sfx,duration,base){
  if(!sfx?.events?.length)return [];
  assert(Number.isFinite(duration)&&duration>0&&Number.isFinite(sfx.gain)&&sfx.gain>=0&&sfx.gain<=.7&&sfx.events.length<=40,'mix bounds');
+ const d=sfx.duck??{threshold:.03,ratio:4,attack:5,release:100};
+ assert([d.threshold,d.ratio,d.attack,d.release].every(Number.isFinite)&&d.threshold>0&&d.threshold<=1&&d.ratio>=1&&d.ratio<=8&&d.attack>=1&&d.attack<=100&&d.release>=50&&d.release<=1000,'duck profile');
  const filters=[`[${base}]asplit=2[sfx-main][sfx-key]`];
  sfx.events.forEach((e,i)=>{
   const preset=SOUND_PRESETS[e.preset];assert(preset&&Number.isFinite(e.start)&&e.start>=0&&Number.isFinite(e.duration)&&e.duration>=.05&&e.duration<=preset.duration&&e.start+e.duration<=duration+.000002&&Number.isFinite(e.weight??1)&&(e.weight??1)>=0&&(e.weight??1)<=1,'event bounds');
@@ -32,7 +34,7 @@ export function soundEffectsFilter(sfx,duration,base){
  });
  filters.push(`anullsrc=r=48000:cl=stereo:d=${duration},aformat=sample_fmts=fltp[sfx-silence]`);
  filters.push(`[sfx-silence]${sfx.events.map((_,i)=>`[sfx${i}]`).join('')}amix=inputs=${sfx.events.length+1}:duration=first:dropout_transition=0:normalize=0,atrim=duration=${duration}[sfx-bus]`);
- filters.push('[sfx-bus][sfx-key]sidechaincompress=threshold=0.03:ratio=4:attack=5:release=100:makeup=1[sfx-ducked]');
+ filters.push('[sfx-bus][sfx-key]sidechaincompress=threshold='+d.threshold+':ratio='+d.ratio+':attack='+d.attack+':release='+d.release+':makeup=1[sfx-ducked]');
  filters.push(`[sfx-main][sfx-ducked]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,alimiter=limit=0.95:level=0:latency=1,atrim=duration=${duration}[mixed-audio]`);
  return filters;
 }

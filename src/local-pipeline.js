@@ -118,7 +118,9 @@ export function prepareProject(project,settings={}){
  plan.illustrations=prepareIllustrations(options.motions?(inputs.illustrations??[]):[],plan,inputs.visionFrames);
  if(options.elements)plan.elements=prepareElements(options.elements,plan,{enabled:options.motions,profile:visualProfile(options.styleId)});
  if(inputs.subjectLayers)plan.subjectLayers=options.motions?prepareSubjectLayers(inputs.subjectLayers,plan):[];
- plan.customSfx=prepareCustomSfx(options.sfxEvents,plan.duration,asset);resourceBindings.soundAssets=plan.customSfx.assets;
+ plan.customSfx=prepareCustomSfx(options.sfxEvents,plan.duration,asset,{voiceNormalized:options.voiceNormalization});resourceBindings.soundAssets=plan.customSfx.assets;
+ plan.voiceNormalization={enabled:options.voiceNormalization,targetIntegratedLufs:-16,targetTruePeakDb:-3,targetLra:7,method:'ffmpeg-loudnorm-two-pass-before-mix',listeningAccepted:false};
+ if(options.voiceNormalization&&plan.audioMix)plan.audioMix.duck={threshold:.10,ratio:2.5,attack:30,release:300};
  plan.mastering={enabled:options.masteringEnabled,mode:'fixed-headroom',gainDb:-1.8,peakSafetyDb:-1.5,integratedLufsAcceptance:'pending-listening'};
  plan.ambientOverlays=overlayAssets;
  if(overlayAssets.length){plan.pending.push('ambient-overlays-visual-review');}
