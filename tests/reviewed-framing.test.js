@@ -32,3 +32,15 @@ test('framing and explicit zoom operations are reviewed atomically, including fa
   for(const zoomEvents of [[{start:1,end:4,scale:1.07,reason:'Motivo'}],[{start:12,end:16,scale:1.07,reason:'Motivo',command:'exec'}]])assert.throws(()=>validateEditorSettings({zoomEvents}));
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });
+test('explicit full-frame cards reuse the renderer and never silently disappear when motions are disabled',()=>{
+ const f=fixture();try{
+  const project=loadProject(f.profiles.test);faceless(project);
+  const settings=prepareProject(project,{motions:true}).settings,catalog=externalCatalog(project,settings),caption=catalog.captions[1];
+  const card={type:'card',captionId:caption.id,layout:'grid',heading:'Una idea',bodyLines:['Conserva la voz']};
+  const review=(operations,s=settings)=>reviewExternalPlan(JSON.stringify({...catalog.example,operations}),{project,settings:s,commandPlanner:planInstructions});
+  const accepted=review([card]);assert.equal(accepted.canApply,true,JSON.stringify(accepted));
+  const p=prepareProject(project,accepted.changes);assert.equal(p.plan.graphics.length,1);assert.match(p.plan.graphics[0].scope,/intentionally/);
+  assert.equal(review([card],{...settings,motions:false}).canApply,false);
+  assert.equal(review([{...card,heading:'x'.repeat(27)}]).canApply,false);
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
+});
