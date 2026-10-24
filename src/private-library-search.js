@@ -22,6 +22,7 @@ const intersections=(a,b)=>[...a].filter(x=>b.has(x)).length;
  // Absence of flags is not a clean bill for an entire asset. A text/branding flag blocks
  // autonomous recommendations, without changing the manual asset-picker contract.
 const VISUAL_FLAGS=new Set(['visible-third-party-marking','person-visible','unrelated-on-screen-text']);
+const SCENE_TAGS=new Set(['analog-clock','person-walking-outdoors','industrial-chain-in-water','mountain-sunrise']);
 const loadVisualReview=(root)=>{
  const p=join(root,'asset-visual-review-v1.json');let stat;
  try{stat=lstatSync(p);}catch(error){if(error?.code==='ENOENT')return new Map();throw error;}
@@ -34,8 +35,10 @@ const loadVisualReview=(root)=>{
     value.scope!=='sampled-frames-only'||!Array.isArray(value.sampleSeconds)||value.sampleSeconds.length<1||value.sampleSeconds.length>8||
     !value.sampleSeconds.every(n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=600)||
     !Array.isArray(value.riskFlags)||value.riskFlags.length>3||new Set(value.riskFlags).size!==value.riskFlags.length||
-    !value.riskFlags.every(x=>VISUAL_FLAGS.has(x)))throw Error('Invalid visual review entry');
-  reviews.set(value.assetId,{scope:value.scope,sampleCount:value.sampleSeconds.length,riskFlags:[...value.riskFlags]});
+    !value.riskFlags.every(x=>VISUAL_FLAGS.has(x))||
+    (value.sceneTags!==undefined&&(!Array.isArray(value.sceneTags)||value.sceneTags.length>3||
+     new Set(value.sceneTags).size!==value.sceneTags.length||!value.sceneTags.every(x=>SCENE_TAGS.has(x)))))throw Error('Invalid visual review entry');
+  reviews.set(value.assetId,{scope:value.scope,sampleCount:value.sampleSeconds.length,riskFlags:[...value.riskFlags],sceneTags:[...(value.sceneTags??[])]});
  }
  return reviews;
 };
@@ -52,6 +55,33 @@ export function loadPrivateLibraryIndex(jobsDirectory){
  if(!Array.isArray(official.runtimeItems)||!Array.isArray(remote.items))throw Error('Invalid library index');
  return {official,remote,visualReviews:loadVisualReview(root)};
 }
+// Reuse only editor-installed scene media with partial human frame tags and trusted,
+// whitelisted V2 technical/licensing metadata. Never put private origin/proof/path in API.
+export function reviewedNarrativeVideos(jobsDirectory,index){
+ const {official,visualReviews}=index;
+ const dirname=resolve(jobsDirectory,'assets','metadata-v2');
+ let st;try{st=lstatSync(dirname);}catch(e){if(e?.code==='ENOENT')return [];throw e;}
+ if(!st.isDirectory()||st.isSymbolicLink())throw Error('Unsafe asset metadata directory');
+ const out=[];
+ for(const item of official.runtimeItems){
+  if(item.kind!=='video'||item.storedInEditor!==true||!/^[a-f0-9]{64}$/.test(item.id))continue;
+  const sample=visualReviews?.get(item.id);
+  if(!sample?.sceneTags.length||sample.riskFlags.some(x=>x==='visible-third-party-marking'||x==='unrelated-on-screen-text'))continue;
+  const file=join(dirname,item.id+'.json');let doc;
+  try{doc=safeJSON(file,65536);}catch(e){if(e?.code==='ENOENT')continue;throw e;}
+  if(doc?.assetId!==item.id||doc.sha256!==item.id||doc.kind!=='video')continue;
+  if(doc.license?.rightsStatus!=='verified'||doc.license.commercialUseAllowed!==true)continue;
+  if(!doc.semantics?.profileCompatibility?.includes('DOPAMIN'))continue;
+  const {durationSec,width,height}=doc.technical??{};
+  if(!Number.isFinite(durationSec)||durationSec<2.5||!Number.isInteger(width)||!Number.isInteger(height)||height<=width)continue;
+  const narrativeRoles=Array.isArray(doc.semantics.narrativeRoles)?doc.semantics.narrativeRoles.filter(x=>typeof x==='string').slice(0,8):[];
+  out.push({id:item.id,title:item.titleEs,kind:'video',sceneTags:[...sample.sceneTags],
+   sampleCount:sample.sampleCount,riskFlags:[...sample.riskFlags],narrativeRoles,
+   duration:durationSec,width,height,approvedForProduction:doc.approvedForProduction===true});
+ }
+ return out;
+}
+
 export function searchPrivateLibrary(jobsDirectory,query,{limit=8,index}={}){
  if(typeof query!=='string'||!query.trim()||query.length>250||!Number.isInteger(limit)||limit<1||limit>20)throw Error('Consulta no válida');
  const {official,remote,visualReviews}=index??loadPrivateLibraryIndex(jobsDirectory);
@@ -69,7 +99,7 @@ export function searchPrivateLibrary(jobsDirectory,query,{limit=8,index}={}){
   const sampled=visualReviews?.get(item.id);
   results.push({id:item.id,title:item.titleEs,kind:item.kind,availability:item.storedInEditor===true?'private-operational':'reference-only',creativeApproval:item.approvedForProduction===true?'approved':'review-required',score,
    lexicalEvidence:{exactTerms,expandedTerms},
-   visualReview:sampled?{scope:sampled.scope,sampleCount:sampled.sampleCount,riskFlags:[...sampled.riskFlags]}:null});
+   visualReview:sampled?{scope:sampled.scope,sampleCount:sampled.sampleCount,riskFlags:[...sampled.riskFlags],sceneTags:[...sampled.sceneTags]}:null});
  }
  for(const item of remote.items){
   if(item.installedInEditor)continue;
