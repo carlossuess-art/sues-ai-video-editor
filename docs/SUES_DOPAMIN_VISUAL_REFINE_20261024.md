@@ -60,3 +60,15 @@ realmente compilado (0/128/255 a filas 0/120/240). Muestras reales de esa etapa
 hard/soft fuera de Git. Esta corrección adicional requiere nuevo render para
 aparecer en un MP4; el maestro completo y el segundo job anteriores NO la incluyen.
 No afirmar que esos archivos se actualizan al desplegar código. No cierre F9.
+
+## Despliegue final comprobado
+
+Código instalado d3d6ecc2dacf30aaf8a1921c9838bae96e75837c, incluido feather.
+Backup SHA256 7ab9ac236563ebc2053753f2c7efca93c54e8ff4238c0df597e8c3b021c944ee;
+rollback update-backup-20261024-182324-167137. Comprobación posterior: job200,
+acceso anónimo401, descarga parcial206/1024bytes y Whisper activo.
+Prueba automática disponible en https://editor.suesholistics.com/?project=eb2ca2a7-a8b8-472f-b0b4-63947a722668 .
+Los MP4 existentes conservan su versión; feather se aplica al volver a renderizar.
+Sin nuevo coste externo. Ninguna aprobación estética/audio ni cierre F9/V1.
+Siguiente: mejorar dirección visual general y validar nuevo render con luces suaves;
+no sustituir variedad semántica por efectos fijos. Necesito de Carlos: nada para desarrollo.

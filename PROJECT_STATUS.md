@@ -1,3 +1,16 @@
+## Despliegue final del bloque visual · 24/10/2026
+
+Código d3d6ecc2 instalado y comprobado: job200, anónimo401, Range206 y Whisper
+activo; backup/rollback verificados. Gráficos mayores, conceptos fieles y borde
+superior de luces suavizado. Dos MP4 comprobados; segundo original automático
+DONE/descarga idéntica. Los MP4 previos no incluyen el último feather.
+Detalles: docs/SUES_DOPAMIN_VISUAL_REFINE_20261024.md. F6/F7/F9 abiertas,
+global48%; sin aprobación estética/audio. Próximo: dirección visual más rica
+sobre otro original y nuevo render de luces; no necesidad de intervención de Carlos.
+Roadmap Drive sin sincronizar (Unknown tool); documentación técnica guardada aquí.
+
+---
+
 ## F6/F9 · Dos MP4 comprobados y suavizado de luces · 24/10/2026
 
 71fa366b instalado con copia verificada/rollback y Whisper activo. Maestro
