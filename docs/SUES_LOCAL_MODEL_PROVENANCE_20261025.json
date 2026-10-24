@@ -1,0 +1,25 @@
+{
+  "source": {
+    "repo": "Qwen/Qwen3-1.7B-GGUF",
+    "revision": "90862c4b9d2787eaed51d12237eafdfe7c5f6077",
+    "file": "Qwen3-1.7B-Q8_0.gguf",
+    "bytes": 1834426016,
+    "sha256": "061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a",
+    "license": "apache-2.0",
+    "url": "https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/resolve/90862c4b9d2787eaed51d12237eafdfe7c5f6077/Qwen3-1.7B-Q8_0.gguf"
+  },
+  "derived": {
+    "filename": "Qwen3-1.7B-Q4_K_M.gguf",
+    "bytes": 1107408544,
+    "sha256": "54c0f1203a724e9f33e76916beab3bdfaffef56cf7b42a93b1bc21319fc0bf97",
+    "method": "llama-quantize --allow-requantize Q8_0 to Q4_K_M, one thread",
+    "license": "apache-2.0"
+  },
+  "runtime": {
+    "project": "ggml-org/llama.cpp",
+    "build": "b11669",
+    "commit": "620d2225c",
+    "inferenceNetwork": "none",
+    "note": "No commercial API, no production inference provider enabled"
+  }
+}
