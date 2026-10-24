@@ -521,6 +521,40 @@ $('compare-styles').onclick=()=>work(async()=>{
 function automaticKey(){return JSON.stringify({id:current?.id,settings:proposalBase(),prompt:$('director-prompt').value.trim()});}
 $('recipe-sounds').onchange=()=>{if(current)markPreviewDirty();automaticReviewKey=null;syncEditRoute();};
 
+/* BEGIN REVIEWED_BROLL_DRAFT */
+function buildSuggestedBrollDraft(cue,candidate,catalog,existingText){
+ if(cue?.decision!=='contextual-review-only'||candidate?.kind!=='video'||
+    candidate?.needsHumanReview!==true||candidate.evidence?.visualContentVerified!==false)
+  throw Error('Solo se preparan escenas narrativas pendientes de revisión.');
+ const range=candidate.evidence?.suggestedSourceRange;
+ if(!range||range.appliedToVideo!==false||range.source!=='full-timeline-cut-black-analysis'||
+   !Number.isFinite(range.startSec)||range.startSec<0||!Number.isFinite(range.endSec)||
+   !Number.isFinite(cue.start)||!Number.isFinite(cue.end)||cue.end<=cue.start||
+   Math.abs((range.endSec-range.startSec)-(cue.end-cue.start))>.02)
+  throw Error('Esta escena no tiene un tramo de origen técnicamente validado.');
+ if(catalog?.schema!=='sues-edit-plan/v1'||!/^[a-f0-9]{64}$/.test(catalog.sourceSha256)||
+    !Array.isArray(catalog.assets))throw Error('Catálogo del editor no válido.');
+ const video=catalog.assets.find(a=>a.id===candidate.assetId&&a.kind==='video');
+ if(!video||!Number.isFinite(video.duration)||range.endSec>video.duration+.02)
+  throw Error('El vídeo o el tramo propuesto no existen en el catálogo de esta versión.');
+ let draft;
+ if(existingText.trim()){
+  try{draft=JSON.parse(existingText);}catch{throw Error('El borrador contiene texto no JSON. Revísalo antes de añadir la escena.');}
+  if(!draft||draft.schema!==catalog.schema||draft.sourceSha256!==catalog.sourceSha256||
+     !Array.isArray(draft.operations)||!draft.operations.length||draft.operations.length>=60)
+   throw Error('El borrador actual no es compatible con este vídeo o ya está completo.');
+ }else draft={schema:catalog.schema,sourceSha256:catalog.sourceSha256,operations:[]};
+ const broll=draft.operations.filter(o=>o.type==='broll');
+ if(broll.length>=3)throw Error('El plan ya tiene tres B-rolls; revísalos antes de añadir otro.');
+ if(broll.some(x=>Number.isFinite(x.start)&&Number.isFinite(x.end)&&x.start<cue.end&&cue.start<x.end))
+  throw Error('Ya hay un B-roll solapado en este tramo; revisa el borrador.');
+ const operation={type:'broll',resourceId:candidate.assetId,start:cue.start,end:cue.end,sourceIn:range.startSec,
+  reason:'Metáfora narrativa: '+String(cue.narrative?.reason??'énfasis en el discurso').slice(0,115)};
+ draft.operations.push(operation);
+ return JSON.stringify(draft,null,2);
+}
+/* END REVIEWED_BROLL_DRAFT */
+
 $('suggest-resources').onclick=()=>work(async()=>{
  if(!current?.id)throw Error('Prepara primero el vídeo y su transcripción.');
  const selectedId=current.id,box=$('resource-suggestions');
@@ -546,7 +580,25 @@ $('suggest-resources').onclick=()=>work(async()=>{
    const timeline=sourceRange
     ?' · Tramo de origen sugerido '+sourceRange.startSec.toFixed(2)+'–'+sourceRange.endSec.toFixed(2)+' s (sin aplicar)'
     :temporal?.complete?' · Auditoría temporal: sin tramo continuo suficiente':' · Sin auditoría temporal completa';
-   list.append(node('li',candidate.title+' · '+candidate.kind+' · '+(candidate.catalogueApproval==='approved'?'Catalogado, revisar composición':'Pendiente de aprobación visual')+reasoning+sampleMessage+timeline));
+   const item=node('li',candidate.title+' · '+candidate.kind+' · '+(candidate.catalogueApproval==='approved'?'Catalogado, revisar composición':'Pendiente de aprobación visual')+reasoning+sampleMessage+timeline);
+   if(candidate.kind==='video'&&cue.decision==='contextual-review-only'&&sourceRange?.appliedToVideo===false){
+    const selectButton=node('button','Preparar este B-roll para revisar');
+    selectButton.type='button';
+    selectButton.onclick=()=>work(async()=>{
+     if(current?.id!==selectedId)throw Error('Esta sugerencia pertenece a otro proyecto.');
+     if(previewDirty)throw Error('Guarda o descarta tus ajustes antes de preparar el plan.');
+     const catalog=await api('jobs/'+encodeURIComponent(selectedId)+'/external-catalog');
+     if(current?.id!==selectedId)throw Error('Has cambiado de proyecto; no se modificó el plan.');
+     const draft=buildSuggestedBrollDraft(cue,candidate,catalog,$('external-plan-text').value);
+     await api('jobs/'+encodeURIComponent(selectedId)+'/external-draft','POST',{text:draft});
+     $('external-plan-text').value=draft;
+     invalidateExternal();
+     $('external-result').textContent='B-roll añadido al borrador. Revisa los segundos y pulsa «Comprobar plan» antes de generar otra versión.';
+     $('external-plan-text').scrollIntoView({block:'center'});
+    });
+    item.append(' ',selectButton);
+   }
+   list.append(item);
   }
   details.append(summary,list);box.append(details);
  }
