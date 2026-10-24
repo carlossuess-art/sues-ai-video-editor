@@ -532,14 +532,16 @@ $('suggest-resources').onclick=()=>work(async()=>{
  if(!result.cues.length){box.append(node('p','No hay coincidencias fiables en la biblioteca instalada. No se añadirán efectos de relleno.','small'));return;}
  box.append(node('p','Sugerencias para revisar: no están insertadas en el vídeo.','small'));
  for(const cue of result.cues){
-  const details=node('details'),summary=node('summary',cue.start.toFixed(1)+'–'+cue.end.toFixed(1)+' s · '+cue.transcriptQuote),list=node('ul');
+  const context=cue.narrative?' · '+cue.narrative.label+' (interpretación provisional)':' · Coincidencia de catálogo';
+  const details=node('details'),summary=node('summary',cue.start.toFixed(1)+'–'+cue.end.toFixed(1)+' s'+context+' · '+cue.transcriptQuote),list=node('ul');
   for(const candidate of cue.candidates){
    if(!candidate.needsHumanReview||!['video','overlay','image'].includes(candidate.kind))continue;
    const sample=candidate.evidence?.visualSample;
    const sampleMessage=sample?.scope==='sampled-frames-only'
     ?' · Revisión parcial: '+sample.sampleCount+' fotogramas'+(sample.riskFlags?.includes('person-visible')?' · aparece una persona':'')
     :' · Sin muestreo visual registrado';
-   list.append(node('li',candidate.title+' · '+candidate.kind+' · '+(candidate.catalogueApproval==='approved'?'Catalogado, revisar composición':'Pendiente de aprobación visual')+sampleMessage));
+   const reasoning=cue.narrative?' · Razón propuesta: '+cue.narrative.reason:'';
+   list.append(node('li',candidate.title+' · '+candidate.kind+' · '+(candidate.catalogueApproval==='approved'?'Catalogado, revisar composición':'Pendiente de aprobación visual')+reasoning+sampleMessage));
   }
   details.append(summary,list);box.append(details);
  }
