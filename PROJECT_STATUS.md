@@ -1,3 +1,13 @@
+## DESPLIEGUE REAL · F7 escaneo temporal B-roll · 24/10/2026
+
+Producción VPS Hostinger actualizada de `773416414cabbb566c1ea8957ef4c5abea123166` a **`b9b439f9e5a2d0df9abc1731c500565977d6540d`**, rama `feat/dopamin-temporal-scene-qa-20261024`, PR borrador #13 (sin merge a main). `--diagnose` PASS, cola sin trabajos, dependencias idénticas, biblioteca legible 66 assets/12 índices, doctor Node/FFmpeg/fuentes OK, HTTPS OK. Backup privado verificado SHA256 `10865056a167c071537e04421d5dfbb1c6c4664f23b3d29a8cbe0077bcf80fc8`, conservado en `/opt/sues-video-setup/update-backup-20261024-131136-142171` para rollback. Whisper pausado durante copia, reactivado active. Script reporta ACTUALIZACIÓN OK.
+
+QA real posdespliegue: SHA Git montado coincide con archivo servicio b9b439f; HTTPS 200, consulta anónima `/api/jobs/:id/library-cues` devuelve 401; Whisper active; MP4 iteración 08 intacto SHA256 `bedb0d504642f71ab03e1f3db061c9417bdc2e15b8ff6bdc42b441e0cfc65cbc`, estado DONE. Prueba en contenedor productivo sobre transcripción real reproduce dos escenas y tramos exactos: cadena 1,51–4,89 s de origen para voz 9,16–12,54 s; caminante 0,23–6,17 s o amanecer 1,861–7,801 s para voz 40,98–46,92 s. Ningún evento de edición aplicado; `autoPublish:false`, `needsHumanReview:true`, `visualContentVerified:false`.
+
+QA regresión: 314 casos totales, 312/314 PASS en Docker aislado, 2 pruebas Git restantes PASS 2/2 en host; `npm run check` PASS y 19/19 focales PASS. No hay fallo del Director atribuible a esta iteración. Coste externo 0 €. Global oficial 48 %, F6/F7/F9 sin aceptación, V1 todavía incompleta. Próximo paso: aplicación reversible de escenas revisadas en nuevos planes y QA de render real.
+
+---
+
 ## F7 · Auditoría temporal y segmentos utilizables de B-roll · 24/10/2026
 
 Rama aislada `feat/dopamin-temporal-scene-qa-20261024` desde el release verificado `773416414cabbb566c1ea8957ef4c5abea123166`. Se ha ampliado la revisión visual a una hoja de contacto de un fotograma/segundo por cada clip, sin declarar validación del contenido entero. FFmpeg ha recorrido todos los fotogramas de 4 B-rolls del banco con pruebas técnicas de cortes (`scene>0.36`), negros y congelaciones; no ha detectado intervalos en los cuatro bajo los umbrales seleccionados. Los 4 originales se contrastaron SHA256. Manifiesto temporal privado 0600 bajo `jobs/library/asset-temporal-audit-v1.json`, no incluido en GitHub.
