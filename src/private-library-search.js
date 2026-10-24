@@ -11,7 +11,11 @@ const SYNONYMS={
  luz:['destello','chispas','amanecer'],elementos:['circulos','linea','diagrama','enumeracion'],
  comparacion:['diagrama','lineas','estructura'],television:['voz','interferencia','vintage-tv']
 };
-const STOP=new Set(['un','una','de','del','el','la','los','las','en','al','para','que','ponga','poner','quiero','crear','efecto','segundo','durante','con']);
+const STOP=new Set(['un','una','de','del','el','la','los','las','en','al','para','que','ponga','poner','quiero','crear','efecto','segundo','durante','con',
+ 'hacia','desde','hasta','sin','sobre','por','pero','aunque','si','no','ni',
+ 'yo','tu','mi','me','se','nos','te','su','sus','es','son','soy','era','ser','estar',
+ 'como','muy','mas','aqui','alli','esto','esta','este','estos','estas','hay','fue',
+ 'todo','todos','todas','otro','otra','otros','otras','entonces']);
 const tokens=(text)=>new Set(String(text??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().match(/[a-z0-9-]+/g)?.filter(w=>w.length>2&&!STOP.has(w))??[]);
 const intersections=(a,b)=>[...a].filter(x=>b.has(x)).length;
 const safeJSON=(p,maxBytes)=>{
@@ -35,9 +39,13 @@ export function searchPrivateLibrary(jobsDirectory,query,{limit=8,index}={}){
  const results=[];
  for(const item of official.runtimeItems){
   const text=[item.titleEs,...(Array.isArray(item.keywords)?item.keywords:[]),...(Array.isArray(item.emotionTags)?item.emotionTags:[])].join(' ');
-  const t=tokens(text),score=intersections(exact,t)*10+intersections(expanded,t)*2;
+  const t=tokens(text),exactTerms=[...exact].filter(term=>t.has(term)).sort();
+  const expandedTerms=[...expanded].filter(term=>!exact.has(term)&&t.has(term)).sort();
+  const score=exactTerms.length*12+expandedTerms.length*2;
   if(score<1)continue;
-  results.push({id:item.id,title:item.titleEs,kind:item.kind,availability:item.storedInEditor===true?'private-operational':'reference-only',creativeApproval:item.approvedForProduction===true?'approved':'review-required',score});
+  // These are lexical matches in metadata, NOT verified visual or narrative suitability.
+  results.push({id:item.id,title:item.titleEs,kind:item.kind,availability:item.storedInEditor===true?'private-operational':'reference-only',creativeApproval:item.approvedForProduction===true?'approved':'review-required',score,
+   lexicalEvidence:{exactTerms,expandedTerms}});
  }
  for(const item of remote.items){
   if(item.installedInEditor)continue;
