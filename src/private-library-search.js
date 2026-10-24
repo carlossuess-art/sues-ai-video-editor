@@ -18,6 +18,28 @@ const STOP=new Set(['un','una','de','del','el','la','los','las','en','al','para'
  'todo','todos','todas','otro','otra','otros','otras','entonces']);
 const tokens=(text)=>new Set(String(text??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().match(/[a-z0-9-]+/g)?.filter(w=>w.length>2&&!STOP.has(w))??[]);
 const intersections=(a,b)=>[...a].filter(x=>b.has(x)).length;
+// This separate private review is created only after inspecting a *sample* of actual frames.
+ // Absence of flags is not a clean bill for an entire asset. A text/branding flag blocks
+ // autonomous recommendations, without changing the manual asset-picker contract.
+const VISUAL_FLAGS=new Set(['visible-third-party-marking','person-visible','unrelated-on-screen-text']);
+const loadVisualReview=(root)=>{
+ const p=join(root,'asset-visual-review-v1.json');let stat;
+ try{stat=lstatSync(p);}catch(error){if(error?.code==='ENOENT')return new Map();throw error;}
+ if(!stat.isFile()||stat.isSymbolicLink()||stat.size<2||stat.size>65536)throw Error('Unsafe visual review index');
+ const data=safeJSON(p,65536);
+ if(data?.schema!=='sues-asset-visual-review/v1'||!Array.isArray(data.items)||data.items.length>128)throw Error('Invalid visual review index');
+ const reviews=new Map();
+ for(const value of data.items){
+  if(!value||!(/^[a-f0-9]{64}$/).test(value.assetId)||reviews.has(value.assetId)||
+    value.scope!=='sampled-frames-only'||!Array.isArray(value.sampleSeconds)||value.sampleSeconds.length<1||value.sampleSeconds.length>8||
+    !value.sampleSeconds.every(n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=600)||
+    !Array.isArray(value.riskFlags)||value.riskFlags.length>3||new Set(value.riskFlags).size!==value.riskFlags.length||
+    !value.riskFlags.every(x=>VISUAL_FLAGS.has(x)))throw Error('Invalid visual review entry');
+  reviews.set(value.assetId,{scope:value.scope,sampleCount:value.sampleSeconds.length,riskFlags:[...value.riskFlags]});
+ }
+ return reviews;
+};
+
 const safeJSON=(p,maxBytes)=>{
  const s=lstatSync(p);if(!s.isFile()||s.isSymbolicLink()||s.size<2||s.size>maxBytes)throw Error('Unsafe private library index');
  return JSON.parse(readFileSync(p,'utf8'));
@@ -28,11 +50,11 @@ export function loadPrivateLibraryIndex(jobsDirectory){
  const official=safeJSON(join(root,'official-library-v1.json'),2*1024*1024);
  const remote=safeJSON(join(root,'purchased-source-index-309-v1.json'),6*1024*1024);
  if(!Array.isArray(official.runtimeItems)||!Array.isArray(remote.items))throw Error('Invalid library index');
- return {official,remote};
+ return {official,remote,visualReviews:loadVisualReview(root)};
 }
 export function searchPrivateLibrary(jobsDirectory,query,{limit=8,index}={}){
  if(typeof query!=='string'||!query.trim()||query.length>250||!Number.isInteger(limit)||limit<1||limit>20)throw Error('Consulta no válida');
- const {official,remote}=index??loadPrivateLibraryIndex(jobsDirectory);
+ const {official,remote,visualReviews}=index??loadPrivateLibraryIndex(jobsDirectory);
  if(!Array.isArray(official?.runtimeItems)||!Array.isArray(remote?.items))throw Error('Invalid library index');
  const exact=tokens(query),expanded=new Set(exact);
  for(const word of exact)for(const w of (SYNONYMS[word]??[]))expanded.add(w);
@@ -44,8 +66,10 @@ export function searchPrivateLibrary(jobsDirectory,query,{limit=8,index}={}){
   const score=exactTerms.length*12+expandedTerms.length*2;
   if(score<1)continue;
   // These are lexical matches in metadata, NOT verified visual or narrative suitability.
+  const sampled=visualReviews?.get(item.id);
   results.push({id:item.id,title:item.titleEs,kind:item.kind,availability:item.storedInEditor===true?'private-operational':'reference-only',creativeApproval:item.approvedForProduction===true?'approved':'review-required',score,
-   lexicalEvidence:{exactTerms,expandedTerms}});
+   lexicalEvidence:{exactTerms,expandedTerms},
+   visualReview:sampled?{scope:sampled.scope,sampleCount:sampled.sampleCount,riskFlags:[...sampled.riskFlags]}:null});
  }
  for(const item of remote.items){
   if(item.installedInEditor)continue;

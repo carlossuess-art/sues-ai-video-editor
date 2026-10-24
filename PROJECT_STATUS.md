@@ -1,3 +1,19 @@
+## F7 · Visual QA muestreado de B-roll DESPLEGADO · 24/10/2026 UTC
+
+Producción Hostinger srv1841004 actualizada **de 43cf0d9 a bc74db06c5a2c09dbe8c251ec070ecf6d460cf37** mediante despliegue reversible con cola de renders inactiva. Antes del cambio se hizo `--diagnose`: biblioteca legible 66 entradas en assets + 10 índices, dependencias idénticas, FFmpeg, Node, fuente y HTTPS PASS, espacio libre suficiente. Whisper pausado de forma temporal durante la copia y reactivado con `active`. Backup íntegro verificado SHA256 `ee4701da442d4d1004e906985a40258c63f7368d00dc794f1ccf7b9c1cb9af30` en `/opt/sues-video-setup/update-backup-20261024-121207-133244`. Contenedor anterior conservado para rollback. Resultado de script: **ACTUALIZACIÓN OK**, código montado coincide SHA bc74db0, HTTPS 200 y Whisper active. Sin nuevos consumos externos ni render.
+
+Cuatro vídeos existentes fueron muestreados en 4 fotogramas cada uno mediante FFmpeg de un contenedor de QA aislado; reloj contiene inscripción comercial, caminante muestra persona de espaldas, cadena y amanecer sin riesgos de ese tipo OBSERVADOS EN LA MUESTRA (no aval del clip completo). Archivo de señalización `jobs/library/asset-visual-review-v1.json` creado con 0600 y UID1000, medios originales validados por SHA256, sin contenidos privados nuevos en GitHub. El Director bloquea el reloj como recomendación por marca/texto comercial detectado, pero no lo borra ni impide selección manual; muestra evidencia parcial y mantiene `needsHumanReview:true`, `approvedToAutoPublish:false`. Pruebas focales 14/14 PASS, `npm run check` PASS, limpieza Git PASS. Prueba directa dentro del contenedor en producción: catálogo reconoce `visible-third-party-marking`/`unrelated-on-screen-text`, maestro conserva 0 recomendaciones insuficientes y `autoPublish:false`. MP4 iteración 08 SHA256 intacto y trabajo DONE.
+
+Postdeploy público: HTTPS 200, /api/library/search y /api/jobs/:id/library-cues 401 sin sesión. La revalidación independiente de rutas autenticadas no se completó porque un control de seguridad del conector rechazó la lectura del token; no eludir. El despliegue sí completó sus comprobaciones automáticas de salud y protección. F6/F7/F9 abiertas, V1 no aceptada y global oficial 48 %. GitHub PR borrador #11, sin merge a main. Próximo paso: incrementar cobertura de inspección de fotogramas/escenas y pertinencia contextual; no aprobar estética sin Carlos.
+
+---
+
+## F7 · Guard visual contra branding de B-roll · 24/10/2026
+
+Nueva rama separada `feat/visual-safety-curation-20261024` basada en `feat/dopamin-context-review-20261024`, sin modificar otro worktree pendiente. Se revisaron cuatro clips **reales** del banco con cuatro fotogramas por archivo: reloj con inscripción comercial visible, sendero con persona de espaldas, cadena/amanecer sin textos observados **solo en las muestras**. Implementada carga validada del índice privado opcional `asset-visual-review-v1.json` que registra riesgos por hash de medio, bloquea recomendaciones de vídeo con marca/texto ajenos y señala muestras limitadas en UI; no aprueba automáticamente nada, no borra recursos y no cambia exportación ni CALMA. Ver `docs/SUES_VISUAL_SAMPLE_GUARD_20261024.md`. F6/F7/F9 abiertas; global oficial 48 %.
+
+---
+
 ## DESPLIEGUE VERIFICADO · F7 FILTRO B-ROLL · 24/10/2026 UTC
 
 Producción VPS srv1841004 actualizada al commit de código `43cf0d908636ed2ec7c10101f169bdacab7fdecc`, sin merge a main y conservando PR borrador #10. Primer intento abortó de forma segura y recuperó el contenedor anterior: la copia de datos difería porque `uploads/asr/worker.json` era actualizado continuamente por Whisper (servicio systemd independiente). No se relajó la verificación. Segunda ejecución pausó `sues-editor-whisper.service` temporalmente (sin trabajos pendientes), realizó copia privada verificada SHA256 `69690132066294cfc7e04eb91a82642af7b5cda93228cd7a9387fdfc86822922`, desplegó `43cf0d9` y reactivó Whisper: ACTIVE.
@@ -992,19 +1008,3 @@ Necesidad puntual deCarlos:ejecutar elcomando fijado enla terminalHostinger,cons
 su salida ydespués validar app remota. La limitación esacceso alVPS,no autorización.
 Sin gasto externo,nuevos modelos,ASR,Lovable oalteracionesWhatsApp/Caddy/DNS.
 F6/V1 ysegmentación corporal automática siguenabiertas.
-
----
-## Editor validado en navegador real · 19/10/2026
-
-Chromium145 local:24combinaciones = escritorio/móvil × CALMA/DOPAMIN × seis
-formatosELEMENTS. Guardar yrecargar conserva cada formato; sin desbordamiento
-horizontal a1440×1000 y393×852. Deshacer restaura huella yduplicar mantieneELEMENTS.
-DescargaTAR yrecuperación por selector dearchivo desdeUI conservan los ajustes.
-Render real desde proyecto recuperado:38,31s,DONE,decodePASS,fuenteintacta,
-Range206/1024bytes;controles deajuste bloqueados al terminar. Sin erroresJS.
-209testsNode/check y10pruebas simuladas dedesplieguePASS. Chrome/Playwright sólo
-herramientas locales opcionales; dependenciasdel servidor idénticas.
-Etiqueta antigua «tamaño doble» corregida a«Palabra importante»; sin cambiar look.
-Evidencia examples/preview/browser-integration.real-result.json yscript
-scripts/app/smoke_browser_real.mjs. Capturas/medios/cookies privados fuera deGit.
-Preparado para integrar PR3/PR4 enoficial;VPS sin modificar. Esta QA técnica no

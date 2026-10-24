@@ -535,7 +535,11 @@ $('suggest-resources').onclick=()=>work(async()=>{
   const details=node('details'),summary=node('summary',cue.start.toFixed(1)+'–'+cue.end.toFixed(1)+' s · '+cue.transcriptQuote),list=node('ul');
   for(const candidate of cue.candidates){
    if(!candidate.needsHumanReview||!['video','overlay','image'].includes(candidate.kind))continue;
-   list.append(node('li',candidate.title+' · '+candidate.kind+' · '+(candidate.catalogueApproval==='approved'?'Catalogado, revisar composición':'Pendiente de aprobación visual')));
+   const sample=candidate.evidence?.visualSample;
+   const sampleMessage=sample?.scope==='sampled-frames-only'
+    ?' · Revisión parcial: '+sample.sampleCount+' fotogramas'+(sample.riskFlags?.includes('person-visible')?' · aparece una persona':'')
+    :' · Sin muestreo visual registrado';
+   list.append(node('li',candidate.title+' · '+candidate.kind+' · '+(candidate.catalogueApproval==='approved'?'Catalogado, revisar composición':'Pendiente de aprobación visual')+sampleMessage));
   }
   details.append(summary,list);box.append(details);
  }
