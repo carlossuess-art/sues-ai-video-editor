@@ -1,3 +1,19 @@
+## F7/F9 · QA09 validada con comparador automatizado · 24/10/2026
+
+**No desplegado ni fusionado**: la producción sigue en `b7a7d74ecf2d1b931e6448f5353415d6bb1ce032`. PR borrador #15 continúa **incompleta**: el archivo `web/app.js` remoto no envía los flags necesarios y `src/external-edit-plan.js` remoto tiene blob `e96077e4719db470cead3b574d736c1298d4f6a2`, distinto del blob local validado `a33a7139225a6aafbd6ca2d6db24fbff61798e65`. **No fusionar ni desplegar.**
+
+**Evidencia nueva de QA sobre MP4 real:** herramienta reutilizable `scripts/qa/compare_visual_renders.py` probada dentro de Docker aislado con las grabaciones original y QA09. Resultado `technicalPass:true`; vídeo H.264 1080×1920, audio AAC mono, igual duración, decodificación integral PASS, 2 B-rolls con `sourceAudio:false`, `originalVoice:true`, `captions:'preserve'` y 88 grupos de captions. Los flujos PCM decodificados tienen SHA256 **idéntico** `43fbc4b9f2ba09491ccd5b810b37a59e838f5b60dc4b8f317ee39ae23d46554a`. Medición *final* FFmpeg: −15,57 LUFS integrados, −2,01 dBTP y LRA 2,2 LU. No confundir con la normalización previa de voz −16,8 LUFS. Informe máquina privado `/opt/sues-video-setup/dopamin-real-broll-qa-20261024/render-conflict-fixed/qa09-media-integrity.json`, no subir vídeo privado a GitHub.
+
+**Otra protección añadida a PR #15:** `tests/broll-conflict-frontend-contract.test.js` comprueba que la UI realmente envíe `replaceExistingBrolls:true` y `replaceHiddenZooms:true` antes de permitir un merge. Test 2/2 PASS con código local completo; debe FALLAR en rama GitHub parcial, indicando explícitamente que aún no está lista. Código de prueba publicado y verificado mediante GitHub connector. QA repetible `scripts/qa/compare_visual_renders.py` publicado y verificado. No se ha eludido el control de seguridad del conector que bloqueó la publicación de parte de la interfaz.
+
+Fotogramas QA09 examinados a 10,5 s (cadena y captions), 25,0 s (tarjeta ELEMENTS) y 42,5 s (caminante). El hueco de caption a 42,5 s coincide con una pausa transcrita de 41,76 a 43,08 s, NO una pérdida de subtítulos. **Sin aprobación creativa/auditiva humana y sin aceptación F9.**
+
+Pruebas de regresión anteriores: 319/321 correctas en Docker más 2/2 de Git en host; pruebas focales de la corrección 13/13 PASS. Coste de servicio externo 0 €. Global oficial 48 % sin inflarlo.
+
+Siguiente acción exacta: completar la publicación de `web/app.js` y sincronizar el backend remoto con el código local probado por vía autorizada, ejecutar el contrato de UI, revisar PR #15, desplegar solo tras backup + rollback y validar el flujo desde navegador. Después, aprobación de montaje real DOPAMIN por Carlos.
+
+---
+
 ## F7/F9 · Puente sugerencia narrativa → plan editable revisable · 24/10/2026
 
 Desde la rama de producción `b9b439f9e5a2d0df9abc1731c500565977d6540d`, se añade al panel de sugerencias de recursos un botón individual **Preparar este B-roll para revisar**. Reutiliza las rutas y validación del plan externo existente. Sólo se ofrece en candidatos de vídeo con evidencia contextual y tramo fuente auditado. Genera JSON `sues-edit-plan/v1` con `sourceSha256` real y operación B-roll `resourceId`, `start/end`, `sourceIn`, `reason`; guarda borrador y guía al usuario a **Comprobar plan** y **Ejecutar plan en otra versión**. No ejecuta ni crea MP4 automáticamente.
