@@ -6,7 +6,8 @@ const area=p=>Math.abs(p.reduce((s,a,i)=>{const b=p[(i+1)%p.length];return s+a[0
 export function prepareDepthText(data,plan){
  if(!data)return [];
  if(data.version!=='1.0'||data.sourceSha256!==plan.source.sha256||!Array.isArray(data.events)||data.events.length>6)fail('source binding or version invalid');
- if(plan.source.width!==1080||plan.source.height!==1920||plan.timeMap.spans.length!==1||plan.timeMap.spans[0].sourceIn!==0||plan.camera.keyframes.some(k=>k.x!==0||k.y!==0||k.width!==1080||k.height!==1920))fail('requires the reviewed full-frame source without timeline cuts');
+ const outputContour=data.coordinateSpace==='output-1080x1920'&&JSON.stringify(data.cameraKeyframes)===JSON.stringify(plan.camera.keyframes)&&plan.camera.keyframes.every(k=>k.x===plan.camera.keyframes[0].x&&k.y===plan.camera.keyframes[0].y&&k.width===plan.camera.keyframes[0].width&&k.height===plan.camera.keyframes[0].height&&k.zoom===plan.camera.keyframes[0].zoom);
+ if(plan.timeMap.spans.length!==1||plan.timeMap.spans[0].sourceIn!==0||(!outputContour&&(plan.source.width!==1080||plan.source.height!==1920||plan.camera.keyframes.some(k=>k.x!==0||k.y!==0||k.width!==1080||k.height!==1920))))fail('requires reviewed full-frame source or unchanged bound static camera');
  const result=[];
  for(const e of data.events){
   if(typeof e.text!=='string'||!e.text.trim()||e.text.length>26||/[{}\\\r\n\x00-\x1f]/.test(e.text)||![e.start,e.end,e.x,e.y,e.size].every(number)||e.start<0||e.end>plan.duration||e.end<=e.start||e.end-e.start>3||e.size<64||e.size>220||!/^#[0-9A-Fa-f]{6}$/.test(e.color))fail('event text, style or interval invalid');
@@ -42,8 +43,9 @@ export function drawDepthText(plan,event,safeText,assColor){
   for(let i=0;i<count;i++){
    const start=e.start+i/30,end=Math.min(e.end,start+1/30),mid=(start+end)/2,points=contourAt(e.mask,mid);
    const path='m '+points.map(p=>p.map(Math.round).join(' ')).join(' l ')+' l '+points[0].map(Math.round).join(' ');
+   const phase=plan.dopaminMaster?Math.min(1,(mid-e.start)/.22):1,size=e.size*(.82+.18*(1-Math.pow(1-phase,3))),y=e.y+32*(1-phase);
    const opacity=Math.min(1,(mid-e.start)/.12,(e.end-mid)/.12),alpha=Math.round((1-opacity)*255).toString(16).padStart(2,'0');
-   event(-1,start,end,'Caption',`{\\an5\\pos(${e.x},${e.y})\\fnMontserrat ExtraBold\\b800\\i0\\fs${e.size}\\fscx100\\fsp-2\\bord0\\shad0\\1c${assColor(e.color)}&\\1a&H${alpha}&\\iclip(1,${path})}${safeText(e.text)}`);
+   event(-1,start,end,'Caption',`{\\an5\\pos(${e.x},${y})\\fnMontserrat ExtraBold\\b800\\i0\\fs${size}\\fscx100\\fsp-2\\bord0\\shad0\\1c${assColor(e.color)}&\\1a&H${alpha}&\\iclip(1,${path})}${safeText(e.text)}`);
   }
  }
 }

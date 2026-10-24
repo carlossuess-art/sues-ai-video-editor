@@ -35,7 +35,7 @@ export class EditorJobs{
   for(const job of recover)setImmediate(()=>this.publish(job));
   if(autoStart)setImmediate(()=>this.drain());
  }
- loadProfile(id){const project=loadProject(this.profiles[id]);project.resolveAsset=this.assetResolver;return project;}
+ loadProfile(id){const project=loadProject(this.profiles[id]);project.resolveAsset=this.assetResolver;project.resolveDefaultMusic=this.defaultMusicResolver;project.resolveNarrativeBrolls=this.narrativeResolver?()=>this.narrativeResolver(project.inputs.transcript):undefined;return project;}
  dir(id){if(!ID.test(id)||!this.jobs.has(id))throw new Error('Job not found');return join(this.directory,id);}
  save(job){const dir=join(this.directory,job.id),tmp=join(dir,'.job-'+randomUUID()+'.json');mkdirSync(dir,{recursive:true,mode:0o700});writeFileSync(tmp,JSON.stringify(job,null,2)+'\n',{mode:0o600});renameSync(tmp,join(dir,'job.json'));}
  transition(job,state){if(!canTransition(job.state,state))throw new Error(`Invalid transition ${job.state} -> ${state}`);job.state=state;job.updatedAt=now();job.history.push({state,at:job.updatedAt});this.save(job);}
@@ -62,7 +62,7 @@ export class EditorJobs{
   try{writePreparedBundle(project,prepared,join(this.dir(id),'bundle-1'));job.bundle='bundle-1';job.bundleDigest=bundleDigest(join(this.dir(id),job.bundle));job.revision=1;job.summary=this.summary(prepared);this.transition(job,'PLANNED');this.transition(job,'PREVIEW_READY');return this.view(job);}
   catch(error){job.error=error.message;this.transition(job,'FAILED');throw error;}
  }
- summary(p){return {editionCounts:p.plan.editionCounts,musicPresent:!!p.plan.audioMix,soundEffects:p.plan.editionCounts.soundEffects,framing:p.plan.camera.mode,duration:p.plan.duration,styleId:p.plan.policy.templateId,sourceWords:p.director.audit.sourceWords,mappedWords:p.director.audit.mappedWords,omittedWords:p.director.audit.omittedWords,captions:p.plan.captions.length,zooms:p.plan.semantic.zooms.length,motions:p.plan.semantic.motions.length+(p.plan.graphics?.length??0)+(p.plan.elements?.length??0)+(p.plan.subjectLayers?.length??0),transitions:p.plan.globalTransitions?.length??0,manualHighlights:p.director.audit.manualHighlights??0,rejections:p.director.audit.rejections,externalCostUSD:0,productionReady:false};}
+ summary(p){return {editionCounts:p.plan.editionCounts,musicPresent:!!p.plan.audioMix,soundEffects:p.plan.editionCounts.soundEffects,framing:p.plan.camera.mode,duration:p.plan.duration,styleId:p.plan.policy.templateId,sourceWords:p.director.audit.sourceWords,mappedWords:p.director.audit.mappedWords,omittedWords:p.director.audit.omittedWords,captions:p.plan.captions.length,zooms:p.plan.semantic.zooms.length,motions:p.plan.semantic.motions.length+(p.plan.graphics?.length??0)+(p.plan.elements?.length??0)+(p.plan.subjectLayers?.length??0)+(p.plan.masterGraphics?.length??0),transitions:p.plan.globalTransitions?.length??0,manualHighlights:p.director.audit.manualHighlights??0,rejections:p.director.audit.rejections,externalCostUSD:0,productionReady:false};}
  plan(id){const job=this.get(id),bundle=join(this.dir(id),job.bundle);return {manifest:JSON.parse(readFileSync(join(bundle,'manifest.json'),'utf8')),director:JSON.parse(readFileSync(join(bundle,'director.json'),'utf8'))};}
  adjust(id,settings,{recordHistory=true}={}){
   const job=this.get(id);if(this.backupBusy.has(id))throw new Error('Backup busy');if(job.state!=='PREVIEW_READY')throw new Error('Adjustments require PREVIEW_READY; duplicate completed jobs to adjust');

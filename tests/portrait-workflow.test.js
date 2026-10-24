@@ -21,8 +21,8 @@ test('portrait workflow keeps one selected template, two truthful modes and dist
  assert.match(css,/aspect-ratio:9\/16/);
  assert.match(css,/grid-template-columns:minmax\(0,46fr\)/);
  assert.match(css,/@media\(max-width:700px\)/);
- assert.match(js,/\$\('choose-external'\)\.onclick=\(\)=>chooseEditRoute\('automatic'\)/);
- assert.match(js,/\$\('choose-automatic'\)\.disabled=true/);
+ assert.match(js,/automaticInstant=false;chooseEditRoute\('automatic'\)/);
+ assert.match(js,/\$\('choose-automatic'\)\.disabled=!available\|\|busy/);assert.match(js,/automaticInstant=true;chooseEditRoute\('automatic'\)/);
  assert.match(js,/VÍDEO ORIGINAL/);
  assert.match(js,/VÍDEO EDITADO/);
  assert.match(js,/EDITANDO VÍDEO/);

@@ -14,7 +14,7 @@ test('the actual captions-only DOPAMIN failure cannot pass instruction review',(
   const p=prepareProject(project,settings),proposal=planInstructions('DOPAMIN; con recursos animados; con efectos de sonido; zoom al 60 %; música al 12 %',settings);
   const review=reviewInstructionExecution(proposal,p.plan);
   assert.equal(review.canApply,false);assert.equal(review.execution.captionsOnly,true);assert.equal(review.execution.musicPresent,false);assert.equal(review.execution.missing.length,5);
-  assert.match(review.unsupported.join(' '),/sin análisis de encuadre/);
+  assert.match(review.unsupported.join(' '),/sin análisis de encuadre/);assert.equal(review.execution.sfxEvents,0);
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });
 test('requested music is blocked without an actual mix, while explicitly silent CALMA is allowed',()=>{

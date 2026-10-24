@@ -7,6 +7,7 @@ import {drawSymbolMotion} from './motion-overlays.js';
 import {keywordPreset} from './text-presets.js';
 import {illustrationFilters} from './illustrations.js';
 import {captionCues,progressiveRuns} from './caption-motion.js';
+import {drawMasterGraphics} from './dopamin-master.js';
 import {drawDepthText} from './depth-text.js';
 import {hierarchyLayout,METALLIC_GOLD} from './caption-hierarchy.js';
 import {shortCaptionGroups} from './short-captions.js';
@@ -97,6 +98,7 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   if(plan.policy.captions.font==='Montserrat')out=out.replace(',-1,0,0,0,100,100,0,0,1,2,1,5,120,180,0,1',',700,0,0,0,100,100,0,0,1,0,0,5,120,180,0,1');
   const event=(layer,start,end,style,text)=>{out+=`Dialogue: ${layer},${timestamp(start)},${timestamp(end)},${style},,0,0,0,,${text}\n`;};
   drawDepthText(plan,event,safeText,assColor);
+  drawMasterGraphics(plan,event,safeText,assColor);
   drawElements(plan,event,safeText,assColor);
   for(const c of plan.captions){
     const white=assColor((plan.graphics??[]).some(g=>g.type!=='secret'&&c.start>=g.start-1e-6&&c.end<=g.end+1e-6)?plan.renderColors.dark:plan.policy.captions.color);
@@ -118,7 +120,8 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
       for(const row of progressive??hierarchy){
         const start=row.start??c.start,end=row.end??c.end,settle=Math.round((row.settle??0)*1000);
         const entrance=row.character?`\\move(${row.x},${row.y+8},${row.x},${row.y},0,${settle})\\frz-3\\t(0,${settle},\\frz0)`:`\\pos(${row.x},${row.y})`;
-        const style=`${entrance}${typefaceTags(p,row.role==='keyword'?'keyword':'normal',row.italic)}\\fs${row.size}\\fscx${row.scaleX??p.scaleX}\\i${row.italic?1:0}\\fsp${row.character?0:p.tracking}\\fad(${Math.min(fade,Math.round((end-start)*150))},${fade})${p.shadow?'\\bord0\\shad0':''}`;
+        const kinetic=plan.dopaminMaster&&!row.character?`\\fscy${row.role==='keyword'?125:88}\\t(0,130,\\fscy100)`:'';
+        const style=`${kinetic}${entrance}${typefaceTags(p,row.role==='keyword'?'keyword':'normal',row.italic)}\\fs${row.size}\\fscx${row.scaleX??p.scaleX}\\i${row.italic?1:0}\\fsp${row.character?0:p.tracking}\\fad(${Math.min(fade,Math.round((end-start)*150))},${fade})${p.shadow?'\\bord0\\shad0':''}`;
         const preset=keywordPreset(c.keyword),palette=preset.colors;
         if(p.shadow){
           const s=p.shadow,dx=s.distancePx*Math.cos(s.angleDeg*Math.PI/180),dy=s.distancePx*Math.sin(s.angleDeg*Math.PI/180),alpha=Math.round((1-s.opacity)*255).toString(16).padStart(2,'0').toUpperCase();

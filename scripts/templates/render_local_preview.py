@@ -51,6 +51,48 @@ def normalize_voice(source, output, settings):
             'normalizationType': applied.get('normalization_type'), 'humanListeningAccepted': False}
 
 
+def cache_dense_sfx(bundle, duration, output_parent):
+    """Bound memory independently of cue count; preserve the compiled gain/delay graph."""
+    import shutil
+    graph = (bundle / 'audio.ffscript').read_text()
+    clauses = [c.strip() for c in graph.strip().split(';\n')]
+    sources = [c for c in clauses if re.search(r'\[sfx\d+\]$', c)]
+    if len(sources) <= 8:
+        return None
+    directory = pathlib.Path(tempfile.mkdtemp(prefix='.sues-sfx-', dir=output_parent))
+    batches = []
+    try:
+        for offset in range(0, len(sources), 6):
+            group = sources[offset:offset+6]
+            labels = [re.search(r'(\[sfx\d+\])$', c).group(1) for c in group]
+            script = directory / ('batch-%d.ffscript' % offset)
+            script.write_text(';\n'.join(group + [
+                'anullsrc=r=48000:cl=stereo:d=%s,aformat=sample_fmts=fltp[batch-silence]' % duration,
+                '[batch-silence]' + ''.join(labels) +
+                'amix=inputs=%d:duration=first:dropout_transition=0:normalize=0,atrim=duration=%s[batch]' % (len(group)+1, duration)]) + '\n')
+            target = directory / ('batch-%d.wav' % offset)
+            subprocess.run(['ffmpeg', '-v', 'error', '-filter_complex_threads', '1',
+                            '-filter_complex_script', str(script), '-map', '[batch]',
+                            '-ar', '48000', '-ac', '2', '-c:a', 'pcm_f32le', str(target)], check=True)
+            batches.append(target)
+        bus = directory / 'bus.wav'
+        command = ['ffmpeg', '-v', 'error', '-threads', '1']
+        for batch in batches:
+            command += ['-i', str(batch)]
+        command += ['-filter_complex_threads', '1', '-filter_complex',
+                    ''.join('[%d:a]' % i for i in range(len(batches))) +
+                    'amix=inputs=%d:duration=longest:dropout_transition=0:normalize=0[bus]' % len(batches),
+                    '-map', '[bus]', '-ar', '48000', '-ac', '2', '-c:a', 'pcm_f32le', str(bus)]
+        subprocess.run(command, check=True)
+        kept = [c for c in clauses if c not in sources and
+                not c.endswith('[sfx-silence]') and not c.startswith('[sfx-silence]')]
+        return {'directory': directory, 'bus': bus, 'clauses': kept,
+                'sources': len(sources), 'batchSize': 6}
+    except BaseException:
+        shutil.rmtree(directory)
+        raise
+
+
 def render(source, bundle, output):
     source = source.resolve(strict=True)
     bundle = bundle.resolve(strict=True)
@@ -168,6 +210,7 @@ def render(source, bundle, output):
     video_temporary = None
     normalized_temporary = None
     normalization_audit = None
+    sfx_cache = None
     separated = (bundle / 'video.ffscript').is_file() and (bundle / 'audio.ffscript').is_file() and bool(audio)
     if manifest.get('voiceNormalization', {}).get('enabled') and not separated:
         raise ValueError('Voice normalization requires the separated render bundle')
@@ -207,8 +250,16 @@ def render(source, bundle, output):
             for sound in sounds:
                 command += ['-threads', '2', '-i', str(sound['path'])]
             video_index = 1 + int(bool(music)) + len(sounds)
+            sfx_cache = cache_dense_sfx(bundle, manifest['duration'], output.parent)
+            audio_script = 'audio.ffscript'
+            if sfx_cache:
+                cache_index = video_index
+                command += ['-threads', '1', '-i', str(sfx_cache['bus'])]
+                video_index += 1
+                audio_script = str(sfx_cache['directory'] / 'cached-audio.ffscript')
+                pathlib.Path(audio_script).write_text('[%d:a]anull[sfx-bus];\n' % cache_index + ';\n'.join(sfx_cache['clauses']) + '\n')
             command += ['-threads', '2', '-i', str(video_temporary),
-                        '-filter_complex_threads', '1', '-filter_complex_script', 'audio.ffscript',
+                        '-filter_complex_threads', '1', '-filter_complex_script', audio_script,
                         '-map', str(video_index) + ':v:0', '-map', '[mixed-audio]',
                         '-c:v', 'copy', '-c:a', 'aac', '-b:a', '128k', '-map_metadata', '-1',
                         '-movflags', '+faststart', '-progress', str(output.parent / 'ffmpeg-audio-progress.txt'),
@@ -254,12 +305,15 @@ def render(source, bundle, output):
                  'subjectLayers': [{k: v for k, v in layer.items() if k not in ('mask', 'resource')} for layer in subject_layers], 'soundEffects': manifest.get('soundEffects'), 'customSfx': {'assets': [{k: v for k, v in s.items() if k != 'path'} for s in sounds], 'events': manifest.get('customSfx', {}).get('events', [])}, 'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'ambientOverlays': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False, 'visualAcceptance': False} for m in overlays], 'mastering': manifest.get('mastering'), 'voiceEffects': {'version': manifest.get('voiceEffects', {}).get('version'), 'events': manifest.get('voiceEffects', {}).get('events', []), 'humanListeningAccepted': False}, 'captions': len(manifest['captions']), 'illustrations': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in illustrations],
                  'font': {'family': expected_family, 'regularSha256': digest(font), 'boldSha256': digest(bold_font), 'extraFaces': extra_fonts},
                  'ffmpeg': subprocess.check_output(['ffmpeg', '-version'], text=True).splitlines()[0],
-                 'voiceNormalization': normalization_audit, 'renderPasses': ['video', 'audio-mux'] if separated else ['legacy-combined'], 'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
+                 'denseSfxCache': ({'sources':sfx_cache['sources'],'batchSize':sfx_cache['batchSize']} if sfx_cache else None), 'voiceNormalization': normalization_audit, 'renderPasses': ['video', 'audio-mux'] if separated else ['legacy-combined'], 'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
         # Exclusive creation prevents a race from overwriting another output.
         os.link(temporary, output)
         output.with_suffix('.audit.json').write_text(json.dumps(audit, indent=2) + '\n')
         return audit
     finally:
+        if sfx_cache:
+            import shutil
+            shutil.rmtree(sfx_cache['directory'])
         temporary.unlink(missing_ok=True)
         if normalized_temporary is not None:
             normalized_temporary.unlink(missing_ok=True)

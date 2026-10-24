@@ -1,3 +1,4 @@
+import {musicAccentFilter} from './dopamin-master.js';
 import {resourceLevelFilter} from './audio-levels.js';
 const assert=(ok,msg)=>{if(!ok)throw new Error(`Audio mix: ${msg}`);};
 export function prepareBackgroundAudio(value,duration){
@@ -16,10 +17,10 @@ export function backgroundAudioFilter(mix,index){
  if(!mix)return [];
  const d=mix.duck;
  if(mix.duckEnabled===false)return [
- `[${index}:a]atrim=start=${mix.sourceIn}:end=${mix.sourceOut},asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,${mix.levelResources?resourceLevelFilter(mix.duration,-10):''}volume=${mix.gain},afade=t=in:st=0:d=${mix.fadeIn},afade=t=out:st=${mix.duration-mix.fadeOut}:d=${mix.fadeOut}[music-bed]`,
+ `[${index}:a]atrim=start=${mix.sourceIn}:end=${mix.sourceOut},asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,${mix.levelResources?resourceLevelFilter(mix.duration,-10):''}volume=${mix.gain},${musicAccentFilter(mix.accents)}afade=t=in:st=0:d=${mix.fadeIn},afade=t=out:st=${mix.duration-mix.fadeOut}:d=${mix.fadeOut}[music-bed]`,
  `[audio][music-bed]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,alimiter=limit=${mix.limiter}:level=0:latency=1[mixed-audio]`];
  return [`[audio]asplit=2[voice-original][voice-key]`,
-  `[${index}:a]atrim=start=${mix.sourceIn}:end=${mix.sourceOut},asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,${mix.levelResources?resourceLevelFilter(mix.duration,-10):''}volume=${mix.gain},afade=t=in:st=0:d=${mix.fadeIn},afade=t=out:st=${mix.duration-mix.fadeOut}:d=${mix.fadeOut}[music-bed]`,
+  `[${index}:a]atrim=start=${mix.sourceIn}:end=${mix.sourceOut},asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,${mix.levelResources?resourceLevelFilter(mix.duration,-10):''}volume=${mix.gain},${musicAccentFilter(mix.accents)}afade=t=in:st=0:d=${mix.fadeIn},afade=t=out:st=${mix.duration-mix.fadeOut}:d=${mix.fadeOut}[music-bed]`,
   `[music-bed][voice-key]sidechaincompress=threshold=${d.threshold}:ratio=${d.ratio}:attack=${d.attack}:release=${d.release}:makeup=1[ducked-music]`,
   `[voice-original][ducked-music]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,alimiter=limit=${mix.limiter}:level=0:latency=1[mixed-audio]`];
 }
