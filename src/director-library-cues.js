@@ -1,5 +1,6 @@
 import {validateTranscript} from './transcript.js';
-import {loadPrivateLibraryIndex,searchPrivateLibrary} from './private-library-search.js';
+import {loadPrivateLibraryIndex,searchPrivateLibrary,reviewedNarrativeVideos} from './private-library-search.js';
+import {proposeNarrativeScenes} from './director-narrative-scenes.js';
 
 // Deterministic, review-only staging for Director IA. No provider calls or auto insertion.
 // A generic word ('tiempo', 'luz', etc.) alone cannot justify a full-frame B-roll.
@@ -45,7 +46,14 @@ export function proposeLibraryCues(jobsDirectory,transcript,{limit=6}={}){
   cues.push({start,end,transcriptQuote:text,sourceWordIndexes:slice.map((_,j)=>startIndex+j),
    candidates,decision:'suggestion-only'});
  }
+ // Narrative proposals require two independent pieces of evidence:
+ // an explicit transcript anchor and inspected scene tags from verified private media.
+ const narrative=proposeNarrativeScenes(transcript,reviewedNarrativeVideos(jobsDirectory,index),{limit});
+ const known=new Set(narrative.map(c=>c.narrative?.anchorWordIndex));
+ const combined=[...narrative,...cues.filter(c=>!c.sourceWordIndexes?.some(i=>known.has(i)))]
+  .sort((a,b)=>a.start-b.start||Number(b.decision==='contextual-review-only')-Number(a.decision==='contextual-review-only'))
+  .slice(0,limit);
  return {schema:'sues-director-library-cues/v1',timeSpace:'original-seconds',
-  sourceIndexOnly:true,approvedToAutoPublish:false,method:'conservative transcript-to-catalogue lexical matching; generic-only B-roll suppressed, not full semantic vision',
-  cues,warning:'Solo muestreo visual parcial. Verificar metraje completo, logos/textos, significado narrativo, licencia, encuadre y zonas seguras antes de cualquier inserción.'};
+  sourceIndexOnly:true,approvedToAutoPublish:false,method:'transcript narrative anchor + human sampled visual scene; lexical fallback; no complete vision model',
+  cues:combined,warning:'Escenas anotadas a partir de muestras parciales. Verificar vídeo completo, texto/logos, contexto de la frase, licencia y zonas seguras antes de editar.'};
 }
