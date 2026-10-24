@@ -227,3 +227,24 @@ Copias portables incluyen sonidos únicos verificados y restauran sin biblioteca
 Catálogo externo publica sólo IDs disponibles al usuario autenticado. No nuevos
 modelos ni importación de MOGRT; procedencia declarada no equivale a licencia
 auditada por archivo. Mantener originales y medios comerciales fuera de Git.
+
+## Revisión DOPAMIN de Carlos · 24/10/2026
+
+Carlos considera que el montaje avanza, pero no acepta B-roll por mera coincidencia
+de palabras ni una edición cuya música/SFX/transiciones no se perciban. No excusar
+selecciones manuales diciendo que falta entrenar un cerebro. Revisar el MP4, no
+solamente contadores/JSON. Énfasis visibles: naranja fuego y acabado metálico
+naranja, con variación clara de tamaño; escalas explícitas 1,45/1,6 dentro de zonas
+seguras. El metálico actual son bandas, no reflejo 3D.
+
+Ajustes de esta revisión: voz 150 %, efectos 30 %, música 16–20 % (ensayo 18 %).
+Nivelar recursos antes del porcentaje; no equiparar número del deslizador con
+audibilidad. Conservar CALMA y valores por defecto previos salvo pedido explícito.
+La cama ambiental anterior se concentra en graves; comprobar escucha en móvil
+y no presentarla como pista dinámica. Music/CC0 con autor/fuente/hash registrados.
+
+Desenfoque/radial tardíos: evitar split+trim y filtros de dos entradas desactivados
+que acumulen fotogramas. Aplicar en flujo continuo. Prueba MP4 objetivo FFmpeg5.1
+con transiciones tardías bajo 1 GiB y diferencias de píxeles durante/fuera de evento.
+RadialBurst documental no se ha reparado en este bloque; no extender la cobertura.
+F9 y V1 requieren aprobación creativa de Carlos; el global oficial sigue 48 %.

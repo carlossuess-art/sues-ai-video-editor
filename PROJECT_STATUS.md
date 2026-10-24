@@ -1,3 +1,15 @@
+## REPARACIÓN SFX CORTOS · 24/10/2026
+
+Prueba con los whooshes privados reales descubre un fallo adicional de FFmpeg/loudnorm con entradas cortas: pad de 1 s producía salida muy atenuada (picos -14,06/-26,15 dBFS antes del gain). Pad de 3 s estabiliza el medidor/limitador (pico -1 dBFS), recortando después al número de muestras original antes de aplicar gain y retraso. No cambia tiempos ni prolonga eventos. Se fija además el layout estéreo explícito tras remuestreo.
+
+Regresión nueva con transitorios sintéticos 0,36/0,864/1,601604 s: nivel audible, picos limitados y duración exacta PASS. Suite 298 pruebas primarias PASS más MP4 con audio/transiciones tardías bajo 1 GiB en runtime VPS PASS; 299 pruebas únicas cubiertas. Versiones 06/07 completas previas a esta corrección NO se consideran aceptación de sonido.
+
+The Hex (Hex 09), de Steven Ruud / The Cynic Project, publicado por su autor como CC0: https://opengameart.org/content/the-hex . Fuente original 85.522.816 bytes conservada, SHA256 5147331643738a8e54e7ae554289b94d86cdb4c83651d54da90f7519cf7e79de. Asset de 70 s 55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6 importado como licensed. Original y procedencia guardados en la carpeta musical de Drive. Elección provisional, sin coste, sin aceptar compra/suscripción ni presentar un banco musical completo. La búsqueda en la carpeta musical preparada y SUNO no encontró pistas adicionales; no extrapolar esa ausencia a todo Drive porque el buscador general filtra formatos de audio.
+
+Iteración 06 (fb3b2b60-c3b2-4657-9637-ff0ecbac1c08): MP4 completo 68,634 s, SHA256 2ebf63218637f01bfbb5df69d2091a68bf00df10c609cbf1140e3b7cd30e08a0, 27.440.731 bytes; mezcla -15,50 LUFS/-1,90 dBTP, voz 150 %, efectos 30 %, música 18 %, énfasis naranja/metal 145–160 %. Reproducción completa en navegador y frames reales revisados, sin aprobación creativa de Carlos. Guardada en Drive: https://drive.google.com/file/d/1v7odDTfB08YRbgkT26p_VmoGivPNP8Es/view . Iteración 07 prueba otra pista; nueva 08 pendiente para incorporar el arreglo de SFX cortos. B-roll continúa siendo una decisión editorial por afinar, no un cerebro entrenado. F6/F7/F9 abiertas, global 48 %.
+
+---
+
 ## CORRECCIÓN ADICIONAL · Transiciones tardías y memoria · 24/10/2026
 
 Iteración 05 del maestro (03ded122-67af-4877-8e7d-5c068897478a) creada desde Dar instrucciones y fallida por SIGKILL/OOM antes de emitir fotogramas. Las ramas split/trim de transiciones tardías forzaban lectura adelantada y colas de fotogramas 1080p. No contar esa versión como exportada ni aceptada.
