@@ -1,3 +1,11 @@
+## F7/F9 · Puente sugerencia narrativa → plan editable revisable · 24/10/2026
+
+Desde la rama de producción `b9b439f9e5a2d0df9abc1731c500565977d6540d`, se añade al panel de sugerencias de recursos un botón individual **Preparar este B-roll para revisar**. Reutiliza las rutas y validación del plan externo existente. Sólo se ofrece en candidatos de vídeo con evidencia contextual y tramo fuente auditado. Genera JSON `sues-edit-plan/v1` con `sourceSha256` real y operación B-roll `resourceId`, `start/end`, `sourceIn`, `reason`; guarda borrador y guía al usuario a **Comprobar plan** y **Ejecutar plan en otra versión**. No ejecuta ni crea MP4 automáticamente.
+
+Control de seguridad: no sobrescribe texto no JSON, fuente ajena, operaciones incompatibles ni B-roll solapado; máximo 3 clips y hasta 60 operaciones; origen y duración contrastados con catálogo actual y proyectos distintos rechazados. Mantiene revisión humana, voz original, CALMA y originales. Código, pruebas y límites: `docs/SUES_REVIEWED_BROLL_TO_EDIT_PLAN_20261024.md`. F7/F9 aún requieren nuevo render/aceptación; global oficial 48%. El despliegue y resultados completos deben verificarse, un commit no implica producción.
+
+---
+
 ## F7 · Auditoría temporal y segmentos utilizables de B-roll · 24/10/2026
 
 Rama aislada `feat/dopamin-temporal-scene-qa-20261024` desde el release verificado `773416414cabbb566c1ea8957ef4c5abea123166`. Se ha ampliado la revisión visual a una hoja de contacto de un fotograma/segundo por cada clip, sin declarar validación del contenido entero. FFmpeg ha recorrido todos los fotogramas de 4 B-rolls del banco con pruebas técnicas de cortes (`scene>0.36`), negros y congelaciones; no ha detectado intervalos en los cuatro bajo los umbrales seleccionados. Los 4 originales se contrastaron SHA256. Manifiesto temporal privado 0600 bajo `jobs/library/asset-temporal-audit-v1.json`, no incluido en GitHub.
@@ -990,11 +998,3 @@ Ajuste incremental deinterfaz:estilo/estructura yguardar/deshacer siemprevisible
 recursos,cámara,imágenes,sonido ysubtítulos enseccionesplegables. Cada subtítulo se
 abre individualmente; trabajosguardados tambiénplegados. ELEMENTS con etiquetas
 enespañol manteniendo valorespersistidos; al elegirformato seabre susección.
-Accesosmóviles fijos Material/Ajustes/Vídeo; sin alterar motordevídeo, tipografía,
-recetas ni ajustes guardados. ShellPWA v7 para renovar recursosinterfaz.
-
-Chromium145:24combinaciones escritorio/móvilPASS, guardar/recargar/deshacer/
-duplicar/copia/recuperaciónUI; sin erroresJS ni desbordamientohorizontal. Panel
-plegado774pxescritorio y800pxmóvil; accesoAjustes llegaalselector sinbúsquedalarga.
-209tests/checkPASS. No nueva recodificación: motor src/renderer sin cambios.
-Evidencia examples/preview/compact-ui.real-result.json. Rama detrabajo
