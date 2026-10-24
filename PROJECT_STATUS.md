@@ -1,3 +1,9 @@
+## F7 · Guard visual contra branding de B-roll · 24/10/2026
+
+Nueva rama separada `feat/visual-safety-curation-20261024` basada en `feat/dopamin-context-review-20261024`, sin modificar otro worktree pendiente. Se revisaron cuatro clips **reales** del banco con cuatro fotogramas por archivo: reloj con inscripción comercial visible, sendero con persona de espaldas, cadena/amanecer sin textos observados **solo en las muestras**. Implementada carga validada del índice privado opcional `asset-visual-review-v1.json` que registra riesgos por hash de medio, bloquea recomendaciones de vídeo con marca/texto ajenos y señala muestras limitadas en UI; no aprueba automáticamente nada, no borra recursos y no cambia exportación ni CALMA. Ver `docs/SUES_VISUAL_SAMPLE_GUARD_20261024.md`. F6/F7/F9 abiertas; global oficial 48 %.
+
+---
+
 ## DESPLIEGUE VERIFICADO · F7 FILTRO B-ROLL · 24/10/2026 UTC
 
 Producción VPS srv1841004 actualizada al commit de código `43cf0d908636ed2ec7c10101f169bdacab7fdecc`, sin merge a main y conservando PR borrador #10. Primer intento abortó de forma segura y recuperó el contenedor anterior: la copia de datos difería porque `uploads/asr/worker.json` era actualizado continuamente por Whisper (servicio systemd independiente). No se relajó la verificación. Segunda ejecución pausó `sues-editor-whisper.service` temporalmente (sin trabajos pendientes), realizó copia privada verificada SHA256 `69690132066294cfc7e04eb91a82642af7b5cda93228cd7a9387fdfc86822922`, desplegó `43cf0d9` y reactivó Whisper: ACTIVE.
@@ -992,19 +998,3 @@ Necesidad puntual deCarlos:ejecutar elcomando fijado enla terminalHostinger,cons
 su salida ydespués validar app remota. La limitación esacceso alVPS,no autorización.
 Sin gasto externo,nuevos modelos,ASR,Lovable oalteracionesWhatsApp/Caddy/DNS.
 F6/V1 ysegmentación corporal automática siguenabiertas.
-
----
-## Editor validado en navegador real · 19/10/2026
-
-Chromium145 local:24combinaciones = escritorio/móvil × CALMA/DOPAMIN × seis
-formatosELEMENTS. Guardar yrecargar conserva cada formato; sin desbordamiento
-horizontal a1440×1000 y393×852. Deshacer restaura huella yduplicar mantieneELEMENTS.
-DescargaTAR yrecuperación por selector dearchivo desdeUI conservan los ajustes.
-Render real desde proyecto recuperado:38,31s,DONE,decodePASS,fuenteintacta,
-Range206/1024bytes;controles deajuste bloqueados al terminar. Sin erroresJS.
-209testsNode/check y10pruebas simuladas dedesplieguePASS. Chrome/Playwright sólo
-herramientas locales opcionales; dependenciasdel servidor idénticas.
-Etiqueta antigua «tamaño doble» corregida a«Palabra importante»; sin cambiar look.
-Evidencia examples/preview/browser-integration.real-result.json yscript
-scripts/app/smoke_browser_real.mjs. Capturas/medios/cookies privados fuera deGit.
-Preparado para integrar PR3/PR4 enoficial;VPS sin modificar. Esta QA técnica no
