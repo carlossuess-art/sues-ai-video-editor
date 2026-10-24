@@ -1,3 +1,15 @@
+## Búfer publicado y comprobado · 24/10/2026
+
+Producción b40e2a5e: precarga sólo vídeo visible, barra de búfer y carga completa
+privada enmemoria.9/9 pruebasPASS; test con12,9MBreales convierte aBloblocal,
+100% yhashidéntico alMP4. HTML/helperJS/appJS/SW200,privado401,Range206;
+backup/rollback verificados yWhisper activo. No reproducción Android acreditada.
+Detalles: docs/SUES_PLAYBACK_BUFFER_20261024.md. Cargar completo evita esperas
+de red posteriores; no garantiza decodificación del dispositivo. F9 abierta,
+global48%; Roadmap Drive sin sincronizar por Unknown tool.
+
+---
+
 ## Reproducción · precarga única y búfer completo · 24/10/2026
 
 Queja de Carlos: la carga del vídeo no se adelanta suficiente a la reproducción.
