@@ -1,3 +1,15 @@
+## CORRECCIÓN ADICIONAL · Transiciones tardías y memoria · 24/10/2026
+
+Iteración 05 del maestro (03ded122-67af-4877-8e7d-5c068897478a) creada desde Dar instrucciones y fallida por SIGKILL/OOM antes de emitir fotogramas. Las ramas split/trim de transiciones tardías forzaban lectura adelantada y colas de fotogramas 1080p. No contar esa versión como exportada ni aceptada.
+
+Desenfoque y expansión radial ahora operan directamente sobre el flujo continuo, con pulso acotado de 400 ms y sin rama tardía. La fase radial se calcula una vez por fila para evitar trigonometría redundante por cada muestra/píxel. Se conserva el compositor y la voz; radialBurst documental no se modifica en este bloque. El nuevo módulo de niveles entra en ENGINE_HASH.
+
+Prueba real en imagen del VPS/FFmpeg 5.1: MP4 20 s con transiciones a 6/16 s, límite AS 1 GiB y contenedor 1 GiB, PASS. Diferencias de imagen decodificada: desenfoque 4,07, radial 13,81, tras el efecto 0,28 (MAD RGB): efectos visibles y regreso a imagen limpia. Voz/música/SFX medidos en PCM decodificado. Regresión lógica 297/297 PASS. FFmpeg 8 del entorno primario presentó límites de dirección virtual/errores internos x264 con el patrón complejo; la prueba completa se valida en el runtime objetivo del VPS. Ningún original modificado.
+
+Mezcla aislada de 05 antes del fallo visual: RMS -14,7 dBFS, pico -2,2 dBFS; música RMS -28,0 dBFS, SFX procedural pico -18,6 dBFS. Es una medición WAV del grafo, NO el MP4 final ni aceptación de escucha. Nueva versión completa pendiente tras esta reparación; global 48 %, F9 abierta.
+
+---
+
 ## REVISIÓN DE CARLOS · Audio y énfasis DOPAMIN · 24/10/2026
 
 Carlos observa que la versión 04 avanza, pero no percibe música/SFX/transiciones ni cambios suficientes de tamaño/color en captions. B-roll mejorable; no hay aceptación F9. Sus niveles solicitados: voz 150 %, efectos 30 %, música 16–20 % (se ensaya 18 %). Énfasis naranja fuego y metálico.

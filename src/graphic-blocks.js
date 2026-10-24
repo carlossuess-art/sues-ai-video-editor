@@ -49,14 +49,18 @@ export function globalTransitionFilters(events,base){
    filters.push(`color=c=0xffe1bc:s=270x480:r=30:d=${d},format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='min(235,205*exp(-2*pow((X-(35+200*T/${d}))/90,2)-2*pow((Y-145)/220,2))+45*exp(-pow((Y-145)/3,2)))',scale=1080:1920,fade=t=in:st=0:d=${fade}:alpha=1,fade=t=out:st=${fade}:d=${fade}:alpha=1,setpts=PTS+${e.start}/TB[global-effect${i}]`);
    filters.push(`[${base}][global-effect${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${e.start})*lt(t,${e.end})'[global-composed${i}]`);
   }else{
-   filters.push(`[${base}]split=2[global-clear${i}][global-input${i}]`);
-   let effect='gblur=sigma=9';
+   const enabled=`gte(t,${e.start})*lt(t,${e.end})`;
+   // Apply the pulse on the continuous stream: no late split branch can pull
+   // ahead or leave full-HD frames queued while a two-input filter is disabled.
    if(e.type==='radial'){
-    const sample=c=>Array.from({length:5},(_,k)=>`${c}(270+(X-270)*(1-${k*.035}*sin(PI*T/${d})),480+(Y-480)*(1-${k*.035}*sin(PI*T/${d})))`).join('+');
-    effect=`geq=r='(${sample('r')})/5':g='(${sample('g')})/5':b='(${sample('b')})/5'`;
+    const sample=c=>Array.from({length:5},(_,k)=>`${c}(W/2+(X-W/2)*(1-${k*.035}*ld(0)),H/2+(Y-H/2)*(1-${k*.035}*ld(0)))`).join('+');
+    const phase=`if(eq(X,0),st(0,pow(sin(PI*(T-${e.start})/${d}),2)),0);`;
+    filters.push(`[${base}]geq=lum='${phase}(${sample('lum')})/5':cb='${phase}(${sample('cb')})/5':cr='${phase}(${sample('cr')})/5':enable='${enabled}'[global-effect${i}]`);
+   }else{
+    const commands=Array.from({length:9},(_,step)=>`${Number((e.start+d*step/8).toFixed(6))} gblur@globalblur${i} sigma ${Math.max(.01,9*Math.sin(Math.PI*step/8)).toFixed(4)}`).join(';');
+    filters.push(`[${base}]sendcmd=c='${commands}',gblur@globalblur${i}=sigma=0.01:enable='${enabled}'[global-effect${i}]`);
    }
-   filters.push(`[global-input${i}]trim=start=${e.start}:end=${e.end},setpts=PTS-STARTPTS,scale=540:960,${effect},scale=1080:1920,format=rgba,fade=t=in:st=0:d=${fade}:alpha=1,fade=t=out:st=${fade}:d=${fade}:alpha=1,setpts=PTS+${e.start}/TB[global-effect${i}]`);
-   filters.push(`[global-clear${i}][global-effect${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${e.start})*lt(t,${e.end})'[global-composed${i}]`);
+   filters.push(`[global-effect${i}]null[global-composed${i}]`);
   }
   base=`global-composed${i}`;
  }

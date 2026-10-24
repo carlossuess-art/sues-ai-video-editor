@@ -8,19 +8,20 @@ import {join,resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,buildVideoPassFilter,buildAudioPassFilter} from '../src/local-preview.js';
 import {prepareCustomSfx} from '../src/custom-sfx.js';
-const run=(cmd,args)=>execFileSync(cmd,args,{timeout:90000,maxBuffer:8*1024*1024});
+const run=(cmd,args)=>execFileSync(cmd,args,{timeout:180000,maxBuffer:8*1024*1024});
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 
 test('separated render preserves voice, late private SFX and music under a 1 GiB address-space limit',()=>{
  const dir=mkdtempSync(join(tmpdir(),'sues-two-pass-'));
  try{
   const source=join(dir,'base.mp4'),music=join(dir,'music.wav'),sfx=join(dir,'sfx.wav');
-  run('ffmpeg',['-v','error','-f','lavfi','-i','color=c=blue:s=108x192:r=30:d=20','-f','lavfi','-i','sine=frequency=440:sample_rate=48000:duration=20','-c:v','libx264','-threads','1','-pix_fmt','yuv420p','-af','volume=0.05','-c:a','aac','-shortest','-n',source]);
+  run('ffmpeg',['-v','error','-f','lavfi','-i','smptebars=size=108x192:rate=30:duration=20','-f','lavfi','-i','sine=frequency=440:sample_rate=48000:duration=20','-c:v','libx264','-threads','1','-pix_fmt','yuv420p','-af','volume=0.05','-c:a','aac','-shortest','-n',source]);
   run('ffmpeg',['-v','error','-f','lavfi','-i','sine=frequency=250:sample_rate=48000:duration=20','-n',music]);
   run('ffmpeg',['-v','error','-f','lavfi','-i','sine=frequency=880:sample_rate=48000:duration=0.5','-n',sfx]);
   const sourceSha=createHash('sha256').update(readFileSync(source)).digest('hex'),id=createHash('sha256').update(readFileSync(sfx)).digest('hex');
   const p=prepareLocalPreview({template:read('examples/templates/sues-calma.template.json'),brand:read('examples/brand-kit.sues.json'),source:{width:108,height:192,duration:20,sha256:sourceSha},segments:[{in:0,out:20}],transcript:{version:'1.0',language:'es',sourceDuration:20,words:[{text:'Prueba.',start:1,end:2}]},camera:{keyframes:[0,20].map(time=>({time,x:0,y:0,width:108,height:192,zoom:1}))},backgroundAudio:{assetId:'test_music',rights:'owned',localFile:music,gain:.16}});
   p.voiceGain=1.5;p.audioMix.levelResources=true;
+  p.globalTransitions=[{type:'blur',start:6,end:6.4,duration:.4},{type:'radial',start:16,end:16.4,duration:.4}];
   p.voiceNormalization={enabled:true,targetIntegratedLufs:-16,targetTruePeakDb:-3,targetLra:7};
   p.soundEffects={events:[]};p.customSfx=prepareCustomSfx([{assetId:id,start:14,gain:.5}],20,()=>({assetId:id,sha256:id,kind:'sfx',rights:'owned',duration:.5,localFile:sfx}),{voiceNormalized:true});
   applyResourceLevels(p);
@@ -34,6 +35,11 @@ test('separated render preserves voice, late private SFX and music under a 1 GiB
   const energy=hz=>{let a=0,b=0;for(let i=0;i<samples.length;i++){a+=samples[i]*Math.cos(2*Math.PI*hz*i/48000);b+=samples[i]*Math.sin(2*Math.PI*hz*i/48000);}return Math.hypot(a,b)/samples.length;};
   console.log('Encoded stem amplitudes',energy(440),energy(250),energy(880));
   assert.ok(energy(440)>.015,'continuous original voice');assert.ok(energy(250)>.006,'music actually present in decoded MP4');assert.ok(energy(880)>.01,'late private SFX actually present in decoded MP4');
+  const pixels=at=>run('ffmpeg',['-v','error','-threads','2','-ss',String(at),'-i',out,'-frames:v','1','-vf','scale=216:384','-pix_fmt','rgb24','-f','rawvideo','-']);
+  const before=pixels(5.9),blurred=pixels(6.2),radial=pixels(16.2),after=pixels(6.6),difference=a=>a.reduce((sum,v,i)=>sum+Math.abs(v-before[i]),0)/a.length;
+  console.log('Decoded visual differences',difference(blurred),difference(radial),difference(after));
+  assert.ok(difference(blurred)>.15,'blur visibly changes decoded pixels');assert.ok(difference(radial)>.5,'radial visibly changes decoded pixels');assert.ok(difference(after)<1,'original image returns after transition');
+  assert.doesNotMatch(readFileSync(join(dir,'render-video.log'),'utf8'),/ret:Function not implemented/);
   assert.equal(createHash('sha256').update(readFileSync(source)).digest('hex'),sourceSha);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
