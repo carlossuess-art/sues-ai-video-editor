@@ -1,3 +1,4 @@
+import {applyDopaminMaster,finishDopaminAudio,selectAutomaticPreviewBrolls} from './dopamin-master.js';
 import {applyResourceLevels} from './audio-levels.js';
 import {applyReviewedFraming,explicitZoomDecisions} from './reviewed-framing.js';
 import {buildTemplateRecipe,editionCounts} from './template-recipe.js';
@@ -24,7 +25,7 @@ import {buildAutomaticDirector,validateEditorSettings} from './automatic-directo
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,buildVideoPassFilter,buildAudioPassFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
-export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['audio-levels.js','reviewed-framing.js','template-recipe.js','custom-sfx.js','voice-effects.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
+export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['dopamin-master.js','audio-levels.js','reviewed-framing.js','template-recipe.js','custom-sfx.js','voice-effects.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
 export function fileSha256(path){const fd=openSync(path,'r'),hash=createHash('sha256'),buffer=Buffer.allocUnsafe(1024*1024);try{let size;while((size=readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,size));return hash.digest('hex');}finally{closeSync(fd);}}
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
@@ -53,10 +54,13 @@ export function loadProject(configPath){
 export function prepareProject(project,settings={}){
  const options=validateEditorSettings(settings);let inputs={...project.inputs,template:applyStyleVariant(structuredClone(project.inputs.template),options.styleId)};if(inputs.template.captions.mode==='short-groups')inputs.template.captions.maxWords=options.captionWords;
  inputs=applyReviewedFraming(inputs,options.reviewedFraming);
+ if(options.styleId==='SUES_DOPAMIN'&&options.autoRecipe&&inputs.previewLayout)inputs={...inputs,previewLayout:{...inputs.previewLayout,caption:{left:120,right:900,top:190,bottom:350}}};
+ if(options.styleId==='SUES_DOPAMIN'&&options.autoRecipe&&options.musicEnabled&&!options.musicAssetId&&!inputs.backgroundAudio&&project.resolveDefaultMusic){const music=project.resolveDefaultMusic(inputs.source.duration);if(music)options.musicAssetId=music.id;}
  const selectedAssets=[];const asset=(id,kind)=>{const bound=kind==='sfx'?project.inputs.soundAssets?.find(a=>a.assetId===id):kind==='video'?project.inputs.videoAssets?.find(a=>a.assetId===id):kind==='overlay'?project.inputs.overlayAssets?.find(a=>a.assetId===id):null;if(bound){if(fileSha256(bound.localFile)!==bound.sha256)throw new Error('SFX integrity changed');selectedAssets.push({id,sha256:bound.sha256,kind});return bound;}if(typeof project.resolveAsset!=='function')throw new Error('La biblioteca de recursos no está conectada a este proyecto');const value=project.resolveAsset(id,kind);selectedAssets.push({id,sha256:value.sha256,kind});return value;};
  if(options.musicAssetId){const m=asset(options.musicAssetId,'audio');if(m.duration<inputs.source.duration)throw new Error('La música es más corta que el vídeo. Elige una pista completa.');inputs.backgroundAudio={assetId:m.assetId,rights:m.rights,localFile:m.localFile,gain:.12};}
  if(!options.profileImages)inputs.illustrations=[];
  for(const e of options.imageEvents){const a=asset(e.assetId,'image');inputs.illustrations=[...(inputs.illustrations??[]),{assetId:a.assetId,rights:a.rights,role:'illustration',localFile:a.localFile,sha256:a.sha256,sourceSha256:project.boundHashes.source,timeSpace:'edit-timeline',start:e.start,end:e.end,placement:'auto-subject',motion:'slow-push',box:{left:120,right:900,top:140,bottom:420},featherPx:100,fadeSeconds:Math.min(.3,(e.end-e.start)/3)}];}
+ if(options.styleId==='SUES_DOPAMIN'&&options.autoRecipe&&options.automaticPreviewBroll&&!options.videoEvents.length&&project.resolveNarrativeBrolls)options.videoEvents=selectAutomaticPreviewBrolls(project.resolveNarrativeBrolls(),options,inputs.source.duration);
  const explicitBroll=options.videoEvents.map(e=>{
   const a=asset(e.assetId,'video');if(!Number.isFinite(a.duration))throw new Error('B-roll sin duración verificada');
   return {assetId:a.assetId,sha256:a.sha256,localFile:a.localFile,rights:a.rights,mediaDuration:a.duration,
@@ -113,7 +117,8 @@ export function prepareProject(project,settings={}){
   if(!hierarchyLayout(c,plan.policy.captions,plan.layout.caption))throw new Error('La palabra elegida no cabe legible al doble de tamaño. Elige otra o acorta el texto.');
  }
  Object.assign(plan,prepareGraphicBlocks(effectiveCards,effectiveTransitions,plan,options.motions));
- plan.depthText=options.motions?prepareDepthText(inputs.depthText,plan):[];
+ applyDopaminMaster(plan,options);
+ plan.depthText=options.motions?prepareDepthText(options.reviewedDepthText??inputs.depthText,plan):[];
  plan.finishFade=finishFadeFor(plan);
  plan.audioSourceAvailable=!!project.inputs.backgroundAudio||!!options.musicAssetId;
  plan.illustrations=prepareIllustrations(options.motions?(inputs.illustrations??[]):[],plan,inputs.visionFrames);
@@ -126,6 +131,7 @@ export function prepareProject(project,settings={}){
  plan.ambientOverlays=overlayAssets;
  if(overlayAssets.length){plan.pending.push('ambient-overlays-visual-review');}
  plan.soundEffects=prepareSoundEffects(plan,options);
+ finishDopaminAudio(plan,options);
  plan.voiceGain=options.voiceGain;
  plan.voiceEffects=prepareVoiceEffects(options.voiceEvents,plan.duration);
  if(options.levelResources)applyResourceLevels(plan);

@@ -1,3 +1,4 @@
+let automaticInstant=false;
 const googleLoginFailed=new URLSearchParams(location.search).get('google')==='failed';
 let design=null,designProfile=null,assetLibrary=[],editingRoute=null,comparisonRequest=null,automaticReviewKey=null,intakePhase='edit',pendingUploadId=null,allUploads=[];
 const $=id=>document.getElementById(id);let current=null,plan=null,working=false,editorStep='material-panel',previewDirty=false,playerView='original',localVideoURL=null;
@@ -150,7 +151,7 @@ $('render').onclick=()=>work(async()=>{
  $('render-state-overlay').hidden=false;$('render-state-title').textContent='EDITANDO VÍDEO';$('render-state-detail').textContent='Preparando el montaje con tus instrucciones…';
  try{
  if(current.state==='PUBLISH_FAILED'){display(await api('jobs/'+current.id+'/render','POST',{}));return;}
- if(editingRoute==='automatic'&&automaticReviewKey!==automaticKey())throw Error('Analiza y revisa la propuesta antes de ejecutar la edición.');
+ if(editingRoute==='automatic'&&!automaticInstant&&$('director-prompt').value.trim()&&automaticReviewKey!==automaticKey())throw Error('Analiza y revisa la propuesta antes de ejecutar la edición.');
  const prompt=$('director-prompt').value.trim(),base=proposalBase();
  const proposal=await api('jobs/'+current.id+'/direct-plan','POST',{prompt,settings:base});showProposal(proposal);
  if(!proposal.canApply)throw Error('Revisa las instrucciones no compatibles. No se ha generado otra versión.');
@@ -472,11 +473,11 @@ $('external-execute').onclick=()=>work(async()=>{if(!externalReview?.canApply||e
 // Dar instrucciones exposes global controls and the existing scene-plan review.
 function syncEditRoute(){
  const available=!!current||!!pendingUploadId,busy=working||analysisBusy||!!current&&['QUEUED','RENDERING','PUBLISHING'].includes(current.state);
- $('edit-video').hidden=true;$('edit-route-choices').hidden=!available;$('choose-external').disabled=!available||busy;$('choose-automatic').disabled=true;
+ $('edit-video').hidden=true;$('edit-route-choices').hidden=!available;$('choose-external').disabled=!available||busy;$('choose-automatic').disabled=!available||busy;
  $('automatic-edit-panel').hidden=editingRoute!=='automatic';
  $('external-plan-panel').hidden=!['automatic','external'].includes(editingRoute);
  if(editingRoute==='external')$('external-plan-panel').open=true;
- $('new-style-label').hidden=false;$('template-lock').dataset.active=$('new-project-style').value;$('active-template-label').textContent='PLANTILLA ACTIVA · '+($('new-project-style').value==='SUES_DOPAMIN'?'DOPAMIN':'CALMA');$('choose-external').setAttribute('aria-pressed',String(editingRoute==='automatic'));$('edit-mode-help').textContent=editingRoute==='automatic'?'Modo seleccionado: Dar instrucciones. El montaje seguirá la plantilla activa.':'Selecciona Dar instrucciones para continuar. El Director IA automático está en desarrollo.';
+ $('new-style-label').hidden=false;$('template-lock').dataset.active=$('new-project-style').value;$('active-template-label').textContent='PLANTILLA ACTIVA · '+($('new-project-style').value==='SUES_DOPAMIN'?'DOPAMIN':'CALMA');$('choose-external').setAttribute('aria-pressed',String(editingRoute==='automatic'));$('edit-mode-help').textContent=editingRoute==='automatic'?(automaticInstant?'Edición automática con la plantilla activa. Revisa el montaje antes de exportarlo.':'Modo seleccionado: Dar instrucciones. El montaje seguirá la plantilla activa.'):'Elige edición automática para crear una propuesta o da instrucciones para ajustarla.';
  $('prepare-external').hidden=!!current;
  $('external-catalog').disabled=!current||busy;$('external-review').disabled=!current||busy;
  $('compare-styles').disabled=!current||busy;$('compare-styles').hidden=true;
@@ -485,13 +486,15 @@ function syncEditRoute(){
  if($('resource-suggestions').dataset.jobId!==String(current?.id??'')){
   $('resource-suggestions').replaceChildren();$('resource-suggestions').dataset.jobId=String(current?.id??'');
  }
- if(editingRoute==='automatic'){$('render').disabled=$('render').disabled||!current||busy||automaticReviewKey!==automaticKey();$('review-instructions').textContent=current?'Comprobar instrucciones':'Preparar transcripción';$('director-title').textContent='Dar instrucciones';}
+ if(editingRoute==='automatic'){$('render').disabled=$('render').disabled||!current||busy||(!automaticInstant&&!!$('director-prompt').value.trim()&&automaticReviewKey!==automaticKey());$('review-instructions').textContent=current?'Comprobar instrucciones':'Preparar transcripción';$('director-title').textContent=automaticInstant?'Edición automática':'Dar instrucciones';}
  else if(editingRoute==='external')$('director-title').textContent='Tu plan de edición';
  else $('director-title').textContent='Elige cómo editar tu vídeo';
 }
 function proposalBase(){
  const base=['PREVIEW_READY','DONE'].includes(current?.state)?settings():{...current?.settings};
- return editingRoute==='automatic'?{...base,autoRecipe:true,sfxEnabled:$('recipe-sounds').checked}:base;
+ const automatic=editingRoute==='automatic'||(!editingRoute&&$('new-project-style').value==='SUES_DOPAMIN');
+ const defaults=automatic&&!base.autoRecipe&&$('new-project-style').value==='SUES_DOPAMIN'?{voiceGain:1.5,voiceNormalization:true,levelResources:true,masteringEnabled:true,sfxGain:.3,musicGain:.18,captionWords:2}:{};
+ return automatic?{...base,...defaults,autoRecipe:true,automaticPreviewBroll:automaticInstant||!editingRoute,sfxEnabled:$('recipe-sounds').checked}:base;
 }
 $('edit-video').onclick=()=>{};
 function chooseEditRoute(route){
@@ -502,8 +505,9 @@ function chooseEditRoute(route){
  if(route==='automatic'&&current&&!current.settings.autoRecipe)markPreviewDirty();
  syncEditRoute();
 }
-$('choose-automatic').onclick=()=>{};
-$('choose-external').onclick=()=>chooseEditRoute('automatic');
+$('choose-automatic').textContent='Editar automáticamente';
+$('choose-automatic').onclick=()=>{automaticInstant=true;chooseEditRoute('automatic');};
+$('choose-external').onclick=()=>{automaticInstant=false;chooseEditRoute('automatic');};
 $('prepare-external').onclick=()=>{$('review-instructions').click();};
 $('compare-styles').onclick=()=>work(async()=>{
  if(!current)throw Error('Analiza primero el vídeo.');
