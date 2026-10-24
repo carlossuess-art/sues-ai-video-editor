@@ -1,3 +1,15 @@
+## DEPLOY VERIFICADO · Puente B-roll revisado → Plan de edición · 24/10/2026 UTC
+
+Producción Hostinger VPS srv1841004 actualizada a **`b7a7d74ecf2d1b931e6448f5353415d6bb1ce032`** (PR borrador #14, sin merge main). `--diagnose` PASS con cola inactiva, dependencias idénticas, 66 activos/12 índices legibles, Node/FFmpeg/font y HTTPS correctos; backup privado completo validado SHA256 **`1c69230707da9edf22d97b35417cd9dd61e78e3cf9c42c69a39ed1cbfcb86509`** conservado en `/opt/sues-video-setup/update-backup-20261024-132310-146710` más versión anterior para rollback. Whisper pausado durante respaldo, reactivado **active** y servicio de editor en funcionamiento.
+
+Nuevo flujo UX: desde un candidato narrativo, técnicamente auditado y pendiente de aprobación el usuario puede pulsar **«Preparar este B-roll para revisar»**, que crea un borrador privado `sues-edit-plan/v1` usando IDs SHA, tiempos ASR y `sourceIn` real. **NO renderiza ni aplica automáticamente el clip**; exige pulsar `Comprobar plan` (backend validación) y posteriormente `Ejecutar plan en otra versión`, que conserva original y versiones anteriores. No sobrescribe borradores ajenos, inválidos, conflictivos o de otro proyecto; no procede con ajustes locales sin guardar. Sin cambios al render ni a la autenticación.
+
+QA: 4/4 nuevos tests del helper real, 9/9 focales, `npm run check` PASS. Regresión integral **318 casos**: **316/318 PASS en Docker** aislado con FFmpeg y tmpfs=1GiB + **2/2 pruebas de despliegue Git PASS en host**, éstas no pueden ejecutarse con binarios de shell en contenedor aislado por permisos. POSTDEPLOY commit montado coincide, HTTPS 200, JS público contiene el nuevo botón, endpoint de revisión privada sin sesión devuelve 401; Whisper activo. MP4 original de iteración 08 conserva hash exacto `bedb0d504642f71ab03e1f3db061c9417bdc2e15b8ff6bdc42b441e0cfc65cbc` y job DONE. 17 cambios locales de audio no consolidados en otro worktree siguen intactos. No se ejecutó un nuevo render ni gasto externo.
+
+**SIGUIENTE**: crear una nueva versión real con el plan asistido y comparar el MP4, verificando captions/voz/ediciones y pertinencia narrativa. Aún falta visión semántica completa y aceptación estética. F6/F7/F9 abiertas, global oficial **48%**. Coste externo 0€.
+
+---
+
 ## F7/F9 · Puente sugerencia narrativa → plan editable revisable · 24/10/2026
 
 Desde la rama de producción `b9b439f9e5a2d0df9abc1731c500565977d6540d`, se añade al panel de sugerencias de recursos un botón individual **Preparar este B-roll para revisar**. Reutiliza las rutas y validación del plan externo existente. Sólo se ofrece en candidatos de vídeo con evidencia contextual y tramo fuente auditado. Genera JSON `sues-edit-plan/v1` con `sourceSha256` real y operación B-roll `resourceId`, `start/end`, `sourceIn`, `reason`; guarda borrador y guía al usuario a **Comprobar plan** y **Ejecutar plan en otra versión**. No ejecuta ni crea MP4 automáticamente.
