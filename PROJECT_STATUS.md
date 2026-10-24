@@ -1,3 +1,21 @@
+## F6/F9 · Dos MP4 comprobados y suavizado de luces · 24/10/2026
+
+71fa366b instalado con copia verificada/rollback y Whisper activo. Maestro
+68,63s completamente decodificado y revisado en 35+6 muestras; rótulos mayores,
+sin repetición inferior del concepto con profundidad. Segundo original 13,41s
+editado desde API de producción, sin tiempos/máscaras/textos del maestro: job
+eb2ca2a7-a8b8-472f-b0b4-63947a722668 DONE, descarga idéntica por SHA256.
+Su edición es escasa (1 gráfico/1 transición/3 SFX, sin cortes/zoom); no demuestra
+la calidad DOPAMIN automática objetivo. ASR con nombres por revisar.
+13 pruebas integración +2 Git host PASS. Revisión final detecta borde horizontal
+en overlay inferior; feather con alpha medido y4 pruebas PASS preparado; nuevo
+render necesario para incorporar este último cambio. Ver docs/SUES_DOPAMIN_VISUAL_REFINE_20261024.md.
+F6/F7/F9 abiertas, global oficial48%, coste externo0; Roadmap sin sincronizar por
+Unknown tool del conector. Siguiente: comprobar despliegue del feather y aplicar
+dirección visual a otro original hasta intensidad/aceptación real. No V1.
+
+---
+
 ## F6/F9 · Revisión visual real y segundo original · 24/10/2026
 
 Base VPS verificada b3e0a7a. Revisión de la hoja de contacto del maestro detecta

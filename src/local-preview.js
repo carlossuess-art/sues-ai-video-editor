@@ -225,9 +225,10 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
     const input=1+plan.selectedMedia.length+(plan.illustrations?.length??0)+2*(plan.subjectLayers?.length??0)+i;
     const duration=Number((a.end-a.start).toFixed(6)),fade=Math.min(.12,duration/4);
     const alpha=Number(a.intensity.toFixed(4));
-    // Animate imported black-background effect below the middle line; captions are composed later.
+    // Feather the top 240px of lower-half imported effects to avoid a horizontal seam.
+    // Captions are composed later.
     // This is deliberately NOT subject occlusion/rotoscoping. Require visual review.
-    filters.push(`[${input}:v]trim=start=${a.sourceIn}:end=${a.sourceOut},setpts=PTS-STARTPTS,scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960,setsar=1,fps=fps=30,format=rgba,colorkey=0x000000:0.1:0.08,colorchannelmixer=aa=${alpha},fade=t=in:d=${fade}:alpha=1,fade=t=out:st=${Number((duration-fade).toFixed(6))}:d=${fade}:alpha=1,setpts=PTS+${a.start}/TB[ambient${i}]`);
+    filters.push(`[${input}:v]trim=start=${a.sourceIn}:end=${a.sourceOut},setpts=PTS-STARTPTS,scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960,setsar=1,fps=fps=30,format=rgba,colorkey=0x000000:0.1:0.08,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='alpha(X,Y)*min(1,Y/240)',colorchannelmixer=aa=${alpha},fade=t=in:d=${fade}:alpha=1,fade=t=out:st=${Number((duration-fade).toFixed(6))}:d=${fade}:alpha=1,setpts=PTS+${a.start}/TB[ambient${i}]`);
     filters.push(`[${base}][ambient${i}]overlay=x=0:y=960:eof_action=pass:repeatlast=0:enable='gte(t,${a.start})*lt(t,${a.end})'[ambient-composed${i}]`);
     base=`ambient-composed${i}`;
   }
