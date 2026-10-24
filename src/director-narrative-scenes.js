@@ -1,3 +1,4 @@
+import {selectCutSafeRange} from './scene-temporal-qa.js';
 // Bounded, interpretable local narrative analysis. Not a vision or generative model.
 // It only proposes scenes a human sampled and tagged, never applies a render event.
 const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -30,17 +31,28 @@ export function proposeNarrativeScenes(transcript,assets,{limit=6}={}){
     .map(asset=>{
      const matched=asset.sceneTags.filter(tag=>intent.scenes.includes(tag));
      const matchedRoles=asset.narrativeRoles.filter(role=>intent.roles.includes(norm(role)));
-     const score=8+matchedRoles.length*2+(asset.height/asset.width>=1.5?1:0);
-     return {...asset,score,matched,matchedRoles};
+     // A cut-safe source range is only proposed when a full technical timeline scan exists.
+     // Unknown coverage remains review-only, not automatically fit for a cut.
+     const proposedRange=asset.temporal
+      ?selectCutSafeRange(asset.temporal,Math.min(20,end-start))
+      :null;
+     const temporallyRejected=asset.temporal&&!proposedRange;
+     const score=8+matchedRoles.length*2+(asset.height/asset.width>=1.5?1:0)+(proposedRange?1:0);
+     return {...asset,score,matched,matchedRoles,proposedRange,temporallyRejected};
     })
+    .filter(x=>!x.temporallyRejected)
     .filter(x=>x.score>=9)
     .sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id))
     .slice(0,2)
-    .map(({id,title,score,matched,matchedRoles,sampleCount,riskFlags,approvedForProduction})=>({
+    .map(({id,title,score,matched,matchedRoles,sampleCount,riskFlags,approvedForProduction,temporal,proposedRange})=>({
      assetId:id,title,kind:'video',score,catalogueApproval:approvedForProduction?'approved':'review-required',
      needsHumanReview:true,
      evidence:{type:'narrative-plus-human-sampled-scene',sceneTags:matched,narrativeRoles:matchedRoles,
-      visualSample:{scope:'sampled-frames-only',sampleCount,riskFlags},visualContentVerified:false}
+      visualSample:{scope:'sampled-frames-only',sampleCount,riskFlags},visualContentVerified:false,
+      temporalReview:temporal?{scope:temporal.scope,complete:temporal.complete,sceneCutCount:temporal.sceneCutTimes.length,
+       blackIntervalCount:temporal.blackIntervals.length,freezeIntervalCount:temporal.freezeIntervals.length}
+       :{scope:'not-inspected',complete:false},
+      ...(proposedRange?{suggestedSourceRange:proposedRange}:{})}
     }));
    if(!candidates.length)continue;
    found.push({start,end,transcriptQuote:segment.map(w=>w.text).join(' '),
