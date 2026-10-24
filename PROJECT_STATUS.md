@@ -1,3 +1,13 @@
+## DESPLIEGUE VERIFICADO · F7 FILTRO B-ROLL · 24/10/2026 UTC
+
+Producción VPS srv1841004 actualizada al commit de código `43cf0d908636ed2ec7c10101f169bdacab7fdecc`, sin merge a main y conservando PR borrador #10. Primer intento abortó de forma segura y recuperó el contenedor anterior: la copia de datos difería porque `uploads/asr/worker.json` era actualizado continuamente por Whisper (servicio systemd independiente). No se relajó la verificación. Segunda ejecución pausó `sues-editor-whisper.service` temporalmente (sin trabajos pendientes), realizó copia privada verificada SHA256 `69690132066294cfc7e04eb91a82642af7b5cda93228cd7a9387fdfc86822922`, desplegó `43cf0d9` y reactivó Whisper: ACTIVE.
+
+Backup de rollback verificado: `/opt/sues-video-setup/update-backup-20261024-115216-130159`; versión anterior conservada. POSTDEPLOY: commit montado coincide; HTTPS 200; `/api/health`, jobs, assets, capacity, search y media 200 con sesión; datos privados jobs/assets/capacity/search/media sin sesión 401; iteración 08 MP4 conserva hash `bedb0d504642f71ab03e1f3db061c9417bdc2e15b8ff6bdc42b441e0cfc65cbc`, estado DONE. Prueba del nuevo filtro ejecutada desde contenedor vivo como UID 1000 contra transcripción maestra: 0 cues / autoPublish:false. Cambios en código PRODUCTION verificados, pero calidad estética/audio DOPAMIN sigue sin aceptación F9.
+
+La incidencia operativa recurrente de heartbeat ASR durante backups debería resolverse en el script de despliegue con una pausa/restablecimiento seguro, sin renunciar a cotejar los bytes del backup. No repetir despliegue sin cola inactiva y reversión. F6/F7/F9 abiertas; progreso global 48 %; coste externo 0 €.
+
+---
+
 ## F7 · Corrección de falsas recomendaciones de B-roll · 24/10/2026
 
 Rama independiente `feat/dopamin-context-review-20261024`, basada en producción `051edfb74296592161f526b434872df1ffd56a4a`; cambios a `src/private-library-search.js`, `src/director-library-cues.js`, tres tests nuevos en `tests/director-context-filter.test.js` y explicación `docs/SUES_DOPAMIN_CONTEXT_BROLL_20261024.md`. **No desplegado**, **no fusionado en main**. No se tocó el trabajo pendiente de audio ni los originales.
