@@ -1,5 +1,6 @@
 // DOPAMIN editorial composition over the existing renderer. No network/model calls.
 import {hierarchyLayout} from './caption-hierarchy.js';
+import {fitCaptionSize} from './font-kits.js';
 const norm=s=>String(s).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
 const STOP=new Set('como estas estoy hola tal pequenos comentar tenido grababa sino hacia tiempo poco poquito nada pues que para por del los las con una uno unos unas muy mas aqui alli todo todas todos desde hasta hacer haciendo estar ser sido sido quiero queria tenemos vamos iremos hablando bastante cosas algunas algunos realmente tambien siempre'.split(' '));
 const THEMES=[
@@ -8,14 +9,17 @@ const THEMES=[
  {re:/\b(gratis|gratuita|gratuito)\b/,label:'SIN COSTE',kind:'reveal',color:'#FF7A18'},
  {re:/\b(runas|oraculo)\b/,label:'RUNAS',kind:'runes',color:'#FFD18A'},
  {re:/\b(crecimiento|crecer|transformacion|avanzar|mas alla)\b/,label:'CRECIMIENTO',kind:'growth',color:'#FFC86A'},
- {re:/\b(ego|miedo|bloqueo)\b/,label:'EGO',kind:'contrast',color:'#F99A61'},
- {re:/\b(atento|atenta|escucha|recuerda)\b/,label:'PRESENTE',kind:'attention',color:'#FFD18A'},
+ {re:/\b(ego)\b/,label:'EGO',kind:'contrast',color:'#F99A61'},
+ {re:/\b(miedo)\b/,label:'MIEDO',kind:'contrast',color:'#F99A61'},
+ {re:/\b(bloqueo)\b/,label:'BLOQUEO',kind:'contrast',color:'#F99A61'},
+ {re:/\b(atentos?|atentas?|escucha|recuerda)\b/,label:'PRESENTE',kind:'attention',color:'#FFD18A'},
  {re:/\b(salir|libertad|libre)\b/,label:'LIBERTAD',kind:'release',color:'#FFC86A'}
 ];
 export function applyDopaminMaster(plan,options){
  if(options.styleId!=='SUES_DOPAMIN'||!options.autoRecipe||!options.motions)return null;
  const reserved=e=>(plan.graphics??[]).some(g=>e.start<g.end&&e.end>g.start)||
-   (plan.selectedMedia??[]).some(g=>e.start<g.end&&e.end>g.start);
+   (plan.selectedMedia??[]).some(g=>e.start<g.end&&e.end>g.start)||
+   (options.reviewedDepthText?.events??[]).some(g=>e.start<g.end&&e.end>g.start&&norm(e.label)===norm(g.text));
  const cutoff=plan.duration-plan.policy.outro.duration,beats=[];
  for(const c of plan.captions){
   const words=c.text.split(/\s+/),theme=THEMES.find(t=>t.re.test(norm(c.text)));
@@ -83,9 +87,10 @@ export function musicAccentFilter(accents=[]){
 }
 export function drawMasterGraphics(plan,event,safeText,assColor){
  for(const b of plan.masterGraphics??[]){
-  const c=assColor(b.color),y=1480;
+  const c=assColor(b.color),y=1420;
+  const size=fitCaptionSize([b.label],{...plan.policy.captions,fontRole:'keyword',fontSize:190},780);
   // Foreground lower chest; eyes and top captions remain clear.
-  event(3,b.start,b.end,'Outro',`{\\an5\\move(540,${y+70},540,${y},0,220)\\fnMontserrat ExtraBold\\b800\\fs132\\bord2\\3c&H121212&\\shad2\\1c${c}&\\fscx78\\fscy78\\t(0,140,\\fscx106\\fscy106)\\t(140,240,\\fscx100\\fscy100)\\fad(60,150)}${safeText(b.label)}`);
+  event(3,b.start,b.end,'Outro',`{\\an5\\move(540,${y+70},540,${y},0,220)\\fnMontserrat ExtraBold\\b800\\fs${size}\\bord2\\3c&H121212&\\shad2\\1c${c}&\\fscx78\\fscy78\\t(0,140,\\fscx106\\fscy106)\\t(140,240,\\fscx100\\fscy100)\\fad(60,150)}${safeText(b.label)}`);
   event(2,b.start,b.end,'Outro',`{\\an7\\pos(240,${y+63})\\p1\\bord0\\1c${c}&\\fscx0\\t(0,240,\\fscx100)\\fad(80,160)}m 0 0 l 600 0 600 4 0 4`);
   if(b.kind==='runes'){
    event(3,b.start,b.end,'Outro',`{\\an7\\move(470,1640,470,1570,0,250)\\p1\\bord0\\1c${c}&\\fad(120,180)}m 0 0 l 8 0 8 40 35 12 41 18 8 52 8 92 0 92 m 80 0 l 88 0 88 38 112 18 118 24 88 50 118 72 112 78 88 58 88 92 80 92`);

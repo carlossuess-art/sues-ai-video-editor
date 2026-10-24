@@ -58,3 +58,35 @@ test('automatic preview rejects unreviewed lexical stock and branded or temporal
  assert.equal(selectAutomaticPreviewBrolls(proposal,{zoomEvents:[{start:6,end:9}]},20).length,0);
  const short=structuredClone(proposal);short.cues[0].candidates[0].evidence.suggestedSourceRange.endSec=2;assert.equal(selectAutomaticPreviewBrolls(short,{},20).length,0);
 });
+
+
+test('reviewed depth text owns its matching concept without a duplicate foreground label',()=>{
+ const f=fixture();try{
+  const p=prepareProject(loadProject(f.profiles.test),{zoomIntensity:0}).plan;
+  p.duration=20;p.graphics=[];p.selectedMedia=[];p.globalTransitions=[];p.policy.outro.duration=2;
+  p.captions=[{id:'seg-001',start:3,end:4.5,text:'volveremos',wordIndexes:[0]}];
+  applyDopaminMaster(p,{styleId:'SUES_DOPAMIN',autoRecipe:true,motions:true,keywordOverrides:{},reviewedDepthText:{events:[{text:'VOLVEMOS',start:3,end:5}]}});
+  assert.equal(p.masterGraphics.length,0);assert.ok(p.captions[0].keyword);
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
+});
+test('fear and blockage keep their actual spoken meaning rather than becoming ego',()=>{
+ const f=fixture();try{
+  for(const [text,label] of [['miedo','MIEDO'],['bloqueo','BLOQUEO'],['ego','EGO']]){
+   const p=prepareProject(loadProject(f.profiles.test),{zoomIntensity:0}).plan;
+   p.duration=20;p.graphics=[];p.selectedMedia=[];p.globalTransitions=[];p.policy.outro.duration=2;
+   p.captions=[{id:'seg-001',start:3,end:4.5,text,wordIndexes:[0]}];
+   applyDopaminMaster(p,{styleId:'SUES_DOPAMIN',autoRecipe:true,motions:true,keywordOverrides:{}});
+   assert.equal(p.masterGraphics[0].label,label);
+  }
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
+});
+
+test('attention in the plural keeps its graphic on a different source transcript',()=>{
+ const f=fixture();try{
+  const p=prepareProject(loadProject(f.profiles.test),{zoomIntensity:0}).plan;
+  p.duration=13.4;p.graphics=[];p.selectedMedia=[];p.globalTransitions=[];p.policy.outro.duration=2;
+  p.captions=[{id:'seg-001',start:3.08,end:3.54,text:'atentos,',wordIndexes:[0]}];
+  applyDopaminMaster(p,{styleId:'SUES_DOPAMIN',autoRecipe:true,motions:true,keywordOverrides:{}});
+  assert.equal(p.masterGraphics[0].label,'PRESENTE');
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
+});

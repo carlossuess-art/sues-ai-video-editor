@@ -1,3 +1,18 @@
+## F6/F9 · Revisión visual real y segundo original · 24/10/2026
+
+Base VPS verificada b3e0a7a. Revisión de la hoja de contacto del maestro detecta
+rótulo VOLVEMOS redundante y gráficos pequeños. Corrección aislada elimina sólo
+el rótulo inferior cuando coincide con texto de profundidad revisado, aumenta
+los gráficos con ajuste métrico y distingue MIEDO/BLOQUEO/EGO. Otro vídeo real de
+13,4102s revela la flexión «atentos» ausente: corregida sin copiar tiempos/contornos.
+9/9 pruebas específicas y 2/2 Git host PASS; fallo previo de suite era Git ausente
+en contenedor. Render completo de QA en marcha, despliegue aún no acreditado.
+Detalles y límites: docs/SUES_DOPAMIN_VISUAL_REFINE_20261024.md.
+F6/F7/F9 abiertas; global oficial 48%; coste API 0. Roadmap no sincronizado por
+Unknown tool de los métodos Drive; continuar sin inventar actualización.
+
+---
+
 ## F7/F9 · Puente sugerencia narrativa → plan editable revisable · 24/10/2026
 
 Desde la rama de producción `b9b439f9e5a2d0df9abc1731c500565977d6540d`, se añade al panel de sugerencias de recursos un botón individual **Preparar este B-roll para revisar**. Reutiliza las rutas y validación del plan externo existente. Sólo se ofrece en candidatos de vídeo con evidencia contextual y tramo fuente auditado. Genera JSON `sues-edit-plan/v1` con `sourceSha256` real y operación B-roll `resourceId`, `start/end`, `sourceIn`, `reason`; guarda borrador y guía al usuario a **Comprobar plan** y **Ejecutar plan en otra versión**. No ejecuta ni crea MP4 automáticamente.
