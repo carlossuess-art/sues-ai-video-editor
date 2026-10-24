@@ -1,6 +1,6 @@
 # F7 · Filtro contextual conservador de B-roll · 24/10/2026
 
-**Estado:** implementado y probado en rama aislada `feat/dopamin-context-review-20261024`, **NO desplegado** ni fusionado en `main`. VPS de producción permanece en `051edfb74296592161f526b434872df1ffd56a4a`. No se editó ni se sustituyó el worktree pendiente `dopamin-audio-emphasis-20261024`.
+**Estado:** implementado y probado en rama aislada `feat/dopamin-context-review-20261024` y **desplegado en VPS** el 24/10/2026 con commit de código `43cf0d908636ed2ec7c10101f169bdacab7fdecc`. **Sin merge a `main`**. Se conservó sin modificar el worktree pendiente `dopamin-audio-emphasis-20261024`. Respaldo verificado `69690132066294cfc7e04eb91a82642af7b5cda93228cd7a9387fdfc86822922` y HTTPS/Whisper/API privados comprobados.
 
 ## Error observado
 
@@ -23,4 +23,4 @@ Pruebas: **9/9 PASS** en `director-context-filter`, `private-library-search`, `d
 
 ## Próximo paso
 
-Tras publicación de la rama, revisión/merge dirigido con respaldo y preflight de cola antes de deploy. Más adelante integrar revisión de metraje (texto incrustado, logos, duración y pertinencia de escena) y clasificación de intención narrativa; **no basta** con el filtro de palabras. Mantener global oficial **48 %** y F6/F7/F9 abiertas. Reproducción completa y aprobación audiovisual de Carlos pendientes.
+Rama publicada en PR borrador #10 y código desplegado con respaldo/rollback. Sigue pendiente el merge dirigido y la revisión creativa. Más adelante integrar revisión de metraje (texto incrustado, logos, duración y pertinencia de escena) y clasificación de intención narrativa; **no basta** con el filtro de palabras. Mantener global oficial **48 %** y F6/F7/F9 abiertas. Reproducción completa y aprobación audiovisual de Carlos pendientes.
