@@ -31,11 +31,15 @@ export function proposeLibraryCues(jobsDirectory,transcript,{limit=6}={}){
   const candidates=search.results
    .filter(r=>r.availability==='private-operational'&&['video','overlay','image'].includes(r.kind))
    .filter(r=>r.kind!=='video'||qualifiesVideoCandidate(r.lexicalEvidence))
+   // Sampled visual evidence of unrelated brand/text is a hard guard for VIDEO proposals.
+   // An unknown or apparently clean sample NEVER counts as a full visual approval.
+   .filter(r=>r.kind!=='video'||!r.visualReview?.riskFlags.some(flag=>['visible-third-party-marking','unrelated-on-screen-text'].includes(flag)))
    .slice(0,3)
-   .map(({id,title,kind,score,creativeApproval,lexicalEvidence})=>({assetId:id,title,kind,score,
+   .map(({id,title,kind,score,creativeApproval,lexicalEvidence,visualReview})=>({assetId:id,title,kind,score,
      catalogueApproval:creativeApproval,needsHumanReview:true,
      evidence:{type:'catalogue-lexical-match',exactTerms:lexicalEvidence?.exactTerms??[],
-      expandedTerms:lexicalEvidence?.expandedTerms??[],visualContentVerified:false}}));
+      expandedTerms:lexicalEvidence?.expandedTerms??[],visualContentVerified:false,
+      visualSample:visualReview??{scope:'not-inspected',sampleCount:0,riskFlags:[]}}}));
   if(!candidates.length)continue;
   // Evidence time comes from exact transcript words; this never schedules a visual event.
   cues.push({start,end,transcriptQuote:text,sourceWordIndexes:slice.map((_,j)=>startIndex+j),
@@ -43,5 +47,5 @@ export function proposeLibraryCues(jobsDirectory,transcript,{limit=6}={}){
  }
  return {schema:'sues-director-library-cues/v1',timeSpace:'original-seconds',
   sourceIndexOnly:true,approvedToAutoPublish:false,method:'conservative transcript-to-catalogue lexical matching; generic-only B-roll suppressed, not full semantic vision',
-  cues,warning:'Verificar significado visual, licencia, encuadre, zonas seguras y aprobación antes de cualquier inserción.'};
+  cues,warning:'Solo muestreo visual parcial. Verificar metraje completo, logos/textos, significado narrativo, licencia, encuadre y zonas seguras antes de cualquier inserción.'};
 }
