@@ -541,7 +541,12 @@ $('suggest-resources').onclick=()=>work(async()=>{
     ?' · Revisión parcial: '+sample.sampleCount+' fotogramas'+(sample.riskFlags?.includes('person-visible')?' · aparece una persona':'')
     :' · Sin muestreo visual registrado';
    const reasoning=cue.narrative?' · Razón propuesta: '+cue.narrative.reason:'';
-   list.append(node('li',candidate.title+' · '+candidate.kind+' · '+(candidate.catalogueApproval==='approved'?'Catalogado, revisar composición':'Pendiente de aprobación visual')+reasoning+sampleMessage));
+   const temporal=candidate.evidence?.temporalReview;
+   const sourceRange=candidate.evidence?.suggestedSourceRange;
+   const timeline=sourceRange
+    ?' · Tramo de origen sugerido '+sourceRange.startSec.toFixed(2)+'–'+sourceRange.endSec.toFixed(2)+' s (sin aplicar)'
+    :temporal?.complete?' · Auditoría temporal: sin tramo continuo suficiente':' · Sin auditoría temporal completa';
+   list.append(node('li',candidate.title+' · '+candidate.kind+' · '+(candidate.catalogueApproval==='approved'?'Catalogado, revisar composición':'Pendiente de aprobación visual')+reasoning+sampleMessage+timeline));
   }
   details.append(summary,list);box.append(details);
  }
