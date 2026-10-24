@@ -1,3 +1,13 @@
+## F7 · Auditoría temporal y segmentos utilizables de B-roll · 24/10/2026
+
+Rama aislada `feat/dopamin-temporal-scene-qa-20261024` desde el release verificado `773416414cabbb566c1ea8957ef4c5abea123166`. Se ha ampliado la revisión visual a una hoja de contacto de un fotograma/segundo por cada clip, sin declarar validación del contenido entero. FFmpeg ha recorrido todos los fotogramas de 4 B-rolls del banco con pruebas técnicas de cortes (`scene>0.36`), negros y congelaciones; no ha detectado intervalos en los cuatro bajo los umbrales seleccionados. Los 4 originales se contrastaron SHA256. Manifiesto temporal privado 0600 bajo `jobs/library/asset-temporal-audit-v1.json`, no incluido en GitHub.
+
+El Director combina esa medición con contexto narrativo y revisión visual parcial para sugerir **el tramo exacto del recurso** sin saltos técnicos: cadena 1,51–4,89 s para «ajetreados» y caminante 0,23–6,17 s o amanecer 1,861–7,801 s para «crecimiento». No inserta ni reproduce automáticamente recursos; `needsHumanReview:true`. El reloj comercial continúa fuera de propuestas. Scripts, lógica, pruebas de seguridad y documentación: `docs/SUES_DOPAMIN_TEMPORAL_SCENE_QA_20261024.md`.
+
+F7 no aceptada; F6/F9 abiertas, global oficial 48%. Pendiente registro del QA y despliegue real (no equiparar commit con producción), y QA final audiovisual con Carlos.
+
+---
+
 ## F7 · Director narrativo de escenas verificables · 24/10/2026
 
 Rama nueva `feat/dopamin-narrative-scenes-20261024`, a partir de release `bc74db06c5a2c09dbe8c251ec070ecf6d460cf37`, sin alterar otros worktrees. Se añaden reglas contextuales por bloques del ASR con negación, roles narrativos y marcas de escena de cuatro fotogramas inspeccionados por recurso. Se exigen prueba de licencias declaradas V2, compatibilidad DOPAMIN, verticalidad y duración. El sistema devuelve propuestas `contextual-review-only` con candidatos/scores/porqué/segundos e incertidumbre expresa; no hay render, modelo multimodal nuevo ni aprobación automática. La UI comunica el motivo y alcance.
@@ -988,13 +998,3 @@ duplicar/copia/recuperaciónUI; sin erroresJS ni desbordamientohorizontal. Panel
 plegado774pxescritorio y800pxmóvil; accesoAjustes llegaalselector sinbúsquedalarga.
 209tests/checkPASS. No nueva recodificación: motor src/renderer sin cambios.
 Evidencia examples/preview/compact-ui.real-result.json. Rama detrabajo
-feat/compact-editor-controls; actualización deeste menú enVPS todavía pendiente.
-
----
-## Integración oficial y release verificada · 19/10/2026
-
-PR3 fusionado en8d120cfc9681933214b364df911ffe4fdebadb6b; PR4 fusionado en
-7cbccb9bcd8c394106e22027ebfe284782e8989a. Rama oficial feat/phase-4-vision-camera.
-Árbol95561a9f5ee103c1c9a5d4e80369cf77d2e4807f idéntico al probado en navegador,
-209tests/check y10simulaciones. Sin cambios de package.json/package-lock.json.
-DOPAMIN/ELEMENTS ycompositor trasmatte revisado integrados;CALMA siguepor defecto.
