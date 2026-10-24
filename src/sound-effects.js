@@ -1,3 +1,4 @@
+import {resourceLevelFilter} from './audio-levels.js';
 import {customSfxFilter} from './custom-sfx.js';
 import {voiceEffectsFilter} from './voice-effects.js';
 import {secretRevealTime} from './graphic-timing.js';
@@ -30,7 +31,7 @@ export function soundEffectsFilter(sfx,duration,base){
  sfx.events.forEach((e,i)=>{
   const preset=SOUND_PRESETS[e.preset];assert(preset&&Number.isFinite(e.start)&&e.start>=0&&Number.isFinite(e.duration)&&e.duration>=.05&&e.duration<=preset.duration&&e.start+e.duration<=duration+.000002&&Number.isFinite(e.weight??1)&&(e.weight??1)>=0&&(e.weight??1)<=1,'event bounds');
   const attack=Math.min(preset.attack,e.duration/3),release=Math.min(.09,e.duration/2);
-  filters.push(`${preset.source},atrim=duration=${e.duration},asetpts=PTS-STARTPTS,afade=t=in:st=0:d=${attack},afade=t=out:st=${e.duration-release}:d=${release},volume=${sfx.gain*(e.weight??1)},aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo,adelay=${Math.round(e.start*48000)}S:all=1[sfx${i}]`);
+  filters.push(`${preset.source},atrim=duration=${e.duration},asetpts=PTS-STARTPTS,afade=t=in:st=0:d=${attack},afade=t=out:st=${e.duration-release}:d=${release},${sfx.levelResources?resourceLevelFilter(e.duration):''}volume=${sfx.gain*(e.weight??1)},aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo,adelay=${Math.round(e.start*48000)}S:all=1[sfx${i}]`);
  });
  filters.push(`anullsrc=r=48000:cl=stereo:d=${duration},aformat=sample_fmts=fltp[sfx-silence]`);
  filters.push(`[sfx-silence]${sfx.events.map((_,i)=>`[sfx${i}]`).join('')}amix=inputs=${sfx.events.length+1}:duration=first:dropout_transition=0:normalize=0,atrim=duration=${duration}[sfx-bus]`);
@@ -42,13 +43,15 @@ export function renderAudioFilters(plan,musicIndex,{hasAudio=true}={}){
  const procedural=!!plan.soundEffects?.events?.length,custom=!!plan.customSfx?.events?.length,voice=!!plan.voiceEffects?.events?.length;
  assert(hasAudio||!procedural&&!custom&&!voice&&!plan.audioMix,'effects require original audio');
  let filters=voiceEffectsFilter(plan.voiceEffects,plan.duration);
- const input=voice?'voice-styled':'audio';
+ let input=voice?'voice-styled':'audio';
+ const voiceGain=plan.voiceGain??1;assert(Number.isFinite(voiceGain)&&voiceGain>=0&&voiceGain<=2,'voice gain');
+ if(voiceGain!==1){filters.push(`[${input}]volume=${voiceGain}[voice-gained]`);input='voice-gained';}
  const background=backgroundAudioFilter(plan.audioMix,musicIndex).map(f=>f.replaceAll('[audio]',`[${input}]`));
  filters.push(...background);
  let mixed=!!plan.audioMix;
  if(procedural){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-sfx-audio]'));filters.push(...soundEffectsFilter(plan.soundEffects,plan.duration,mixed?'before-sfx-audio':input));mixed=true;}
  if(custom){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-custom-audio]'));filters.push(...customSfxFilter(plan.customSfx,plan.duration,musicIndex+(plan.audioMix?1:0),mixed?'before-custom-audio':input));mixed=true;}
- if(voice&&!mixed)filters.push('[voice-styled]anull[mixed-audio]');
+ if((voice||voiceGain!==1)&&!mixed)filters.push(`[${input}]anull[mixed-audio]`);
  if(plan.mastering?.enabled){
   const upstream=filters.length?'pre-master-audio':'audio';
   if(filters.length)filters=filters.map(f=>f.replaceAll('[mixed-audio]','[pre-master-audio]'));

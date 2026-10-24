@@ -1,3 +1,4 @@
+import {resourceLevelFilter} from './audio-levels.js';
 const assert=(ok,message)=>{if(!ok)throw Error('SFX: '+message);};
 const HASH=/^[a-f0-9]{64}$/;
 export function validateSfxEvents(events=[]){
@@ -26,7 +27,7 @@ export function customSfxFilter(sfx,duration,inputIndex,base){
   const uses=sfx.events.map((e,j)=>e.input===i?j:-1).filter(j=>j>=0);
   filters.push(`[${inputIndex+i}:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,atrim=duration=${a.duration},asetpts=PTS-STARTPTS,asplit=${uses.length}${uses.map(j=>`[custom-source${j}]`).join('')}`);
  }
- sfx.events.forEach((e,i)=>{const d=sfx.assets[e.input].duration,fade=Math.min(.01,d/4);filters.push(`[custom-source${i}]afade=t=in:d=${fade},afade=t=out:st=${d-fade}:d=${fade},volume=${e.gain},adelay=${Math.round(e.start*48000)}S:all=1[custom-cue${i}]`);});
+ sfx.events.forEach((e,i)=>{const d=sfx.assets[e.input].duration,fade=Math.min(.01,d/4);filters.push(`[custom-source${i}]afade=t=in:d=${fade},afade=t=out:st=${d-fade}:d=${fade},${sfx.levelResources?resourceLevelFilter(d):''}volume=${e.gain},adelay=${Math.round(e.start*48000)}S:all=1[custom-cue${i}]`);});
  filters.push(`anullsrc=r=48000:cl=stereo:d=${duration},aformat=sample_fmts=fltp[custom-silence]`);
  filters.push(`[custom-silence]${sfx.events.map((_,i)=>`[custom-cue${i}]`).join('')}amix=inputs=${sfx.events.length+1}:duration=first:dropout_transition=0:normalize=0[custom-bus]`);
  filters.push('[custom-bus][custom-key]sidechaincompress=threshold='+d.threshold+':ratio='+d.ratio+':attack='+d.attack+':release='+d.release+':makeup=1[custom-ducked]');

@@ -220,7 +220,7 @@ def render(source, bundle, output):
                 command += ['-threads', '2', '-i', str(sound['path'])]
             command += ['-filter_complex_threads', '1', '-filter_complex_script', 'filter.ffscript', '-map', '[video]']
             if audio:
-                command += ['-map', '[mixed-audio]' if music or manifest.get('soundEffects', {}).get('events') or manifest.get('customSfx', {}).get('events') or manifest.get('voiceEffects', {}).get('events') or manifest.get('mastering', {}).get('enabled') else '[audio]']
+                command += ['-map', '[mixed-audio]' if music or manifest.get('soundEffects', {}).get('events') or manifest.get('customSfx', {}).get('events') or manifest.get('voiceEffects', {}).get('events') or manifest.get('mastering', {}).get('enabled') or manifest.get('voiceGain', 1) != 1 else '[audio]']
             command += ['-c:v', 'libx264', '-threads', '2', '-preset', 'veryfast', '-crf', '22', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-map_metadata', '-1', '-movflags', '+faststart', '-progress', str(output.parent / 'ffmpeg-progress.txt'), '-nostats', '-y', str(temporary)]
         with (bundle / 'render.log').open('w') as log:
             subprocess.run(command, cwd=bundle, stdout=log, stderr=subprocess.STDOUT, check=True)
@@ -247,6 +247,7 @@ def render(source, bundle, output):
         if digest(source) != before:
             raise ValueError('Source changed during render')
         audit = {'version': '1.0', 'sourceSha256': before, 'sourcePreserved': True,
+                 'voiceGain': manifest.get('voiceGain', 1), 'resourceLeveling': {'music': bool(manifest.get('audioMix', {}).get('levelResources')) if manifest.get('audioMix') else False, 'proceduralSfx': bool(manifest.get('soundEffects', {}).get('levelResources')), 'librarySfx': bool(manifest.get('customSfx', {}).get('levelResources'))},
                  'durationPlanned': manifest['duration'], 'durationEncoded': float(encoded['duration']),
                  'output': output.name, 'outputSha256': digest(temporary), 'bytes': temporary.stat().st_size,
                  'video': {'codec': encoded['codec_name'], 'width': encoded['width'], 'height': encoded['height'], 'fps': encoded['r_frame_rate']},

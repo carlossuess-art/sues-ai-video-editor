@@ -18,7 +18,7 @@ export function hierarchyLayout(caption,policy,box){
  const parts=caption.text.split(/\s+/),at=caption.keyword.displayWordIndex??caption.wordIndexes.indexOf(caption.keyword.sourceWordIndex);if(at<0||at>=parts.length||caption.keyword.displayWordIndex===undefined&&parts.length!==caption.wordIndexes.length)return null;
  const preset=keywordPreset(caption.keyword);policy={...policy,...(preset.scaleX?{scaleX:preset.scaleX}:{})};
  if(policy.inlineGroups){
-  const ratio=policy.hierarchy?.ratio??14/12;
+  const ratio=caption.keyword.scale??policy.hierarchy?.ratio??14/12;
   let size=policy.fontSize??104,rows;
   do{
    const widths=parts.map((word,i)=>textAdvance(i===at&&policy.keywordUppercase?word.toLocaleUpperCase('es'):word,{...policy,fontRole:i===at?'keyword':'normal'},size*(i===at?ratio:1)));
@@ -28,7 +28,7 @@ export function hierarchyLayout(caption,policy,box){
   }while(size>=64);
   return rows??null;
  }
- const before=parts.slice(0,at).join(' '),hero=policy.keywordUppercase?parts[at].toLocaleUpperCase('es'):parts[at],after=parts.slice(at+1).join(' '),three=!!before&&!!after,ratio=policy.hierarchy?.ratio??2;
+ const before=parts.slice(0,at).join(' '),hero=policy.keywordUppercase?parts[at].toLocaleUpperCase('es'):parts[at],after=parts.slice(at+1).join(' '),three=!!before&&!!after,ratio=caption.keyword.scale??policy.hierarchy?.ratio??2;
  const desired=ratio===2?(three?128:144):(policy.fontSize??96)*ratio;let heroSize;
  try{heroSize=fitCaptionSize([hero],{...policy,fontRole:preset.italic?'keywordItalic':'keyword',fontSize:desired},box.right-box.left);}catch(error){if(error.message==='Caption cannot fit at a readable size')return null;throw error;}
  // Keep the ratio exactly 2:1, including when width forces a smaller size.

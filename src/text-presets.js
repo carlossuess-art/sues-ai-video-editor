@@ -2,6 +2,8 @@ export const TEXT_PRESETS=Object.freeze({
  white:{name:'Blanco',color:'#FFFFFF'},
  yellow:{name:'Amarillo',color:'#FFE45E'},
  red:{name:'Rojo',color:'#FF7777'},
+ fire:{name:'Naranja fuego',color:'#FF7A18'},
+ fireMetal:{name:'Metal naranja fuego',colors:['#8A2208','#D7470B','#FF7A18','#FFD59A','#FFF4D8','#F08A24','#8E320E','#EF6112','#FFC277']},
  gold:{name:'Oro',colors:['#876024','#B98A39','#E4BE70','#FFF0C0','#FFFBE8','#BF9346','#795321','#C99F50','#F1D695']},
  green:{name:'Verde',colors:['#176638','#40BE64','#B1FF9D','#F1FFE9','#83FA77','#279D47','#155C2D','#55D667','#D0FFC4']},
  cyan:{name:'Cian',colors:['#176376','#36C0DA','#B2F6FF','#F1FEFF','#67E2F0','#258AA9','#174D67','#57CADD','#D4FAFF']},
@@ -14,7 +16,8 @@ export function keywordPreset(keyword){return TEXT_PRESETS[keyword?.style]??TEXT
 export function validateKeywordOverrides(value){
  if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).length>500)throw new Error('Keyword overrides: object required');
  for(const [id,v]of Object.entries(value)){
-  if(!/^seg-\d{3,}$/.test(id)||!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!['word','level','style'].includes(k))||!['none','important','exceptional'].includes(v.level))throw new Error('Keyword override invalid');
+  if(!/^seg-\d{3,}$/.test(id)||!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!['word','level','style','scale'].includes(k))||!['none','important','exceptional'].includes(v.level))throw new Error('Keyword override invalid');
+  if(v.scale!==undefined&&(!Number.isFinite(v.scale)||v.scale<1||v.scale>1.6))throw new Error('Keyword scale 1..1.6');
   if(v.level!=='none'&&(!Number.isInteger(v.word)||v.word<0||v.word>20||!Object.hasOwn(TEXT_PRESETS,v.style)))throw new Error('Keyword position/style invalid');
  }
  return structuredClone(value);

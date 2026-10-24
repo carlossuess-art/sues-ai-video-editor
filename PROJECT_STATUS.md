@@ -1,3 +1,17 @@
+## REVISIÓN DE CARLOS · Audio y énfasis DOPAMIN · 24/10/2026
+
+Carlos observa que la versión 04 avanza, pero no percibe música/SFX/transiciones ni cambios suficientes de tamaño/color en captions. B-roll mejorable; no hay aceptación F9. Sus niveles solicitados: voz 150 %, efectos 30 %, música 16–20 % (se ensaya 18 %). Énfasis naranja fuego y metálico.
+
+Diagnóstico real: voz normalizada RMS -16,2 dB; música aislada tras ducking RMS -36,8 dB; SFX procedural pico -37,8 dB. Los porcentajes aplicados a fuentes de niveles dispares y la receta sintetizada demasiado baja no garantizaban audibilidad. Los subtítulos corregidos manualmente perdían énfasis automático; los restantes usaban blanco y proporción 14/12 poco perceptible. Los tres eventos llamados transiciones eran destellos cálidos de 400 ms, no cambios de plano elaborados.
+
+Corrección optativa: control de voz 0–200 %, nivelar música a referencia -10 LUFS y SFX a -16 LUFS ANTES de porcentajes; suavizar ducking; mantener originales y tiempos. Fuentes cortas se rellenan para el medidor y se recortan antes de retrasarlas. Valores por defecto anteriores y CALMA conservados. Énfasis explícito por palabra con naranja fuego/metal naranja y escala 1–1,6; control de tamaño y persistencia UI. Desenfoque/expansión radial existentes disponibles por tiempo y sustitución de transición sin duplicar. No reflejos metálicos 3D ni nuevo Director semántico.
+
+QA: 297 pruebas lógicas/regresión PASS; MP4 real bajo 1 GiB en imagen VPS PASS, voz/música/SFX medidos en PCM decodificado. Sintaxis PASS. La prueba detectó y permitió corregir que voiceGain contaminaba el pase de vídeo. Nueva versión del Reel pendiente de generar y revisar; ninguna medición sustituye aceptación creativa. Global oficial 48 %, F6/F7/F9 abiertas.
+
+La versión 04 ya pudo descargarse y guardarse en la carpeta de pruebas de Drive: https://drive.google.com/file/d/18VLI4AKxPX9zoHQNOPpaofpdv0lryRej/view . Conserva el rechazo parcial de audio/énfasis; NO presentarla como final aprobada.
+
+---
+
 ## ITERACIÓN 04 TERMINADA · Revisión audiovisual pendiente · 23/10/2026 UTC
 
 Trabajo cca3b1cf-2447-4cb8-a4af-df70c7cc51a9 terminado. MP4 H264/AAC 1080×1920/30 fps, 68,634 s (original 68,6491 s; diferencia 15 ms), 27.431.231 bytes. SHA256 9631b26edbf0dc1979d37aff84da0f12b1d8d9329e95d188d998c8c84987ae8a. Decodificación completa estricta PASS y exportación HTTP 200 con bytes/hash idénticos. Original conserva su SHA obligatorio.

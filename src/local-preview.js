@@ -126,7 +126,7 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
           event(0,start,end,'Caption',`{${style.replace(entrance,shifted)}\\1c&H000000&\\1a&H${alpha}&\\blur${s.blurPx}\\bord0\\shad0}${safeText(row.text)}`);
         }
         if(row.role==='keyword'&&(palette||preset.color!=='#FFFFFF')&&p.glow?.enabled){
-          const color={gold:'#FFD700',green:'#00FF66',cyan:'#00E5FF',blue:'#528CFF',coral:'#FF3333'}[c.keyword.style??'gold']??palette?.[4]??preset.color,alpha=Math.round((1-p.glow.intensity)*255).toString(16).padStart(2,'0').toUpperCase();
+          const color={fire:'#FF7A18',fireMetal:'#FF7A18',gold:'#FFD700',green:'#00FF66',cyan:'#00E5FF',blue:'#528CFF',coral:'#FF3333'}[c.keyword.style??'gold']??palette?.[4]??preset.color,alpha=Math.round((1-p.glow.intensity)*255).toString(16).padStart(2,'0').toUpperCase();
           event(0,start,end,'Caption',`{${style}\\1c${assColor(color)}&\\1a&H${alpha}&\\blur${p.glow.assBlurPx}\\bord3\\3c${assColor(color)}&\\3a&H${alpha}&\\shad0}${safeText(row.text)}`);
         }
         if(row.role==='keyword'&&palette){
@@ -251,7 +251,7 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
 export function buildVideoPassFilter(plan,options={}){
  const visual=structuredClone(plan);
  visual.audioMix=null;visual.soundEffects={events:[]};visual.customSfx={events:[]};
- visual.voiceEffects={events:[]};visual.mastering={enabled:false};
+ visual.voiceEffects={events:[]};visual.mastering={enabled:false};visual.voiceGain=1;
  return buildPreviewFilter(visual,{...options,hasAudio:false});
 }
 export function buildAudioPassFilter(plan){

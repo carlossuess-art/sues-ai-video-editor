@@ -1,3 +1,4 @@
+import {applyResourceLevels} from './audio-levels.js';
 import {applyReviewedFraming,explicitZoomDecisions} from './reviewed-framing.js';
 import {buildTemplateRecipe,editionCounts} from './template-recipe.js';
 import {prepareCustomSfx} from './custom-sfx.js';
@@ -108,7 +109,7 @@ export function prepareProject(project,settings={}){
   c.emphasisWordIndexes=[];
   if(value.level==='none'){c.keyword=null;continue;}
   if(value.word>=c.text.split(/\s+/).length)throw new Error('Keyword word outside caption');
-  c.keyword={displayWordIndex:value.word,...(c.source!=='manual'?{sourceWordIndex:c.wordIndexes[value.word]}:{}),level:value.level,style:value.style,method:'explicit-editor-choice'};
+  c.keyword={displayWordIndex:value.word,...(c.source!=='manual'?{sourceWordIndex:c.wordIndexes[value.word]}:{}),level:value.level,style:value.style,...(value.scale!==undefined?{scale:value.scale}:{}),method:'explicit-editor-choice'};
   if(!hierarchyLayout(c,plan.policy.captions,plan.layout.caption))throw new Error('La palabra elegida no cabe legible al doble de tamaño. Elige otra o acorta el texto.');
  }
  Object.assign(plan,prepareGraphicBlocks(effectiveCards,effectiveTransitions,plan,options.motions));
@@ -125,7 +126,9 @@ export function prepareProject(project,settings={}){
  plan.ambientOverlays=overlayAssets;
  if(overlayAssets.length){plan.pending.push('ambient-overlays-visual-review');}
  plan.soundEffects=prepareSoundEffects(plan,options);
+ plan.voiceGain=options.voiceGain;
  plan.voiceEffects=prepareVoiceEffects(options.voiceEvents,plan.duration);
+ if(options.levelResources)applyResourceLevels(plan);
  if(plan.voiceEffects.events.length){plan.pending.push('voice-processing-human-listening-review');}
  plan.templateRecipe=recipe;plan.editionCounts=editionCounts(plan);
  if(plan.soundEffects.events.length||plan.customSfx.events.length){plan.pending=plan.pending.filter(p=>p!=='music-and-sfx');plan.pending.push('sound-design-human-review');}
