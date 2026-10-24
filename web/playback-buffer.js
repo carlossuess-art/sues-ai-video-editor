@@ -11,7 +11,7 @@ globalThis.createSuesPlayback=function({videos,button,status,meter,fetcher=fetch
   let end=active.currentTime||0;
   for(let i=0;i<active.buffered.length;i++)if(active.buffered.start(i)<=end+.1&&active.buffered.end(i)>=end)end=active.buffered.end(i);
   meter.value=Number.isFinite(active.duration)&&active.duration>0?Math.min(100,end/active.duration*100):0;
-  const ahead=Math.max(0,end-(active.currentTime||0));status.textContent=ahead>.2?'Cargado '+ahead.toFixed(0)+' s por delante':'Esperando datos del vídeo…';
+  const ahead=Math.max(0,end-(active.currentTime||0));status.textContent=ahead>.2?'Cargado '+ahead.toFixed(0)+' s por delante':active.readyState===0&&s.source.endsWith('/preview')?'Preparando vista previa…':'Esperando datos del vídeo…';
  }
  function stop(s){s.version++;s.controller?.abort();s.controller=null;}
  function mount(v){const s=state(v),url=s.blob||s.source;if(!url||v.getAttribute('src')===url)return;v.src=url;v.preload='auto';v.addEventListener('loadedmetadata',()=>{if(v.getAttribute('src')===url&&s.time>0&&Number.isFinite(v.duration))v.currentTime=Math.min(s.time,v.duration);},{once:true});v.load();}

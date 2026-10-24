@@ -1,3 +1,19 @@
+## Estabilidad y REA · trabajo validado · 24/10/2026
+
+Corrección de arranque: no mostrar credenciales antes de verificar sesión, recuperación
+de red sin falsa desconexión ycookie30d conExpires. Proxy720p privado separado de
+exportación1080p:12,9→2,3MBen vídeo real(82%menos).19pruebasPASS yfuente intacta.
+Código en rama aislada; despliegue aún por verificar. REA6.7.0 ya operativo y usado,
+sin repetir instalación; Captions mapa de módulos yCapCut3bootstraps con límites
+explícitos, no backend privado. Informes:docs/SUES_REA_FINDINGS_20261024.md,
+docs/SUES_FUNCTIONAL_GAP_MAP_20261024.md,
+docs/SUES_INTELLIGENT_EDITOR_ARCHITECTURE_20261024.md,
+docs/SUES_SESSION_PROXY_QA_20261024.md. F6/F7/F9 abiertas,global48%.
+Próximo: publicar estabilidad y probar analista/director local sinAPIdepago.
+Roadmap Drive sin sincronizar por Unknown tool; no inventar progreso ni aceptación.
+
+---
+
 ## Búfer publicado y comprobado · 24/10/2026
 
 Producción b40e2a5e: precarga sólo vídeo visible, barra de búfer y carga completa

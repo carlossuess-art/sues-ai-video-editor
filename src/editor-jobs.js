@@ -165,9 +165,10 @@ export class EditorJobs{
    const request=this.requestFor(job),audit=validateRenderResult(request),context=this.storageContext(job);
    const video=await this.storage.put(request.output,context,{mediaType:'video/mp4'});
    if(video.key!=='sha256:'+audit.outputSha256||video.bytes!==audit.bytes)throw new Error('Stored video differs from render audit');
-   await this.storage.resolve(video,context);
+   const storedVideoPath=await this.storage.resolve(video,context);
    const auditObject=await this.storage.put(request.output.replace(/\.mp4$/,'.audit.json'),context,{mediaType:'application/json'}),auditPath=await this.storage.resolve(auditObject,context);
    if(JSON.stringify(JSON.parse(readFileSync(auditPath,'utf8')))!==JSON.stringify(audit))throw new Error('Stored audit differs from validated audit');
+   if(this.preparePlayback){try{await this.preparePlayback(job,storedVideoPath);}catch{job.playbackWarning='No se pudo preparar la vista previa ligera; la exportación se conserva.';}}
    job.artifact=video;job.auditArtifact=auditObject;delete job.error;this.transition(job,'DONE');
   }catch(error){job.error='Guardado pendiente: '+error.message;this.transition(job,'PUBLISH_FAILED');}
   finally{this.publishing.delete(job.id);setImmediate(()=>this.drain());}

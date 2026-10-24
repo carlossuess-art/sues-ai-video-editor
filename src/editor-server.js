@@ -1,3 +1,4 @@
+import {PlaybackPreviews} from './playback-preview.js';
 import {reviewInstructionExecution} from './instruction-execution.js';
 import {externalCatalog,reviewExternalPlan} from './external-edit-plan.js';
 import {prepareProject} from './local-pipeline.js';
@@ -52,8 +53,8 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const googleReady=()=>!!google&&!!adminPasswordHash;
  const setup=loginSetup(passwordFile);
  let loginBusy=0;
- const cookie=value=>`sues_session=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_SECONDS}${publicOrigin?'; Secure':''}`;
- const jobs=new EditorJobs({directory,profiles,renderer,storage});let intake,assets,recoveries;try{assets=new MediaLibrary(join(directory,'assets'),{probe:assetProbe});jobs.assetResolver=(id,kind)=>assets.resolve(id,kind);jobs.narrativeResolver=transcript=>proposeLibraryCues(directory,transcript);jobs.defaultMusicResolver=duration=>{const rows=assets.list().filter(a=>a.kind==='audio'&&a.duration>=duration&&(()=>{const m=assets.metadata(a.id);return m?.license.rightsStatus==='verified'&&m.license.commercialUseAllowed;})()).sort((a,b)=>(b.id==='55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6')-(a.id==='55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6')||a.duration-b.duration);return rows[0]??null;};recoveries=new ProjectRecovery(join(directory,'recoveries'),profiles);intake=new VideoIntake(join(directory,'uploads'),profiles,{probe:intakeProbe});}catch(error){void jobs.close();throw error;}let expectedHost;
+ const cookie=value=>`sues_session=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_SECONDS}; Expires=${new Date(Date.now()+SESSION_SECONDS*1000).toUTCString()}${publicOrigin?'; Secure':''}`;
+ const previews=new PlaybackPreviews(join(directory,'playback-previews'));const jobs=new EditorJobs({directory,profiles,renderer,storage});jobs.preparePlayback=(job,source)=>previews.ensure(job.id,source);let intake,assets,recoveries;try{assets=new MediaLibrary(join(directory,'assets'),{probe:assetProbe});jobs.assetResolver=(id,kind)=>assets.resolve(id,kind);jobs.narrativeResolver=transcript=>proposeLibraryCues(directory,transcript);jobs.defaultMusicResolver=duration=>{const rows=assets.list().filter(a=>a.kind==='audio'&&a.duration>=duration&&(()=>{const m=assets.metadata(a.id);return m?.license.rightsStatus==='verified'&&m.license.commercialUseAllowed;})()).sort((a,b)=>(b.id==='55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6')-(a.id==='55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6')||a.duration-b.duration);return rows[0]??null;};recoveries=new ProjectRecovery(join(directory,'recoveries'),profiles);intake=new VideoIntake(join(directory,'uploads'),profiles,{probe:intakeProbe});}catch(error){void jobs.close();throw error;}let expectedHost;
  const analysis=new LocalAnalysis(intake);
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
  const sourceStream=(req,res,file)=>{
@@ -169,7 +170,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|library-cues|poster))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|library-cues|poster))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
@@ -231,6 +232,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(action==='render'&&req.method==='POST')return json(res,202,jobs.render(id));
     if(action==='undo'&&req.method==='POST')return json(res,200,jobs.undo(id));
     if(action==='cancel'&&req.method==='POST')return json(res,202,jobs.cancel(id));
+    if(action==='preview'&&['GET','HEAD'].includes(req.method)){const source=await jobs.media(id),file=await previews.ensure(id,source);return sourceStream(req,res,file);}
     if(action==='media'&&['GET','HEAD'].includes(req.method)){
      const file=await jobs.media(id),size=statSync(file).size;let range;
      try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
@@ -247,5 +249,5 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
   }catch(error){if(res.headersSent)return res.destroy();const safe=/not found|Unknown profile/i.test(error.message)?404:/busy|ready|changed|transition|owned|Adjustments|queue full|closing/.test(error.message)?409:400;json(res,safe,{error:error.code?'No se pudo acceder al recurso local configurado':error.message.replaceAll(directory,'[local]')});}
  });
  server.requestTimeout=900000;server.headersTimeout=10000;
- return {jobs,server,token,async listen(){await new Promise((r,j)=>{server.once('error',j);server.listen(port,'127.0.0.1',r);});origin??=`http://127.0.0.1:${server.address().port}`;expectedHost=new URL(origin).host;return `${origin}/#${token}`;},async close(){jobs.closing=true;server.closeIdleConnections();await new Promise(r=>server.close(r));await jobs.close();}};
+ return {jobs,server,token,async listen(){await new Promise((r,j)=>{server.once('error',j);server.listen(port,'127.0.0.1',r);});origin??=`http://127.0.0.1:${server.address().port}`;expectedHost=new URL(origin).host;return `${origin}/#${token}`;},async close(){jobs.closing=true;await previews.close();server.closeIdleConnections();await new Promise(r=>server.close(r));await jobs.close();}};
 }
