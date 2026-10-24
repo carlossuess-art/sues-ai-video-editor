@@ -1,3 +1,11 @@
+## DOPAMIN MASTER · resultado real 24/10/2026
+
+MP4 completo disponible en el [editor privado](https://editor.suesholistics.com/?project=0954702a-79e2-4508-8281-3a429a32098b), trabajo DONE, 1080×1920/68,63s. Código desplegado `b3e0a7ae34c84266c6df0249a77b6fe82289cb7e`. Biblioteca ampliada de22 a54 medios privados. [Informe audiovisual, inventario, pruebas y límites](docs/SUES_DOPAMIN_MASTER_20261024.md).
+
+Propuesta automática operativa y exportable; candidata estética todavía por aprobar. Máscara revisada para esta fuente, sin segmentación general ni Director multimodal. No se garantiza edición de cualquier vídeo con2–3 retoques. Suite324/325 en Docker; casos Git2/2 en host. F6/F7/F9 abiertas, global48% sin cambio. Las secciones siguientes son historial y no sustituyen este estado.
+
+---
+
 ## F7/F9 · Puente sugerencia narrativa → plan editable revisable · 24/10/2026
 
 Desde la rama de producción `b9b439f9e5a2d0df9abc1731c500565977d6540d`, se añade al panel de sugerencias de recursos un botón individual **Preparar este B-roll para revisar**. Reutiliza las rutas y validación del plan externo existente. Sólo se ofrece en candidatos de vídeo con evidencia contextual y tramo fuente auditado. Genera JSON `sues-edit-plan/v1` con `sourceSha256` real y operación B-roll `resourceId`, `start/end`, `sourceIn`, `reason`; guarda borrador y guía al usuario a **Comprobar plan** y **Ejecutar plan en otra versión**. No ejecuta ni crea MP4 automáticamente.
