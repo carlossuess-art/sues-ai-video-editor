@@ -1,3 +1,13 @@
+## F7 · Director narrativo de escenas verificables · 24/10/2026
+
+Rama nueva `feat/dopamin-narrative-scenes-20261024`, a partir de release `bc74db06c5a2c09dbe8c251ec070ecf6d460cf37`, sin alterar otros worktrees. Se añaden reglas contextuales por bloques del ASR con negación, roles narrativos y marcas de escena de cuatro fotogramas inspeccionados por recurso. Se exigen prueba de licencias declaradas V2, compatibilidad DOPAMIN, verticalidad y duración. El sistema devuelve propuestas `contextual-review-only` con candidatos/scores/porqué/segundos e incertidumbre expresa; no hay render, modelo multimodal nuevo ni aprobación automática. La UI comunica el motivo y alcance.
+
+Prueba original maestro: «ajetreados» 9,16–12,54 s propone la cadena bajo agua para revisar; «crecimiento» 40,98–46,92 s caminante y amanecer como alternativas; nunca propone el reloj comercial marcado. Todos son sugerencias narrativas, no aprobación. Se catalogaron `sceneTags` manualmente y se conservó una copia original del pequeño manifiesto privado antes de modificarlo. Detalles: `docs/SUES_NARRATIVE_SCENE_MATCHING_20261024.md`.
+
+**F6/F7/F9 abiertas y global 48 %, V1 sin aceptación humana.** Validación final de suite, versión/backup y despliegue se documentarán al ejecutarse; no inferir del commit. Coste de API 0 €.
+
+---
+
 ## F7 · Guard visual contra branding de B-roll · 24/10/2026
 
 Nueva rama separada `feat/visual-safety-curation-20261024` basada en `feat/dopamin-context-review-20261024`, sin modificar otro worktree pendiente. Se revisaron cuatro clips **reales** del banco con cuatro fotogramas por archivo: reloj con inscripción comercial visible, sendero con persona de espaldas, cadena/amanecer sin textos observados **solo en las muestras**. Implementada carga validada del índice privado opcional `asset-visual-review-v1.json` que registra riesgos por hash de medio, bloquea recomendaciones de vídeo con marca/texto ajenos y señala muestras limitadas en UI; no aprueba automáticamente nada, no borra recursos y no cambia exportación ni CALMA. Ver `docs/SUES_VISUAL_SAMPLE_GUARD_20261024.md`. F6/F7/F9 abiertas; global oficial 48 %.
@@ -988,13 +998,3 @@ PR3 fusionado en8d120cfc9681933214b364df911ffe4fdebadb6b; PR4 fusionado en
 Árbol95561a9f5ee103c1c9a5d4e80369cf77d2e4807f idéntico al probado en navegador,
 209tests/check y10simulaciones. Sin cambios de package.json/package-lock.json.
 DOPAMIN/ELEMENTS ycompositor trasmatte revisado integrados;CALMA siguepor defecto.
-Receta visual aprobada preservada. QA de24combinaciones yrender38,31s desde
-recuperaciónUI completada; ver evidencia debajoy guía SUES_VERIFIED_RELEASE.md.
-
-Actualizador aislado listo para ese commit; noejecutado remotamente. Inventario
-actual deDesktopCommander devuelve0dispositivos conectados; no hay herramientas
-HostingerVPS/SSH disponibles. VPSúltimoobservado sigueba972;no asumir actualización.
-Necesidad puntual deCarlos:ejecutar elcomando fijado enla terminalHostinger,conservar
-su salida ydespués validar app remota. La limitación esacceso alVPS,no autorización.
-Sin gasto externo,nuevos modelos,ASR,Lovable oalteracionesWhatsApp/Caddy/DNS.
-F6/V1 ysegmentación corporal automática siguenabiertas.
