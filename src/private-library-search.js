@@ -1,5 +1,6 @@
 import {readFileSync,lstatSync} from 'node:fs';
 import {join,resolve} from 'node:path';
+import {loadTemporalAudit} from './scene-temporal-qa.js';
 
 // Local-only discovery. Names in the 309-source index are uninspected hints,
 // never proof of scene content, license, or render eligibility.
@@ -59,6 +60,7 @@ export function loadPrivateLibraryIndex(jobsDirectory){
 // whitelisted V2 technical/licensing metadata. Never put private origin/proof/path in API.
 export function reviewedNarrativeVideos(jobsDirectory,index){
  const {official,visualReviews}=index;
+ const temporal=loadTemporalAudit(jobsDirectory);
  const dirname=resolve(jobsDirectory,'assets','metadata-v2');
  let st;try{st=lstatSync(dirname);}catch(e){if(e?.code==='ENOENT')return [];throw e;}
  if(!st.isDirectory()||st.isSymbolicLink())throw Error('Unsafe asset metadata directory');
@@ -75,9 +77,13 @@ export function reviewedNarrativeVideos(jobsDirectory,index){
   const {durationSec,width,height}=doc.technical??{};
   if(!Number.isFinite(durationSec)||durationSec<2.5||!Number.isInteger(width)||!Number.isInteger(height)||height<=width)continue;
   const narrativeRoles=Array.isArray(doc.semantics.narrativeRoles)?doc.semantics.narrativeRoles.filter(x=>typeof x==='string').slice(0,8):[];
+  const measurement=temporal.get(item.id);
+  // Published ID and real video metadata must refer to exactly the same duration.
+  const verified=measurement&&Math.abs(measurement.durationSec-durationSec)<=.15?measurement:null;
   out.push({id:item.id,title:item.titleEs,kind:'video',sceneTags:[...sample.sceneTags],
    sampleCount:sample.sampleCount,riskFlags:[...sample.riskFlags],narrativeRoles,
-   duration:durationSec,width,height,approvedForProduction:doc.approvedForProduction===true});
+   duration:durationSec,width,height,approvedForProduction:doc.approvedForProduction===true,
+   temporal:verified});
  }
  return out;
 }
