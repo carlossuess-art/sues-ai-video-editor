@@ -1,3 +1,22 @@
+## DESPLIEGUE VERIFICADO · Director narrativo de escenas · 24/10/2026 UTC
+
+**Producción VPS Hostinger srv1841004 instalada en commit de CÓDIGO `773416414cabbb566c1ea8957ef4c5abea123166`**, rama `feat/dopamin-narrative-scenes-20261024`, **sin merge a main**, PR borrador #12: https://github.com/carlossuess-art/sues-ai-video-editor/pull/12 . Se ha mantenido el código y todos los recursos del editor original.
+
+`--diagnose` antes del despliegue: PASS; cola sin render/espera/guardado, dependencias idénticas, FFmpeg 5.1, Node 22, fuentes, library UID1000 legible (66 activos + 11 índices), HTTPS PASS. Durante backup se pausó únicamente `sues-editor-whisper.service`, sin trabajo pendiente; respaldo íntegro verificado SHA256 **`421c319e36610741c9810094ae6fbdfdfc5234fc653b9f47082523ce159dc4ed`** en `/opt/sues-video-setup/update-backup-20261024-123300-139038`; contenedor anterior conservado para reversión. Instalación **ACTUALIZACIÓN OK** y Whisper reactivado `active`.
+
+**Regresión completa**: 309 casos originales + nuevos cubiertos: **307/309 PASS en Docker**, dos casos de despliegue Git con binarios temporales dan Permission denied en el contenedor aislado pero **ambos PASS (2/2) en host**. Suite focal (Director, API privada, frontend, metadata) 17/17 PASS, `npm run check` PASS y `git diff --check` PASS. La primera batería en host falló parcialmente por FFmpeg ausente; la primera batería Docker tuvo falsos fallos de "espacio insuficiente" por tmpfs de 256 MB; segunda Docker corregida con tmpfs de 1 GiB y 1,5 GiB de RAM consiguió los resultados anteriores. No atribuir falsos fallos de entorno al producto.
+
+**Prueba del contenedor de PRODUCCIÓN con transcripción original**: dos propuestas contextuales reales:
+- 9,16–12,54 s, ancla «ajetreados» → cadena industrial en agua, solo como posible metáfora narrativa.
+- 40,98–46,92 s, ancla «crecimiento» → caminante exterior (principal) o amanecer de montaña (alternativa).
+La salida mantiene `approvedToAutoPublish:false`, cada recurso `needsHumanReview:true` y `visualContentVerified:false`. No se ha realizado ni aprobado nuevo render; la elección sigue basada en reglas y cuatro imágenes manualmente anotadas por recurso, NO en análisis de visión completo ni IA multimodal autónoma. El reloj con inscripción ajena permanece excluido. Sin consumo externo: 0 €.
+
+**Postdeploy**: commit instalado leído por Git y archivo de servicio coincide `7734164`; HTTPS 200, ruta API privada sin sesión 401, Whisper activo, iteración 08 MP4 SHA256 idéntico `bedb0d504642f71ab03e1f3db061c9417bdc2e15b8ff6bdc42b441e0cfc65cbc` y trabajo DONE. Los otros worktrees de audio permanecen intactos. La ruta autenticada fue ejercida por la rutina del despliegue; la comprobación manual de API con cookie no se repite sin autorización a utilizar secreto.
+
+**Siguiente acción exacta:** evaluar escenas a lo largo del clip completo con detección local de planos/texto/objetos y validar selección con QA audiovisual de nuevo render antes de activar cualquier inserción autónoma. Conservar render directo por orden de Carlos. F7 parcial, F6/F9 abiertas; global oficial **48 %**, V1 sin aceptación creativa.
+
+---
+
 ## F7 · Director narrativo de escenas verificables · 24/10/2026
 
 Rama nueva `feat/dopamin-narrative-scenes-20261024`, a partir de release `bc74db06c5a2c09dbe8c251ec070ecf6d460cf37`, sin alterar otros worktrees. Se añaden reglas contextuales por bloques del ASR con negación, roles narrativos y marcas de escena de cuatro fotogramas inspeccionados por recurso. Se exigen prueba de licencias declaradas V2, compatibilidad DOPAMIN, verticalidad y duración. El sistema devuelve propuestas `contextual-review-only` con candidatos/scores/porqué/segundos e incertidumbre expresa; no hay render, modelo multimodal nuevo ni aprobación automática. La UI comunica el motivo y alcance.
