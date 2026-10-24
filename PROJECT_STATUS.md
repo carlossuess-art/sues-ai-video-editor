@@ -1,13 +1,13 @@
-## Despliegue final del bloque visual · 24/10/2026
+## Reproducción · precarga única y búfer completo · 24/10/2026
 
-Código d3d6ecc2 instalado y comprobado: job200, anónimo401, Range206 y Whisper
-activo; backup/rollback verificados. Gráficos mayores, conceptos fieles y borde
-superior de luces suavizado. Dos MP4 comprobados; segundo original automático
-DONE/descarga idéntica. Los MP4 previos no incluyen el último feather.
-Detalles: docs/SUES_DOPAMIN_VISUAL_REFINE_20261024.md. F6/F7/F9 abiertas,
-global48%; sin aprobación estética/audio. Próximo: dirección visual más rica
-sobre otro original y nuevo render de luces; no necesidad de intervención de Carlos.
-Roadmap Drive sin sincronizar (Unknown tool); documentación técnica guardada aquí.
+Queja de Carlos: la carga del vídeo no se adelanta suficiente a la reproducción.
+Original/montaje con preload auto simultáneo: ahora sólo precarga el visible;
+el oculto suelta la fuente y conserva URL/posición. Barra de carga real y botón
+Cargar completo con progreso/cancelación y copia privada en memoria (máx128MiB).
+9/9 pruebas específicas/integración PASS; sintaxis/diff PASS. No se ha medido
+la conexión móvil ni reproducido en Android. Despliegue aún por comprobar.
+Detalle: docs/SUES_PLAYBACK_BUFFER_20261024.md. Sin cargos ni nuevos servicios.
+F9 sigue abierta, global oficial48%; Roadmap Drive sin sincronizar por Unknown tool.
 
 ---
 
