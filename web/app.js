@@ -609,3 +609,31 @@ $('suggest-resources').onclick=()=>work(async()=>{
   details.append(summary,list);box.append(details);
  }
 });
+
+// Explicit cloud analysis: one selected provider; no paid automatic fallback.
+let cloudRequest=null,cloudRequestSignature=null;
+async function checkCloudProviders(){
+ const status=await api('ai/providers'),selected=status.providers.find(p=>p.id===$('cloud-provider').value);
+ $('cloud-plan').disabled=!selected?.configured;
+ $('cloud-status').textContent=selected?.configured?selected.label+' disponible. Se solicitará un plan y se comprobará antes de ejecutarlo.':'Falta configurar la clave de '+(selected?.label??'la IA')+'. El vídeo sigue guardado.';
+ return selected;
+}
+$('cloud-check').onclick=()=>work(checkCloudProviders);
+$('cloud-provider').onchange=()=>work(async()=>{cloudRequest=null;await checkCloudProviders();});
+$('cloud-plan').onclick=()=>work(async()=>{
+ if(!current||previewDirty)throw Error('Prepara el vídeo y guarda tus ajustes antes de solicitar un plan.');
+ const selected=await checkCloudProviders();if(!selected?.configured)return;
+ const id=current.id,fingerprint=current.fingerprint,provider=selected.id,prompt=$('director-prompt').value;
+ const signature=JSON.stringify({id,fingerprint,provider,prompt});if(signature!==cloudRequestSignature){cloudRequest=crypto.randomUUID();cloudRequestSignature=signature;}
+ $('cloud-plan').disabled=true;$('cloud-status').textContent='Preparando el plan con '+selected.label+'… El montaje anterior se conserva.';
+ const result=await api('jobs/'+id+'/ai-plan','POST',{provider,prompt,requestId:cloudRequest,fingerprint});
+ if(current?.id!==id||current.fingerprint!==fingerprint||previewDirty)throw Error('El proyecto cambió durante el análisis. No se ha aplicado el plan.');
+ $('external-plan-text').value=result.text;await api('jobs/'+id+'/external-draft','POST',{text:result.text});
+ externalReview={...result.review,text:result.text,jobId:id};externalRequest=null;
+ const box=$('external-result');box.replaceChildren(node('strong',result.review.canApply?'Plan listo para ejecutar':'Plan recibido con operaciones pendientes'));
+ for(const row of result.review.rows)box.append(node('p',(row.status==='ready'?'✓ ':'Pendiente · ')+row.description));
+ for(const note of result.review.notes??[])box.append(node('p',note));
+ $('external-execute').disabled=!result.review.canApply;
+ $('cloud-status').textContent=selected.label+': plan recibido y guardado. '+(result.review.canApply?'Puedes ejecutarlo en otra versión.':'Revisa las operaciones pendientes antes de ejecutar.')+' No se ha iniciado un render.';
+ cloudRequest=null;cloudRequestSignature=null;$('cloud-plan').disabled=false;
+});

@@ -1,3 +1,15 @@
+## Dos conexiones de Director IA preparadas · 25/10/2026
+
+Gemini 3.8 Flash usa vídeo/audio con muestreo visual de 1 fps; GPT-6.1 Sol usa transcripción y ocho fotogramas. Ambos tienen esfuerzo medio, devuelven un plan SUES y pasan por el validador existente antes de ejecutarlo en otra versión. La interfaz permite elegir proveedor, comprobar disponibilidad y guardar la propuesta. No hay cambio automático de proveedor ni reintentos de generación.
+
+Verificación: 8/8 casos focales y 4/4 combinaciones de navegador (escritorio/móvil por proveedor) PASS con respuestas SIMULADAS, sin errores JS ni desbordamientos. Suite completa: 370/371 PASS en Docker; el único caso Git fallido pasa en host junto al segundo test de despliegue (2/2). Check y diff PASS. No hay inferencia real ni vídeos enviados a los proveedores.
+
+Carlos autorizó reutilizar credenciales; no se encontraron candidatas en 35 archivos y los entornos inspeccionados. No se crearon claves nuevas. Gasto externo nuevo: 0 €. Producción b2ebf6d intacta; cambios NO desplegados. Global oficial: 48 %, sin cambio.
+
+Siguiente: resolver las claves por vía segura, probar una llamada real por proveedor y comparar sus planes, costes y MP4 sobre la misma fuente. Crear claves requiere una nueva decisión. Ver docs/SUES_DUAL_CLOUD_DIRECTOR_20261025.md. No se acredita calidad creativa, catálogo completo ni timeline con keyframes por conectar estos adaptadores.
+
+---
+
 ## Continuación de E2E · 25/10/2026
 
 Recuperadas dos exportaciones completas de fuentes reales y restauración exacta del primer MP4 sin modelo. Corregidas dos expectativas de fixtures, sin debilitar guards. NavegadorChrome151:24/24combinaciones escritorio/móvilPASS,sinJS/overflow;copia/recuperaciónUIescritorioPASS,render omitido en este harness. Focal21/21PASS; suite363:362PASS Docker y un caso Git cubierto en host2/2; check/diffPASS. Copia aislada preserva el worktree anterior. Producción sigue b2ebf6d; sin deploy ni aceptación V1. Revisión de hojas de contacto parcial, sin escucha. Global48% sin cambio. Ver docs/SUES_CONTINUATION_E2E_VALIDATION_20261025.md. Próximo: QA de interfaz de las nuevas subidas y copia, después integración/despliegue reversible.
