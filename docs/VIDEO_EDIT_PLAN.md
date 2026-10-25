@@ -1,3 +1,5 @@
+> **Contrato histórico de la POC cloud.** El importador actual usa `sues-edit-plan/v1`, catálogo autenticado y segundos del original, con operaciones y límites en [SUES_EXTERNAL_EDIT_PLAN.md](SUES_EXTERNAL_EDIT_PLAN.md) y `src/external-edit-plan.js`. Consultar [diagnóstico](SUES_FIRST_DIAGNOSIS_MASTER_PLAN_20261025.md); no enviar eventos conceptuales de la skill como si fueran operaciones ejecutables.
+
 # Contrato Video Edit Plan v1.0
 
 Unidad: segundos; rangos de fuente [in,out). La timeline de salida concatena segmentos

@@ -1,3 +1,5 @@
+> **Documento histórico de la POC Shotstack.** El motor actual en el VPS usa Node/FFmpeg/ASS y almacenamiento privado. Consultar [diagnóstico y plan vigente](SUES_FIRST_DIAGNOSIS_MASTER_PLAN_20261025.md) y [arquitectura de las cinco capacidades](SUES_INTELLIGENT_EDITOR_ARCHITECTURE_20261024.md). No aplicar la ausencia de backend de esta POC al despliegue actual.
+
 # Arquitectura POC · decisión provisional
 
 El proceso ligero se ejecuta en Work; toda la codificación de vídeo se ejecuta en

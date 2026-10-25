@@ -1,3 +1,33 @@
+## Diagnóstico cinematográfico y revisión real · 25/10/2026
+
+Producción comprobada b2ebf6df3725d245e7c3bb5518f574899d1fed0d: estabilidad previa
+más supresión de captions íntegramente cubiertos por rótulos literales.
+Backup verificado, Whisper active. Trabajo 9148a6fe-32e6-4843-9d15-489bb381a91d
+DONE: 68,634 s, 1080×1920, SHA2569a9105f33a3f4a7d60770adb7423595737389deb73efc3ff0ff9f8f1a1a4eff7.
+Full decode PASS, −15,57 LUFS/−1,91dBTP, sin negros/congelaciones detectados.
+RUNAS/EGO duplicados retirados en MP4 real; audio PCM idéntico a QA anterior.
+Navegador reproduce hasta el final con búfer completo; recarga conserva sesión.
+Proxy guardado 720p/7.000.469 bytes; HD disponible en web, descarga de herramienta
+1080p agotó espera. Android y aceptación creativa pendientes.
+
+Nueva misión: 46 ramas y PR revisadas; la skill inicial diverge desde POC y está
+261 commits detrás de producción. No fusionada. Prompt Director V2 de Drive
+recuperado. Banco real 54 medios;309 fuentes históricas no son309B-rolls.
+No torch en entornos activos inspeccionados; ASR CTranslate2 y modelos experimentales
+llama.cpp. Visión del master not-performed, sin rostros; tracking no acreditado.
+Diagnóstico y plan: docs/SUES_FIRST_DIAGNOSIS_MASTER_PLAN_20261025.md.
+Estimación técnica de nueva rúbrica ≈42 %, distinta del global oficial48 %,
+que no se altera. No V1 ni cierre F6/F7/F9.
+
+Integración experimental: política de skill cargada y ligada por SHA a peticiones
+reales del puente de énfasis; diez pruebas focales PASS y validación de skill PASS.
+Petición real88captions acredita política en prompt; sin nueva inferencia.
+Revisión independiente de lectura conserva los límites. NO desplegada esta integración.
+Próximo: resolver cámara temporal, tracking y matte para10s con QA por evento.
+No comprar, reinstalar REA, repetir modelos descartados ni tocar PR15 incompleta.
+
+---
+
 ## Estabilidad y REA · trabajo validado · 24/10/2026
 
 Corrección de arranque: no mostrar credenciales antes de verificar sesión, recuperación

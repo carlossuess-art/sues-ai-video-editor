@@ -1,3 +1,5 @@
+> **25/10/2026 · Estado contrastado:** [primer diagnóstico y plan maestro](docs/SUES_FIRST_DIAGNOSIS_MASTER_PLAN_20261025.md), [resultados de MP4 y REA](docs/SUES_MISSION_RESULT_20261025.md) y [estado de producción](PROJECT_STATUS.md). Los avisos históricos inferiores no sustituyen la verificación actual. La skill integrada en la rama de investigación aún no está desplegada.
+
 > Frontend de referencia auditado en Work: [QA, integración y despliegue](docs/SUES_WORK_VALIDATION_20261019.md).
 > La validación local no acredita una actualización de producción.
 
