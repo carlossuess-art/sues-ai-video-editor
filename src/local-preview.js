@@ -56,7 +56,7 @@ function validateCamera(camera,width,height){
   }
 }
 
-export function prepareLocalPreview({template,brand,transcript,camera,source,segments,slots=[],assets=[],mediaBindings={},manualBroll=[],director,visionFrames=[],catalog=[],backgroundAudio,previewLayout=PREVIEW_LAYOUT}){
+export function prepareLocalPreview({template,brand,transcript,camera,source,segments,slots=[],assets=[],mediaBindings={},manualBroll=[],director,visionFrames=[],catalog=[],backgroundAudio,previewLayout=PREVIEW_LAYOUT,cameraTrajectory}){
   assert(source&&finite(source.duration)&&Number.isInteger(source.width)&&Number.isInteger(source.height),'source');
   assert(Math.abs(source.duration-transcript.sourceDuration)<.05,'transcript/source duration');
   validateCamera(camera,source.width,source.height);
@@ -68,7 +68,7 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
   const blocks=policy.captions.mode==='short-groups'?shortCaptionGroups(mapped.words,{maxWords:policy.captions.maxWords,maxChars:policy.captions.maxCharsPerLine,maxDuration:policy.captions.maxDuration}):segmentWords(mapped.words,{maxWords:6,maxChars:policy.captions.maxCharsPerLine*policy.captions.maxLines-10,maxDuration:4.5});
   const captions=blocks.map(b=>({...b,lines:wrapCaption(b.text,policy.captions.maxCharsPerLine,policy.captions.maxLines),wordCues:captionCues(b,mapped.words)}));
   for(const [key,box]of Object.entries(previewLayout)){
-    assert(validateSafePlacement(box,key==='caption'&&camera.mode!=='reviewed-region'?PORTRAIT_SAFE_ZONES.captions:PORTRAIT_SAFE_ZONES.content),'safe layout');
+    assert(validateSafePlacement(box,key==='caption'&&camera.mode!=='reviewed-region'&&!cameraTrajectory?PORTRAIT_SAFE_ZONES.captions:PORTRAIT_SAFE_ZONES.content),'safe layout');
     assert(box.right<=PORTRAIT_SAFE_ZONES.avoid.right.left,'right UI avoidance');
   }
   const broll=manualBroll.length?buildExplicitBrollPlan({policy,duration:timeMap.duration,events:manualBroll}):buildCinematicBrollPlan({policy,duration:timeMap.duration,slots,assets});
@@ -78,7 +78,7 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
     assert(typeof path==='string'&&path.length>0,'B-roll requires verified renderer bindings');
     return {...d,localFile:path};
   });
-  const semantic=prepareSemanticRender({director,policy,camera,timeMap,visionFrames,catalog,broll,captions,layout:previewLayout});
+  const semantic=prepareSemanticRender({director,policy,camera,timeMap,visionFrames,catalog,broll,captions,layout:previewLayout,cameraTrajectory,source});
   return {version:'1.0',kind:'local-preview',source,policy,timeMap,camera,semantic,
     cameraSpans:mapCameraToEdit(camera,timeMap),captions,broll,selectedMedia,layout:previewLayout,
     audioMix:prepareBackgroundAudio(backgroundAudio,timeMap.duration),duration:timeMap.duration,renderColors:{dark:brand.colors.dark},originalVoice:true,colorTreatment:'identity-natural',

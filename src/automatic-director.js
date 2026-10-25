@@ -1,3 +1,4 @@
+import {validateCameraTrajectory} from './camera-trajectory.js';
 import {validateReviewedFraming,validateZoomEvents} from './reviewed-framing.js';
 import {validateSfxEvents} from './custom-sfx.js';
 import {validateVoiceEvents} from './voice-effects.js';
@@ -17,9 +18,10 @@ const LEXICON=new Map([
 ]);
 export function validateEditorSettings(settings={}){
  assert(settings&&typeof settings==='object'&&!Array.isArray(settings),'settings object');
- assert(Object.keys(settings).every(k=>['automaticPreviewBroll','reviewedDepthText','voiceGain','levelResources','voiceNormalization','reviewedFraming','zoomEvents','autoRecipe','sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','videoEvents','overlayEvents','voiceEvents','masteringEnabled','profileImages','styleId','elements'].includes(k)),'unknown setting');
+ assert(Object.keys(settings).every(k=>['cameraTrajectory','automaticPreviewBroll','reviewedDepthText','voiceGain','levelResources','voiceNormalization','reviewedFraming','zoomEvents','autoRecipe','sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','videoEvents','overlayEvents','voiceEvents','masteringEnabled','profileImages','styleId','elements'].includes(k)),'unknown setting');
  validateElements(settings.elements);
- const value={automaticPreviewBroll:false,reviewedDepthText:null,voiceGain:1,levelResources:false,voiceNormalization:false,reviewedFraming:null,zoomEvents:[],autoRecipe:false,sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],videoEvents:[],overlayEvents:[],voiceEvents:[],masteringEnabled:false,profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ validateCameraTrajectory(settings.cameraTrajectory);
+ const value={cameraTrajectory:null,automaticPreviewBroll:false,reviewedDepthText:null,voiceGain:1,levelResources:false,voiceNormalization:false,reviewedFraming:null,zoomEvents:[],autoRecipe:false,sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],videoEvents:[],overlayEvents:[],voiceEvents:[],masteringEnabled:false,profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
  assert(typeof value.automaticPreviewBroll==='boolean','automatic preview B-roll boolean');
  assert(value.reviewedDepthText===null||value.reviewedDepthText&&typeof value.reviewedDepthText==='object'&&!Array.isArray(value.reviewedDepthText),'reviewed depth object');
  value.reviewedFraming=validateReviewedFraming(value.reviewedFraming);value.zoomEvents=validateZoomEvents(value.zoomEvents);

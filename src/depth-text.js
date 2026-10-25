@@ -11,7 +11,7 @@ export function prepareDepthText(data,plan){
  const result=[];
  for(const e of data.events){
   if(typeof e.text!=='string'||!e.text.trim()||e.text.length>26||/[{}\\\r\n\x00-\x1f]/.test(e.text)||![e.start,e.end,e.x,e.y,e.size].every(number)||e.start<0||e.end>plan.duration||e.end<=e.start||e.end-e.start>3||e.size<64||e.size>220||!/^#[0-9A-Fa-f]{6}$/.test(e.color))fail('event text, style or interval invalid');
-  if(result.some(o=>e.start<o.end&&e.end>o.start)||(plan.graphics??[]).some(o=>e.start<o.end&&e.end>o.start)||(plan.semantic?.zooms??[]).some(o=>e.start<o.end&&e.end>o.start))fail('event overlaps another depth event, card or camera zoom');
+  if(result.some(o=>e.start<o.end&&e.end>o.start)||(plan.graphics??[]).some(o=>e.start<o.end&&e.end>o.start)||[...(plan.semantic?.zooms??[]),...(plan.semantic?.trajectory?.activeRanges??[])].some(o=>e.start<o.end&&e.end>o.start))fail('event overlaps another depth event, card or camera zoom');
   const m=e.mask,r=m?.reviewedRegion;
   if(m?.method!=='manual-rotoscope'||!['head-and-neck','upper-body','full-visible-subject'].includes(m.scope)||!r||![r.top,r.bottom].every(number)||r.top<0||r.bottom>1920||r.bottom<=r.top||!Array.isArray(m.keyframes)||m.keyframes.length<2||m.keyframes.length>100)fail('reviewed rotoscope required');
   const count=m.keyframes[0]?.points?.length;

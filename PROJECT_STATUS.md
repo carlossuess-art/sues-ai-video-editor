@@ -1,3 +1,19 @@
+## Cámara temporal · prueba real de 10 s · 25/10/2026
+
+Rama experimental feat/camera-trajectory-study-20261025, no desplegada.
+Contrato source/landmarks-bound y ejecución FFmpeg de keyframes con ojos históricos;
+no nueva inferencia ni instalación de modelos. Render corregido real10,000s,
+1080×1920/30fps/300frames, SHA18b865e824515f507ee1d3e627ee2a719300ec3ea2ad10fe0f4fe9da64275e7b.
+Captions MIRAR/RECONOCER naranja metal1,6 visibles, curva0/2/2,2/5,5/6s,
+música y SFX; decode PASS, −14,4LUFS/−1,7dBTP, sin negros/congelaciones detectados.
+Check exit0;348/349DockerPASS, único caso Git del arnés2/2hostPASS.
+Detalle, comparación e instrucciones: docs/SUES_CAMERA_TRAJECTORY_STUDY_20261025.md.
+Hito10s INCOMPLETO: sin matte temporal corporal, blur selectivo/oclusión pendientes,
+B-roll no probado; dirección/critica de Work, no director autónomo.
+Sin aceptación humana ni cierre F6/F7/F9, global oficial48% sin cambios.
+
+---
+
 ## Diagnóstico cinematográfico y revisión real · 25/10/2026
 
 Producción comprobada b2ebf6df3725d245e7c3bb5518f574899d1fed0d: estabilidad previa

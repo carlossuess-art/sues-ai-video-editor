@@ -1,7 +1,7 @@
 import {buildFaceTrack} from './vision.js';
 import {stabilizeFaceTrack,sampleReframeAt} from './reframe.js';
 import {editToSource} from './time-map.js';
-import {zoomScaleAt} from './semantic-render.js';
+import {cameraScaleAt} from './semantic-render.js';
 const assert=(ok,msg)=>{if(!ok)throw new Error('Illustration: '+msg);};
 const overlaps=(a,b)=>Math.min(a.right,b.right)>Math.max(a.left,b.left)&&Math.min(a.bottom,b.bottom)>Math.max(a.top,b.top);
 
@@ -14,7 +14,7 @@ function projectedFaces(item,plan,track){
    const span=plan.semantic.anchors.find(s=>t>=s.start&&t<=s.end),points=span?.points??[];
    let anchor={x:(nearest.smoothed.eyeX-camera.x)/camera.width,y:(nearest.smoothed.eyeY-camera.y)/camera.height};
    if(points.length){const after=points.find(p=>p.time>=t)??points.at(-1),before=[...points].reverse().find(p=>p.time<=t)??points[0],f=after.time===before.time?0:(t-before.time)/(after.time-before.time);anchor={x:before.x+(after.x-before.x)*f,y:before.y+(after.y-before.y)*f};}
-   const z=zoomScaleAt(plan.semantic.zooms,t),x=value=>((value-camera.x)/camera.width-anchor.x)*1080*z+anchor.x*1080,y=value=>((value-camera.y)/camera.height-anchor.y)*1920*z+anchor.y*1920;
+   const z=cameraScaleAt(plan.semantic,t),x=value=>((value-camera.x)/camera.width-anchor.x)*1080*z+anchor.x*1080,y=value=>((value-camera.y)/camera.height-anchor.y)*1920*z+anchor.y*1920;
    faces.push({left:x(face.x),right:x(face.x+face.width),top:y(face.y),bottom:y(face.y+face.height)});
   }
  return faces;

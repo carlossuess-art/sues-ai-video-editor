@@ -22,7 +22,7 @@ export function prepareSubjectLayers(data,plan){
   assert([e.start,e.end,e.opacity,e.fadeSeconds].every(finite)&&e.start>=0&&e.end>e.start&&e.end<=plan.duration-plan.policy.outro.duration&&e.end-e.start<=8&&e.opacity>0&&e.opacity<=1&&e.fadeSeconds>=.1&&e.fadeSeconds<=Math.min(.5,(e.end-e.start)/3)&&(e.motion===undefined||e.motion==='vertical-drift'),'event bounds');
   assert(m.reviewedRanges.some(r=>r.start<=e.start&&r.end>=e.end),'event outside reviewed matte range');
   const b=e.box;assert(b&&['left','right','top','bottom'].every(k=>Number.isInteger(b[k]))&&b.left>=0&&b.right<=1080&&b.top>=0&&b.bottom<=Math.min(plan.layout.caption.top,region.bottom)&&b.top>=region.top&&b.right>b.left&&b.bottom>b.top,'resource box must protect captions');
-  assert(![...events,...(plan.semantic?.zooms??[]),...(plan.semantic?.motions??[]),...(plan.graphics??[]),...(plan.elements??[]),...(plan.depthText??[]),...(plan.illustrations??[]),...(plan.selectedMedia??[])].some(o=>overlap(e,o)),'event overlaps camera or another resource');
+  assert(![...events,...(plan.semantic?.zooms??[]),...(plan.semantic?.trajectory?.activeRanges??[]),...(plan.semantic?.motions??[]),...(plan.graphics??[]),...(plan.elements??[]),...(plan.depthText??[]),...(plan.illustrations??[]),...(plan.selectedMedia??[])].some(o=>overlap(e,o)),'event overlaps camera or another resource');
   events.push({...structuredClone(e),matte:structuredClone(m),sourceSha256:data.sourceSha256,scope:'behind-reviewed-visible-subject',automaticPersonDetection:false});
  }
  return events;
