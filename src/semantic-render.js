@@ -25,14 +25,15 @@ export function zoomScaleAt(events,time){
 export const cameraScaleAt=(semantic,time)=>zoomScaleAt(semantic.zooms??[],time)*trajectoryScaleAt(semantic.trajectory,time);
 export function prepareSemanticRender({director,policy,camera,timeMap,visionFrames=[],catalog=[],broll,captions=[],layout,cameraTrajectory,source}){
  const trajectory=prepareCameraTrajectory(cameraTrajectory,{source,camera,timeMap,visionFrames});
- if(!director&&!trajectory)return {events:[],zooms:[],motions:[],anchors:[],audit:{frames:0},timeSpace:'edit-timeline'};
+ const trackedLayout=camera.detectionMethod==='yunet-opencv-cpu'&&visionFrames.some(f=>f.faces.length);
+ if(!director&&!trajectory&&!trackedLayout)return {events:[],zooms:[],motions:[],anchors:[],audit:{frames:0},timeSpace:'edit-timeline'};
  if(!director)director={version:'1.0',templateId:policy.templateId,timeSpace:'edit-timeline',decisions:[]};
  assert(director.timeSpace==='edit-timeline','explicit edit-timeline timeSpace required');
  const library=indexMotionLibrary(catalog),resolved={...policy,motions:policy.motions.map(a=>MOTION_ALIASES[a]??a)};
  const events=compileDirectorEvents(director,resolved),zooms=[],motions=[];
  assert(events.every(e=>e.start>=0&&e.end<=timeMap.duration),'event bounds');
  assert(events.every(e=>['zoom','motion'].includes(e.type)),'unimplemented event type');
- if(!events.length&&!trajectory)return {events:[],zooms:[],motions:[],anchors:[],audit:{frames:0},timeSpace:'edit-timeline'};
+ if(!events.length&&!trajectory&&!trackedLayout)return {events:[],zooms:[],motions:[],anchors:[],audit:{frames:0},timeSpace:'edit-timeline'};
  assert(!trajectory||!events.some(e=>e.type==='zoom'),'trajectory cannot silently replace legacy zooms');
  const sourceTrack=stabilizeFaceTrack(buildFaceTrack(visionFrames));
  const eyes=sourceTrack.map(p=>({time:p.time,x:p.smoothed.eyeX,y:p.smoothed.eyeY}));

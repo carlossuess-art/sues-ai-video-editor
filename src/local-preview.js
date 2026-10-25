@@ -69,7 +69,7 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
   const blocks=policy.captions.mode==='short-groups'?shortCaptionGroups(mapped.words,{maxWords:policy.captions.maxWords,maxChars:policy.captions.maxCharsPerLine,maxDuration:policy.captions.maxDuration}):segmentWords(mapped.words,{maxWords:6,maxChars:policy.captions.maxCharsPerLine*policy.captions.maxLines-10,maxDuration:4.5});
   const captions=blocks.map(b=>({...b,lines:wrapCaption(b.text,policy.captions.maxCharsPerLine,policy.captions.maxLines),wordCues:captionCues(b,mapped.words)}));
   for(const [key,box]of Object.entries(previewLayout)){
-    assert(validateSafePlacement(box,key==='caption'&&camera.mode!=='reviewed-region'&&!cameraTrajectory?PORTRAIT_SAFE_ZONES.captions:PORTRAIT_SAFE_ZONES.content),'safe layout');
+    assert(validateSafePlacement(box,key==='caption'&&camera.mode!=='reviewed-region'&&!cameraTrajectory&&camera.detectionMethod!=='yunet-opencv-cpu'?PORTRAIT_SAFE_ZONES.captions:PORTRAIT_SAFE_ZONES.content),'safe layout');
     assert(box.right<=PORTRAIT_SAFE_ZONES.avoid.right.left,'right UI avoidance');
   }
   const broll=manualBroll.length?buildExplicitBrollPlan({policy,duration:timeMap.duration,events:manualBroll}):buildCinematicBrollPlan({policy,duration:timeMap.duration,slots,assets});
@@ -79,7 +79,17 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
     assert(typeof path==='string'&&path.length>0,'B-roll requires verified renderer bindings');
     return {...d,localFile:path};
   });
-  const semantic=prepareSemanticRender({director,policy,camera,timeMap,visionFrames,catalog,broll,captions,layout:previewLayout,cameraTrajectory,source});
+  let semantic;
+  const subjectLayout=camera.detectionMethod==='yunet-opencv-cpu'&&previewLayout===PREVIEW_LAYOUT;
+  const top={...previewLayout,caption:{left:120,right:900,top:190,bottom:350}};
+  const chest={...previewLayout,caption:{left:120,right:900,top:1370,bottom:1510},outro:{left:120,right:900,top:190,bottom:330}};
+  const layouts=subjectLayout?(policy.templateId==='SUES_DOPAMIN'?[top,chest,previewLayout]:[previewLayout,chest,top]):[previewLayout];
+  let layoutError;
+  for(const candidate of layouts){
+    try{semantic=prepareSemanticRender({director,policy,camera,timeMap,visionFrames,catalog,broll,captions,layout:candidate,cameraTrajectory,source});previewLayout=candidate;layoutError=null;break;}
+    catch(error){layoutError=error;}
+  }
+  if(layoutError)throw layoutError;
   return {version:'1.0',kind:'local-preview',source,policy,timeMap,camera,semantic,
     cameraSpans:mapCameraToEdit(camera,timeMap),captions,broll,selectedMedia,layout:previewLayout,
     audioMix:prepareBackgroundAudio(backgroundAudio,timeMap.duration),duration:timeMap.duration,renderColors:{dark:brand.colors.dark},originalVoice:true,colorTreatment:'identity-natural',
@@ -199,7 +209,7 @@ export function cameraExpression(camera,field){
   return out;
 }
 
-export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={}){
+export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true,cameraOnly=false}={}){
   assert(/^[A-Za-z0-9_.-]+$/.test(assFile),'ASS filename must be local basename');
   assert(Array.isArray(plan.selectedMedia),'selected media contract');
   const spans=plan.timeMap.spans,n=spans.length,k=plan.camera.keyframes[0];
@@ -217,7 +227,8 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   let base='base';
   const zoomFilter=semanticZoomFilter(plan.semantic??{zooms:[]});
   if(zoomFilter){filters.push(`[base]${zoomFilter}[semantic-base]`);base='semantic-base';}
-  const foreground=foregroundEffectFilters(plan.foregroundEffects,base,1+plan.selectedMedia.length+(plan.illustrations?.length??0)+2*(plan.subjectLayers?.length??0)+(plan.ambientOverlays?.length??0));filters.push(...foreground.filters);base=foreground.base;
+  if(cameraOnly){filters.push(`[${base}]null[camera]`);return filters.join(';\n')+'\n';}
+  const foreground=foregroundEffectFilters(plan.foregroundEffects??plan.automaticForeground,base,1+plan.selectedMedia.length+(plan.illustrations?.length??0)+2*(plan.subjectLayers?.length??0)+(plan.ambientOverlays?.length??0));filters.push(...foreground.filters);base=foreground.base;
   for(const [i,d]of plan.selectedMedia.entries()){
     filters.push(`[${i+1}:v]trim=start=${d.sourceIn}:end=${d.sourceOut},setpts=PTS-${d.sourceIn}/TB,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1,fps=fps=30:start_time=0,setpts=PTS+${d.start}/TB[broll${i}]`);
     filters.push(`[${base}][broll${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${d.start})*lt(t,${d.end})'[composed${i}]`);base=`composed${i}`;
@@ -249,7 +260,7 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   if(hasTransitions){const global=globalTransitionFilters(plan.globalTransitions,'captioned');filters.push(...global.filters,`[${global.base}]null[${plan.finishFade?'finish-input':'video'}]`);}
   if(plan.finishFade){const f=plan.finishFade;filters.push(`[${hasTransitions?'finish-input':'captioned'}]fade=t=out:st=${f.start}:d=${f.duration}[video]`);}
   assert(!plan.audioMix||hasAudio,'background music requires original voice track');
-  filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0) +2*(plan.subjectLayers?.length??0)+(plan.ambientOverlays?.length??0)+(plan.foregroundEffects?1:0),{hasAudio}));
+  filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0) +2*(plan.subjectLayers?.length??0)+(plan.ambientOverlays?.length??0)+(plan.foregroundEffects||plan.automaticForeground?1:0),{hasAudio}));
   return filters.join(';\n')+'\n';
 }
 
@@ -270,3 +281,4 @@ export function buildAudioPassFilter(plan){
  filters.push(...(mixed.length?mixed:['[audio]anull[mixed-audio]']));
  return filters.join(';\n')+'\n';
 }
+export function buildCameraPassFilter(plan){return buildPreviewFilter(plan,{hasAudio:false,cameraOnly:true});}

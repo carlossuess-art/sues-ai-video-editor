@@ -44,7 +44,7 @@ export function foregroundEffectFilters(data,base,input){
   if(e.type==='background-blur')filters.push(`[${background}]gblur=sigma=${e.sigma}:enable='${enabled}'[fg-effect${i}]`);
   else{
    const fade=`min(clip((t-${e.start})/0.2,0,1),clip((${e.end}-t)/0.2,0,1))`;
-   const draw=e.lines.map((text,n)=>`drawtext=fontfile=fonts/Montserrat-ExtraBold.ttf:text='${text}':fontsize=${fitCaptionSize([text],{font:'Montserrat',fontRole:'keyword',fontSize:140},780)}:fontcolor=0xff7a18:alpha='${fade}':borderw=2:bordercolor=0xffd3a4:shadowcolor=0x331100:shadowx=3:shadowy=5:x=(w-tw)/2:y=${560+n*300}-12*(t-${e.start}):enable='${enabled}'`).join(',');
+   const draw=e.lines.map((text,n)=>`drawtext=fontfile=fonts/Montserrat-ExtraBold.ttf:text='${text}':fontsize=${fitCaptionSize([text],{font:'Montserrat',fontRole:'keyword',fontSize:data.schema==='sues-automatic-foreground/v1'?180:140},780)}:fontcolor=0xff7a18:alpha='${fade}':borderw=2:bordercolor=0xffd3a4:shadowcolor=0x331100:shadowx=3:shadowy=5:x=(w-tw)/2:y=${e.lines.length===1?(e.top??860):560+n*300}-12*(t-${e.start}):enable='${enabled}'`).join(',');
    filters.push(`[${background}]${draw}[fg-effect${i}]`);
   }
   background=`fg-effect${i}`;

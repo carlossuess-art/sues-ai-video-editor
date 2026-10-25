@@ -196,6 +196,23 @@ def render(source, bundle, output):
     before = digest(source)
     if expected.get('sha256') and expected['sha256'] != before:
         raise ValueError('Source SHA256 mismatch')
+    automatic_matte_audit = None
+    if manifest.get('automaticForeground'):
+        if foreground:
+            raise ValueError('Conflicting foreground modes')
+        subprocess.run(['node', str(pathlib.Path(__file__).resolve().parents[1] / 'qa' / 'verify_foreground.mjs'), str(bundle / 'manifest.json')], check=True)
+        import sys
+        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / 'vision'))
+        from automatic_matte import prepare_mask
+        mask_path, automatic_matte_audit = prepare_mask(source, bundle, manifest['automaticForeground'], output.parent / 'matte-progress.json')
+        details = probe(mask_path)
+        streams = details['streams']
+        if len(streams) != 1 or (streams[0].get('codec_name'), streams[0].get('width'), streams[0].get('height'), streams[0].get('r_frame_rate'), streams[0].get('pix_fmt')) != ('ffv1', 512, 896, '30/1', 'gray') or abs(float(details['format']['duration']) - manifest['duration']) > 1/30:
+            raise ValueError('Automatic foreground matte geometry/timeline mismatch')
+        count = subprocess.check_output(['ffprobe', '-v', 'error', '-count_frames', '-select_streams', 'v:0', '-show_entries', 'stream=nb_read_frames', '-of', 'csv=p=0', str(mask_path)], text=True).strip()
+        if int(count) != manifest['automaticForeground']['frames']:
+            raise ValueError('Automatic foreground matte frame count mismatch')
+        foreground = {'path': mask_path, 'sha256': automatic_matte_audit['matteSha256'], 'modelSha256': automatic_matte_audit['binding']['modelSha256'], 'cameraSpaceSha256': manifest['automaticForeground']['cameraSpaceSha256'], 'method': 'modnet-onnx-cpu', 'reviewStatus': 'predicted-unreviewed'}
     expected_family = manifest['policy']['captions']['font']
     fonts = {'Open Sans': ('OpenSans.ttf', 'OpenSans-Bold.ttf'), 'Inter': ('Inter-Regular.ttf', 'Inter-Bold.ttf'), 'Montserrat': ('Montserrat-Regular.ttf', 'Montserrat-Bold.ttf')}
     if expected_family not in fonts:
@@ -325,7 +342,7 @@ def render(source, bundle, output):
                  'foregroundEffects': ({k: v for k, v in foreground.items() if k != 'path'} if foreground else None), 'subjectLayers': [{k: v for k, v in layer.items() if k not in ('mask', 'resource')} for layer in subject_layers], 'soundEffects': manifest.get('soundEffects'), 'customSfx': {'assets': [{k: v for k, v in s.items() if k != 'path'} for s in sounds], 'events': manifest.get('customSfx', {}).get('events', [])}, 'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'ambientOverlays': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False, 'visualAcceptance': False} for m in overlays], 'mastering': manifest.get('mastering'), 'voiceEffects': {'version': manifest.get('voiceEffects', {}).get('version'), 'events': manifest.get('voiceEffects', {}).get('events', []), 'humanListeningAccepted': False}, 'captions': len(manifest['captions']), 'illustrations': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in illustrations],
                  'font': {'family': expected_family, 'regularSha256': digest(font), 'boldSha256': digest(bold_font), 'extraFaces': extra_fonts},
                  'ffmpeg': subprocess.check_output(['ffmpeg', '-version'], text=True).splitlines()[0],
-                 'denseSfxCache': ({'sources':sfx_cache['sources'],'batchSize':sfx_cache['batchSize']} if sfx_cache else None), 'voiceNormalization': normalization_audit, 'renderPasses': ['video', 'audio-mux'] if separated else ['legacy-combined'], 'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
+                 'automaticMatte': automatic_matte_audit, 'denseSfxCache': ({'sources':sfx_cache['sources'],'batchSize':sfx_cache['batchSize']} if sfx_cache else None), 'voiceNormalization': normalization_audit, 'renderPasses': ['video', 'audio-mux'] if separated else ['legacy-combined'], 'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
         # Exclusive creation prevents a race from overwriting another output.
         os.link(temporary, output)
         output.with_suffix('.audit.json').write_text(json.dumps(audit, indent=2) + '\n')

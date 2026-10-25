@@ -1,3 +1,5 @@
+import {validateVisionFrame} from './vision.js';
+import {buildCameraProfilePlan} from './reframe.js';
 import {STYLE_VARIANTS} from './style-variants.js';
 import {
  mkdirSync,readFileSync,writeFileSync,readdirSync,lstatSync,existsSync,
@@ -79,14 +81,18 @@ export class VideoIntake{
   const vision=data.vision;
   if(!vision||!Array.isArray(vision.frames)||vision.frames.length<1||vision.frames.length>1201)throw new Error('Analysis vision frames required');
   if(vision.frames.some(f=>!Number.isFinite(f.time)||f.time<0||f.time>metadata.source.duration+.05||f.frameWidth!==metadata.source.width||f.frameHeight!==metadata.source.height))throw new Error('Analysis vision source mismatch');
+  vision.frames.forEach(validateVisionFrame);
+  if(vision.method==='yunet-opencv-cpu'&&vision.sourceSha256!==id)throw Error('Vision source SHA256 mismatch');
+  const camera=vision.method==='yunet-opencv-cpu'&&vision.frames.some(f=>f.faces.length)?buildCameraProfilePlan(vision.frames,{profile:'conservative'}):data.camera;
+  if(vision.method==='yunet-opencv-cpu')camera.detectionMethod=vision.method;
   const templatePath=Object.values(this.profiles)[0];if(!templatePath)throw new Error('No CALMA template configured');
   const template=projectConfig(templatePath),dir=join(this.directory,'analysis-'+randomUUID());
   // A different upload does not inherit music chosen for another source.
-  delete template.backgroundAudio;delete template.illustrations;delete template.depthTextPath;delete template.subjectLayersPath;
+  delete template.backgroundAudio;delete template.illustrations;delete template.depthTextPath;delete template.subjectLayersPath;delete template.foregroundEffectsPath;
   mkdirSync(dir,{mode:0o700});
   let committed=false;
   try{
-   for(const [name,value]of Object.entries({transcript:data.transcript,camera:data.camera,vision}))atomicJSON(join(dir,name+'.json'),value);
+   for(const [name,value]of Object.entries({transcript:data.transcript,camera,vision}))atomicJSON(join(dir,name+'.json'),value);
    const config={...template,title:metadata.name??'Vídeo subido',source:metadata.source,sourcePath:join(this.directory,id+'.video'),transcriptPath:join(dir,'transcript.json'),cameraPath:join(dir,'camera.json'),visionPath:join(dir,'vision.json'),fontDirectory:fonts(template.fontDirectory)};
    const candidate=join(dir,'project.json');atomicJSON(candidate,config);
    // Validate the complete plan before making the profile selectable.
