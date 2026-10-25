@@ -998,3 +998,168 @@ Release aprobada: 6da5a3d9145dde6bff7056e318b67d020e99c66f. Árbol probado:
 53954f7657a1561ef72720a2daa12cd6c99b1f3e, idéntico al publicado. Continúa
 feat/editor-email-login-20261020 desde 550fc179. Oficial avanzó con lease desde
 d2e789c, sin force ni reconstrucción.
+
+Cuenta carlossuess@gmail.com. Hash scrypt privado bajo /state/access, sesiones
+firmadas persistentes de 30 días y botón de ojo en login, creación y confirmación.
+Configuración mediante enlace HTTPS de un uso, 256 bits y caducidad de 30 minutos,
+generado por root en VPS. Solo se instala el hash del token; la contraseña se
+introduce en el formulario HTTPS. Enlace privado anterior conservado. Sin proveedor
+operativo de correo verificado, la recuperación se hace mediante administración
+del VPS y enlace privado, sin envíos ficticios ni nuevos servicios.
+
+233 pruebas Node y npm run check PASS. 28 Python de despliegue PASS, con Docker,
+systemd, red y chown simulados. Chromium 145 real en móvil y escritorio: creación,
+confirmación, tres ojos, login, errores, cookie persistida tras reiniciar navegador
+y servidor, logout y enlace anterior PASS. 24 combinaciones del editor PASS, con
+copia y recuperación por UI. Tres renders FFmpeg de 24 segundos: reproducción,
+exportación con SHA idéntico al preview, nueva versión, decode PASS y original
+intacto. Primera ejecución en workspace fallida no cuenta; ejecución aislada
+posterior en /tmp completa PASS. No cambia motor, fingerprints ni dependencias.
+
+Scripts publicados descargados y checksums comprobados. Comandos y evidencia:
+docs/SUES_EMAIL_LOGIN_VERIFIED_20261020.md. Actualizador con TAR verificado antes
+de instalar configuración, contenedores anterior/fallido conservados y rollback
+automático de código/configuración. No se despliega en esta misión por instrucción
+de Carlos. VPS último acreditado: 71399e1. Siguiente: comando 1, comprobar SUCCESS
+con comando 2, abrir enlace privado y crear contraseña. Login HTTPS real y recorrido
+F9 siguen pendientes. F6 abierta; porcentajes no recalculados. Sin gastos ni cambios
+en WhatsApp, WAC, Caddy, DNS u otros servicios.
+
+---
+## Despliegue VPS acreditado por capturas · 20/10/2026
+
+Carlos aporta capturas 156828–156830 de la consulta independiente tras reconectar.
+Modo deploy, commit 71399e1c9ac6a7da1b586c50b8dae5d93651050b,
+Result=success, ExecMainCode=0, ExecMainStatus=0, state=SUCCESS y exitCode=0.
+Log: copia privada verificada SHA256 y ACTUALIZACIÓN OK para ese commit.
+Backup conservado: /opt/sues-video-setup/update-backup-20261020-054955-12714.
+La unidad transitoria terminó (inactive/dead); no significa caída del editor.
+Evidencia remota aportada por Carlos, no sesión administrativa de Work.
+Según el updater verificado, éxito exige salud privada, protección de API y HTTPS.
+Rollback disponible; no fue necesario ni se ha ensayado en producción.
+Versión anterior exacta no visible en estas capturas. No repetir instalación.
+
+Queda pendiente aceptación F9 en producción: subir vídeo real, preparar edición,
+reproducir preview, ajustar/nueva versión y exportar MP4. El doctor muestra
+renderExecuted=false: despliegue correcto no acredita un render remoto.
+F6 sigue abierta, porcentajes no recalculados; últimos cambios de teclado del
+frontend continúan aislados. Sin cambios WhatsApp/WAC/Caddy/DNS ni gasto externo.
+Siguiente: abrir editor.suesholistics.com con la sesión habitual y probar recorrido.
+
+---
+## Desbloqueo e integración verificados · 20/10/2026
+
+Código oficial: 71399e1c9ac6a7da1b586c50b8dae5d93651050b; árbol
+29523d4dba89ac4fc113b0fabe1c61ceaebb79a8. Integra F6 renderer-text
+3aaf56b3 (incluye capability/preflight); timeline-guard apunta al mismo SHA.
+223 pruebas Node/check y20 Python PASS, repetidas sobre commit remoto.
+Render FFmpeg real24s1080×1920/H264/AAC, decodePASS/originalintacto,
+fuente sintética y tiempos QA sin ASR. No validación de producción.
+
+Conector GitHub lee/escribe correctamente; Git directo sin credenciales push.
+Sin cambios de permisos ni reconexión. Chromium145 bloqueado al abrir socket
+por política del entorno; matriz/player no ejecutados con éxito. Cambios
+frontend posteriores a1178 conservados en su rama babc6a54, sin integrar.
+
+Lanzador systemd con logs/estado/código real/locks/checksum y diagnóstico
+sin parar el editor. Actualizador conserva contenedor fallido y verifica
+recuperación.20testsPython simulan Docker/systemd/red, no son operacionesVPS.
+Entrega a Carlos: --diagnose, NO instalación. VersiónVPS actual desconocida;
+fd168 reportada, intento1178 sin verificar. GETHTTPS200; HEAD404 no es caída.
+Backup/rollback remotos no ejecutados. Guía, ramas, hashes y límites:
+docs/SUES_BACKGROUND_PREFLIGHT_20261020.md. F6/F9/V1 abiertas; porcentajes
+no recalculados. Siguiente: ejecutar diagnóstico systemd, consultar resultado
+y revisar instalación real antes de desplegar. Sin gastos/WhatsApp/WAC/Caddy/DNS.
+
+---
+## Misión Work · frontend de referencia · 19/10/2026
+
+Auditoría desde aa6e7c246a8de811ac2329d87936e9e84f091e9e; base oficial
+fd168dd2b7ff5817be89ee28d8e654e792002fab. PR7 fusionada sin conflictos:
+1178f9c10cff7b1c38ac8e8aa196a034dd4d8c9c, árbol probado
+3c995c16cf18159b0ff78b045978d93d5117eb8e. Integración reversible.
+Guía y evidencia vigente: docs/SUES_WORK_VALIDATION_20261019.md.
+Frontend noche/cian, reproductor persistente, seis herramientas con iconos,
+timeline real y exportación del MP4 previsualizado. QA local en Chromium145,
+211tests/check y 12 pruebas Python de despliegue. Estas últimas simulan Docker.
+Sin cambios de renderer/dependencias ni créditos externos.
+
+VPS: no desplegado por Work. HTTPS abre; Session required bloquea la revisión
+privada. No hay herramientas HostingerVPS, dispositivos DesktopCommander ni
+claves/config SSH disponibles. Instalación anterior fd168 reportada por Carlos;
+commit remoto no verificado. Actualizador reforzado con TAR privado verificado
+y recuperación del contenedor anterior; backup/rollback remotos no ejecutados.
+F8 QA local; F6/F9/V1 y aceptación humana pendientes. Porcentajes no recalculados.
+Siguiente: habilitar acceso administrativo existente, ejecutar release fija y
+validar subida→preview→ajuste→exportación en producción sin tocar servicios ajenos.
+
+---
+## Reproductor persistente y previsualización antes de exportar · 19/10/2026
+
+Carlos rechaza el recorrido PR5 por falta de visibilidad. Pide vídeo siempre
+presente con herramientas debajo (móvil), guía contextual y Previsualizar antes de
+Exportar. Nueva decisión prevalece sobre paneles separados. Guía vigente:
+docs/SUES_PLAYER_PREVIEW_EXPORT.md. Rama feat/persistent-player-preview.
+
+Original reproducible al seleccionar, después de subir y tras recargar; nombre,
+tamaño y estado visibles. Nuevo vídeo sin análisis no conserva transcripción ni
+selección del anterior, incluso si ya había un montaje abierto y se recarga.
+Reproductor permanente con Original/Montaje, play/pausa/búsqueda/pantalla completa.
+Herramientas Vídeo/Estilo/Texto/Sonido/Imágenes. Previsualizar renderiza el montaje
+completo; Exportar descarga ese mismo MP4 sin repetir render. Editar bloquea Exportar
+hasta actualizar la vista previa en nueva versión. Cambio de estilo prepara cues
+antes de ELEMENTS y Deshacer conserva texto previo sin guardar.
+
+211tests/check y10simulaciones PASS. Chromium145, escritorio/móvil: selección y
+subida reales del vídeo de prueba, playback nativo original/montaje, recarga,
+fuente nueva sin texto ajeno, herramientas con vídeo visible, exportación SHAigual
+sin otro render, edición→nueva vista previa yversión anterior conservada. Tres
+renders24s con decodePASS/originalintacto. Regresiones de fuente/reload y estilo/
+Deshacer/ELEMENTS en ambos tamaños PASS; sin erroresJS ni overflow horizontal.
+Evidencia examples/preview/player-workflow.real-result.json. Demo UI10,8s guardada:
+libfile_99fa6c00ec9c81919386a02db5dc7106. Vídeo sintético/etiquetasQA, sin ASR nuevo.
+
+Web publicada navegada: shell nuevo visible, «Session required» en navegador
+remoto. Carlos no puede completar ese acceso; no se inspeccionaron sus trabajos
+VPS. El navegador remoto tampoco accede al loopback local. Se usaron pruebas de
+software de la copia local; no afirmar exportación/autenticación VPS ni aprobación
+humana. Nueva corrección todavía no instalada remotamente. Sin cargos, proveedores,
+modelos o dependencias nuevas de producción; nada de WhatsApp/Caddy/DNS.
+
+---
+## Recorrido UX por tareas implementado · 19/10/2026
+
+Carlos pide diseño UX de alto nivel. La corrección del panel se amplía al recorrido
+Material → Edición → Resultado: sólo un panel visible, contexto y acción principal
+por tarea, navegación reversible, opciones del estudio fuera del flujo principal.
+Preparar/recuperar abre Edición; Generar guarda y abre Resultado; descarga al acabar.
+Ajustes secundarios plegados, subtítulos individuales y búsqueda con estado vacío.
+Texto sin guardar conservado entre pasos; indicador de cambios, sin falsos cambios
+al buscar. Botón Generar accesible en barra inferior móvil. Valores y motor intactos.
+Guía: docs/SUES_UX_FLOW.md. PR5 amplía el ajuste compacto; aún sin instalar en VPS.
+
+Chromium145:24 combinaciones escritorio/móvil × estilos × ELEMENTS PASS;
+guardar/recargar/deshacer/duplicar/copia/recuperación y render real38,31s,
+decodePASS, fuente intacta yRange206. Prueba adicional en móvil/escritorio:
+texto sin guardar, búsqueda/0resultados, tecladoEnter, una tarea visible,
+sin scroll horizontal. Botón principal nuevo genera un vídeo real, abre Resultado
+y habilita descarga;decodePASS yoriginalintacto.209tests/checkPASS.
+Evidencia guided-ux.real-result.json yux-navigation.real-result.json.
+
+VPS observado7cbccb9 por captura delactualizador yDOPAMIN/ELEMENTS visibles.
+Nueva UX local verificada; su despliegue remoto pendiente por falta de acceso.
+No se declara aceptación de usabilidad, mejora porcentual medida ni cierre F6/V1.
+Sin créditos externos, nuevos modelos/ASR/proveedores ni dependencias deproducción.
+
+---
+## Panel compacto verificado · 19/10/2026
+
+Carlos confirma DOPAMIN yELEMENTS visibles enapp tras actualización; captura
+156756.png muestra «El editor ya usa esta versión; sin reinicio» para7cbccb9.
+VPSobservado ahora7cbccb9, reemplaza ba972 como últimoestado; exportación remota
+noacreditada. Carlos indica queelmenú esdemasiadolargo ydificulta encontrar cosas.
+
+Ajuste incremental deinterfaz:estilo/estructura yguardar/deshacer siemprevisibles;
+recursos,cámara,imágenes,sonido ysubtítulos enseccionesplegables. Cada subtítulo se
+abre individualmente; trabajosguardados tambiénplegados. ELEMENTS con etiquetas
+enespañol manteniendo valorespersistidos; al elegirformato seabre susección.
