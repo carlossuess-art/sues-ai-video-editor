@@ -43,7 +43,8 @@ export function projectReady(path){
 // Single-owner intake. The caller must hold EditorJobs' exclusive store lock.
 // HTTP never accepts filesystem paths, command strings, model keys or provider URLs.
 export class VideoIntake{
- constructor(directory,profiles,{probe}={}){
+ constructor(directory,profiles,{probe,maxUploads=4}={}){
+  if(!Number.isSafeInteger(maxUploads)||maxUploads<1||maxUploads>32)throw Error('Límite de vídeos no válido');this.maxUploads=maxUploads;
   this.directory=resolve(directory);this.profiles=profiles;this.verifiedVideoSignatures=new Map();
   this.probe=probe??(async path=>{
    const {stdout}=await run('ffprobe',['-v','error','-protocol_whitelist','file,pipe','-format_whitelist','mov,matroska,webm','-show_streams','-show_format','-of','json',path],{timeout:15000,maxBuffer:1024*1024});
@@ -83,7 +84,7 @@ export class VideoIntake{
   if(vision.frames.some(f=>!Number.isFinite(f.time)||f.time<0||f.time>metadata.source.duration+.05||f.frameWidth!==metadata.source.width||f.frameHeight!==metadata.source.height))throw new Error('Analysis vision source mismatch');
   vision.frames.forEach(validateVisionFrame);
   if(vision.method==='yunet-opencv-cpu'&&vision.sourceSha256!==id)throw Error('Vision source SHA256 mismatch');
-  const camera=vision.method==='yunet-opencv-cpu'&&vision.frames.some(f=>f.faces.length)?buildCameraProfilePlan(vision.frames,{profile:'conservative'}):data.camera;
+  let camera=vision.method==='yunet-opencv-cpu'&&vision.frames.some(f=>f.faces.length)?buildCameraProfilePlan(vision.frames,{profile:'conservative'}):data.camera;
   if(vision.method==='yunet-opencv-cpu')camera.detectionMethod=vision.method;
   const templatePath=Object.values(this.profiles)[0];if(!templatePath)throw new Error('No CALMA template configured');
   const template=projectConfig(templatePath),dir=join(this.directory,'analysis-'+randomUUID());
@@ -96,7 +97,11 @@ export class VideoIntake{
    const config={...template,title:metadata.name??'Vídeo subido',source:metadata.source,sourcePath:join(this.directory,id+'.video'),transcriptPath:join(dir,'transcript.json'),cameraPath:join(dir,'camera.json'),visionPath:join(dir,'vision.json'),fontDirectory:fonts(template.fontDirectory)};
    const candidate=join(dir,'project.json');atomicJSON(candidate,config);
    // Validate the complete plan before making the profile selectable.
-   prepareProject(loadProject(candidate));
+   try{prepareProject(loadProject(candidate));}catch(error){
+    if(vision.method!=='yunet-opencv-cpu'||!vision.frames.some(f=>f.faces.length)||!/^Semantic render: face overlaps (caption|outro)$/.test(error.message))throw error;
+    camera=buildCameraProfilePlan(vision.frames,{profile:'conservative',crop:{zoom:1}});camera.detectionMethod=vision.method;camera.fallback={reason:'preserve-face-and-readable-captions',baseZoom:1};atomicJSON(join(dir,'camera.json'),camera);
+    prepareProject(loadProject(candidate));
+   }
    const profileId='upload-'+id,profilePath=join(this.directory,id+'.project.json');
    atomicJSON(profilePath,config);atomicJSON(join(this.directory,id+'.json'),{...metadata,profileId});
    committed=true;this.profiles[profileId]=profilePath;return this.list().find(e=>e.id===id);
@@ -125,6 +130,7 @@ export class VideoIntake{
   record.brief={...record.brief,prompt:prompt.trim(),...(projectTitle!==undefined?{projectTitle:projectTitle.trim()}:{}),...(styleId!==undefined?{styleId}:{}),savedAt:new Date().toISOString()};atomicJSON(path,record);
   return {saved:true,brief:record.brief,requiresAnalysis:this.list().find(u=>u.id===id).state!=='READY'};
  }
+ capacity(){const used=this.records().length;return {used,max:this.maxUploads,remaining:Math.max(0,this.maxUploads-used),maxVideoBytes:MAX};}
  async receive(req,{name}={}){
   if(this.busy)throw new Error('Upload busy');
   if(!/^(?:video\/(?:mp4|quicktime|webm)|application\/octet-stream)(?:;|$)/i.test(req.headers['content-type']??''))throw new Error('Selecciona un vídeo MP4, MOV o WebM');
@@ -147,7 +153,7 @@ export class VideoIntake{
    const rotation=Number(video.side_data_list?.find(s=>s.rotation!==undefined)?.rotation??0);
    if(!Number.isFinite(rotation)||rotation%90!==0)throw new Error('Orientación de vídeo no compatible');
    const sha256=hash.digest('hex'),path=join(this.directory,sha256+'.video');
-   if(entries.length>=4&&!entries.some(e=>e.id===sha256))throw new Error('Límite de cuatro vídeos alcanzado');
+   if(entries.length>=this.maxUploads&&!entries.some(e=>e.id===sha256))throw new Error(`Límite de ${this.maxUploads} vídeos alcanzado`);
    if(existsSync(path)){
     if(!regular(path)||lstatSync(path).size!==size||fileSha256(path)!==sha256)throw new Error('Stored video integrity changed');
    }else linkSync(temp,path);

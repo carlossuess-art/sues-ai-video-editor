@@ -24,7 +24,7 @@ try{
   assert.equal(await page.evaluate(()=>location.hash),'');
   if(await page.locator('#style-id').isDisabled())await click('#duplicate');
   for(const styleId of ['SUES_CALMA','SUES_DOPAMIN']){
-   await click('#create');await page.selectOption('#style-id',styleId);await click('#save');
+   await click('#create');await reveal('#style-id');await page.selectOption('#style-id',styleId);await click('#save');
    await reveal('#zoom');await page.locator('#zoom').fill('0');await reveal('#profile-images');await page.uncheck('#profile-images');await click('#save');
    const range=await page.evaluate(()=>{const first=plan.manifest.captions.find(c=>c.start>=2&&c.end<=plan.manifest.duration-5);const last=plan.manifest.captions.find(c=>c.start>=first.start&&c.end-first.start>=2&&c.end-first.start<=4);return {first:first.id,last:last.id};});
    for(const format of ['LIST','RANKING','COMPARE','REVEAL','Q&A','FLOW']){

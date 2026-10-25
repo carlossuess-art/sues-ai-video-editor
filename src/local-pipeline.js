@@ -27,7 +27,7 @@ import {buildAutomaticDirector,validateEditorSettings} from './automatic-directo
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,buildCameraPassFilter,buildVideoPassFilter,buildAudioPassFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
-export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['automatic-foreground.js','foreground-effects.js','camera-trajectory.js','dopamin-master.js','audio-levels.js','reviewed-framing.js','template-recipe.js','custom-sfx.js','voice-effects.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT),readFileSync(join(ROOT,'scripts/vision/automatic_matte.py'))))).digest('hex');
+export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['foreground-policy.js','automatic-foreground.js','foreground-effects.js','camera-trajectory.js','dopamin-master.js','audio-levels.js','reviewed-framing.js','template-recipe.js','custom-sfx.js','voice-effects.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT),readFileSync(join(ROOT,'scripts/vision/automatic_matte.py'))))).digest('hex');
 export function fileSha256(path){const fd=openSync(path,'r'),hash=createHash('sha256'),buffer=Buffer.allocUnsafe(1024*1024);try{let size;while((size=readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,size));return hash.digest('hex');}finally{closeSync(fd);}}
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
@@ -85,12 +85,13 @@ export function prepareProject(project,settings={}){
  const base=prepareLocalPreview({...inputs,segments:automatic.segments,manualBroll:explicitBroll});
  for(const id of Object.keys(options.captionOverrides))if(!base.captions.some(c=>c.id===id))throw new Error(`Unknown caption: ${id}`);
  const editedCaptions=base.captions.map(c=>Object.hasOwn(options.captionOverrides,c.id)?{...c,text:options.captionOverrides[c.id].trim(),lines:wrapCaption(options.captionOverrides[c.id].trim(),base.policy.captions.maxCharsPerLine),source:'manual',originalText:c.text}:c);
+ const foregroundInput=options.motions&&options.depthEnabled?inputs.foregroundEffects:null;
  const recipe=buildTemplateRecipe({...base,captions:editedCaptions},options);
  let effectiveCards=options.graphicCards.length?options.graphicCards:recipe.cards;
  const effectiveTransitions=options.transitions.length?options.transitions:recipe.transitions;
- const explicitComposition=options.motionChoices.length||options.graphicCards.length||options.highlightCaptions.length||options.elements||options.reviewedDepthText;
+ const explicitComposition=options.motionChoices.length||options.graphicCards.length||options.highlightCaptions.length||options.elements||options.reviewedDepthText||foregroundInput;
  const proposedDepth=explicitComposition?null:prepareAutomaticForeground(base,options,project.visualRuntime);
- const depthRange=proposedDepth?{start:proposedDepth.startFrame/30,end:(proposedDepth.startFrame+proposedDepth.activeFrames)/30}:null;
+ const depthRange=proposedDepth?{start:proposedDepth.startFrame/30,end:(proposedDepth.startFrame+proposedDepth.activeFrames)/30}:(foregroundInput?.matte?.activeRanges?.[0]??null);
  const depthOverlap=e=>depthRange&&e.start<depthRange.end&&e.end>depthRange.start;
  if(depthRange&&!options.graphicCards.length){const blocked=new Set((prepareGraphicBlocks(effectiveCards,[],base,options.motions).graphics??[]).filter(depthOverlap).map(e=>e.captionId));effectiveCards=effectiveCards.filter(e=>!blocked.has(e.captionId));}
 
@@ -147,7 +148,7 @@ export function prepareProject(project,settings={}){
  if(options.levelResources)applyResourceLevels(plan);
  if(plan.voiceEffects.events.length){plan.pending.push('voice-processing-human-listening-review');}
  if(plan.semantic.trajectory){const hidden=[...plan.selectedMedia,...(plan.graphics??[]),...(plan.elements??[]),...plan.semantic.motions.filter(m=>m.backgroundTreatment)];if(plan.semantic.trajectory.activeRanges.some(r=>hidden.some(e=>r.start<e.end&&r.end>e.start)))throw Error('Camera trajectory: movement hidden by a full-frame resource');}
- if(inputs.foregroundEffects){plan.foregroundEffects=prepareForegroundEffects(inputs.foregroundEffects,plan);plan.pending.push('foreground-matte-human-review');}
+ if(foregroundInput){plan.foregroundEffects=prepareForegroundEffects(foregroundInput,plan);plan.pending.push('foreground-matte-human-review');}
  if(depthRange){plan.globalTransitions=(plan.globalTransitions??[]).filter(e=>!depthOverlap(e)||e.audio!=='coordinated-sfx'||e.type!=='blur');}
  if(!plan.foregroundEffects&&!explicitComposition){plan.automaticForeground=prepareAutomaticForeground(plan,options,project.visualRuntime);if(plan.automaticForeground){const word=plan.automaticForeground.evidence.word;plan.masterGraphics=(plan.masterGraphics??[]).filter(e=>!depthOverlap(e)||e.label!==word);if(plan.dopaminMaster)plan.dopaminMaster.beats=plan.masterGraphics;plan.pending.push('predicted-matte-and-depth-human-review');}}
  plan.templateRecipe=recipe;plan.editionCounts=editionCounts(plan);

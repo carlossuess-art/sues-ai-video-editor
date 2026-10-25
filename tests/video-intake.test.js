@@ -43,7 +43,7 @@ test('private analysis import binds to source bytes, validates timings, and surv
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });
 test('bounded upload library admits idempotent retries at capacity and rejects a fifth distinct video',async()=>{
- const f=boundFixture();try{const intake=new VideoIntake(join(f.dir,'uploads'),f.profiles,{probe});for(const v of ['one','two','three','four'])await intake.receive(request(v));assert.equal(intake.list().length,4);assert.ok(await intake.receive(request('one')));await assert.rejects(intake.receive(request('five')),/cuatro/);assert.equal(intake.list().length,4);assert.ok(!readdirSync(join(f.dir,'uploads')).some(n=>n.startsWith('.incoming-')));}finally{rmSync(f.dir,{recursive:true,force:true});}
+ const f=boundFixture();try{const intake=new VideoIntake(join(f.dir,'uploads'),f.profiles,{probe});for(const v of ['one','two','three','four'])await intake.receive(request(v));assert.equal(intake.list().length,4);assert.ok(await intake.receive(request('one')));await assert.rejects(intake.receive(request('five')),/Límite de 4/);assert.equal(intake.list().length,4);assert.ok(!readdirSync(join(f.dir,'uploads')).some(n=>n.startsWith('.incoming-')));}finally{rmSync(f.dir,{recursive:true,force:true});}
 });
 test('silent, rotated incorrectly and tampered stored videos fail without replacing the original',async()=>{
  const f=boundFixture();try{
@@ -55,4 +55,15 @@ test('silent, rotated incorrectly and tampered stored videos fail without replac
 });
 test('aborted streaming upload cleans its temporary file and releases the single upload slot',async()=>{
  const f=boundFixture();try{const directory=join(f.dir,'uploads'),intake=new VideoIntake(directory,f.profiles,{probe});const broken=Readable.from((async function*(){yield Buffer.from('part');throw new Error('connection lost');})());broken.headers={'content-type':'video/mp4','content-length':'100'};await assert.rejects(intake.receive(broken),/connection lost/);assert.equal(intake.busy,false);assert.deepEqual(readdirSync(directory),[]);assert.equal((await intake.receive(request())).state,'READY');}finally{rmSync(f.dir,{recursive:true,force:true});}
+});
+
+test('configured upload capacity admits a fifth source, remains bounded and preserves idempotent retries',async()=>{
+ const f=boundFixture();try{const dir=join(f.dir,'uploads'),intake=new VideoIntake(dir,f.profiles,{probe,maxUploads:6});
+  for(let n=0;n<6;n++)await intake.receive(request('distinct-'+n));assert.deepEqual(intake.capacity(),{used:6,max:6,remaining:0,maxVideoBytes:250*1024*1024});
+  await assert.rejects(intake.receive(request('seventh')),/Límite de 6/);await intake.receive(request('distinct-0'));assert.equal(intake.records().length,6);
+  for(const maxUploads of [0,33,1.5,NaN,'16'])assert.throws(()=>new VideoIntake(join(f.dir,'bad'),f.profiles,{probe,maxUploads}),/Límite/);
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
+});
+test('the studio exposes its configured upload capacity without weakening authentication',async()=>{
+ const f=boundFixture(),app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,intakeProbe:probe,maxUploads:16});try{const u=new URL(await app.listen()),base=u.origin;assert.equal((await fetch(base+'/api/health')).status,401);const r=await fetch(base+'/api/health',{headers:{Cookie:'sues_session='+app.token}});assert.equal(r.status,200);assert.deepEqual((await r.json()).uploadCapacity,{used:0,max:16,remaining:16,maxVideoBytes:250*1024*1024});}finally{await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });

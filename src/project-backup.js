@@ -1,3 +1,4 @@
+import {cachedAutomaticMatte} from './automatic-foreground.js';
 import {mkdirSync,lstatSync,realpathSync,writeFileSync,readFileSync,existsSync,rmSync,readdirSync,chmodSync} from 'node:fs';
 import {copyFile} from 'node:fs/promises';
 import {join,resolve,dirname,relative,sep} from 'node:path';
@@ -21,6 +22,14 @@ export async function createProjectBackup(project,prepared,directory){
    for(const [i,e]of data.events.entries())e.localFile=await copy(e.localFile,'media/depth-resource-'+i+'.media',e.sha256);
    write('analysis/subject-layers.json',data);config.subjectLayersPath='analysis/subject-layers.json';
   }
+  let foreground=inputs.foregroundEffects;
+  if(prepared.plan.automaticForeground){
+   const a=prepared.plan.automaticForeground,{path,meta}=cachedAutomaticMatte(a);
+   foreground={schema:'sues-foreground-effects/v1',sourceSha256:a.sourceSha256,cameraSpaceSha256:a.cameraSpaceSha256,
+    matte:{localFile:path,sha256:meta.matteSha256,modelSha256:meta.binding.modelSha256,method:'modnet-onnx-cpu',width:512,height:896,fps:30,frames:a.frames,duration:prepared.plan.duration,activeRanges:[{start:a.startFrame/30,end:(a.startFrame+a.activeFrames)/30}],reviewStatus:'predicted-unreviewed'},
+    events:a.events,automaticEvidence:a.evidence,experimental:true,automaticPersonSegmentation:true,acceptance:'pending-human-review'};
+  }
+  if(foreground){const data=structuredClone(foreground);data.matte.localFile=await copy(data.matte.localFile,'media/foreground-matte.mkv',data.matte.sha256);write('analysis/foreground-effects.json',data);config.foregroundEffectsPath='analysis/foreground-effects.json';}
   if(inputs.depthText){write('analysis/depth-text.json',inputs.depthText);config.depthTextPath='analysis/depth-text.json';}
   const music=prepared.resourceBindings?.backgroundAudio;
   if(music){const localFile=await copy(music.localFile,'media/music.media');config.backgroundAudio={...music,localFile};}
@@ -55,5 +64,6 @@ export function verifyProjectBackup(directory){
  const config=JSON.parse(readFileSync(join(root,'project.json'),'utf8'));const paths=[...Object.entries(config).filter(([k])=>k.endsWith('Path')).map(([,v])=>v),...(config.backgroundAudio?[config.backgroundAudio.localFile]:[]),...(config.illustrations??[]).map(i=>i.localFile),...(config.soundAssets??[]).map(i=>i.localFile),...(config.videoAssets??[]).map(i=>i.localFile),...(config.overlayAssets??[]).map(i=>i.localFile)];
  assert(paths.every(path=>seen.has(path))&&config.fontDirectory==='fonts','configuration points outside verified files');
  if(config.subjectLayersPath){const data=JSON.parse(readFileSync(join(root,config.subjectLayersPath),'utf8'));const nested=[data.matte?.localFile,...(data.events??[]).map(e=>e.localFile)];assert(nested.every(path=>typeof path==='string'&&seen.has(path)),'subject layer points outside verified files');}
+ if(config.foregroundEffectsPath){const data=JSON.parse(readFileSync(join(root,config.foregroundEffectsPath),'utf8'));assert(typeof data.matte?.localFile==='string'&&seen.has(data.matte.localFile),'foreground matte points outside verified files');}
  return {valid:true,files:manifest.files.length,bytes,codeCommit:manifest.codeCommit,workingTreeDirty:manifest.workingTreeDirty};
 }

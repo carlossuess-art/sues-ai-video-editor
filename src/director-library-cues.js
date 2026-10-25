@@ -1,3 +1,4 @@
+import {join} from 'node:path';
 import {validateTranscript} from './transcript.js';
 import {loadPrivateLibraryIndex,searchPrivateLibrary,reviewedNarrativeVideos} from './private-library-search.js';
 import {proposeNarrativeScenes} from './director-narrative-scenes.js';
@@ -16,7 +17,7 @@ export function proposeLibraryCues(jobsDirectory,transcript,{limit=6}={}){
  validateTranscript(transcript);
  if(!Number.isInteger(limit)||limit<1||limit>8)throw Error('Límite de sugerencias no válido');
  // One bounded disk read per request, not another 309-entry JSON parse per phrase.
- const index=loadPrivateLibraryIndex(jobsDirectory);
+ let index;try{index=loadPrivateLibraryIndex(jobsDirectory);}catch(error){const root=join(jobsDirectory,'library'),missing=[root,join(root,'official-library-v1.json'),join(root,'purchased-source-index-309-v1.json')];if(error.code!=='ENOENT'||!missing.includes(error.path))throw error;return {schema:'sues-director-library-cues/v1',timeSpace:'original-seconds',approvedToAutoPublish:false,available:false,cues:[],warning:'No hay índice de biblioteca en este entorno. La edición conserva los medios incluidos en el proyecto.'};}
  const cues=[],words=transcript.words,closing=Math.max(0,transcript.sourceDuration-3);
  let i=0,scans=0;
  while(i<words.length&&cues.length<limit&&scans<120){

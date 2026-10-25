@@ -3,13 +3,11 @@ import {join,resolve,dirname} from 'node:path';
 import {createHash} from 'node:crypto';
 import {foregroundSpaceHash,foregroundEffectFilters} from './foreground-effects.js';
 import {fitCaptionSize} from './font-kits.js';
-export const MODNET_SHA='07c308cf0fc7e6e8b2065a12ed7fc07e1de8febb7dc7839d7b7f15dd66584df9';
+import {MODNET_SHA,FOREGROUND_WEIGHTS as weights,automaticTitleTop,validateAutomaticForegroundPolicy} from './foreground-policy.js';
+export {MODNET_SHA,automaticTitleTop};
 const hash=p=>createHash('sha256').update(readFileSync(p)).digest('hex');
 const regular=p=>{try{const s=lstatSync(p);return s.isFile()&&!s.isSymbolicLink();}catch{return false;}};
 const norm=s=>s.normalize('NFC').replace(/[^\p{L}]/gu,'').toLocaleUpperCase('es');
-const weights=new Map([['MIEDO',6],['BLOQUEO',6],['BLOQUEOS',6],['LIBERTAD',5],['MUNDO',5],['INTERIOR',5],['OJOS',5],['CADENAS',5],['CULPA',4],['RECONOCER',4],['MIRAR',3],['CRECIMIENTO',4]]);
-const overlap=(a,b)=>a.start<b.end&&a.end>b.start;
-export function automaticTitleTop(plan,start,end){const points=(plan.semantic?.anchors??[]).flatMap(a=>a.points??[]).filter(p=>p.time>=start&&p.time<=end&&Number.isFinite(p.y));if(!points.length)throw Error('Automatic foreground: missing eye placement');const ys=points.map(p=>p.y).sort((a,b)=>a-b);return Math.round(Math.max(380,Math.min(1100,ys[Math.floor(ys.length/2)]*1920-320)));}
 export function foregroundRuntime(directory){
  const root=join(resolve(directory),'models');
  try{
@@ -22,25 +20,10 @@ export function foregroundRuntime(directory){
  }catch{return null;}
 }
 export function validateAutomaticForeground(data,plan){
- const fail=m=>{throw Error('Automatic foreground: '+m);};
- const keys=['schema','sourceSha256','cameraSpaceSha256','runtime','startFrame','activeFrames','frames','events','evidence'];
- if(!data||Object.keys(data).some(k=>!keys.includes(k))||data.schema!=='sues-automatic-foreground/v1'||data.sourceSha256!==plan.source.sha256||data.cameraSpaceSha256!==foregroundSpaceHash(plan))fail('source/camera/timeline binding');
+ validateAutomaticForegroundPolicy(data,plan,foregroundSpaceHash(plan));
  const r=data.runtime,verified=r&&foregroundRuntime(dirname(dirname(r.modelFile??'')));
- if(!verified||JSON.stringify(r)!==JSON.stringify(verified))fail('approved local model/runtime unavailable');
- const {startFrame,activeFrames,frames}=data;
- if(![startFrame,activeFrames,frames].every(Number.isInteger)||startFrame<0||activeFrames<30||activeFrames>90||startFrame+activeFrames>frames||frames!==Math.ceil(plan.duration*30-1e-7)||frames>3600)fail('bounded inference window');
- const a=startFrame/30,b=(startFrame+activeFrames)/30;
- const es=data.events;
- if(!Array.isArray(es)||es.length!==2||es[0].type!=='background-blur'||es[0].sigma!==12||es[0].start!==a||es[0].end!==b||es[1].type!=='behind-text'||Math.abs(es[1].start-(a+.2))>1e-8||es[1].end!==b||!Array.isArray(es[1].lines)||es[1].lines.length!==1)fail('supported composition contract');
- if(es[1].top!==automaticTitleTop(plan,a,b))fail('eye-derived text placement changed');
- if(Object.keys(es[0]).some(k=>!['type','sigma','start','end'].includes(k))||Object.keys(es[1]).some(k=>!['type','start','end','lines','top'].includes(k)))fail('unknown event parameter');
- const e=data.evidence,c=plan.captions.find(c=>c.id===e?.captionId),i=e?.displayWordIndex;
- if(!c||c.source!=='auto'||!Number.isInteger(i)||norm(c.text.split(/\s+/)[i]??'')!==es[1].lines[0]||!weights.has(es[1].lines[0])||e.method!=='explicit-lexical-baseline-not-creative-model')fail('literal spoken evidence');
- const cue=c.wordCues.find(q=>q.wordIndexes.includes(c.wordIndexes[i]));
- if(!cue||cue.timingUncertain||startFrame!==Math.round((cue.start-.1)*30))fail('spoken timing changed');
- const hidden=[...(plan.selectedMedia??[]),...(plan.subjectLayers??[]),...(plan.illustrations??[]),...(plan.semantic?.motions??[]),...(plan.graphics??[]),...(plan.elements??[]),...(plan.depthText??[])];
- if(hidden.some(o=>overlap({start:a,end:b},o)))fail('incompatible resource overlap');
- foregroundEffectFilters(data,'base',1); // native font metrics and fixed filters, no supplied code
+ if(!verified||JSON.stringify(r)!==JSON.stringify(verified))throw Error('Automatic foreground: approved local model/runtime unavailable');
+ foregroundEffectFilters(data,'base',1);
  return structuredClone(data);
 }
 export function prepareAutomaticForeground(plan,settings,runtime){
@@ -65,4 +48,18 @@ export function prepareAutomaticForeground(plan,settings,runtime){
   try{return validateAutomaticForeground(data,plan);}catch{} // rejected placements stay absent, never weaken a guard
  }
  return null;
+}
+
+export function cachedAutomaticMatte(request){
+ const r=request.runtime,verified=r&&foregroundRuntime(dirname(dirname(r.modelFile??'')));
+ if(!verified||JSON.stringify(r)!==JSON.stringify(verified))throw Error('Renderiza la versión antes de copiar: runtime de máscara no disponible');
+ const binding=Object.fromEntries(['sourceSha256','cameraSpaceSha256','startFrame','activeFrames','frames'].map(k=>[k,request[k]]));
+ Object.assign(binding,{modelSha256:MODNET_SHA,onnxruntime:'1.31.0',numpy:'2.4.6'});
+ const stable=o=>JSON.stringify(Object.fromEntries(Object.entries(o).sort(([a],[b])=>a<b?-1:a>b?1:0)));
+ const key=createHash('sha256').update(stable(binding)).digest('hex'),dir=join(r.cacheDirectory,key),manifest=join(dir,'manifest.json'),path=join(dir,'mask.mkv');
+ try{if(lstatSync(dir).isSymbolicLink()||!regular(manifest)||lstatSync(manifest).size>65536||!regular(path))throw Error();
+  const meta=JSON.parse(readFileSync(manifest,'utf8'));
+  if(meta.schema!=='sues-derived-matte/v1'||stable(meta.binding)!==stable(binding)||meta.reviewStatus!=='predicted-unreviewed'||meta.inferredFrames!==request.activeFrames||hash(path)!==meta.matteSha256)throw Error();
+  return {path,meta};
+ }catch{throw Error('Renderiza la versión antes de copiar: la máscara derivada falta o ha cambiado');}
 }
