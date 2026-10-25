@@ -1,3 +1,4 @@
+import {CloudDirector} from './cloud-director.js';
 import {PlaybackPreviews} from './playback-preview.js';
 import {reviewInstructionExecution} from './instruction-execution.js';
 import {externalCatalog,reviewExternalPlan} from './external-edit-plan.js';
@@ -37,7 +38,7 @@ async function body(req,maxBytes=65536){
  const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>maxBytes)throw new Error('Request too large');chunks.push(chunk);}
  const value=JSON.parse(Buffer.concat(chunks).toString());if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,maxUploads=16,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,maxUploads=16,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -56,6 +57,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const cookie=value=>`sues_session=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_SECONDS}; Expires=${new Date(Date.now()+SESSION_SECONDS*1000).toUTCString()}${publicOrigin?'; Secure':''}`;
  const previews=new PlaybackPreviews(join(directory,'playback-previews'));const jobs=new EditorJobs({directory,profiles,renderer,storage});jobs.preparePlayback=(job,source)=>previews.ensure(job.id,source);let intake,assets,recoveries;try{assets=new MediaLibrary(join(directory,'assets'),{probe:assetProbe});jobs.assetResolver=(id,kind)=>assets.resolve(id,kind);jobs.narrativeResolver=transcript=>proposeLibraryCues(directory,transcript);jobs.defaultMusicResolver=duration=>{const rows=assets.list().filter(a=>a.kind==='audio'&&a.duration>=duration&&(()=>{const m=assets.metadata(a.id);return m?.license.rightsStatus==='verified'&&m.license.commercialUseAllowed;})()).sort((a,b)=>(b.id==='55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6')-(a.id==='55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6')||a.duration-b.duration);return rows[0]??null;};recoveries=new ProjectRecovery(join(directory,'recoveries'),profiles);intake=new VideoIntake(join(directory,'uploads'),profiles,{probe:intakeProbe,maxUploads});}catch(error){void jobs.close();throw error;}let expectedHost;
  const analysis=new LocalAnalysis(intake);
+ const cloud=cloudDirector??new CloudDirector({credentialsFile:join(dirname(passwordFile),'cloud-director-keys.json')});
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
  const sourceStream=(req,res,file)=>{
   const size=statSync(file).size;let range;try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
@@ -120,6 +122,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/fonts'&&req.method==='GET')return json(res,200,fontCatalog());
     const fontMatch=/^\/api\/fonts\/([a-z-]+)\/(file|license)$/.exec(path);
     if(fontMatch&&['GET','HEAD'].includes(req.method)){const f=fontDownload(fontMatch[1],fontMatch[2]);if(!f)return json(res,404,{error:'Font not found'});const bytes=readFileSync(f.path);res.setHeader('Content-Type',f.contentType);res.setHeader('Content-Disposition',`attachment; filename="${f.filename}"`);res.setHeader('Content-Length',bytes.length);res.writeHead(200);return res.end(req.method==='HEAD'?undefined:bytes);}
+    if(path==='/api/ai/providers'&&req.method==='GET')return json(res,200,{providers:cloud.providers(),automaticFallback:false});
     if(path==='/api/assets'&&req.method==='GET')return json(res,200,assets.list());
     if(path==='/api/library/capacity'&&req.method==='GET')return json(res,200,assets.capacity());
     if(path==='/api/resource-catalog'&&req.method==='GET')return json(res,200,assets.semanticCatalog());
@@ -170,7 +173,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|library-cues|poster))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|ai-plan|library-cues|poster))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
@@ -186,6 +189,18 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      if(!Number.isInteger(limit)||limit<1||limit>8)return json(res,400,{error:'Límite de sugerencias no válido'});
      try{return json(res,200,proposeLibraryCues(directory,jobs.loadProfile(job.profileId).inputs.transcript,{limit}));}
      catch(error){if(['ENOENT','EACCES','EPERM'].includes(error.code))return json(res,503,{error:'El índice privado de recursos no está disponible'});throw error;}
+    }
+    if(action==='ai-plan'&&req.method==='POST'){
+     const b=await body(req,8192),source=jobs.get(id);
+     if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))return json(res,409,{error:'Espera a que termine la edición actual.'});
+     if(b.fingerprint!==source.fingerprint)return json(res,409,{error:'El proyecto ha cambiado. Guarda los ajustes y solicita el plan de nuevo.'});
+     const fingerprint=source.fingerprint,semantics=new Map(assets.semanticCatalog().assets.map(a=>[a.id,a.metadata]));
+     const described=assets.list().map(a=>({...a,emotions:semantics.get(a.id)?.semantics?.emotionTags??[],narrativeRoles:semantics.get(a.id)?.semantics?.narrativeRoles??[],creativeApproval:semantics.get(a.id)?.approvedForProduction===true?'approved':'review-required'}));
+     const project=jobs.loadProfile(source.profileId),catalog=externalCatalog(project,source.settings,described);req.setTimeout(600000);
+     const result=await cloud.generate({provider:b.provider,catalog,sourcePath:project.sourcePath,prompt:b.prompt??'',requestId:b.requestId,directory:jobs.dir(id)});
+     if(jobs.get(id).fingerprint!==fingerprint)return json(res,409,{error:'Los ajustes cambiaron durante el análisis. El resultado queda guardado; no se ha aplicado.'});
+     const review=reviewExternalPlan(result.text,{project:jobs.loadProfile(source.profileId),settings:source.settings,assets:assets.list(),commandPlanner:planInstructions});
+     return json(res,200,{...result,review,sourceJobId:id,sourceFingerprint:fingerprint,renderStarted:false});
     }
     if(action==='external-catalog'&&req.method==='GET'){const source=jobs.get(id);const semantics=new Map(assets.semanticCatalog().assets.map(a=>[a.id,a.metadata]));
       const described=assets.list().map(a=>({...a,emotions:semantics.get(a.id)?.semantics?.emotionTags??[],
