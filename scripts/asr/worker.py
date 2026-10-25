@@ -24,7 +24,7 @@ def atomic(path, value):
     temp.replace(path)
 
 
-def transcribe(root, model_path, source_id):
+def transcribe(root, model_path, source_id, vision_root=None):
     if not HASH.fullmatch(source_id):
         raise ValueError('source id')
     mailbox = root / 'asr'
@@ -72,15 +72,38 @@ def transcribe(root, model_path, source_id):
                                 height=height, zoom=1) for t in [0, duration]]),
                   vision=dict(method='not-performed', frames=[dict(time=t, frameWidth=width,
                               frameHeight=height, faces=[]) for t in [0, duration]]))
+    if vision_root:
+        # Release speech model memory before visual inference; one mailbox worker.
+        del model
+        import gc
+        gc.collect()
+        vision_file = mailbox / ('.vision-' + uuid.uuid4().hex + '.json')
+        try:
+            subprocess.run([sys.executable, str(vision_root / 'analyze_yunet.py'),
+                            '--source', str(source), '--model', str(vision_root / 'yunet.onnx'),
+                            '--site', str(vision_root / 'site'), '--out', str(vision_file),
+                            '--width', str(width), '--height', str(height), '--duration', str(duration)],
+                           check=True, timeout=210, stdout=subprocess.DEVNULL)
+            vision = json.loads(vision_file.read_text())
+            if vision.get('sourceSha256') != source_id:
+                raise ValueError('vision source binding')
+            result['vision'] = vision
+        except Exception as error:
+            # Preserve usable ASR; never substitute old landmarks or invent eyes.
+            result['vision']['method'] = 'yunet-failed'
+            result['vision']['failureType'] = type(error).__name__
+        finally:
+            vision_file.unlink(missing_ok=True)
     atomic(mailbox / (source_id + '.result.json'), result)
     atomic(mailbox / (source_id + '.status.json'),
            dict(state='COMPLETE', finishedAt=int(time.time()*1000), engine=ENGINE,
-                wordCount=len(words), language=info.language, externalCostUSD=0))
+                wordCount=len(words), language=info.language, visionMethod=result['vision']['method'],
+                visionCoverage=result['vision'].get('coverage'), externalCostUSD=0))
     # Never put speech, names, tokens or source paths in journald.
     print('TRANSCRIPTION_COMPLETE words=' + str(len(words)), flush=True)
 
 
-def serve(root, model):
+def serve(root, model, vision_root=None):
     mailbox = root / 'asr'
     mailbox.mkdir(mode=0o700, parents=True, exist_ok=True)
     if mailbox.is_symlink():
@@ -116,7 +139,8 @@ def serve(root, model):
                         continue
                     atomic(status, dict(state='RUNNING', startedAt=int(time.time()*1000)))
                     child = subprocess.Popen([sys.executable, str(Path(__file__).resolve()),
-                            '--root', str(root), '--model', str(model), '--one', source_id])
+                            '--root', str(root), '--model', str(model), '--one', source_id] +
+                            (['--vision-root', str(vision_root)] if vision_root else []))
                     active_id, started = source_id, time.monotonic()
                     break
             time.sleep(3)
@@ -130,12 +154,13 @@ if __name__ == '__main__':
     parser.add_argument('--root', type=Path, required=True)
     parser.add_argument('--model', type=Path, required=True)
     parser.add_argument('--one')
+    parser.add_argument('--vision-root', type=Path)
     args = parser.parse_args()
     try:
         if args.one:
-            transcribe(args.root, args.model, args.one)
+            transcribe(args.root, args.model, args.one, args.vision_root)
         else:
-            serve(args.root, args.model)
+            serve(args.root, args.model, args.vision_root)
     except Exception as error:
         import traceback
         (args.root / 'asr' / 'worker-error.txt').write_text(traceback.format_exc())

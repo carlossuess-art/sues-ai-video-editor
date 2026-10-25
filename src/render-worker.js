@@ -7,7 +7,7 @@ import {fileSha256,RENDER_SCRIPT} from './local-pipeline.js';
 const assert=(ok,message)=>{if(!ok)throw new Error(`Render worker: ${message}`);};
 export function bundleDigest(directory){
  const manifest=JSON.parse(readFileSync(join(directory,'manifest.json'),'utf8'));
- const files=['manifest.json','director.json','settings.json','preparation.json','captions.ass','filter.ffscript',...['video.ffscript','audio.ffscript'].filter(name=>existsSync(join(directory,name))),...fontFiles(manifest.policy.captions.font).map(f=>'fonts/'+f)];
+ const files=['manifest.json','director.json','settings.json','preparation.json','captions.ass','filter.ffscript',...['camera.ffscript','video.ffscript','audio.ffscript'].filter(name=>existsSync(join(directory,name))),...fontFiles(manifest.policy.captions.font).map(f=>'fonts/'+f)];
  return createHash('sha256').update(JSON.stringify(files.map(name=>[name,fileSha256(join(directory,name))]))).digest('hex');
 }
 export function validateRenderRequest(request){

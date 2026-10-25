@@ -1,3 +1,23 @@
+## Continuación entre chats: máscara automática ejecutada · 25/10/2026
+
+Se ha recuperado y preservado el trabajo sin publicar de feat/autonomous-video-flow-20261025.
+Integración aislada publicada en 604a318ad935669d8d84384b02166f4fc1e1f7f2; PR #17 en borrador.
+El renderer ahora calcula y abre el matte automático, resuelve tarjetas por tiempos reales,
+respeta desactivación/elecciones manuales y coloca el título con la mirada detectada.
+Dos MP4 completos de 38,30 s conservados; el segundo mejora OJOS tras revisar el primero.
+Final SHA256 917ae5425b86ad0d4ef68e1e449567e7c341189e95f3667ed6cd15177e984254,
+1080×1920/30, fullDecode PASS, −15,57 LUFS/−1,87 dBTP; cacheHit:true.
+Sólo 84 frames de máscara: no segmentación de todo el vídeo ni Director multimodal.
+353 casos: 352 PASS Docker; caso Git y segundo caso deploy 2/2 PASS host.
+Sonda de modos, prioridades, alteraciones y solapamientos PASS. Cinta roja retenida
+incorrectamente; nueva subida/API/UI/copia, otra fuente y escucha crítica pendientes.
+NO desplegado: producción sigue b2ebf6df3725d245e7c3bb5518f574899d1fed0d.
+54 recursos del banco más 1 MP4 privado de revisión, excluido de selección narrativa.
+Informe/MP4: docs/SUES_AUTOMATIC_MATTE_RENDER_QA_20261025.md.
+Gasto externo nuevo 0 €; coste incremental CPU no medido. V1/F6/F7/F9 abiertas, global 48%.
+
+---
+
 ## Máscara automática y composición real · 25/10/2026
 
 Carlos autoriza apps/modelos hasta20€ TOTALES de prueba y máximo+10% coste porReel.
