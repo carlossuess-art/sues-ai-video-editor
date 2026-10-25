@@ -1,3 +1,9 @@
+## Prioridad vigente · Director, biblioteca y timeline · 25/10/2026
+
+Leer docs/SUES_DIRECTOR_TIMELINE_REQUIREMENTS_20261025.md antes de continuar. Carlos exige REA como recurso prioritario ante cada bloqueo, plan audiovisual completo de IA económica, inventario verificable de todos los recursos y timeline editable inspirado en CapCut con keyframes. No reducir el Director a énfasis ni confundir requisitos con funciones implementadas. Conservar decisiones manuales, originales y versiones. No repetir investigaciones que ya tienen evidencia; aplicar sus hallazgos a un Reel completo. La conexión OpenAI queda pendiente de decisión de credencial; no hay clave operativa detectada en el editor.
+
+---
+
 ## Autorización posterior de Carlos · 25/10/2026 · pruebas audiovisuales
 
 Carlos autoriza probar aplicaciones/modelos necesarios para esta misión con un
