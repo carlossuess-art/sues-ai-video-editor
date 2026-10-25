@@ -7,7 +7,7 @@ import {promisify} from 'node:util';
 import {fileSha256} from './local-pipeline.js';
 import {validateAssetMetadata,publicAssetMetadata,RESERVED_SFX_ALIASES} from './asset-metadata.js';
 const run=promisify(execFile),HASH=/^[a-f0-9]{64}$/,MAX=40*1024*1024;
-const ASSET_LIMIT=128,LIBRARY_BYTE_LIMIT=2*1024*1024*1024;
+const ASSET_LIMIT=512,LIBRARY_BYTE_LIMIT=2*1024*1024*1024;
 const regular=p=>{try{const s=lstatSync(p);return s.isFile()&&!s.isSymbolicLink();}catch{return false;}};
 export class MediaLibrary{
  constructor(directory,{probe,maxAssets=ASSET_LIMIT,maxLibraryBytes=LIBRARY_BYTE_LIMIT}={}){

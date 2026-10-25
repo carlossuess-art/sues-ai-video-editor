@@ -30,3 +30,10 @@ test('selected library music/images bind their actual hashes into the plan and f
  p.resolveAsset=()=>({duration:3});assert.throws(()=>prepareProject(p,{musicAssetId:music}),/más corta/);
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });
+
+test('the complete private library can exceed 128 assets while keeping bounded intake',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'sues-full-library-'));
+ try{const lib=new MediaLibrary(dir,{probe:async()=>imageProbe});for(let i=0;i<129;i++)await lib.receive(incoming(Buffer.from('unique-full-library-'+i)),{kind:'image',rights:'owned',title:'Resource '+i});
+ assert.equal(lib.capacity().installed,129);assert.equal(lib.capacity().maxAssets,512);assert.equal(new MediaLibrary(dir).list().length,129);assert.throws(()=>new MediaLibrary(dir,{maxAssets:513}),/Límites/);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
