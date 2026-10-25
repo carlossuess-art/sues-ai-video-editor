@@ -10,7 +10,7 @@ Navegador reproduce hasta el final con búfer completo; recarga conserva sesión
 Proxy guardado 720p/7.000.469 bytes; HD disponible en web, descarga de herramienta
 1080p agotó espera. Android y aceptación creativa pendientes.
 
-Nueva misión: 46 ramas y PR revisadas; la skill inicial diverge desde POC y está
+Nueva misión: 46 ramas inventariadas y PR relevantes revisadas; la skill inicial diverge desde POC y está
 261 commits detrás de producción. No fusionada. Prompt Director V2 de Drive
 recuperado. Banco real 54 medios;309 fuentes históricas no son309B-rolls.
 No torch en entornos activos inspeccionados; ASR CTranslate2 y modelos experimentales
@@ -19,7 +19,7 @@ Diagnóstico y plan: docs/SUES_FIRST_DIAGNOSIS_MASTER_PLAN_20261025.md.
 Estimación técnica de nueva rúbrica ≈42 %, distinta del global oficial48 %,
 que no se altera. No V1 ni cierre F6/F7/F9.
 
-Integración experimental: política de skill cargada y ligada por SHA a peticiones
+Integración experimental en feat/film-director-audit-integration-20261025: política de skill cargada y ligada por SHA a peticiones
 reales del puente de énfasis; diez pruebas focales PASS y validación de skill PASS.
 Petición real88captions acredita política en prompt; sin nueva inferencia.
 Revisión independiente de lectura conserva los límites. NO desplegada esta integración.

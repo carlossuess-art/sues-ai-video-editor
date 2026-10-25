@@ -56,6 +56,13 @@ acredita en este despliegue aunque exista un adaptador en código.
 
 El factor de componente operativo acredita ejecución técnica, no automatización de
 su elección. El Director es una capacidad separada con peso mayor.
+Revisión posterior de reframe.js, vision.js y CAMERA_PROFILES_VALIDATION.md:
+existe interpolación, estabilización y un fixture histórico de 74 muestras/73 caras
+de POC_001. Puede reutilizarse con su fuente y binding originales sin repetir
+MediaPipe. No acredita detección actual para un vídeo nuevo ni ojos del master.
+El compositor de máscaras revisadas sólo admite fuente sin reencuadre y ventanas
+revisadas: no levantar sus guards para combinar zoom/oclusión sin transformar y
+validar juntos los espacios. Esto reduce trabajo duplicado, no cierra el hito.
 
 ## C. Modelos y servicios
 VPS: un núcleo,4009200KiB RAM, sin dispositivo /dev/nvidia0 observado. Editor Docker
