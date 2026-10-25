@@ -147,6 +147,22 @@ def render(source, bundle, output):
         if not mask_stream or (mask_stream['codec_name'], mask_stream['width'], mask_stream['height'], mask_stream['r_frame_rate'], mask_stream.get('pix_fmt')) != ('ffv1', 1080, 1920, '30/1', 'gray') or abs(float(mask_info['format']['duration']) - manifest['duration']) > 1/30 or digest(mask) != matte['sha256']:
             raise ValueError('Subject matte format/duration/hash mismatch')
         subject_layers.append({'resource': resource, 'resourceSha256': item['sha256'], 'mask': mask, 'maskSha256': matte['sha256'], 'assetId': item['assetId'], 'method': matte['method']})
+    foreground = None
+    if manifest.get('foregroundEffects'):
+        subprocess.run(['node', str(pathlib.Path(__file__).resolve().parents[1] / 'qa' / 'verify_foreground.mjs'), str(bundle / 'manifest.json')], check=True)
+        data = manifest['foregroundEffects']
+        matte = data['matte']
+        path = pathlib.Path(matte['localFile'])
+        if path.is_symlink() or not path.is_file() or digest(path) != matte['sha256']:
+            raise ValueError('Foreground matte path/hash mismatch')
+        details = probe(path)
+        streams = details['streams']
+        if len(streams) != 1 or (streams[0].get('codec_name'), streams[0].get('width'), streams[0].get('height'), streams[0].get('r_frame_rate'), streams[0].get('pix_fmt')) != ('ffv1', 512, 896, '30/1', 'gray') or abs(float(details['format']['duration']) - manifest['duration']) > 1e-6:
+            raise ValueError('Foreground matte codec/timeline mismatch')
+        count = subprocess.check_output(['ffprobe', '-v', 'error', '-count_frames', '-select_streams', 'v:0', '-show_entries', 'stream=nb_read_frames', '-of', 'csv=p=0', str(path)], text=True).strip()
+        if int(count) != matte['frames']:
+            raise ValueError('Foreground matte frame count mismatch')
+        foreground = {'path': path, 'sha256': matte['sha256'], 'modelSha256': matte['modelSha256'], 'cameraSpaceSha256': data['cameraSpaceSha256'], 'method': matte['method'], 'reviewStatus': matte['reviewStatus']}
     overlays = []
     for item in manifest.get('ambientOverlays', []):
         path = pathlib.Path(item['localFile']).resolve(strict=True)
@@ -224,6 +240,8 @@ def render(source, bundle, output):
             command += ['-loop', '1', '-framerate', '30', '-i', str(layer['resource']), '-i', str(layer['mask'])]
         for overlay in overlays:
             command += ['-threads', '2', '-i', str(overlay['path'])]
+        if foreground:
+            command += ['-threads', '1', '-i', str(foreground['path'])]
         if separated:
             # Visual-only encoding keeps the original audio and delayed SFX from
             # advancing the shared decoder/concat and buffering portrait frames.
@@ -291,6 +309,8 @@ def render(source, bundle, output):
                 raise ValueError('Subject layer changed during render')
         if any(digest(o['path']) != o['sha256'] for o in overlays):
             raise ValueError('Overlay changed during render')
+        if foreground and digest(foreground['path']) != foreground['sha256']:
+            raise ValueError('Foreground matte changed during render')
         if music and digest(music['path']) != music['sha256']:
             raise ValueError('Music source changed during render')
         if any(digest(s['path']) != s['sha256'] for s in sounds):
@@ -302,7 +322,7 @@ def render(source, bundle, output):
                  'durationPlanned': manifest['duration'], 'durationEncoded': float(encoded['duration']),
                  'output': output.name, 'outputSha256': digest(temporary), 'bytes': temporary.stat().st_size,
                  'video': {'codec': encoded['codec_name'], 'width': encoded['width'], 'height': encoded['height'], 'fps': encoded['r_frame_rate']},
-                 'subjectLayers': [{k: v for k, v in layer.items() if k not in ('mask', 'resource')} for layer in subject_layers], 'soundEffects': manifest.get('soundEffects'), 'customSfx': {'assets': [{k: v for k, v in s.items() if k != 'path'} for s in sounds], 'events': manifest.get('customSfx', {}).get('events', [])}, 'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'ambientOverlays': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False, 'visualAcceptance': False} for m in overlays], 'mastering': manifest.get('mastering'), 'voiceEffects': {'version': manifest.get('voiceEffects', {}).get('version'), 'events': manifest.get('voiceEffects', {}).get('events', []), 'humanListeningAccepted': False}, 'captions': len(manifest['captions']), 'illustrations': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in illustrations],
+                 'foregroundEffects': ({k: v for k, v in foreground.items() if k != 'path'} if foreground else None), 'subjectLayers': [{k: v for k, v in layer.items() if k not in ('mask', 'resource')} for layer in subject_layers], 'soundEffects': manifest.get('soundEffects'), 'customSfx': {'assets': [{k: v for k, v in s.items() if k != 'path'} for s in sounds], 'events': manifest.get('customSfx', {}).get('events', [])}, 'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'ambientOverlays': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False, 'visualAcceptance': False} for m in overlays], 'mastering': manifest.get('mastering'), 'voiceEffects': {'version': manifest.get('voiceEffects', {}).get('version'), 'events': manifest.get('voiceEffects', {}).get('events', []), 'humanListeningAccepted': False}, 'captions': len(manifest['captions']), 'illustrations': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in illustrations],
                  'font': {'family': expected_family, 'regularSha256': digest(font), 'boldSha256': digest(bold_font), 'extraFaces': extra_fonts},
                  'ffmpeg': subprocess.check_output(['ffmpeg', '-version'], text=True).splitlines()[0],
                  'denseSfxCache': ({'sources':sfx_cache['sources'],'batchSize':sfx_cache['batchSize']} if sfx_cache else None), 'voiceNormalization': normalization_audit, 'renderPasses': ['video', 'audio-mux'] if separated else ['legacy-combined'], 'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}

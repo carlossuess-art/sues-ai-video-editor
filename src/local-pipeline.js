@@ -1,3 +1,4 @@
+import {prepareForegroundEffects} from './foreground-effects.js';
 import {applyDopaminMaster,finishDopaminAudio,selectAutomaticPreviewBrolls} from './dopamin-master.js';
 import {applyResourceLevels} from './audio-levels.js';
 import {applyReviewedFraming,explicitZoomDecisions} from './reviewed-framing.js';
@@ -25,7 +26,7 @@ import {buildAutomaticDirector,validateEditorSettings} from './automatic-directo
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,buildVideoPassFilter,buildAudioPassFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
-export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['camera-trajectory.js','dopamin-master.js','audio-levels.js','reviewed-framing.js','template-recipe.js','custom-sfx.js','voice-effects.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
+export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['foreground-effects.js','camera-trajectory.js','dopamin-master.js','audio-levels.js','reviewed-framing.js','template-recipe.js','custom-sfx.js','voice-effects.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
 export function fileSha256(path){const fd=openSync(path,'r'),hash=createHash('sha256'),buffer=Buffer.allocUnsafe(1024*1024);try{let size;while((size=readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,size));return hash.digest('hex');}finally{closeSync(fd);}}
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
@@ -42,6 +43,7 @@ export function loadProject(configPath){
   data.matte.localFile=local(data.matte.localFile);if(fileSha256(data.matte.localFile)!==data.matte.sha256)throw new Error('Subject matte SHA256 mismatch');
   data.events=data.events.map(e=>{const localFile=local(e.localFile);if(fileSha256(localFile)!==e.sha256)throw new Error('Subject resource SHA256 mismatch');return {...e,localFile};});inputs.subjectLayers=data;
  }
+ if(config.foregroundEffectsPath){const data=read(local(config.foregroundEffectsPath));data.matte.localFile=local(data.matte.localFile);inputs.foregroundEffects=data;}
  if(config.depthTextPath)inputs.depthText=read(local(config.depthTextPath));
  const sourcePath=local(config.sourcePath),sourceSha256=fileSha256(sourcePath);
  if(config.source?.sha256&&config.source.sha256!==sourceSha256)throw new Error('Source SHA256 mismatch');
@@ -138,6 +140,7 @@ export function prepareProject(project,settings={}){
  if(options.levelResources)applyResourceLevels(plan);
  if(plan.voiceEffects.events.length){plan.pending.push('voice-processing-human-listening-review');}
  if(plan.semantic.trajectory){const hidden=[...plan.selectedMedia,...(plan.graphics??[]),...(plan.elements??[]),...plan.semantic.motions.filter(m=>m.backgroundTreatment)];if(plan.semantic.trajectory.activeRanges.some(r=>hidden.some(e=>r.start<e.end&&r.end>e.start)))throw Error('Camera trajectory: movement hidden by a full-frame resource');}
+ if(inputs.foregroundEffects){plan.foregroundEffects=prepareForegroundEffects(inputs.foregroundEffects,plan);plan.pending.push('foreground-matte-human-review');}
  plan.templateRecipe=recipe;plan.editionCounts=editionCounts(plan);
  if(plan.soundEffects.events.length||plan.customSfx.events.length){plan.pending=plan.pending.filter(p=>p!=='music-and-sfx');plan.pending.push('sound-design-human-review');}
  const director={...automatic,...(manual.length||chosenMotions.length?{selection:'offline-lexical-baseline-with-user-review-v1'}:{}),decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length,manualHighlights:manual.length,manualMotions:chosenMotions.length}};

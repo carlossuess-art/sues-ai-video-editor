@@ -1,3 +1,22 @@
+## Máscara automática y composición real · 25/10/2026
+
+Carlos autoriza apps/modelos hasta20€ TOTALES de prueba y máximo+10% coste porReel.
+MODNet ONNX oficial reutiliza runtimeCPU existente; sin PyTorch/API/suscripción nueva.
+Gasto externo0€.84frames inferidos en127s/63,46CPU s, pico≈455MiB.
+Rama experimental feat/modnet-foreground-effects-20261025; NO desplegada.
+Nuevo10s: fondo selectivo6–8,8 y MUNDO INTERIOR detrás del sujeto6,4–8,8;
+cámara/captions/audio previos conservados; vozPCM idéntica.
+MP4 SHA03cd67f10bb75ad8e288bce1d756974accff165107d2b64119ef75b19d201790,
+1080×1920/30/300frames,decodePASS,−14,4LUFS/−1,7dBTP.
+QA muestra foregroundMAE1,70–1,87 frente a fondo11,58–11,72.
+Matte conserva incorrectamente parte de cinta roja; revisión/aceptación pendientes.
+352/353DockerPASS más2/2GitHost;8focales tras correccióntipográfica y renderE.
+No es nuevo director autónomo ni flujoUI desplegado. Hito10s incompleto por B-roll,
+automatización y QA amplia. Global48% y F6/F7/F9 abiertas.
+Detalle y presupuesto:docs/SUES_MODNET_FOREGROUND_20261025.md.
+
+---
+
 ## Cámara temporal · prueba real de 10 s · 25/10/2026
 
 Rama experimental feat/camera-trajectory-study-20261025, no desplegada.

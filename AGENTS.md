@@ -1,3 +1,20 @@
+## Autorización posterior de Carlos · 25/10/2026 · pruebas audiovisuales
+
+Carlos autoriza probar aplicaciones/modelos necesarios para esta misión con un
+límite TOTAL de 20 € de gastos de prueba, y sin aumentar más de un 10 % el coste
+final por Reel respecto de su base. Esta autorización sustituye las restricciones
+históricas de no probar nuevos modelos dentro de ese alcance; no pedirla de nuevo.
+Registrar gasto acumulado, coste por vídeo y límites de medición. No convertir los
+20 € en presupuesto por app ni en autorización recurrente sin límite.
+Priorizar herramientas existentes/gratuitas y procesamiento local acotado.
+Si el coste base no está medido, no afirmar cumplimiento porcentual de una opción
+de pago. No asumir que tiempo de CPU adicional sea coste económico cero en cualquier
+despliegue. La prueba MODNet actual usa ONNX ya instalado, sin nueva API o suscripción.
+Conservar aislamiento, recursos limitados, originales, pruebas, ramas y no alterar
+otras aplicaciones/producción sin validar.
+
+---
+
 # Continuidad de SUES AI VIDEO EDITOR
 
 Lee PROJECT_STATUS.md y docs/SUES_GENERAL_STUDIO.md antes de continuar.
