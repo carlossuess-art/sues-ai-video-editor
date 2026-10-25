@@ -7,7 +7,7 @@ import {drawSymbolMotion} from './motion-overlays.js';
 import {keywordPreset} from './text-presets.js';
 import {illustrationFilters} from './illustrations.js';
 import {captionCues,progressiveRuns} from './caption-motion.js';
-import {drawMasterGraphics} from './dopamin-master.js';
+import {drawMasterGraphics,masterGraphicCoversCaption} from './dopamin-master.js';
 import {drawDepthText} from './depth-text.js';
 import {hierarchyLayout,METALLIC_GOLD} from './caption-hierarchy.js';
 import {shortCaptionGroups} from './short-captions.js';
@@ -101,6 +101,7 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   drawMasterGraphics(plan,event,safeText,assColor);
   drawElements(plan,event,safeText,assColor);
   for(const c of plan.captions){
+    if(masterGraphicCoversCaption(plan,c))continue;
     const white=assColor((plan.graphics??[]).some(g=>g.type!=='secret'&&c.start>=g.start-1e-6&&c.end<=g.end+1e-6)?plan.renderColors.dark:plan.policy.captions.color);
     const focus=c.source!=='manual'&&(plan.semantic?.motions??[]).find(m=>m.backgroundTreatment&&c.start>=m.start-1e-6&&c.end<=m.end+1e-6&&c.wordIndexes.every(index=>(m.evidence?.sourceWordIndexes??[]).includes(index)));if(focus||(plan.graphics??[]).some(g=>g.replacedCaptionIds?.includes(c.id)||!g.heading&&!g.bodyLines&&g.type!=='compare'&&g.captionId===c.id&&g.text===c.text))continue;
     // A bright stock sky can defeat a white caption even with a soft shadow.

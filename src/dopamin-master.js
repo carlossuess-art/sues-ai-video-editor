@@ -121,3 +121,11 @@ export function selectAutomaticPreviewBrolls(proposal,options,duration){
  }
  return out;
 }
+const spokenTokens=text=>String(text??'').normalize('NFKC').toLocaleLowerCase('es').match(/[\p{L}\p{N}]+/gu)?.join(' ')??'';
+// Only an exact, complete spoken phrase can be represented by its visible hero.
+// Partial overlap or a paraphrased label must never remove transcript words.
+export function masterGraphicCoversCaption(plan,caption){
+ const spoken=spokenTokens(caption.text);if(!spoken)return false;
+ return (plan.masterGraphics??[]).some(g=>spokenTokens(g.label)===spoken&&
+  Number.isFinite(g.start)&&Number.isFinite(g.end)&&g.start<=caption.start+1e-6&&g.end>=caption.end-1e-6);
+}
