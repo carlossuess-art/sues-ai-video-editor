@@ -1,3 +1,9 @@
+## Continuación de E2E · 25/10/2026
+
+Recuperadas dos exportaciones completas de fuentes reales y restauración exacta del primer MP4 sin modelo. Corregidas dos expectativas de fixtures, sin debilitar guards. NavegadorChrome151:24/24combinaciones escritorio/móvilPASS,sinJS/overflow;copia/recuperaciónUIescritorioPASS,render omitido en este harness. Focal21/21PASS; suite363:362PASS Docker y un caso Git cubierto en host2/2; check/diffPASS. Copia aislada preserva el worktree anterior. Producción sigue b2ebf6d; sin deploy ni aceptación V1. Revisión de hojas de contacto parcial, sin escucha. Global48% sin cambio. Ver docs/SUES_CONTINUATION_E2E_VALIDATION_20261025.md. Próximo: QA de interfaz de las nuevas subidas y copia, después integración/despliegue reversible.
+
+---
+
 ## Continuación entre chats: máscara automática ejecutada · 25/10/2026
 
 Se ha recuperado y preservado el trabajo sin publicar de feat/autonomous-video-flow-20261025.

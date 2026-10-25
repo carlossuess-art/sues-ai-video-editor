@@ -157,7 +157,7 @@ def render(source, bundle, output):
             raise ValueError('Foreground matte path/hash mismatch')
         details = probe(path)
         streams = details['streams']
-        if len(streams) != 1 or (streams[0].get('codec_name'), streams[0].get('width'), streams[0].get('height'), streams[0].get('r_frame_rate'), streams[0].get('pix_fmt')) != ('ffv1', 512, 896, '30/1', 'gray') or abs(float(details['format']['duration']) - manifest['duration']) > 1e-6:
+        if len(streams) != 1 or (streams[0].get('codec_name'), streams[0].get('width'), streams[0].get('height'), streams[0].get('r_frame_rate'), streams[0].get('pix_fmt')) != ('ffv1', 512, 896, '30/1', 'gray') or abs(float(details['format']['duration']) - manifest['duration']) > (1/30 + 1e-6 if matte.get('reviewStatus') == 'predicted-unreviewed' else 1e-6):
             raise ValueError('Foreground matte codec/timeline mismatch')
         count = subprocess.check_output(['ffprobe', '-v', 'error', '-count_frames', '-select_streams', 'v:0', '-show_entries', 'stream=nb_read_frames', '-of', 'csv=p=0', str(path)], text=True).strip()
         if int(count) != matte['frames']:

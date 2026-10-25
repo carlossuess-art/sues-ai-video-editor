@@ -22,9 +22,14 @@ export class LocalAnalysis{
  }
  request(id){
   const state=this.status(id);if(['QUEUED','RUNNING','COMPLETE'].includes(state.state))return state;
-  if(!this.available())throw Error('El transcriptor local no está disponible. Tu vídeo y el prompt siguen guardados.');
   const record=this.intake.records().find(r=>r.sha256===id);
   if(record.profileId)throw Error('Analysis already ready');
+  if(state.state==='FAILED'){
+   try{this.intake.media(id);const path=join(this.directory,id+'.result.json'),st=lstatSync(path);if(!st.isFile()||st.isSymbolicLink()||st.size>2*1024*1024)throw Error('Unsafe retained analysis');const data=read(path);if(data.sourceSha256!==id)throw Error('Source binding');this.intake.importAnalysis(id,data);
+    atomic(join(this.directory,id+'.status.json'),{state:'COMPLETE',finishedAt:Date.now(),engine:data.transcript.provenance?.engine??'retained-analysis',wordCount:data.transcript.words.length,language:data.transcript.language,visionMethod:data.vision.method,visionCoverage:data.vision.coverage,reusedValidatedResult:true,externalCostUSD:0});return this.status(id);
+   }catch{/* Invalid retained results follow the ordinary bounded worker path. */}
+  }
+  if(!this.available())throw Error('El transcriptor local no está disponible. Tu vídeo y el prompt siguen guardados.');
   this.intake.media(id); // Verify the actual original, not just its metadata.
   atomic(join(this.directory,id+'.status.json'),{state:'QUEUED',queuedAt:Date.now()});
   atomic(join(this.directory,id+'.request.json'),{sourceSha256:id,source:record.source});

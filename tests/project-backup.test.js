@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {rmSync,writeFileSync,readFileSync,symlinkSync,unlinkSync} from 'node:fs';
@@ -21,5 +22,16 @@ test('backup verification rejects unlisted files and a symlinked manifest',async
  const f=fixture();try{const project=loadProject(f.profiles.test),out=join(f.dir,'portable');await createProjectBackup(project,prepareProject(project),out);
  writeFileSync(join(out,'unlisted.json'),'{}');assert.throws(()=>verifyProjectBackup(out),/unlisted/);unlinkSync(join(out,'unlisted.json'));
  const manifest=readFileSync(join(out,'backup-manifest.json'));unlinkSync(join(out,'backup-manifest.json'));writeFileSync(join(f.dir,'external.json'),manifest);symlinkSync(join(f.dir,'external.json'),join(out,'backup-manifest.json'));assert.throws(()=>verifyProjectBackup(out),/regular manifest/);
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
+});
+
+test('a valid outer backup manifest cannot authorize a foreground mask outside the package',async()=>{
+ const f=fixture();try{const project=loadProject(f.profiles.test),out=join(f.dir,'portable');await createProjectBackup(project,prepareProject(project),out);
+  const config=JSON.parse(readFileSync(join(out,'project.json')));config.foregroundEffectsPath='analysis/foreground-effects.json';writeFileSync(join(out,'project.json'),JSON.stringify(config));
+  writeFileSync(join(out,config.foregroundEffectsPath),JSON.stringify({matte:{localFile:'../../outside.mkv'}}));
+  const hash=v=>createHash('sha256').update(v).digest('hex'),manifest=JSON.parse(readFileSync(join(out,'backup-manifest.json')));
+  for(const name of ['project.json',config.foregroundEffectsPath]){const bytes=readFileSync(join(out,name)),entry={path:name,bytes:bytes.length,sha256:hash(bytes)},i=manifest.files.findIndex(e=>e.path===name);if(i<0)manifest.files.push(entry);else manifest.files[i]=entry;}
+  manifest.files.sort((a,b)=>a.path.localeCompare(b.path));manifest.filesDigest=hash(JSON.stringify(manifest.files));writeFileSync(join(out,'backup-manifest.json'),JSON.stringify(manifest));
+  assert.throws(()=>verifyProjectBackup(out),/foreground matte points outside/);
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });

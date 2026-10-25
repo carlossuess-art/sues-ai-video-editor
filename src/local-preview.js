@@ -83,10 +83,11 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
   const subjectLayout=camera.detectionMethod==='yunet-opencv-cpu'&&previewLayout===PREVIEW_LAYOUT;
   const top={...previewLayout,caption:{left:120,right:900,top:190,bottom:350}};
   const chest={...previewLayout,caption:{left:120,right:900,top:1370,bottom:1510},outro:{left:120,right:900,top:190,bottom:330}};
-  const layouts=subjectLayout?(policy.templateId==='SUES_DOPAMIN'?[top,chest,previewLayout]:[previewLayout,chest,top]):[previewLayout];
+  const upperStack={...previewLayout,caption:{left:120,right:900,top:190,bottom:350},outro:{left:120,right:900,top:360,bottom:460}};
+  const layouts=subjectLayout?(policy.templateId==='SUES_DOPAMIN'?[top,chest,previewLayout,upperStack]:[previewLayout,chest,top,upperStack]):[previewLayout];
   let layoutError;
   for(const candidate of layouts){
-    try{semantic=prepareSemanticRender({director,policy,camera,timeMap,visionFrames,catalog,broll,captions,layout:candidate,cameraTrajectory,source});previewLayout=candidate;layoutError=null;break;}
+    try{for(const box of Object.values(candidate)){assert(validateSafePlacement(box,PORTRAIT_SAFE_ZONES.content)&&box.right<=PORTRAIT_SAFE_ZONES.avoid.right.left,'safe candidate layout');}semantic=prepareSemanticRender({director,policy,camera,timeMap,visionFrames,catalog,broll,captions,layout:candidate,cameraTrajectory,source});previewLayout=candidate;layoutError=null;break;}
     catch(error){layoutError=error;}
   }
   if(layoutError)throw layoutError;
