@@ -1,4 +1,4 @@
-let automaticInstant=false;
+let automaticInstant=false,geminiRoute=false;
 const googleLoginFailed=new URLSearchParams(location.search).get('google')==='failed';
 let design=null,designProfile=null,assetLibrary=[],editingRoute=null,comparisonRequest=null,automaticReviewKey=null,intakePhase='edit',pendingUploadId=null,allUploads=[];
 const $=id=>document.getElementById(id);let current=null,plan=null,working=false,editorStep='material-panel',previewDirty=false,playerView='original',localVideoURL=null;
@@ -114,7 +114,7 @@ function display(job){
 async function select(id,{keepPrompt=false}={}){if(!keepPrompt)setIntake('edit');const changed=current?.id!==id;if(changed&&!keepPrompt){$('director-prompt').value='';$('director-response').replaceChildren();$('director-reset-label').hidden=true;}previewDirty=false;$('download').hidden=true;const job=await api('jobs/'+id);const upload=allUploads.find(u=>u.profileId===job.profileId);pendingUploadId=upload?.id??null;if(!keepPrompt||!$('director-prompt').value.trim())$('director-prompt').value=(job.instructions?.at(-1)?.kind==='external-plan'?'':job.instructions?.at(-1)?.text)??upload?.brief?.prompt??'';if(designProfile!==job.profileId)await loadDesign(job.profileId);for(const [field,key]of [['review-captions','captionsReviewed'],['review-framing','framingReviewed'],['review-audio','audioReviewed']])$(field).checked=job.editorialReview?.[key]??false;for(const [field,key]of [['review-major','majorChanges'],['review-minor','minorChanges']])$(field).value=job.editorialReview?.[key]??0;$('review-status').textContent=job.editorialReview?(job.editorialReview.pass?'Aprobación estética registrada para esta versión.':'Revisión guardada · quedan ajustes o comprobaciones.'):'Revisión pendiente para esta versión.';plan=await api('jobs/'+id+'/plan');$('style-id').value=job.settings.styleId??'SUES_CALMA';$('new-project-style').value=$('style-id').value;$('elements-format').value=job.settings.elements?.format??'';$('elements-help').hidden=!$('elements-format').value;$('zoom').value=Math.round(job.settings.zoomIntensity*100);$('zoom-value').textContent=$('zoom').value+' %';$('motions').checked=job.settings.motions;$('caption-words').value=String(job.settings.captionWords??3);$('sfx-enabled').checked=job.settings.sfxEnabled??false;$('voice-gain').value=Math.round((job.settings.voiceGain??1)*100);$('voice-value').textContent=$('voice-gain').value+' %';$('level-resources').checked=job.settings.levelResources??false;$('sfx-gain').value=Math.round((job.settings.sfxGain??.35)*100);$('sfx-value').textContent=$('sfx-gain').value+' %';$('music-enabled').checked=job.settings.musicEnabled??true;$('music-duck').checked=job.settings.duckMusic??true;$('music-gain').value=Math.round((job.settings.musicGain??plan.manifest.audioMix?.gain??.16)*100);$('music-value').textContent=$('music-gain').value+' %';$('music-status').textContent=plan.manifest.audioSourceAvailable?'Pista ambiental disponible en este material.':'Este material no tiene una pista musical preparada.';$('profile-images').checked=job.settings.profileImages??true;await refreshAssets();$('music-asset').value=job.settings.musicAssetId??'';$('image-events').replaceChildren();for(const e of job.settings.imageEvents??[])appendImageEvent(e);$('sfx-events').replaceChildren();for(const e of job.settings.sfxEvents??[])appendSfxEvent(e);$('captions').replaceChildren();$('caption-search').value='';$('caption-search-status').textContent='';
  window.dispatchEvent(new Event('sues:plan-updated'));
  $('external-plan-text').value=(await api('jobs/'+job.id+'/external-draft')).text;
- for(const c of plan.manifest.captions){const div=document.createElement('details');div.className='caption';const heading=document.createElement('summary');heading.textContent=c.start.toFixed(1)+'–'+c.end.toFixed(1)+' s · '+c.text;div.append(heading);const label=document.createElement('label');label.htmlFor='caption-'+c.id;label.textContent=c.start.toFixed(1)+'–'+c.end.toFixed(1)+' s';const field=document.createElement('textarea');field.id=label.htmlFor;field.dataset.id=c.id;field.value=c.text;field.maxLength=52;const highlight=document.createElement('button');highlight.type='button';highlight.dataset.highlight=c.id;const selected=job.settings.highlightCaptions?.includes(c.id)??false;highlight.setAttribute('aria-pressed',String(selected));highlight.textContent=selected?'Frase destacada ✓':'Destacar esta frase';highlight.onclick=()=>{const active=highlight.getAttribute('aria-pressed')==='true';if(!active&&$('captions').querySelectorAll('button[data-highlight][aria-pressed="true"]').length>=3){error(new Error('Puedes destacar hasta tres frases. Quita una antes de elegir otra.'));return;}highlight.setAttribute('aria-pressed',String(!active));highlight.textContent=active?'Destacar esta frase':'Frase destacada ✓';markPreviewDirty();};div.append(label,field,keywordControls(c,job,field),highlight,graphicControls(c,job),motionControls(c,job),elementControls(c,job));$('captions').append(div);}$('caption-count').textContent='('+plan.manifest.captions.length+')';originalVideo('/api/jobs/'+job.id+'/source',job.title);display(job);if(job.state==='DONE')showPlayer('preview');$('save-status').textContent='Ajustes guardados';await reviewPlan(id);await list();if(changed)showTool('director');syncDirector();history.replaceState(null,'','?project='+encodeURIComponent(id)+(intakePhase==='prompt'?'&step=prompt':''));}
+ for(const c of plan.manifest.captions){const div=document.createElement('details');div.className='caption';const heading=document.createElement('summary');heading.textContent=c.start.toFixed(1)+'–'+c.end.toFixed(1)+' s · '+c.text;div.append(heading);const label=document.createElement('label');label.htmlFor='caption-'+c.id;label.textContent=c.start.toFixed(1)+'–'+c.end.toFixed(1)+' s';const field=document.createElement('textarea');field.id=label.htmlFor;field.dataset.id=c.id;field.value=c.text;field.maxLength=52;const highlight=document.createElement('button');highlight.type='button';highlight.dataset.highlight=c.id;const selected=job.settings.highlightCaptions?.includes(c.id)??false;highlight.setAttribute('aria-pressed',String(selected));highlight.textContent=selected?'Frase destacada ✓':'Destacar esta frase';highlight.onclick=()=>{const active=highlight.getAttribute('aria-pressed')==='true';if(!active&&$('captions').querySelectorAll('button[data-highlight][aria-pressed="true"]').length>=3){error(new Error('Puedes destacar hasta tres frases. Quita una antes de elegir otra.'));return;}highlight.setAttribute('aria-pressed',String(!active));highlight.textContent=active?'Destacar esta frase':'Frase destacada ✓';markPreviewDirty();};div.append(label,field,keywordControls(c,job,field),highlight,graphicControls(c,job),motionControls(c,job),elementControls(c,job));$('captions').append(div);}$('caption-count').textContent='('+plan.manifest.captions.length+')';originalVideo('/api/jobs/'+job.id+'/source',job.title);display(job);if(job.state==='DONE')showPlayer('preview');$('save-status').textContent='Ajustes guardados';await reviewPlan(id);await list();if(changed)showTool('director');syncDirector();void resumeCloudPlan(job.id).catch(error);history.replaceState(null,'','?project='+encodeURIComponent(id)+(intakePhase==='prompt'?'&step=prompt':''));}
 $('voice-gain').oninput=()=>{$('voice-value').textContent=$('voice-gain').value+' %';};
 $('sfx-gain').oninput=()=>{$('sfx-value').textContent=$('sfx-gain').value+' %';};
 $('music-gain').oninput=()=>{$('music-value').textContent=$('music-gain').value+' %';};
@@ -418,7 +418,7 @@ async function followAnalysis(id){
  if(working){analysisTimer=setTimeout(()=>followAnalysis(id),1500);return;}
  try{const result=await api('uploads/'+id+'/transcribe');analysisBusy=['QUEUED','RUNNING'].includes(result.state);
   $('analysis-status').textContent=result.state==='QUEUED'?'Análisis en cola. Puedes cerrar esta pantalla.':result.state==='RUNNING'?'Whisper está transcribiendo la voz en tu servidor…':result.state==='FAILED'?result.error:'';
-  if(result.state==='COMPLETE'){await work(async()=>{const u=result.upload;await refreshProfiles(u.profileId);await loadDesign(u.profileId);const job=await api('jobs','POST',{profileId:u.profileId,newProject:true,projectTitle:$('project-name').value.trim()||u.brief?.projectTitle||undefined,settings:{styleId:u.brief?.styleId??$('new-project-style').value}});await select(job.id,{keepPrompt:true});setIntake('edit');if(editingRoute==='external'){showTool('director');syncEditRoute();history.replaceState(null,'','?project='+current.id);return;}const proposal=await api('jobs/'+current.id+'/direct-plan','POST',{prompt:$('director-prompt').value,settings:proposalBase()});showProposal(proposal);$('analysis-status').textContent='Voz transcrita automáticamente: revisa los subtítulos. Se conserva el plano completo; aún no hay seguimiento facial.';history.replaceState(null,'','?project='+current.id);(proposal.canApply?$('render'):$('basic-edit')).scrollIntoView({block:'center'});});return;}
+  if(result.state==='COMPLETE'){await work(async()=>{const u=result.upload;await refreshProfiles(u.profileId);await loadDesign(u.profileId);const job=await api('jobs','POST',{profileId:u.profileId,newProject:true,projectTitle:$('project-name').value.trim()||u.brief?.projectTitle||undefined,settings:{styleId:u.brief?.styleId??$('new-project-style').value,...(geminiRoute?{autoRecipe:true,automaticPreviewBroll:false,sfxEnabled:true,captionWords:2,voiceGain:1.5,voiceNormalization:true,levelResources:true,masteringEnabled:true,sfxGain:.3,musicGain:.18}:{})}});await select(job.id,{keepPrompt:true});setIntake('edit');if(geminiRoute){$('external-plan-panel').open=true;await requestCloudPlan();$('analysis-status').textContent='Transcripción preparada. Gemini está creando el plan; tus palabras originales se conservan.';history.replaceState(null,'','?project='+current.id);return;}if(editingRoute==='external'){showTool('director');syncEditRoute();history.replaceState(null,'','?project='+current.id);return;}const proposal=await api('jobs/'+current.id+'/direct-plan','POST',{prompt:$('director-prompt').value,settings:proposalBase()});showProposal(proposal);$('analysis-status').textContent='Voz transcrita automáticamente: revisa los subtítulos. Se conserva el plano completo; aún no hay seguimiento facial.';history.replaceState(null,'','?project='+current.id);(proposal.canApply?$('render'):$('basic-edit')).scrollIntoView({block:'center'});});return;}
   syncDirector();if(analysisBusy)analysisTimer=setTimeout(()=>followAnalysis(id),3000);
  }catch(e){analysisBusy=false;$('analysis-status').textContent=e.message;syncDirector();}
 }
@@ -509,7 +509,7 @@ function chooseEditRoute(route){
 }
 $('choose-automatic').textContent='Editar automáticamente';
 $('choose-automatic').onclick=()=>{automaticInstant=true;chooseEditRoute('automatic');};
-$('choose-external').onclick=()=>{automaticInstant=false;chooseEditRoute('automatic');};
+$('choose-external').onclick=()=>{geminiRoute=false;automaticInstant=false;chooseEditRoute('automatic');};
 $('prepare-external').onclick=()=>{$('review-instructions').click();};
 $('compare-styles').onclick=()=>work(async()=>{
  if(!current)throw Error('Analiza primero el vídeo.');
@@ -609,3 +609,51 @@ $('suggest-resources').onclick=()=>work(async()=>{
   details.append(summary,list);box.append(details);
  }
 });
+
+// Gemini requests are persisted on the server; reload only reads their status.
+let cloudPolling=null;
+async function checkCloudProviders(){
+ const status=await api('ai/providers'),selected=status.providers.find(p=>p.id==='gemini');
+ $('cloud-plan').disabled=!selected?.configured||!current||previewDirty;
+ $('cloud-status').textContent=selected?.configured?'Gemini conectado. Analizará tu vídeo y preparará un plan para revisar.':'Falta configurar Gemini. Tu vídeo se conserva.';
+ return selected;
+}
+function showCloudResult(result,id){
+ if(current?.id!==id)return;
+ if(result.state==='FAILED'||result.state==='INTERRUPTED'){$('cloud-status').textContent=result.message;$('cloud-plan').disabled=false;return;}
+ if(result.state!=='COMPLETE')return;
+ if(result.stale||current.fingerprint!==result.sourceFingerprint){$('cloud-status').textContent='El plan está guardado, pero los ajustes han cambiado. Compruébalo de nuevo antes de ejecutar.';return;}
+ $('external-plan-text').value=result.text;externalReview={...result.review,text:result.text,jobId:id};externalRequest=null;
+ const box=$('external-result');box.replaceChildren(node('strong',result.review.canApply?'Plan de Gemini listo para ejecutar':'Plan de Gemini recibido: revisa las operaciones pendientes'));
+ for(const row of result.review.rows)box.append(node('p',(row.status==='ready'?'✓ ':'Pendiente · ')+row.description));
+ for(const note of result.review.notes??[])box.append(node('p',note));
+ $('external-execute').disabled=!result.review.canApply;
+ $('cloud-status').textContent='Plan recibido y guardado. Revisa las decisiones y pulsa «Ejecutar plan en otra versión».';$('cloud-plan').disabled=false;
+ $('external-plan-panel').open=true;
+}
+async function resumeCloudPlan(id){
+ clearTimeout(cloudPolling);if(current?.id!==id)return;
+ const result=await api('jobs/'+id+'/ai-plan');if(current?.id!==id)return;
+ if(result.state==='RUNNING'){$('cloud-plan').disabled=true;$('cloud-status').textContent='Gemini está analizando el vídeo. Puedes cerrar la app: el resultado quedará guardado.';cloudPolling=setTimeout(()=>resumeCloudPlan(id).catch(error),2500);}
+ else if(result.state!=='NONE')showCloudResult(result,id);
+ else await checkCloudProviders();
+}
+$('cloud-check').onclick=()=>work(async()=>{await checkCloudProviders();if(current)await resumeCloudPlan(current.id);});
+$('cloud-provider').onchange=()=>{$('cloud-provider').value='gemini';};
+async function requestCloudPlan(){
+ if(!current||previewDirty)throw Error('Prepara el vídeo y guarda tus ajustes antes de solicitar el plan.');
+ const selected=await checkCloudProviders();if(!selected?.configured)return;
+ const id=current.id;const result=await api('jobs/'+id+'/ai-plan?async=1','POST',{provider:'gemini',prompt:$('director-prompt').value,requestId:crypto.randomUUID(),fingerprint:current.fingerprint});
+ if(result.state==='COMPLETE')showCloudResult(result,id);else await resumeCloudPlan(id);
+}
+$('cloud-plan').onclick=()=>work(requestCloudPlan);
+$('choose-automatic').textContent='Editar con Gemini';
+$('choose-automatic').onclick=()=>{
+ geminiRoute=true;automaticInstant=false;chooseEditRoute('automatic');$('external-plan-panel').open=true;
+ if(!current){$('review-instructions').click();$('cloud-status').textContent='Preparando la transcripción. Cuando termine, pulsa «Crear plan con Gemini».';return;}
+ void work(async()=>{
+  const base={...proposalBase(),automaticPreviewBroll:false};
+  if(previewDirty||!current.settings.autoRecipe){const job=await api('jobs','POST',{profileId:current.profileId,settings:base});await select(job.id,{keepPrompt:true});}
+  $('external-plan-panel').open=true;await requestCloudPlan();
+ });
+};
