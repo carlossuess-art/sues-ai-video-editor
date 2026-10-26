@@ -93,6 +93,57 @@ def cache_dense_sfx(bundle, duration, output_parent):
         raise
 
 
+def cache_library_sfx(bundle, duration, output_parent, input_paths):
+    """Render delayed library cues in bounded batches without changing their mix."""
+    import shutil
+    graph = (bundle / 'audio.ffscript').read_text()
+    clauses = [c.strip() for c in graph.strip().split(';\n')]
+    cues = [c for c in clauses if re.search(r'\[custom-cue\d+\]$', c)]
+    if len(cues) <= 4:
+        return None
+    definitions = [c for c in clauses if re.search(r'asplit=\d+\[custom-source\d+\]', c)]
+    directory = pathlib.Path(tempfile.mkdtemp(prefix='.sues-library-sfx-', dir=output_parent))
+    batches = []
+    try:
+        for offset in range(0, len(cues), 3):
+            group = cues[offset:offset+3]
+            command = ['ffmpeg', '-v', 'error', '-threads', '1']
+            sources = []
+            for index, cue in enumerate(group):
+                label = re.match(r'(\[custom-source\d+\])', cue).group(1)
+                definition = next(c for c in definitions if label in c[c.index('asplit='):])
+                source_index = int(re.match(r'\[(\d+):a\]', definition).group(1))
+                command += ['-threads', '1', '-i', str(input_paths[source_index])]
+                prefix = re.sub(r'^\[\d+:a\]', '[%d:a]' % index, definition.split(',asplit=')[0])
+                sources.append(prefix + ',' + cue[len(label):])
+            labels = [re.search(r'(\[custom-cue\d+\])$', c).group(1) for c in group]
+            script = directory / ('batch-%d.ffscript' % offset)
+            script.write_text(';\n'.join(sources + [
+                'anullsrc=r=48000:cl=stereo:d=%s,aformat=sample_fmts=fltp[batch-silence]' % duration,
+                '[batch-silence]' + ''.join(labels) +
+                'amix=inputs=%d:duration=first:dropout_transition=0:normalize=0,atrim=duration=%s[batch]' % (len(group)+1, duration)]) + '\n')
+            target = directory / ('batch-%d.wav' % offset)
+            command += ['-filter_complex_threads', '1', '-filter_complex_script', str(script),
+                        '-map', '[batch]', '-ar', '48000', '-ac', '2', '-c:a', 'pcm_f32le', str(target)]
+            subprocess.run(command, check=True)
+            batches.append(target)
+        bus = directory / 'bus.wav'
+        command = ['ffmpeg', '-v', 'error', '-threads', '1']
+        for batch in batches:
+            command += ['-i', str(batch)]
+        command += ['-filter_complex_threads', '1', '-filter_complex',
+                    ''.join('[%d:a]' % i for i in range(len(batches))) +
+                    'amix=inputs=%d:duration=longest:dropout_transition=0:normalize=0[bus]' % len(batches),
+                    '-map', '[bus]', '-ar', '48000', '-ac', '2', '-c:a', 'pcm_f32le', str(bus)]
+        subprocess.run(command, check=True)
+        removed = set(definitions + cues + [c for c in clauses if c.endswith('[custom-silence]') or c.startswith('[custom-silence]')])
+        return {'directory': directory, 'bus': bus, 'removed': removed,
+                'sources': len(cues), 'batchSize': 3}
+    except BaseException:
+        shutil.rmtree(directory)
+        raise
+
+
 def render(source, bundle, output):
     source = source.resolve(strict=True)
     bundle = bundle.resolve(strict=True)
@@ -211,6 +262,7 @@ def render(source, bundle, output):
     normalized_temporary = None
     normalization_audit = None
     sfx_cache = None
+    library_cache = None
     separated = (bundle / 'video.ffscript').is_file() and (bundle / 'audio.ffscript').is_file() and bool(audio)
     if manifest.get('voiceNormalization', {}).get('enabled') and not separated:
         raise ValueError('Voice normalization requires the separated render bundle')
@@ -252,12 +304,23 @@ def render(source, bundle, output):
             video_index = 1 + int(bool(music)) + len(sounds)
             sfx_cache = cache_dense_sfx(bundle, manifest['duration'], output.parent)
             audio_script = 'audio.ffscript'
+            input_paths = [voice_source] + ([music['path']] if music else []) + [sound['path'] for sound in sounds]
+            library_cache = cache_library_sfx(bundle, manifest['duration'], output.parent, input_paths)
+            clauses = sfx_cache['clauses'] if sfx_cache else [c.strip() for c in (bundle / audio_script).read_text().strip().split(';\n')]
+            adapters = []
             if sfx_cache:
-                cache_index = video_index
                 command += ['-threads', '1', '-i', str(sfx_cache['bus'])]
+                adapters.append('[%d:a]anull[sfx-bus]' % video_index)
                 video_index += 1
-                audio_script = str(sfx_cache['directory'] / 'cached-audio.ffscript')
-                pathlib.Path(audio_script).write_text('[%d:a]anull[sfx-bus];\n' % cache_index + ';\n'.join(sfx_cache['clauses']) + '\n')
+            if library_cache:
+                command += ['-threads', '1', '-i', str(library_cache['bus'])]
+                adapters.append('[%d:a]anull[custom-bus]' % video_index)
+                video_index += 1
+                clauses = [c for c in clauses if c not in library_cache['removed']]
+            if adapters:
+                cache_directory = (library_cache or sfx_cache)['directory']
+                audio_script = str(cache_directory / 'cached-audio.ffscript')
+                pathlib.Path(audio_script).write_text(';\n'.join(adapters + clauses) + '\n')
             command += ['-threads', '2', '-i', str(video_temporary),
                         '-filter_complex_threads', '1', '-filter_complex_script', audio_script,
                         '-map', str(video_index) + ':v:0', '-map', '[mixed-audio]',
@@ -305,7 +368,7 @@ def render(source, bundle, output):
                  'subjectLayers': [{k: v for k, v in layer.items() if k not in ('mask', 'resource')} for layer in subject_layers], 'soundEffects': manifest.get('soundEffects'), 'customSfx': {'assets': [{k: v for k, v in s.items() if k != 'path'} for s in sounds], 'events': manifest.get('customSfx', {}).get('events', [])}, 'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'ambientOverlays': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False, 'visualAcceptance': False} for m in overlays], 'mastering': manifest.get('mastering'), 'voiceEffects': {'version': manifest.get('voiceEffects', {}).get('version'), 'events': manifest.get('voiceEffects', {}).get('events', []), 'humanListeningAccepted': False}, 'captions': len(manifest['captions']), 'illustrations': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in illustrations],
                  'font': {'family': expected_family, 'regularSha256': digest(font), 'boldSha256': digest(bold_font), 'extraFaces': extra_fonts},
                  'ffmpeg': subprocess.check_output(['ffmpeg', '-version'], text=True).splitlines()[0],
-                 'denseSfxCache': ({'sources':sfx_cache['sources'],'batchSize':sfx_cache['batchSize']} if sfx_cache else None), 'voiceNormalization': normalization_audit, 'renderPasses': ['video', 'audio-mux'] if separated else ['legacy-combined'], 'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
+                 'librarySfxCache': ({'sources':library_cache['sources'],'batchSize':library_cache['batchSize']} if library_cache else None), 'denseSfxCache': ({'sources':sfx_cache['sources'],'batchSize':sfx_cache['batchSize']} if sfx_cache else None), 'voiceNormalization': normalization_audit, 'renderPasses': ['video', 'audio-mux'] if separated else ['legacy-combined'], 'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
         # Exclusive creation prevents a race from overwriting another output.
         os.link(temporary, output)
         output.with_suffix('.audit.json').write_text(json.dumps(audit, indent=2) + '\n')
@@ -314,6 +377,9 @@ def render(source, bundle, output):
         if sfx_cache:
             import shutil
             shutil.rmtree(sfx_cache['directory'])
+        if library_cache:
+            import shutil
+            shutil.rmtree(library_cache['directory'])
         temporary.unlink(missing_ok=True)
         if normalized_temporary is not None:
             normalized_temporary.unlink(missing_ok=True)

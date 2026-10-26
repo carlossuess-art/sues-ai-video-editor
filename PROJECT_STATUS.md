@@ -1,3 +1,18 @@
+## Mezcla de efectos con memoria acotada · 26/10/2026
+
+La nueva edición independiente 5f291c06-7c4a-43af-8821-28a090d2a2f2 falló al
+mezclar audio: SIGKILL y memory.events oom_kill=1, límite contenedor1,25GiB.
+La caché anterior sólo cubría efectos procedurales densos. Ahora los efectos de
+biblioteca repetidos se calculan en lotes de tres y se mezclan desde un bus PCM;
+se conservan ganancias, fades, normalización, tiempos y ducking del plan.
+6/6 pruebas focalizadas PASS, incluida comparación de muestras con error<1e-6.
+Grafo real70,891s con9cues PASS, pico hijo460040KiB. Sin subir límite de RAM,
+sin nuevas dependencias/servicios, originales intactos. Caché temporal eliminada
+al salir. Reintento2 en marcha; comprobar DONE y QA audiovisual antes de entregar.
+Detalles privados: resource-audit-drive-20261026/video-reedit-from-zero-20261026/.
+
+---
+
 ## Interfaz recuperada · 26/10/2026
 
 Queja: página sin carga, clics ni desplazamiento. Backend saludable; en navegador se
