@@ -1,16 +1,29 @@
-## F7 · Biblioteca Drive bajo demanda · 26/10/2026
+## F7 · Biblioteca conectada a Drive y probada en producción · 26/10/2026
 
-Búsqueda y propuestas locales conectadas al inventario privado con fichas en español;
-exclusiones de duplicados/QA; recuperación explícita desde Drive con tamaño+SHA256,
-caché128MiB y MediaLibrary existente. Prueba real aislada BR-0199,3.596.747bytes,
-B-roll5–8s/sourceIn1 sobre vídeo real13,4102s:MP4/decode/voz original PASS;
-fotograma revisado, sin aceptación narrativa ni estética global. Ninguna llamada Gemini.
-355/356tests en contenedor PASS; único fallo Git ausente pasa en host;13/13 focalizadas
-host PASS. Sin nuevas dependencias/cargos. Despliegue pendiente de verificar.
-Detalle: docs/SUES_LIBRARY_VIDEO_INTAKE_20261021.md (sección26/10).
-F6/F7/F9/V1 abiertas; no recalcular global por tamaño del catálogo. Siguiente:
-publicar rama, desplegar con backup/Whisper protegido, verificar API autenticada y
-actualizar catálogo/Roadmap. Después completar audio/fragmentos y fuentes pendientes.
+Producción verificada: 4f06f6dd7ed868b11ea938aa8cbd22159b6ced71.
+Búsqueda por descripciones españolas, propuestas locales del Director, exclusiones
+y recuperación explícita desde Drive con tamaño/SHA256, caché128MiB y MediaLibrary.
+BR-0199 recuperado bajo demanda:3.596.747bytes; plan B-roll5–8s/sourceIn1.
+Prueba aislada y producción sobre vídeo real13,4102s:MP4 completo/decode/voz original
+PASS. Versión producción 8bf88598-81e4-401c-8d46-56270761a4b6 DONE; padre intacto.
+HTTP búsqueda200/materialización201/anónimo401; segunda descarga cacheHit=true;
+QA excluido y nuevo recurso seleccionable. Ninguna llamada Gemini, cargo ni dependencia nueva.
+
+355/356tests PASS en contenedor; único fallo Git ausente pasa en host;13/13 focalizadas/Git
+host PASS. Sintaxis/diff correctos. UI de búsqueda/recuperación añadida; no QA visual móvil.
+Backup previo SHA2560f0246d34fa5e61ebcf4a3313e2519f3f1ca6adaea94848b6e7e4268f1ae9b21,
+Whisper activo. Catálogo privado actualizado:178registros físicos,177seleccionables
+y2064archivos inventariados;12fuentes instaladas/6familias,9originales/6familias
+identificadas por tablas. Los medios y fichas privadas no se publican enGit.
+
+Pendientes:305fuentes visuales(118efectos,34stock,79marca,74Adobe),audio/fragmentos,
+dependenciasCapCut,dosaccesos directos y autorización de archivos privados Drive
+que no admiten descarga directa. F6/F7/F9/V1 abiertas,sin nuevo porcentaje global.
+Conexión operativa de una parte acreditada; no biblioteca completa ni selección narrativa
+autónoma aprobada. Detalle en docs/SUES_LIBRARY_VIDEO_INTAKE_20261021.md;
+checkpoint privado resource-audit-drive-20261026/EDITORIAL_PROGRESS_20261026.json.
+Siguiente: completar descripciones/compatibilidad por lotes y revisar intervalos/audio.
+No repetir integración ya probada ni enviar nada a Gemini sin autorización expresa.
 
 ---
 
