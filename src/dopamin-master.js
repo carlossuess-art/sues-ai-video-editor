@@ -38,6 +38,14 @@ export function applyDopaminMaster(plan,options){
    const end=Math.min(cutoff,c.start+1.75,plan.captions.find(n=>n.start>c.start+1.45)?.start??cutoff);
    if(end-c.start<1.2)continue;
    const event={start:c.start,end,label:theme.label,color:theme.color,kind:theme.kind,captionId:c.id,reason:c.text,source:'timestamped-spoken-concept'};
+   if(reserved(event))continue;
+   const box=plan.layout?.caption;
+   if(box&&box.top<1600&&box.bottom>1300){
+    // A lower caption shares the hero's region. Render its exact spoken phrase
+    // once, bounded to the caption interval; never stack a paraphrase over it.
+    if(c.text.length>26||c.end-c.start<.3)continue;
+    event.label=c.text.toLocaleUpperCase('es');event.end=Math.min(event.end,c.end);
+   }
    if(!reserved(event))beats.push(event);
   }
  }

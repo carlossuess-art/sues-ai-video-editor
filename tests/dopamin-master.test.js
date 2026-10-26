@@ -4,7 +4,7 @@ import {execFileSync} from 'node:child_process';
 import {rmSync} from 'node:fs';
 import {fixture} from './helpers/editor-fixture.js';
 import {loadProject,prepareProject} from '../src/local-pipeline.js';
-import {applyDopaminMaster,finishDopaminAudio,musicAccentFilter,selectAutomaticPreviewBrolls} from '../src/dopamin-master.js';
+import {applyDopaminMaster,finishDopaminAudio,musicAccentFilter,selectAutomaticPreviewBrolls,masterGraphicCoversCaption} from '../src/dopamin-master.js';
 import {prepareDepthText} from '../src/depth-text.js';
 
 test('CALMA remains byte-for-byte unmodified by DOPAMIN composition',()=>{
@@ -18,7 +18,7 @@ test('spoken reveal drives visible graphics, differentiated captions and coordin
  p.duration=20;p.graphics=[];p.selectedMedia=[];p.globalTransitions=[];p.policy.outro.duration=2;
  p.captions=[{id:'seg-001',start:3,end:4.5,text:'totalmente gratuita',wordIndexes:[0,1],source:'manual'}];
  const options={styleId:'SUES_DOPAMIN',autoRecipe:true,motions:true,keywordOverrides:{}};
- applyDopaminMaster(p,options);assert.equal(p.masterGraphics[0].label,'SIN COSTE');assert.equal(p.captions[0].keyword.displayWordIndex,1);assert.ok(p.captions[0].keyword.scale>=1.6);
+ applyDopaminMaster(p,options);assert.equal(p.masterGraphics[0].label,'TOTALMENTE GRATUITA');assert.equal(p.masterGraphics[0].end,4.5);assert.equal(masterGraphicCoversCaption(p,p.captions[0]),true);assert.equal(p.captions[0].keyword.displayWordIndex,1);assert.ok(p.captions[0].keyword.scale>=1.6);
  p.soundEffects={enabled:true,gain:.3,events:[]};p.audioMix={};finishDopaminAudio(p,options);
  assert.ok(p.soundEffects.events.some(e=>e.preset==='impact'));assert.equal(p.audioMix.accents.length,1);
  }finally{rmSync(f.dir,{recursive:true,force:true});}
@@ -87,6 +87,6 @@ test('attention in the plural keeps its graphic on a different source transcript
   p.duration=13.4;p.graphics=[];p.selectedMedia=[];p.globalTransitions=[];p.policy.outro.duration=2;
   p.captions=[{id:'seg-001',start:3.08,end:3.54,text:'atentos,',wordIndexes:[0]}];
   applyDopaminMaster(p,{styleId:'SUES_DOPAMIN',autoRecipe:true,motions:true,keywordOverrides:{}});
-  assert.equal(p.masterGraphics[0].label,'PRESENTE');
+  assert.equal(p.masterGraphics[0].label,'ATENTOS,');assert.equal(p.masterGraphics[0].end,3.54);assert.equal(masterGraphicCoversCaption(p,p.captions[0]),true);
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });

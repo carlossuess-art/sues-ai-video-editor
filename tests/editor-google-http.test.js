@@ -20,7 +20,7 @@ test('real HTTP Google callback issues persistent session; password and emergenc
   const start=await request('/api/auth/google/start',{method:'POST',headers:{'X-Sues-Request':'editor'}}),target=new URL((await start.json()).url);g.setNonce(target.searchParams.get('nonce'));
   const callback='/api/auth/google/callback?'+new URLSearchParams({state:target.searchParams.get('state'),code:'code'});
   const reply=await request(callback,{headers:{Cookie:start.headers.get('set-cookie').split(';')[0]}});assert.equal(reply.status,303);assert.equal(reply.headers.get('location'),'/');
-  const cookie=reply.headers.getSetCookie().find(c=>c.startsWith('sues_session='));assert.match(cookie,/HttpOnly; SameSite=Strict.*Max-Age=2592000; Secure/);
+  const cookie=reply.headers.getSetCookie().find(c=>c.startsWith('sues_session='));assert.match(cookie,/HttpOnly; SameSite=Strict.*Max-Age=2592000; Expires=[^;]+; Secure/);
   const value=cookie.split(';')[0].split('=')[1];assert.equal(passwordSessions(token,record).valid(value),true);
   assert.equal((await request('/api/jobs',{headers:{Cookie:cookie.split(';')[0]}})).status,200);
   const replay=await request(callback,{headers:{Cookie:start.headers.get('set-cookie').split(';')[0]}});assert.equal(replay.headers.get('location'),'/?google=failed');assert.equal(replay.headers.getSetCookie().some(c=>c.startsWith('sues_session=')),false);

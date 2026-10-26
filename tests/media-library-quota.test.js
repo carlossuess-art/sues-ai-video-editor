@@ -24,7 +24,7 @@ test('library grows beyond old 24-slot ceiling, but enforces total files and byt
   assert.equal(quota.capacity().usedBytes,10);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
-test('library capacity is authenticated; default 128 slots and 2 GiB hard quota',async()=>{
+test('library capacity is authenticated; default 512 slots and 2 GiB hard quota',async()=>{
  const dir=mkdtempSync(join(tmpdir(),'sues-cap-http-')),app=createEditorServer({directory:dir,profiles:{}});
  try{
   const loc=await app.listen(),url=loc.split('/#')[0];
@@ -33,6 +33,6 @@ test('library capacity is authenticated; default 128 slots and 2 GiB hard quota'
   const cookie=s.headers.get('set-cookie').split(';')[0];
   const r=await fetch(url+'/api/library/capacity',{headers:{Cookie:cookie}});
   assert.equal(r.status,200);
-  const c=await r.json();assert.equal(c.maxAssets,128);assert.equal(c.maxBytes,2*1024**3);assert.equal(c.installed,0);
+  const c=await r.json();assert.equal(c.maxAssets,512);assert.equal(c.maxBytes,2*1024**3);assert.equal(c.installed,0);
  }finally{await app.close();rmSync(dir,{recursive:true,force:true});}
 });

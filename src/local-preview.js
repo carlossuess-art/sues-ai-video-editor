@@ -68,7 +68,7 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
   const blocks=policy.captions.mode==='short-groups'?shortCaptionGroups(mapped.words,{maxWords:policy.captions.maxWords,maxChars:policy.captions.maxCharsPerLine,maxDuration:policy.captions.maxDuration}):segmentWords(mapped.words,{maxWords:6,maxChars:policy.captions.maxCharsPerLine*policy.captions.maxLines-10,maxDuration:4.5});
   const captions=blocks.map(b=>({...b,lines:wrapCaption(b.text,policy.captions.maxCharsPerLine,policy.captions.maxLines),wordCues:captionCues(b,mapped.words)}));
   for(const [key,box]of Object.entries(previewLayout)){
-    assert(validateSafePlacement(box,key==='caption'&&camera.mode!=='reviewed-region'?PORTRAIT_SAFE_ZONES.captions:PORTRAIT_SAFE_ZONES.content),'safe layout');
+    assert(validateSafePlacement(box,key==='caption'&&camera.mode!=='reviewed-region'&&camera.detectionMethod!=='yunet-opencv-cpu'?PORTRAIT_SAFE_ZONES.captions:PORTRAIT_SAFE_ZONES.content),'safe layout');
     assert(box.right<=PORTRAIT_SAFE_ZONES.avoid.right.left,'right UI avoidance');
   }
   const broll=manualBroll.length?buildExplicitBrollPlan({policy,duration:timeMap.duration,events:manualBroll}):buildCinematicBrollPlan({policy,duration:timeMap.duration,slots,assets});
@@ -78,7 +78,18 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
     assert(typeof path==='string'&&path.length>0,'B-roll requires verified renderer bindings');
     return {...d,localFile:path};
   });
-  const semantic=prepareSemanticRender({director,policy,camera,timeMap,visionFrames,catalog,broll,captions,layout:previewLayout});
+  let semantic;
+  const subjectLayout=camera.detectionMethod==='yunet-opencv-cpu'&&previewLayout===PREVIEW_LAYOUT;
+  const top={...previewLayout,caption:{left:120,right:900,top:190,bottom:350}};
+  const chest={...previewLayout,caption:{left:120,right:900,top:1370,bottom:1510},outro:{left:120,right:900,top:190,bottom:330}};
+  const upperStack={...previewLayout,caption:{left:120,right:900,top:190,bottom:350},outro:{left:120,right:900,top:360,bottom:460}};
+  const layouts=subjectLayout?(policy.templateId==='SUES_DOPAMIN'?[top,chest,previewLayout,upperStack]:[previewLayout,chest,top,upperStack]):[previewLayout];
+  let layoutError;
+  for(const candidate of layouts){
+    try{for(const box of Object.values(candidate)){assert(validateSafePlacement(box,PORTRAIT_SAFE_ZONES.content)&&box.right<=PORTRAIT_SAFE_ZONES.avoid.right.left,'safe candidate layout');}semantic=prepareSemanticRender({director,policy,camera,timeMap,visionFrames,catalog,broll,captions,layout:candidate,source});previewLayout=candidate;layoutError=null;break;}
+    catch(error){layoutError=error;}
+  }
+  if(layoutError)throw layoutError;
   return {version:'1.0',kind:'local-preview',source,policy,timeMap,camera,semantic,
     cameraSpans:mapCameraToEdit(camera,timeMap),captions,broll,selectedMedia,layout:previewLayout,
     audioMix:prepareBackgroundAudio(backgroundAudio,timeMap.duration),duration:timeMap.duration,renderColors:{dark:brand.colors.dark},originalVoice:true,colorTreatment:'identity-natural',
@@ -209,7 +220,9 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   for(const s of spans){
     const i=s.index,vin=n>1?`sv${i}`:'0:v',ain=n>1?`sa${i}`:'0:a';
     const framing=plan.camera.mode==='full-frame-fit'?'scale=1080:1920:force_original_aspect_ratio=decrease:force_divisible_by=2:flags=lanczos,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=0x081219':`crop=w=${width}:h=${height}:x='${x}':y='${y}':exact=1`;
-    filters.push(`[${vin}]trim=start=${s.sourceIn}:end=${s.sourceOut},${framing},setpts=PTS-${s.sourceIn}/TB,${plan.camera.mode==='full-frame-fit'?'':'scale=1080:1920:flags=lanczos,'}setsar=1,fps=fps=30:start_time=0,${plan.camera.mode==='full-frame-fit'?`tpad=stop_mode=clone:stop_duration=${s.sourceOut-s.sourceIn},trim=duration=${s.sourceOut-s.sourceIn},`:''}format=yuv420p[v${i}]`);
+    // Preserve the planned final frame when phone video ends before its audio.
+    // Apply the existing fit-mode duration contract to tracked crops as well.
+    filters.push(`[${vin}]trim=start=${s.sourceIn}:end=${s.sourceOut},${framing},setpts=PTS-${s.sourceIn}/TB,${plan.camera.mode==='full-frame-fit'?'':'scale=1080:1920:flags=lanczos,'}setsar=1,fps=fps=30:start_time=0,tpad=stop_mode=clone:stop_duration=${s.sourceOut-s.sourceIn},trim=duration=${s.sourceOut-s.sourceIn},format=yuv420p[v${i}]`);
     if(hasAudio)filters.push(`[${ain}]atrim=start=${s.sourceIn}:end=${s.sourceOut},asetpts=PTS-${s.sourceIn}/TB,aresample=48000:async=1:first_pts=0[a${i}]`);
   }
   filters.push(`${spans.map((_,i)=>`[v${i}]${hasAudio?`[a${i}]`:''}`).join('')}concat=n=${n}:v=1:a=${hasAudio?1:0}[base]${hasAudio?'[audio]':''}`);
