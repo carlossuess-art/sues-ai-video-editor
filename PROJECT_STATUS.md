@@ -1,3 +1,19 @@
+## Interfaz recuperada · 26/10/2026
+
+Queja: página sin carga, clics ni desplazamiento. Backend saludable; en navegador se
+reprodujo bloqueo. La biblioteca montaba de entrada todos los vídeos/overlays con
+preload metadata, incluso oculta, y repetía la construcción al seleccionar proyecto.
+Ahora ninguna URL de vídeo de biblioteca se conecta hasta pulsar Cargar vista previa;
+se conserva un solo reproductor de recurso activo y se liberan medios al reconstruir.
+No se elimina ningún recurso. También se reabre el proyecto actual desde dashboard.
+Cambio de archivos web aplicado al bind mount activo, sin reiniciar servicios.
+QA: 6/6 pruebas de preview/buffer PASS; sintaxis PASS. Navegador autenticado:
+proyecto 1841bec2 abre, 87 subtítulos, Texto/Director clicables, vídeo reproduce/pausa,
+scrollY=300 observado; cero vídeos de biblioteca con src antes de solicitarlos.
+Prueba realizada en Chrome de escritorio; Android no verificado. Sin llamadas Gemini.
+
+---
+
 ## F7 · Biblioteca Drive bajo demanda · 26/10/2026
 
 Búsqueda y propuestas locales conectadas al inventario privado con fichas en español;
