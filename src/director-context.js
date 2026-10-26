@@ -11,3 +11,10 @@ export function directorAssets(library,directory){
  }
  return library.list().filter(a=>!/(?:QA|comprobación|revisión interna)/i.test(a.title??'')).filter(a=>!(visual.get(a.id)?.riskFlags??[]).some(f=>['visible-third-party-marking','unrelated-on-screen-text'].includes(f))).map(a=>({...a,emotions:semantics.get(a.id)?.semantics?.emotionTags??[],narrativeRoles:semantics.get(a.id)?.semantics?.narrativeRoles??[],creativeApproval:semantics.get(a.id)?.approvedForProduction===true?'approved':'review-required'}));
 }
+
+export function completeDirectorCatalog(catalog,settings){
+ const next={...catalog,assets:catalog.assets.filter(a=>a.kind!=='audio'||Number.isFinite(a.duration)&&a.duration>=catalog.duration)};
+ const keys=['styleId','captionWords','voiceGain','voiceNormalization','sfxGain','sfxEnabled','levelResources','musicAssetId','musicGain','musicEnabled','duckMusic','zoomIntensity','motions','graphicCards','transitions','videoEvents','overlayEvents','sfxEvents'];
+ next.currentSettings=Object.fromEntries(keys.filter(k=>settings[k]!==undefined).map(k=>[k,structuredClone(settings[k])]));
+ return next;
+}

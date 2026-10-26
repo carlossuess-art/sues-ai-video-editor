@@ -1,4 +1,4 @@
-let automaticInstant=false;
+let automaticInstant=false,geminiRoute=false;
 const googleLoginFailed=new URLSearchParams(location.search).get('google')==='failed';
 let design=null,designProfile=null,assetLibrary=[],editingRoute=null,comparisonRequest=null,automaticReviewKey=null,intakePhase='edit',pendingUploadId=null,allUploads=[];
 const $=id=>document.getElementById(id);let current=null,plan=null,working=false,editorStep='material-panel',previewDirty=false,playerView='original',localVideoURL=null;
@@ -418,7 +418,7 @@ async function followAnalysis(id){
  if(working){analysisTimer=setTimeout(()=>followAnalysis(id),1500);return;}
  try{const result=await api('uploads/'+id+'/transcribe');analysisBusy=['QUEUED','RUNNING'].includes(result.state);
   $('analysis-status').textContent=result.state==='QUEUED'?'Análisis en cola. Puedes cerrar esta pantalla.':result.state==='RUNNING'?'Whisper está transcribiendo la voz en tu servidor…':result.state==='FAILED'?result.error:'';
-  if(result.state==='COMPLETE'){await work(async()=>{const u=result.upload;await refreshProfiles(u.profileId);await loadDesign(u.profileId);const job=await api('jobs','POST',{profileId:u.profileId,newProject:true,projectTitle:$('project-name').value.trim()||u.brief?.projectTitle||undefined,settings:{styleId:u.brief?.styleId??$('new-project-style').value}});await select(job.id,{keepPrompt:true});setIntake('edit');if(editingRoute==='external'){showTool('director');syncEditRoute();history.replaceState(null,'','?project='+current.id);return;}const proposal=await api('jobs/'+current.id+'/direct-plan','POST',{prompt:$('director-prompt').value,settings:proposalBase()});showProposal(proposal);$('analysis-status').textContent='Voz transcrita automáticamente: revisa los subtítulos. Se conserva el plano completo; aún no hay seguimiento facial.';history.replaceState(null,'','?project='+current.id);(proposal.canApply?$('render'):$('basic-edit')).scrollIntoView({block:'center'});});return;}
+  if(result.state==='COMPLETE'){await work(async()=>{const u=result.upload;await refreshProfiles(u.profileId);await loadDesign(u.profileId);const job=await api('jobs','POST',{profileId:u.profileId,newProject:true,projectTitle:$('project-name').value.trim()||u.brief?.projectTitle||undefined,settings:{styleId:u.brief?.styleId??$('new-project-style').value,...(geminiRoute?{autoRecipe:true,automaticPreviewBroll:false,sfxEnabled:true,captionWords:2,voiceGain:1.5,voiceNormalization:true,levelResources:true,masteringEnabled:true,sfxGain:.3,musicGain:.18}:{})}});await select(job.id,{keepPrompt:true});setIntake('edit');if(geminiRoute){$('external-plan-panel').open=true;await requestCloudPlan();$('analysis-status').textContent='Transcripción preparada. Gemini está creando el plan; tus palabras originales se conservan.';history.replaceState(null,'','?project='+current.id);return;}if(editingRoute==='external'){showTool('director');syncEditRoute();history.replaceState(null,'','?project='+current.id);return;}const proposal=await api('jobs/'+current.id+'/direct-plan','POST',{prompt:$('director-prompt').value,settings:proposalBase()});showProposal(proposal);$('analysis-status').textContent='Voz transcrita automáticamente: revisa los subtítulos. Se conserva el plano completo; aún no hay seguimiento facial.';history.replaceState(null,'','?project='+current.id);(proposal.canApply?$('render'):$('basic-edit')).scrollIntoView({block:'center'});});return;}
   syncDirector();if(analysisBusy)analysisTimer=setTimeout(()=>followAnalysis(id),3000);
  }catch(e){analysisBusy=false;$('analysis-status').textContent=e.message;syncDirector();}
 }
@@ -509,7 +509,7 @@ function chooseEditRoute(route){
 }
 $('choose-automatic').textContent='Editar automáticamente';
 $('choose-automatic').onclick=()=>{automaticInstant=true;chooseEditRoute('automatic');};
-$('choose-external').onclick=()=>{automaticInstant=false;chooseEditRoute('automatic');};
+$('choose-external').onclick=()=>{geminiRoute=false;automaticInstant=false;chooseEditRoute('automatic');};
 $('prepare-external').onclick=()=>{$('review-instructions').click();};
 $('compare-styles').onclick=()=>work(async()=>{
  if(!current)throw Error('Analiza primero el vídeo.');
@@ -649,7 +649,7 @@ async function requestCloudPlan(){
 $('cloud-plan').onclick=()=>work(requestCloudPlan);
 $('choose-automatic').textContent='Editar con Gemini';
 $('choose-automatic').onclick=()=>{
- automaticInstant=false;chooseEditRoute('automatic');$('external-plan-panel').open=true;
+ geminiRoute=true;automaticInstant=false;chooseEditRoute('automatic');$('external-plan-panel').open=true;
  if(!current){$('review-instructions').click();$('cloud-status').textContent='Preparando la transcripción. Cuando termine, pulsa «Crear plan con Gemini».';return;}
  void work(async()=>{
   const base={...proposalBase(),automaticPreviewBroll:false};

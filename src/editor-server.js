@@ -1,4 +1,4 @@
-import {directorAssets,saveDirectorJSON} from './director-context.js';
+import {directorAssets,saveDirectorJSON,completeDirectorCatalog} from './director-context.js';
 import {CloudDirector} from './cloud-director.js';
 import {PlaybackPreviews} from './playback-preview.js';
 import {reviewInstructionExecution} from './instruction-execution.js';
@@ -206,7 +206,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      if(b.provider!=='gemini')return json(res,409,{error:'Gemini es el proveedor activo. OpenAI sigue pendiente de configuración.'});
      if(!/^[a-f0-9-]{36}$/.test(b.requestId??'')||typeof (b.prompt??'')!=='string'||(b.prompt??'').length>4000)return json(res,400,{error:'Petición de IA no válida.'});
      const fingerprint=source.fingerprint;
-     const project=jobs.loadProfile(source.profileId),catalog=externalCatalog(project,source.settings,directorAssets(assets,directory));req.setTimeout(600000);
+     const project=jobs.loadProfile(source.profileId),catalog=completeDirectorCatalog(externalCatalog(project,source.settings,directorAssets(assets,directory)),source.settings);req.setTimeout(600000);
      const execute=async()=>{
       const result=await cloud.generate({provider:b.provider,catalog,sourcePath:project.sourcePath,prompt:b.prompt??'',requestId:b.requestId,directory:jobs.dir(id)});
       const review=reviewExternalPlan(result.text,{project:jobs.loadProfile(source.profileId),settings:source.settings,assets:assets.list(),commandPlanner:planInstructions});
