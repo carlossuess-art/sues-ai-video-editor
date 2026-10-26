@@ -255,7 +255,7 @@ async function reviewPlan(id){
 
 async function refreshAssets(){
  assetLibrary=await api('assets');const sfx=$('sfx-asset'),priorSfx=sfx.value,music=$('music-asset'),images=$('image-asset'),priorMusic=music.value,priorImage=images.value;music.replaceChildren();images.replaceChildren();sfx.replaceChildren();const option=(value,text)=>{const o=node('option',text);o.value=value;return o;};sfx.append(option('','Seleccionar sonido'));music.append(option('','Pista de la plantilla'));images.append(option('','Seleccionar imagen'));
- const list=$('asset-list');list.replaceChildren();for(const a of assetLibrary){const row=node('div',undefined,'media-asset');row.append(node('p',a.title+' · '+(a.bytes/1024/1024).toFixed(1)+' MiB','small'));if(a.kind==='image'){images.append(option(a.id,a.title));const img=document.createElement('img');img.src='/api/assets/'+a.id+'/media';img.alt=a.title;img.loading='lazy';row.append(img);}else if(a.kind==='video'||a.kind==='overlay'){const video=document.createElement('video');video.src='/api/assets/'+a.id+'/media';video.controls=true;video.preload='metadata';video.playsInline=true;video.setAttribute('aria-label','Vista previa del recurso '+a.title);row.append(video,node('p','Vídeo guardado para el banco privado · uso en la línea de tiempo pendiente de integración.','small'));}else{if(a.kind==='sfx')sfx.append(option(a.id,a.title+' · '+a.duration.toFixed(2)+' s'));else music.append(option(a.id,a.title));const audio=document.createElement('audio');audio.src='/api/assets/'+a.id+'/media';audio.controls=true;audio.preload='none';row.append(audio);}list.append(row);}music.value=priorMusic;images.value=priorImage;sfx.value=priorSfx;updateSfxAudition();
+ const list=$('asset-list');list.replaceChildren();for(const a of assetLibrary){const row=node('div',undefined,'media-asset');row.append(node('p',a.title+' · '+(a.bytes/1024/1024).toFixed(1)+' MiB','small'));if(a.kind==='image'){images.append(option(a.id,a.title));const img=document.createElement('img');img.src='/api/assets/'+a.id+'/media';img.alt=a.title;img.loading='lazy';row.append(img);}else if(a.kind==='video'||a.kind==='overlay'){const video=document.createElement('video');video.src='/api/assets/'+a.id+'/media';video.controls=true;video.preload='metadata';video.playsInline=true;video.setAttribute('aria-label','Vista previa del recurso '+a.title);row.append(video,node('p','Vídeo disponible para el plan de montaje · revisar el fragmento antes de utilizarlo.','small'));}else{if(a.kind==='sfx')sfx.append(option(a.id,a.title+' · '+a.duration.toFixed(2)+' s'));else music.append(option(a.id,a.title));const audio=document.createElement('audio');audio.src='/api/assets/'+a.id+'/media';audio.controls=true;audio.preload='none';row.append(audio);}list.append(row);}music.value=priorMusic;images.value=priorImage;sfx.value=priorSfx;updateSfxAudition();
 }
 function updateSfxAudition(){const a=$('sfx-audition'),id=$('sfx-asset').value;a.pause();a.hidden=!id;if(id)a.src='/api/assets/'+id+'/media';else a.removeAttribute('src');}
 $('sfx-asset').onchange=updateSfxAudition;
@@ -263,6 +263,20 @@ function appendSfxEvent(e){const row=node('div',undefined,'image-event');row.dat
 $('add-sfx').onclick=()=>{if(!current||!['PREVIEW_READY','DONE'].includes(current.state))return;const assetId=$('sfx-asset').value,start=Number($('sfx-start').value),gain=Number($('sfx-event-gain').value)/100,a=assetLibrary.find(a=>a.id===assetId&&a.kind==='sfx');if(!a||!Number.isFinite(start)||start<0||start+a.duration>plan.manifest.duration+1e-6||!Number.isFinite(gain)||gain<0||gain>.7){error(new Error('Elige un sonido que quepa completo y un volumen entre 0 y 70 %.'));return;}appendSfxEvent({assetId,start,gain});markPreviewDirty();};
 function appendImageEvent(e){const row=node('div',undefined,'image-event');row.dataset.imageEvent=JSON.stringify(e);row.append(node('p',(assetLibrary.find(a=>a.id===e.assetId)?.title??'Imagen')+' · '+e.start+'–'+e.end+' s','small'));const remove=node('button','Quitar');remove.type='button';remove.onclick=()=>{row.remove();markPreviewDirty();};row.append(remove);$('image-events').append(row);}
 $('add-image').onclick=()=>{if(!current||!['PREVIEW_READY','DONE'].includes(current.state))return;const assetId=$('image-asset').value,start=Number($('image-start').value),end=Number($('image-end').value);if(!assetId||!Number.isFinite(start)||!Number.isFinite(end)||start<0||end<=start||end-start>8||end>plan.manifest.duration){error(new Error('Elige una imagen y un intervalo de hasta 8 segundos dentro del vídeo.'));return;}appendImageEvent({assetId,start,end});markPreviewDirty();};
+$('search-library').onclick=()=>work(async()=>{
+ const q=$('library-concept').value.trim();if(!q)throw Error('Escribe qué recurso necesitas.');
+ const result=await api('library/search?'+new URLSearchParams({q,limit:12})),box=$('library-results');box.replaceChildren();
+ if(!result.results.length){box.append(node('p','No hay recursos descritos que coincidan.','small'));return;}
+ for(const r of result.results){
+  const row=node('div',undefined,'media-asset');row.append(node('p',(r.catalogueNumber?r.catalogueNumber+' · ':'')+r.title,'small'));
+  if(r.description)row.append(node('p',r.description,'small'));
+  row.append(node('p',r.needsMaterialization?'En Drive · revisado por muestras · fragmento pendiente':r.availability==='private-operational'?'Disponible en el servidor · revisar composición':'Referencia de origen · revisión pendiente','small'));
+  if(r.needsMaterialization){const button=node('button','Recuperar de Drive para revisar');button.type='button';button.onclick=()=>work(async()=>{
+   button.disabled=true;try{const value=await api('library/materialize',{method:'POST',body:JSON.stringify({driveId:r.driveId??r.id,rights:'licensed'})});await refreshAssets();row.append(node('p','Recurso verificado y disponible para montaje. Revisa el fragmento y su composición antes de exportar.','small'));button.remove();}finally{button.disabled=false;}
+  });row.append(button);}
+  box.append(row);
+ }
+});
 $('upload-asset').onclick=()=>work(async()=>{const file=$('asset-file').files[0],rights=$('asset-rights').value,kind=$('asset-kind').value;if(!file||!rights)throw new Error('Elige un archivo y su procedencia');if(file.size>40*1024*1024)throw new Error('El recurso supera 40 MiB');$('asset-status').textContent='Guardando y comprobando recurso…';const response=await fetch('/api/assets?'+new URLSearchParams({kind,rights,name:file.name}),{method:'POST',credentials:'same-origin',headers:{'X-Sues-Request':'editor','Content-Type':file.type||'application/octet-stream'},body:file}),value=await response.json();if(!response.ok)throw new Error(value.error);await refreshAssets();$('asset-status').textContent=['video','overlay'].includes(kind)?'Recurso guardado en tu biblioteca privada. Pendiente de incorporarlo a los montajes.':'Recurso guardado. Ya puedes usarlo en el montaje.';});
 
 $('backup').onclick=()=>work(async()=>{if(current.state==='DONE'&&previewDirty){const next=await api('jobs','POST',{profileId:current.profileId,settings:settings()});await select(next.id);}$('backup-status').textContent='Preparando copia privada con original, análisis y recursos…';if(current.state==='PREVIEW_READY')await api('jobs/'+current.id,'PATCH',{settings:settings()});const result=await api('jobs/'+current.id+'/backup','POST',{});display(await api('jobs/'+current.id));$('backup-status').textContent='Copia verificada · '+(result.bytes/1024/1024).toFixed(1)+' MiB. Ya puedes descargarla.';});
@@ -564,12 +578,12 @@ function buildSuggestedBrollDraft(cue,candidate,catalog,existingText){
 $('suggest-resources').onclick=()=>work(async()=>{
  if(!current?.id)throw Error('Prepara primero el vídeo y su transcripción.');
  const selectedId=current.id,box=$('resource-suggestions');
- box.replaceChildren(node('p','Buscando coincidencias en recursos privados instalados…'));
+ box.replaceChildren(node('p','Buscando en recursos instalados y fichas de Drive…'));
  const result=await api('jobs/'+encodeURIComponent(selectedId)+'/library-cues?limit=6');
  if(current?.id!==selectedId)return;
  box.replaceChildren();
  if(result.approvedToAutoPublish!==false)throw Error('La propuesta no confirma el requisito de revisión.');
- if(!result.cues.length){box.append(node('p','No hay coincidencias fiables en la biblioteca instalada. No se añadirán efectos de relleno.','small'));return;}
+ if(!result.cues.length){box.append(node('p','No hay coincidencias suficientes en la biblioteca revisada. No se añadirán efectos de relleno.','small'));return;}
  box.append(node('p','Sugerencias para revisar: no están insertadas en el vídeo.','small'));
  for(const cue of result.cues){
   const context=cue.narrative?' · '+cue.narrative.label+' (interpretación provisional)':' · Coincidencia de catálogo';
@@ -587,6 +601,9 @@ $('suggest-resources').onclick=()=>work(async()=>{
     ?' · Tramo de origen sugerido '+sourceRange.startSec.toFixed(2)+'–'+sourceRange.endSec.toFixed(2)+' s (sin aplicar)'
     :temporal?.complete?' · Auditoría temporal: sin tramo continuo suficiente':' · Sin auditoría temporal completa';
    const item=node('li',candidate.title+' · '+candidate.kind+' · '+(candidate.catalogueApproval==='approved'?'Catalogado, revisar composición':'Pendiente de aprobación visual')+reasoning+sampleMessage+timeline);
+   if(candidate.needsMaterialization){const recover=node('button','Recuperar de Drive para revisar');recover.type='button';recover.onclick=()=>work(async()=>{
+    recover.disabled=true;try{await api('library/materialize',{method:'POST',body:JSON.stringify({driveId:candidate.assetId,rights:'licensed'})});await refreshAssets();item.append(node('p','Disponible en el servidor. Falta revisar el tramo exacto antes de añadirlo.','small'));recover.remove();}finally{recover.disabled=false;}
+   });item.append(recover);}
    if(candidate.kind==='video'&&cue.decision==='contextual-review-only'&&sourceRange?.appliedToVideo===false){
     const selectButton=node('button','Preparar este B-roll para revisar');
     selectButton.type='button';

@@ -1,3 +1,4 @@
+import {loadAuditedDrive} from './drive-resource-library.js';
 import {mkdirSync,readdirSync,readFileSync,writeFileSync,renameSync,lstatSync,existsSync,linkSync,unlinkSync,statfsSync} from 'node:fs';
 import {open,unlink} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
@@ -18,7 +19,7 @@ export class MediaLibrary{
   for(const name of readdirSync(this.directory))if(/^\.asset-incoming-[a-f0-9-]+$/.test(name))unlinkSync(join(this.directory,name));
  }
  records(){return readdirSync(this.directory).filter(n=>/^[a-f0-9]{64}\.json$/.test(n)).map(n=>{const r=JSON.parse(readFileSync(join(this.directory,n),'utf8'));if(r.id!==n.slice(0,-5)||!HASH.test(r.id)||!['image','audio','sfx','video','overlay'].includes(r.kind)||!['owned','licensed'].includes(r.rights)||!Number.isInteger(r.bytes)||r.bytes<1||r.bytes>MAX)throw new Error('Asset metadata invalid');return r;});}
- list(){return this.records().map(({id,kind,title,rights,bytes,duration,width,height,mimeType,createdAt,fps,hasAlpha,hasAudio})=>({id,kind,title,rights,bytes,duration,width,height,mimeType,createdAt,...(fps?{fps}:{}),...(hasAlpha!==undefined?{hasAlpha}:{}),...(hasAudio!==undefined?{hasAudio}:{})}));}
+ list(){const audit=loadAuditedDrive(resolve(this.directory,'..'));return this.records().filter(r=>r.id!=='917ae5425b86ad0d4ef68e1e449567e7c341189e95f3667ed6cd15177e984254'&&!audit.excludedHashes.has(r.id)).map(({id,kind,title,rights,bytes,duration,width,height,mimeType,createdAt,fps,hasAlpha,hasAudio})=>({id,kind,title,rights,bytes,duration,width,height,mimeType,createdAt,...(fps?{fps}:{}),...(hasAlpha!==undefined?{hasAlpha}:{}),...(hasAudio!==undefined?{hasAudio}:{})}));}
  capacity(){const items=this.records(),usedBytes=items.reduce((sum,item)=>sum+item.bytes,0);return {installed:items.length,maxAssets:this.maxAssets,remainingSlots:Math.max(0,this.maxAssets-items.length),usedBytes,maxBytes:this.maxLibraryBytes,remainingBytes:Math.max(0,this.maxLibraryBytes-usedBytes)};}
  metadata(id){
   const asset=this.resolve(id),path=join(this.directory,'metadata-v2',id+'.json');

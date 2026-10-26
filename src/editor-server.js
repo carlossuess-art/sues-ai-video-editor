@@ -1,3 +1,4 @@
+import {DriveResourceCache} from './drive-resource-library.js';
 import {directorAssets,saveDirectorJSON,completeDirectorCatalog} from './director-context.js';
 import {CloudDirector} from './cloud-director.js';
 import {PlaybackPreviews} from './playback-preview.js';
@@ -133,6 +134,12 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      if(!q.trim()||q.length>250||!Number.isInteger(limit)||limit<1||limit>20)return json(res,400,{error:'Consulta o límite no válido'});
      try{return json(res,200,searchPrivateLibrary(directory,q,{limit}));}
      catch(error){return json(res,503,{error:'Índice privado de biblioteca no disponible'});}
+    }
+    if(path==='/api/library/materialize'&&req.method==='POST'){
+     const value=await body(req,2048);
+     if(!value||Object.keys(value).some(k=>!['driveId','rights'].includes(k)))return json(res,400,{error:'Solicitud Drive inválida'});
+     try{const cache=new DriveResourceCache(directory);return json(res,201,await cache.materialize(value.driveId,{assets,rights:value.rights}));}
+     catch(error){return json(res,422,{error:String(error.message).slice(0,180)});}
     }
     const assetMetadataMatch=/^\/api\/assets\/([a-f0-9]{64})\/metadata$/.exec(path);
     if(assetMetadataMatch&&req.method==='GET'){const resource=assets.semanticCatalog().assets.find(a=>a.id===assetMetadataMatch[1]);return json(res,resource?200:404,resource??{error:'Recurso ausente'});}

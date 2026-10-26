@@ -30,13 +30,13 @@ export function proposeLibraryCues(jobsDirectory,transcript,{limit=6}={}){
   if(start<1||start>=closing||end-start<.4||text.length>250)continue;
   const search=searchPrivateLibrary(jobsDirectory,text,{limit:8,index});
   const candidates=search.results
-   .filter(r=>r.availability==='private-operational'&&['video','overlay','image'].includes(r.kind))
+   .filter(r=>['private-operational','remote-drive-only'].includes(r.availability)&&['video','overlay','image'].includes(r.kind))
    .filter(r=>r.kind!=='video'||qualifiesVideoCandidate(r.lexicalEvidence))
    // Sampled visual evidence of unrelated brand/text is a hard guard for VIDEO proposals.
    // An unknown or apparently clean sample NEVER counts as a full visual approval.
    .filter(r=>r.kind!=='video'||!r.visualReview?.riskFlags.some(flag=>['visible-third-party-marking','unrelated-on-screen-text'].includes(flag)))
    .slice(0,3)
-   .map(({id,title,kind,score,creativeApproval,lexicalEvidence,visualReview})=>({assetId:id,title,kind,score,
+   .map(({id,title,kind,score,creativeApproval,lexicalEvidence,visualReview,needsMaterialization})=>({assetId:id,title,kind,score,needsMaterialization:needsMaterialization===true,
      catalogueApproval:creativeApproval,needsHumanReview:true,
      evidence:{type:'catalogue-lexical-match',exactTerms:lexicalEvidence?.exactTerms??[],
       expandedTerms:lexicalEvidence?.expandedTerms??[],visualContentVerified:false,

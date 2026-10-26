@@ -56,3 +56,19 @@ El commit `a5430f21b7d44c0e814a621e36d8f30eefd4ab38` fue instalado sobre el edit
 Primer intento fallido por modificación concurrente de `jobs/uploads/asr/worker.json` (heartbeat Whisper) durante el tar; rollback correcto, solucionado pausando Whisper inactivo durante copia; servicio reactivado al final. No hubo pérdida de proyectos. Tras despliegue, comprobada concordancia commit real/objetivo y HTTPS 200.
 
 Una solicitud posterior para integrar el overlay comprado `Shape 08.mp4` con la API privada fue bloqueada por controles de herramienta. No se creó ese recurso nuevo. Es necesario una importación autorizada a través del panel del usuario o un flujo Work, antes de prueba de material comprado en producción.
+
+## Drive bajo demanda · 26/10/2026
+
+Se amplía el motor existente con `audited-drive-v1.json` privado, mantenido a partir del inventario Drive existente (no se incluye en Git). Búsqueda por descripción visible y usos editoriales en español; no se infiere contenido del nombre. Los candidatos remotos entran en las propuestas locales del Director con revisión por muestras y `needsMaterialization`. Ninguna operación llama a Gemini.
+
+`POST /api/library/materialize` exige sesión, protección de origen/CSRF, ID presente en catálogo, derechos declarados, cuatro muestras, decodificación previa correcta, tamaño y SHA256. Descarga desde el endpoint fijo de Drive, sin URLs arbitrarias, cookies ni redirecciones; los archivos que necesiten autenticación o confirmación fallan de forma explícita. No es una conexión OAuth para todos los archivos privados.
+
+Caché de descarga limitada a 128 MiB, máximo 40 MiB por recurso, bloqueo de concurrencia y expulsión por antigüedad. La importación usa MediaLibrary existente (512 recursos/2 GiB). Los medios seleccionados instalados conservan sus bytes: expulsar caché nunca elimina assets ni rompe proyectos. Los originales permanecen en Drive. Si el proceso muere durante descarga, el bloqueo residual requiere comprobar que no hay proceso antes de retirarlo; no se elimina un lock activo a ciegas.
+
+Se aplican `selectionExcluded`, grupos SHA256 y exclusión de QA en búsqueda, propuestas y listado seleccionable. No hay borrados físicos en Drive; las equivalencias exactas conservan un ID canónico y las variantes visuales excluidas no se borran por similitud. Las versiones antiguas siguen pudiendo resolver sus medios para recuperarse.
+
+Prueba real aislada sobre un vídeo de Carlos de 13,4102 s: búsqueda «carretera senda recta flanqueada árboles» → BR-0199 → 3.596.747 bytes de Drive con SHA256 6a82f1910368a5dbbf00d2a13648e9c91b231f38af88cadd3fdcfcad0fcf0945 → MediaLibrary → plan B-roll 5–8 s/sourceIn 1 → MP4 completo, decode PASS y voz original. Fotograma 6,5 s inspeccionado: carretera y árboles al atardecer/amanecer, captions legibles; mantiene bandas por el encuadre del recurso. Prueba técnica explícita, no decisión narrativa autónoma ni aprobación creativa global. Primera descarga comprobada; las repeticiones usan caché. Evidencia privada: resource-audit-drive-20261026/operational-qa/E2E_RESULT.json.
+
+Validación: 355/356 tests PASS en contenedor con FFmpeg; el único fallo es Git ausente y su prueba pasó en host. 13/13 pruebas focalizadas/Git host PASS, sintaxis/diff comprobados. No confundir estas pruebas con aceptación V1. Despliegue debe verificarse por separado antes de afirmar disponible en producción.
+
+Pendientes: revisión continua/audio y fragmentos de clips, efectos/stock/marca/Adobe, clasificación CapCut, accesos directos, autorización de archivos Drive privados, QA de interfaz y decisión narrativa de nivel DOPAMIN. No se autoriza envío a Gemini.

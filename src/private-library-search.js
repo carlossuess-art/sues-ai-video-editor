@@ -1,3 +1,4 @@
+import {loadAuditedDrive,auditedCandidates} from './drive-resource-library.js';
 import {readFileSync,lstatSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {loadTemporalAudit} from './scene-temporal-qa.js';
@@ -54,18 +55,19 @@ export function loadPrivateLibraryIndex(jobsDirectory){
  const official=safeJSON(join(root,'official-library-v1.json'),2*1024*1024);
  const remote=safeJSON(join(root,'purchased-source-index-309-v1.json'),6*1024*1024);
  if(!Array.isArray(official.runtimeItems)||!Array.isArray(remote.items))throw Error('Invalid library index');
- return {official,remote,visualReviews:loadVisualReview(root)};
+ return {official,remote,audited:loadAuditedDrive(jobsDirectory),visualReviews:loadVisualReview(root)};
 }
 // Reuse only editor-installed scene media with partial human frame tags and trusted,
 // whitelisted V2 technical/licensing metadata. Never put private origin/proof/path in API.
 export function reviewedNarrativeVideos(jobsDirectory,index){
- const {official,visualReviews}=index;
+ const {official,visualReviews,audited}=index;
  const temporal=loadTemporalAudit(jobsDirectory);
  const dirname=resolve(jobsDirectory,'assets','metadata-v2');
  let st;try{st=lstatSync(dirname);}catch(e){if(e?.code==='ENOENT')return [];throw e;}
  if(!st.isDirectory()||st.isSymbolicLink())throw Error('Unsafe asset metadata directory');
  const out=[];
  for(const item of official.runtimeItems){
+  if(item.selectionExcluded===true||item.id==='917ae5425b86ad0d4ef68e1e449567e7c341189e95f3667ed6cd15177e984254'||audited?.excludedHashes.has(item.id))continue;
   if(item.kind!=='video'||item.storedInEditor!==true||!/^[a-f0-9]{64}$/.test(item.id))continue;
   const sample=visualReviews?.get(item.id);
   if(!sample?.sceneTags.length||sample.riskFlags.some(x=>x==='visible-third-party-marking'||x==='unrelated-on-screen-text'))continue;
@@ -90,12 +92,14 @@ export function reviewedNarrativeVideos(jobsDirectory,index){
 
 export function searchPrivateLibrary(jobsDirectory,query,{limit=8,index}={}){
  if(typeof query!=='string'||!query.trim()||query.length>250||!Number.isInteger(limit)||limit<1||limit>20)throw Error('Consulta no válida');
- const {official,remote,visualReviews}=index??loadPrivateLibraryIndex(jobsDirectory);
+ const {official,remote,visualReviews,audited}=index??loadPrivateLibraryIndex(jobsDirectory);
+ const excluded=item=>item.selectionExcluded===true||item.id==='917ae5425b86ad0d4ef68e1e449567e7c341189e95f3667ed6cd15177e984254'||audited?.excluded.has(item.driveId??item.id)||audited?.excludedHashes.has(item.id);
  if(!Array.isArray(official?.runtimeItems)||!Array.isArray(remote?.items))throw Error('Invalid library index');
  const exact=tokens(query),expanded=new Set(exact);
  for(const word of exact)for(const w of (SYNONYMS[word]??[]))expanded.add(w);
  const results=[];
  for(const item of official.runtimeItems){
+  if(excluded(item))continue;
   const text=[item.titleEs,...(Array.isArray(item.keywords)?item.keywords:[]),...(Array.isArray(item.emotionTags)?item.emotionTags:[])].join(' ');
   const t=tokens(text),exactTerms=[...exact].filter(term=>t.has(term)).sort();
   const expandedTerms=[...expanded].filter(term=>!exact.has(term)&&t.has(term)).sort();
@@ -108,15 +112,26 @@ export function searchPrivateLibrary(jobsDirectory,query,{limit=8,index}={}){
    visualReview:sampled?{scope:sampled.scope,sampleCount:sampled.sampleCount,riskFlags:[...sampled.riskFlags],sceneTags:[...sampled.sceneTags]}:null});
  }
  for(const item of remote.items){
-  if(item.installedInEditor)continue;
+  if(item.installedInEditor||excluded(item)||audited?.cards.some(c=>c.driveId===item.id&&c.visibleContentEs))continue;
   const text=[item.originalName,...(Array.isArray(item.categoryHint)?item.categoryHint:[])].join(' ');
   const t=tokens(text),score=intersections(exact,t)*4+intersections(expanded,t);
   if(score<2)continue;
   results.push({id:item.id,title:item.originalName,kind:'source-reference',availability:'remote-drive-only',creativeApproval:'visual-inspection-required',score});
  }
+ for(const c of auditedCandidates(audited??{cards:[],excluded:new Set()})){
+  const t=tokens([c.editorialTitleEs,c.visibleContentEs,...(c.proposedUsesEs??[])].join(' '));
+  const exactTerms=[...exact].filter(term=>t.has(term)).sort(),expandedTerms=[...expanded].filter(term=>!exact.has(term)&&t.has(term)).sort();
+  const score=exactTerms.length*12+expandedTerms.length*2;if(!score)continue;
+  const meta=join(jobsDirectory,'assets',c.sha256+'.json'),media=join(jobsDirectory,'assets',c.sha256+'.media');
+  let installed=false;try{const record=safeJSON(meta,65536),st=lstatSync(media);installed=record.id===c.sha256&&record.kind==='video'&&record.bytes===c.bytes&&['owned','licensed'].includes(record.rights)&&st.isFile()&&!st.isSymbolicLink()&&st.size===c.bytes;}catch(e){if(e?.code!=='ENOENT')throw e;}
+  if(installed&&results.some(r=>r.id===c.sha256))continue;
+  results.push({id:installed?c.sha256:c.driveId,driveId:c.driveId,catalogueNumber:c.catalogueNumber,title:c.editorialTitleEs??c.visibleContentEs,kind:'video',availability:installed?'private-operational':'remote-drive-only',creativeApproval:'review-required',score,
+   lexicalEvidence:{exactTerms,expandedTerms},needsMaterialization:!installed,
+   visualReview:{scope:'sampled-frames-only',sampleCount:c.sampleReviewCount,riskFlags:[...(c.riskFlags??[])],sceneTags:[]},description:c.visibleContentEs,proposedUses:c.proposedUsesEs??[],fragmentApproved:c.fragmentApproved===true});
+ }
  const rank={'private-operational':0,'reference-only':1,'remote-drive-only':2};
- results.sort((a,b)=>(rank[a.availability]??3)-(rank[b.availability]??3)||b.score-a.score||String(a.title).localeCompare(String(b.title),'es'));
+ results.sort((a,b)=>b.score-a.score||(rank[a.availability]??3)-(rank[b.availability]??3)||String(a.title).localeCompare(String(b.title),'es'));
  return {schema:'sues-private-library-search/v1',query,sourceIndexOnly:true,approvedToAutoPublish:false,
   results:results.slice(0,limit),
-  rule:'Sugerencias: no descargar, aprobar ni insertar medios sin verificar procedencia, licencia, semántica y compatibilidad.'};
+  rule:'Recursos locales y fichas Drive por muestras. Los remotos requieren materialización explícita con derechos declarados, validación técnica y revisión del fragmento; no aprobación automática.'};
 }

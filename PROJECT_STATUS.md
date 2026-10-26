@@ -1,3 +1,19 @@
+## F7 · Biblioteca Drive bajo demanda · 26/10/2026
+
+Búsqueda y propuestas locales conectadas al inventario privado con fichas en español;
+exclusiones de duplicados/QA; recuperación explícita desde Drive con tamaño+SHA256,
+caché128MiB y MediaLibrary existente. Prueba real aislada BR-0199,3.596.747bytes,
+B-roll5–8s/sourceIn1 sobre vídeo real13,4102s:MP4/decode/voz original PASS;
+fotograma revisado, sin aceptación narrativa ni estética global. Ninguna llamada Gemini.
+355/356tests en contenedor PASS; único fallo Git ausente pasa en host;13/13 focalizadas
+host PASS. Sin nuevas dependencias/cargos. Despliegue pendiente de verificar.
+Detalle: docs/SUES_LIBRARY_VIDEO_INTAKE_20261021.md (sección26/10).
+F6/F7/F9/V1 abiertas; no recalcular global por tamaño del catálogo. Siguiente:
+publicar rama, desplegar con backup/Whisper protegido, verificar API autenticada y
+actualizar catálogo/Roadmap. Después completar audio/fragmentos y fuentes pendientes.
+
+---
+
 ## Estabilidad y REA · trabajo validado · 24/10/2026
 
 Corrección de arranque: no mostrar credenciales antes de verificar sesión, recuperación
