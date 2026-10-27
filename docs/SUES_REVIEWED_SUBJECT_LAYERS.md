@@ -131,4 +131,11 @@ cortas, intervalos fuera de rangos y argumento central incompleto. No se aplicó
 su salida ni se presenta como Director autónomo listo. La propuesta corregida
 procede del análisis de ChatGPT Work sobre locución y muestras visuales; el motor
 existente la valida/ejecuta. Sin llamadas Gemini, nuevas descargas o gasto externo.
-Render completo y crítica final pendientes al escribir esta sección.
+Render final5e5384e2-da7e-4225-8f64-5a5d271ea69e DONE,70,9s1080×1920,38.802.994bytes.
+SHA8be1b267e737c4ccaa5493928b5673371751e9cf7e618f754fc339f9b634f038.
+Decode completo PASS,-14,3LUFS,pico−2,1dBFS.24fotogramas revisados y4críticos:
+se ven cruz,2checks,número,3B-roll(desde6s)y3escenas de profundidad. Contornos
+de pelo suaves; rótulos COBRAR/SISTEMA NERVIOSO parcialmente ocultos; número pequeño.
+App: reproduce/pausa/salto35,2s sin error,exportación habilitada. No escucha ni
+visionado dinámico íntegros; no aceptación artística del usuario ni Director autónomo.
+Suite367/368PASS; único fallo Git ausente pasa en host.9/9foreground+backupPASS.

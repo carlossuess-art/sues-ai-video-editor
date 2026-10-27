@@ -1,16 +1,24 @@
 ## Nueva edición con máscara y capas · 27/10/2026
 
-Carlos rechaza5f291c06 como insuficiente: tres B-roll y sin elementos detrás.
-Se integra el compositor MODNet de la rama existente al motor activo; primera
-preparación623944a1-6f8a-408c-bcfb-8cb1bb658452, todavía sin render. Cinco zooms,
-cuatro motions (cross/check/number), B-roll desde6s y tres escenas de profundidad.
-Máscara225frames inferidos,9muestras revisadas; resto cero y vínculo cámara/SHA.
-Plan externo foreground-effects conectado, recuperación y prueba de píxeles PASS.
-15/15 focalizadas PASS; suite completa en curso. Modelo Director Qwen3-1.7B
-rechazado por incumplimientos; dirección revisada de Work, no autonomía declarada.
-Siguiente: terminar suite, validar plan externo, render, revisar capas/checks/B-roll
-sobreMP4, medir audio, abrir en app, actualizar checkpoint y Roadmap. No declarar
-acabado por compilar. Datos privados en resource-audit-drive-20261026/video-brain-depth-20261027/.
+Exportación nueva5e5384e2-da7e-4225-8f64-5a5d271ea69e DONE,70,9s1080×1920,
+38.802.994bytes,SHA8be1b267e737c4ccaa5493928b5673371751e9cf7e618f754fc339f9b634f038.
+Diferente del original y del anterior5f291c06; fuente intacta. Tres B-roll a6/27,6/55,42s,
+cuatro símbolos(cross,2checks,number),cinco zooms,16SFX,música,87captions.
+Tres escenas con máscara corporal:19–21,5s dinero+COBRAR;34–36,5s blur+SISTEMA
+NERVIOSO;43–45,5s aurora+EL CAMBIO. Compositor integrado al motor activo y plan
+externo foreground-effects validado.225frames MODNet nuevos; máscara ligada al
+SHA y cámara exacta, conservada en caché de mattes estable y copia portable.
+QA: decode íntegro PASS,-14,3LUFS,truepeak−2,1dBFS;24fotogramas del MP4 revisados
+más4críticos. Pelo con halo suave,rótulos parcialmente ocluidos y número pequeño;
+no visionado dinámico ni escucha completos,no aceptación artística del usuario.
+App autenticada: vídeo editado,reproduce/pausa,salta a35,2s,Exportar habilitado.
+Suite367/368PASS en contenedor; caso Git ausente pasa2/2en host;15/15integración
+más9/9finales foreground/backupPASS. Código publicado7df8731,árbol58a264ba.
+Director localQwen rechazado por incumplimientos; dirección corregida porChatGPT
+Work y ejecutada por motor,no Director autónomo listo. Cero llamadasGemini.
+Continuación: valoración artística de Carlos; mejorar legibilidad/contorno si procede;
+Director autónomo y QA audiovisual completo siguen pendientes. Evidencia privada:
+resource-audit-drive-20261026/video-brain-depth-20261027/QA_RESULT.json.
 
 ---
 
