@@ -21,6 +21,13 @@ test('JSON is source bound and unknown keys remain for existing strict validator
  const sha='a'.repeat(64),text=JSON.stringify({schema:'sues-edit-plan/v1',sourceSha256:sha,operations:[{type:'transition',resourceId:'warm',start:3,duration:.4}]});
  assert.equal(adaptCreativePlan(text,sha).format,'json');assert.throws(()=>adaptCreativePlan(text,'b'.repeat(64)),/otro vídeo/);
 });
+test('Director proposal with a single technical block preserves prose without treating it as executable',()=>{
+ const sha='a'.repeat(64),plan={schema:'sues-edit-plan/v1',sourceSha256:sha,operations:[{type:'transition',resourceId:'warm',start:3,duration:.4}]};
+ const raw='Propuesta: cadena detrás del sujeto.\n```json\n'+JSON.stringify(plan)+'\n```\nNo enviar secretos.';
+ const adapted=adaptCreativePlan(raw,sha);assert.equal(adapted.original,raw);assert.equal(adapted.format,'director-document');assert.deepEqual(adapted.converted,plan);assert.equal(adapted.items[0].status,'reference');
+ assert.throws(()=>adaptCreativePlan(raw+'\n```json\n'+JSON.stringify(plan)+'\n```',sha),/más de un bloque/);
+ assert.throws(()=>adaptCreativePlan(raw,'b'.repeat(64)),/otro vídeo/);
+});
 test('private creative review preserves input, checks stale requests and blocks unknown resources',async()=>{
  const f=fixture(),app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles});app.jobs.autoStart=false;
  try{

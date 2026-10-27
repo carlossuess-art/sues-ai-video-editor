@@ -16,10 +16,16 @@ const unsafe=/detr[aá]s|m[aá]scar|oclu|rotoscop|tens|caden|anim|zoom|acerc|son
 export function adaptCreativePlan(text,sourceSha256,{search,resolveId}={}){
  if(typeof text!=='string'||!text.trim()||text.length>30000)throw Error('El plan admite entre 1 y 30000 caracteres.');
  const original=text.trim(),id=createHash('sha256').update(text).digest('hex');
- if(/^(?:\x60\x60\x60json\s*)?\s*\{/i.test(original)){
-  const plan=parseExternalPlan(original);
+ // The Director may return a readable proposal plus one fenced technical plan.
+ // The surrounding prose is retained as reference, never interpreted as operations.
+ const blocks=[...original.matchAll(/```json\s*([\s\S]*?)\s*```/gi)];
+ if(blocks.length>1)throw Error('Hay más de un bloque JSON. Pega un único plan técnico para evitar confusiones.');
+ if(blocks.length===1||/^(?:\x60\x60\x60json\s*)?\s*\{/i.test(original)){
+  const plan=parseExternalPlan(blocks.length?blocks[0][1]:original);
   if(plan.sourceSha256!==sourceSha256)throw Error('El plan pertenece a otro vídeo.');
-  return {id,format:'json',original:text,converted:plan,items:[],unresolved:[]};
+  const hasProse=blocks.length&&original.replace(blocks[0][0],'').trim();
+  const items=hasProse?[{line:0,original:'Propuesta creativa adjunta',status:'reference',note:'Se conserva íntegra como referencia. Solo se ejecutarán las operaciones del JSON revisado; comprueba que incluye todas las decisiones que deseas.'}]:[];
+  return {id,format:hasProse?'director-document':'json',original:text,converted:plan,items,unresolved:[]};
  }
  const operations=[],items=[],unresolved=[];
  for(const [i,line0] of text.split(/\r?\n/).entries()){

@@ -498,8 +498,24 @@ $('external-review').onclick=()=>work(async()=>{
  const result=await api('jobs/'+current.id+'/creative-review','POST',{text:raw,fingerprint:current.fingerprint});
  const converted=JSON.stringify(result.converted);const box=$('external-result');
  box.append(node('strong',result.canApply?'Plan compatible para revisar':'Plan guardado: hay instrucciones pendientes'));
- for(const item of result.items??[])box.append(node('p','Adaptación · '+item.original+' · '+item.note));
- for(const item of result.unresolved??[]){box.append(node('p','Pendiente · '+item.original));for(const c of item.candidates??[])box.append(node('p','Posible recurso para revisar: '+c.title+' · '+c.kind+' · '+c.availability+' · '+c.id,'small'));}
+ for(const item of result.items??[])box.append(node('p',(item.status==='reference'?'Referencia · ':'Adaptación · ')+item.original+' · '+item.note));
+ for(const item of result.unresolved??[]){
+  box.append(node('p','Pendiente · '+item.original));
+  for(const c of item.candidates??[]){
+   const row=node('div',undefined,'media-asset');row.append(node('p','Posible recurso para revisar: '+c.title+' · '+c.kind+' · '+c.availability+' · '+c.id,'small'));
+   if(c.availability==='remote-drive-only'&&/^[\w-]{10,160}$/.test(c.id)){
+    const button=node('button','Recuperar este recurso de Drive');button.type='button';
+    button.onclick=()=>work(async()=>{
+     if(current?.id!==result.sourceJobId||$('external-plan-text').value!==raw)throw Error('El proyecto o el plan han cambiado. Vuelve a analizarlo.');
+     button.disabled=true;try{
+      await api('library/materialize',{method:'POST',body:JSON.stringify({driveId:c.id,rights:'licensed'})});
+      await refreshAssets();invalidateExternal();box.append(node('p','Recurso recuperado y comprobado. Vuelve a analizar el plan y revisa su uso antes de aprobarlo.','small'));
+     }finally{button.disabled=false;}
+    });row.append(button);
+   }
+   box.append(row);
+  }
+ }
  for(const row of result.review?.rows??[])box.append(node('p',(row.status==='ready'?'✓ ':'Pendiente · ')+row.description));
  for(const note of result.review?.notes??[])box.append(node('p',note));
  if(result.review)externalReview={...result.review,canApply:result.canApply,text:converted,raw,jobId:current.id};
