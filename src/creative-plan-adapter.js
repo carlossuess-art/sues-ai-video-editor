@@ -35,7 +35,8 @@ export function adaptCreativePlan(text,sourceSha256,{search,resolveId}={}){
  const operations=[],items=[],unresolved=[];let separateTimes=false;
  for(const [i,line0] of text.split(/\r?\n/).entries()){
   const line=line0.trim();if(!line||/^#{1,6}\s/.test(line)||/^\|?[\s:|\-]+\|?$/.test(line))continue;
-  const parsed=line.startsWith('|')?line.replace(/^\||\|$/g,'').split('|').map(clean):[];
+  const plain=/^(?:del\s+)?(\d+(?::\d+(?:[.,]\d+)?)?(?:[.,]\d+)?)\s*(?:s(?:egundos?)?)?\s*(?:[-–—]|al)\s*(\d+(?::\d+(?:[.,]\d+)?)?(?:[.,]\d+)?)\s*(?:s(?:egundos?)?)?\s*:\s*(b-roll)\s+(BR-\d{4}|[a-f0-9]{64})\s*[—:]\s*(.+)$/i.exec(line);
+  const parsed=plain?[plain[1]+'–'+plain[2],plain[3],plain[4],plain[5]]:line.startsWith('|')?line.replace(/^\||\|$/g,'').split('|').map(clean):[];
   const header=parsed.map(x=>x.toLowerCase().replace(/\s+/g,'_'));
   if(header.length===5&&['inicio','start_s'].includes(header[0])&&['fin','end_s'].includes(header[1])&&['tipo','type'].includes(header[2])&&['recurso','asset_id'].includes(header[3])&&['motivo','intencion','intención','reason'].includes(header[4])){separateTimes=true;continue;}
   if(/^\|?\s*(?:tiempo|segundos)\s*\|/i.test(line)){separateTimes=false;continue;}

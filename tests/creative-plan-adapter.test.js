@@ -21,6 +21,13 @@ test('concept candidates prioritize available media and retain review evidence',
  const sha='a'.repeat(64),id='b'.repeat(64),r=adaptCreativePlan('| 5–8 | B-roll | aves grandes | Apoyo del discurso |',sha,{search:()=>[{id:'remote',title:'Aves',kind:'video',availability:'remote-drive-only'},{id,title:'Aves en vuelo',kind:'video',availability:'private-operational',description:'Dos aves',visualReview:{scope:'sampled-frames-only'}}]});
  assert.equal(r.unresolved[0].candidates[0].id,id);assert.equal(r.unresolved[0].candidates[0].description,'Dos aves');assert.equal(r.converted.operations.length,0);
 });
+test('explicit timed prose maps B-roll while complex prose is never silently simplified',()=>{
+ const sha='a'.repeat(64),id='c'.repeat(64),resolveId=q=>q==='BR-0007'?id:null;
+ const raw='Del 5 al 8 segundos: B-roll BR-0007 — Aves en vuelo';
+ const plan=adaptCreativePlan(raw,sha,{resolveId});assert.equal(plan.converted.operations[0].resourceId,id);assert.equal(plan.converted.operations[0].start,5);assert.equal(plan.converted.operations[0].end,8);
+ const complex=adaptCreativePlan(raw+' detrás del sujeto con máscara',sha,{resolveId});assert.equal(complex.converted.operations.length,0);assert.equal(complex.unresolved.length,1);
+ const missing=adaptCreativePlan('En el segundo 24 una cadena se tensa detrás del sujeto y suena metal',sha,{resolveId});assert.equal(missing.converted.operations.length,0);assert.equal(missing.unresolved.length,1);
+});
 test('explicit five-column Director table maps times without dropping extra instructions',()=>{
  const sha='a'.repeat(64),id='c'.repeat(64),raw='| start_s | end_s | type | asset_id | reason |\n|---|---|---|---|---|\n| 5 | 8 | B-roll | '+id+' | Apoyo del discurso |';
  const result=adaptCreativePlan(raw,sha);assert.equal(result.converted.operations[0].start,5);assert.equal(result.converted.operations[0].end,8);assert.equal(result.unresolved.length,0);
