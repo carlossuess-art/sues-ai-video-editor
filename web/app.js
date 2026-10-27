@@ -491,8 +491,21 @@ $('external-plan-text').oninput=invalidateExternal;
 window.addEventListener('sues:plan-updated',()=>{invalidateExternal();$('external-catalog-text').hidden=true;$('external-copy').hidden=true;});
 $('external-catalog').onclick=()=>work(async()=>{if(!current)throw Error('Prepara primero el vídeo y su análisis.');const catalog=await api('jobs/'+current.id+'/external-catalog');$('external-catalog-text').value='Analiza mi vídeo y crea un plan compatible con este catálogo SUES. Devuelve sólo el JSON del plan. Si una idea no es ejecutable, usa type: unsupported y description; no inventes recursos.\n\n'+JSON.stringify(catalog,null,2);$('external-catalog-text').hidden=false;$('external-copy').hidden=false;});
 $('external-copy').onclick=()=>work(async()=>{try{await navigator.clipboard.writeText($('external-catalog-text').value);$('external-result').textContent='Instrucciones copiadas. Adjunta el mismo vídeo a la IA.';}catch{$('external-catalog-text').focus();$('external-catalog-text').select();$('external-result').textContent='Selecciona y copia el texto de instrucciones.';}});
-$('external-review').onclick=()=>work(async()=>{invalidateExternal();if(!current)throw Error('Prepara primero el vídeo y su análisis.');if(previewDirty)throw Error('Guarda o descarta tus ajustes antes de importar el plan.');const text=$('external-plan-text').value;await api('jobs/'+current.id+'/external-draft','POST',{text});const result=await api('jobs/'+current.id+'/external-review','POST',{text});externalReview={...result,text,jobId:current.id};const box=$('external-result');box.append(node('strong',result.canApply?'Plan listo para ejecutar':'Plan guardado y pendiente: no se ejecutará parcialmente'));for(const r of result.rows)box.append(node('p',(r.status==='ready'?'✓ ':r.status==='missing-resource'?'Recurso ausente · ':'Pendiente · ')+r.description));for(const note of result.notes)box.append(node('p',note));$('external-execute').disabled=!result.canApply;$('external-execute').scrollIntoView({block:'center'});});
-$('external-execute').onclick=()=>work(async()=>{if(!externalReview?.canApply||externalReview.jobId!==current?.id||externalReview.text!==$('external-plan-text').value||previewDirty)throw Error('Comprueba de nuevo el plan antes de ejecutarlo.');externalRequest??=crypto.randomUUID();const job=await api('jobs/'+current.id+'/external-execute','POST',{text:externalReview.text,reviewId:externalReview.reviewId,requestId:externalRequest});await select(job.id);$('external-result').textContent='Plan enviado a la cola. Puedes cerrar esta pantalla; la edición continúa en el servidor.';});
+$('open-director-plan').onclick=()=>{if(!current){error(new Error('Abre un proyecto con vídeo preparado.'));return;}editingRoute='external';syncEditRoute();$('external-plan-panel').open=true;$('external-plan-text').focus();};
+$('external-review').onclick=()=>work(async()=>{
+ invalidateExternal();if(!current)throw Error('Prepara primero el vídeo y su análisis.');if(previewDirty)throw Error('Guarda o descarta tus ajustes antes de importar el plan.');
+ const raw=$('external-plan-text').value;await api('jobs/'+current.id+'/external-draft','POST',{text:raw});
+ const result=await api('jobs/'+current.id+'/creative-review','POST',{text:raw,fingerprint:current.fingerprint});
+ const converted=JSON.stringify(result.converted);const box=$('external-result');
+ box.append(node('strong',result.canApply?'Plan compatible para revisar':'Plan guardado: hay instrucciones pendientes'));
+ for(const item of result.items??[])box.append(node('p','Adaptación · '+item.original+' · '+item.note));
+ for(const item of result.unresolved??[]){box.append(node('p','Pendiente · '+item.original));for(const c of item.candidates??[])box.append(node('p','Posible recurso para revisar: '+c.title+' · '+c.kind+' · '+c.availability+' · '+c.id,'small'));}
+ for(const row of result.review?.rows??[])box.append(node('p',(row.status==='ready'?'✓ ':'Pendiente · ')+row.description));
+ for(const note of result.review?.notes??[])box.append(node('p',note));
+ if(result.review)externalReview={...result.review,canApply:result.canApply,text:converted,raw,jobId:current.id};
+ $('external-execute').disabled=!result.canApply;
+});
+$('external-execute').onclick=()=>work(async()=>{if(!externalReview?.canApply||externalReview.jobId!==current?.id||externalReview.raw!==$('external-plan-text').value||previewDirty)throw Error('Comprueba de nuevo el plan antes de ejecutarlo.');externalRequest??=crypto.randomUUID();const job=await api('jobs/'+current.id+'/external-execute','POST',{text:externalReview.text,reviewId:externalReview.reviewId,requestId:externalRequest});await select(job.id);$('external-result').textContent='Plan enviado a la cola. Puedes cerrar esta pantalla; la edición continúa en el servidor.';});
 
 // Dar instrucciones exposes global controls and the existing scene-plan review.
 function syncEditRoute(){
@@ -648,7 +661,7 @@ function showCloudResult(result,id){
  if(result.state==='FAILED'||result.state==='INTERRUPTED'){$('cloud-status').textContent=result.message;$('cloud-plan').disabled=false;return;}
  if(result.state!=='COMPLETE')return;
  if(result.stale||current.fingerprint!==result.sourceFingerprint){$('cloud-status').textContent='El plan está guardado, pero los ajustes han cambiado. Compruébalo de nuevo antes de ejecutar.';return;}
- $('external-plan-text').value=result.text;externalReview={...result.review,text:result.text,jobId:id};externalRequest=null;
+ $('external-plan-text').value=result.text;externalReview={...result.review,text:result.text,raw:result.text,jobId:id};externalRequest=null;
  if(typeof result.inputInstructions==='string'){$('cloud-context-text').value=result.inputInstructions;$('cloud-context-text').hidden=false;$('cloud-context-summary').textContent='Instrucciones enviadas en esta petición · '+result.model+' · vídeo y audio · 1 fotograma por segundo solicitado. La respuesta se muestra en Plan de edición externo.';}
 
  const box=$('external-result');box.replaceChildren(node('strong',result.review.canApply?'Plan de Gemini listo para ejecutar':'Plan de Gemini recibido: revisa las operaciones pendientes'));

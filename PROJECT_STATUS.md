@@ -1143,3 +1143,12 @@ Ajuste incremental deinterfaz:estilo/estructura yguardar/deshacer siemprevisible
 recursos,cámara,imágenes,sonido ysubtítulos enseccionesplegables. Cada subtítulo se
 abre individualmente; trabajosguardados tambiénplegados. ELEMENTS con etiquetas
 enespañol manteniendo valorespersistidos; al elegirformato seabre susección.
+
+
+### Importación de plan creativo (2026-10-27, rama de trabajo)
+
+Prototipo aislado: `creative-review` conserva el texto original, convierte JSON `sues-edit-plan/v1` y tablas explícitas de tiempo/tipo/recurso/motivo, valida con el pipeline existente y detecta instrucciones ambiguas o no soportadas. Resuelve códigos cortos de B-roll únicamente si corresponden de forma inequívoca a material instalado y no excluido. Ofrece candidatos sin seleccionarlos automáticamente. No utiliza Gemini.
+
+Pruebas: 13 pruebas automatizadas; render aislado de 13,4 s con BR-0078 entre 5 y 8 s y un SFX a los 2 s. Un fotograma a 6,5 s confirma el B-roll; el filtro de audio y resumen del motor confirman la inclusión del SFX, pendiente escucha completa. No se ha desplegado en producción ni se ha comprobado la interfaz desplegada.
+
+Limitaciones: no interpreta de forma general texto libre ni todas las tablas del Film Director; no materializa recursos de Drive desde este flujo; composiciones ambiguas quedan bloqueadas, sin sustituciones silenciosas. Falta revisión audiovisual completa, más pruebas de seguridad e integración, y verificar despliegue antes de declarar terminado el flujo. Siguiente acción: completar compatibilidad real de formatos y acceso a recursos, escuchar el render, probar la interfaz y desplegar solo tras validación. Coste externo: 0 USD.

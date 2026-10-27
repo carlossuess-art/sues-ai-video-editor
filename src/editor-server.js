@@ -1,9 +1,10 @@
-import {DriveResourceCache} from './drive-resource-library.js';
+import {DriveResourceCache,loadAuditedDrive} from './drive-resource-library.js';
 import {directorAssets,saveDirectorJSON,completeDirectorCatalog} from './director-context.js';
 import {CloudDirector,buildDirectorInstructions} from './cloud-director.js';
 import {PlaybackPreviews} from './playback-preview.js';
 import {reviewInstructionExecution} from './instruction-execution.js';
 import {externalCatalog,reviewExternalPlan} from './external-edit-plan.js';
+import {adaptCreativePlan} from './creative-plan-adapter.js';
 import {prepareProject} from './local-pipeline.js';
 import {planInstructions} from './instruction-director.js';
 import {LocalAnalysis} from './local-analysis.js';
@@ -182,7 +183,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|ai-plan|ai-context|library-cues|poster))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
@@ -192,6 +193,21 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      if(req.method==='GET')return json(res,200,existsSync(file)?JSON.parse(readFileSync(file,'utf8')):{text:''});
      const b=await body(req);if(typeof b.text!=='string'||b.text.length>30000)throw Error('El plan admite hasta 30000 caracteres.');
      const draft={text:b.text,updatedAt:new Date().toISOString()},temporary=file+'.tmp';writeFileSync(temporary,JSON.stringify(draft),{mode:0o600});renameSync(temporary,file);return json(res,200,draft);
+    }
+    if(action==='creative-review'&&req.method==='POST'){
+     const b=await body(req),source=jobs.get(id);
+     if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))return json(res,409,{error:'Espera a que termine la edición actual.'});
+     if(b.fingerprint!==source.fingerprint)return json(res,409,{error:'El proyecto cambió. Revisa el plan de nuevo.'});
+     const project=jobs.loadProfile(source.profileId),catalog=externalCatalog(project,source.settings,assets.list());
+     const audit=loadAuditedDrive(directory),installed=new Set(assets.list().map(a=>a.id));
+     const byNumber=q=>audit.cards.filter(c=>c.catalogueNumber===q&&!audit.excluded.has(c.driveId)&&!audit.excludedHashes.has(c.sha256));
+     const resolveId=q=>{if(!/^BR-\d{4}$/.test(q))return null;const matches=byNumber(q);return matches.length===1&&installed.has(matches[0].sha256)?matches[0].sha256:null;};
+     const search=q=>{if(/^BR-\d{4}$/.test(q)){const found=byNumber(q);return found.map(c=>({id:c.driveId,title:c.editorialTitleEs??c.visibleContentEs??q,kind:'video',availability:installed.has(c.sha256)?'private-operational':'remote-drive-only'}));}return searchPrivateLibrary(directory,q,{limit:5}).results;};
+     const adapted=adaptCreativePlan(b.text,catalog.sourceSha256,{search,resolveId});
+     let review=null;if(adapted.converted.operations.length)review=reviewExternalPlan(JSON.stringify(adapted.converted),{project,settings:source.settings,assets:assets.list(),commandPlanner:planInstructions});
+     const record={schema:'sues-creative-import/v1',sourceJobId:id,sourceFingerprint:source.fingerprint,createdAt:new Date().toISOString(),...adapted,review};
+     const file=join(jobs.dir(id),'creative-plan-'+adapted.id+'-'+source.fingerprint+'.json');if(!existsSync(file))saveDirectorJSON(file,record);
+     return json(res,200,{...record,canApply:adapted.unresolved.length===0&&review?.canApply===true});
     }
     if(action==='library-cues'&&req.method==='GET'){
      const job=jobs.get(id),limit=url.searchParams.has('limit')?Number(url.searchParams.get('limit')):6;
