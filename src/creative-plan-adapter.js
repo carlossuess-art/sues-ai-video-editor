@@ -32,11 +32,14 @@ export function adaptCreativePlan(text,sourceSha256,{search,resolveId}={}){
   }
   return {id,format:hasProse?'director-document':'json',original:text,converted:plan,items,unresolved:[]};
  }
- const operations=[],items=[],unresolved=[];
+ const operations=[],items=[],unresolved=[];let separateTimes=false;
  for(const [i,line0] of text.split(/\r?\n/).entries()){
   const line=line0.trim();if(!line||/^#{1,6}\s/.test(line)||/^\|?[\s:|\-]+\|?$/.test(line))continue;
-  if(/^\|?\s*(?:tiempo|segundos|inicio)\s*\|/i.test(line))continue;
-  const cells=line.startsWith('|')?line.replace(/^\||\|$/g,'').split('|').map(clean):[];
+  const parsed=line.startsWith('|')?line.replace(/^\||\|$/g,'').split('|').map(clean):[];
+  const header=parsed.map(x=>x.toLowerCase().replace(/\s+/g,'_'));
+  if(header.length===5&&['inicio','start_s'].includes(header[0])&&['fin','end_s'].includes(header[1])&&['tipo','type'].includes(header[2])&&['recurso','asset_id'].includes(header[3])&&['motivo','intencion','intención','reason'].includes(header[4])){separateTimes=true;continue;}
+  if(/^\|?\s*(?:tiempo|segundos)\s*\|/i.test(line)){separateTimes=false;continue;}
+  const cells=separateTimes&&parsed.length===5?[parsed[0]+(parsed[1]?'–'+parsed[1]:''),...parsed.slice(2)]:parsed;
   const rawTime=cells[0]??'',parts=rawTime.replace(/\s*(?:segundos?|secs?|s)\s*$/i,'').split(/\s*[-–—]\s*/);
   const start=parts.length<=2?seconds(parts[0]):null,end=parts.length===2?seconds(parts[1]):null;
   const kind=(cells[1]??'').toLowerCase(),rawId=cells[2]??'',reason=cells[3]??'';
