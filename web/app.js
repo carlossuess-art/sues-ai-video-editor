@@ -280,7 +280,7 @@ $('search-library').onclick=()=>work(async()=>{
   if(r.description)row.append(node('p',r.description,'small'));
   row.append(node('p',r.needsMaterialization?'En Drive · revisado por muestras · fragmento pendiente':r.availability==='private-operational'?'Disponible en el servidor · revisar composición':'Referencia de origen · revisión pendiente','small'));
   if(r.needsMaterialization){const button=node('button','Recuperar de Drive para revisar');button.type='button';button.onclick=()=>work(async()=>{
-   button.disabled=true;try{const value=await api('library/materialize',{method:'POST',body:JSON.stringify({driveId:r.driveId??r.id,rights:'licensed'})});await refreshAssets();row.append(node('p','Recurso verificado y disponible para montaje. Revisa el fragmento y su composición antes de exportar.','small'));button.remove();}finally{button.disabled=false;}
+   button.disabled=true;try{const value=await api('library/materialize','POST',{driveId:r.driveId??r.id,rights:'licensed'});await refreshAssets();row.append(node('p','Recurso verificado y disponible para montaje. Revisa el fragmento y su composición antes de exportar.','small'));button.remove();}finally{button.disabled=false;}
   });row.append(button);}
   box.append(row);
  }
@@ -508,7 +508,7 @@ $('external-review').onclick=()=>work(async()=>{
     button.onclick=()=>work(async()=>{
      if(current?.id!==result.sourceJobId||$('external-plan-text').value!==raw)throw Error('El proyecto o el plan han cambiado. Vuelve a analizarlo.');
      button.disabled=true;try{
-      await api('library/materialize',{method:'POST',body:JSON.stringify({driveId:c.id,rights:'licensed'})});
+      await api('library/materialize','POST',{driveId:c.id,rights:'licensed'});
       await refreshAssets();invalidateExternal();box.append(node('p','Recurso recuperado y comprobado. Vuelve a analizar el plan y revisa su uso antes de aprobarlo.','small'));
      }finally{button.disabled=false;}
     });row.append(button);
@@ -639,7 +639,7 @@ $('suggest-resources').onclick=()=>work(async()=>{
     :temporal?.complete?' · Auditoría temporal: sin tramo continuo suficiente':' · Sin auditoría temporal completa';
    const item=node('li',candidate.title+' · '+candidate.kind+' · '+(candidate.catalogueApproval==='approved'?'Catalogado, revisar composición':'Pendiente de aprobación visual')+reasoning+sampleMessage+timeline);
    if(candidate.needsMaterialization){const recover=node('button','Recuperar de Drive para revisar');recover.type='button';recover.onclick=()=>work(async()=>{
-    recover.disabled=true;try{await api('library/materialize',{method:'POST',body:JSON.stringify({driveId:candidate.assetId,rights:'licensed'})});await refreshAssets();item.append(node('p','Disponible en el servidor. Falta revisar el tramo exacto antes de añadirlo.','small'));recover.remove();}finally{recover.disabled=false;}
+    recover.disabled=true;try{await api('library/materialize','POST',{driveId:candidate.assetId,rights:'licensed'});await refreshAssets();item.append(node('p','Disponible en el servidor. Falta revisar el tramo exacto antes de añadirlo.','small'));recover.remove();}finally{recover.disabled=false;}
    });item.append(recover);}
    if(candidate.kind==='video'&&cue.decision==='contextual-review-only'&&sourceRange?.appliedToVideo===false){
     const selectButton=node('button','Preparar este B-roll para revisar');
