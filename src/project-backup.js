@@ -21,6 +21,11 @@ export async function createProjectBackup(project,prepared,directory){
    for(const [i,e]of data.events.entries())e.localFile=await copy(e.localFile,'media/depth-resource-'+i+'.media',e.sha256);
    write('analysis/subject-layers.json',data);config.subjectLayersPath='analysis/subject-layers.json';
   }
+  if(prepared.plan.foregroundEffects){
+   const data=structuredClone(prepared.plan.foregroundEffects);data.matte.localFile=await copy(data.matte.localFile,'media/foreground-matte.mkv',data.matte.sha256);
+   for(const [i,e]of data.events.entries())if(e.type==='behind-video')e.localFile=await copy(e.localFile,'media/foreground-video-'+i+'.media',e.sha256);
+   write('analysis/foreground-effects.json',data);config.foregroundEffectsPath='analysis/foreground-effects.json';
+  }
   if(inputs.depthText){write('analysis/depth-text.json',inputs.depthText);config.depthTextPath='analysis/depth-text.json';}
   const music=prepared.resourceBindings?.backgroundAudio;
   if(music){const localFile=await copy(music.localFile,'media/music.media');config.backgroundAudio={...music,localFile};}
@@ -39,7 +44,7 @@ export async function createProjectBackup(project,prepared,directory){
    config.videoAssets.push({...item,kind:'video',duration:item.mediaDuration,localFile});
   }
   for(const name of fontFiles(prepared.plan.policy.captions.font))await copy(join(project.fontDirectory,name),'fonts/'+name);
-  const settings={...prepared.settings,musicAssetId:null,imageEvents:[],profileImages:true};write('project.json',config);write('settings.json',settings);
+  const settings={...prepared.settings,musicAssetId:null,imageEvents:[],profileImages:true,reviewedForeground:null};write('project.json',config);write('settings.json',settings);
   write('review.json',{duration:prepared.plan.duration,sourceWords:prepared.director.audit.sourceWords,mappedWords:prepared.director.audit.mappedWords,originalFingerprint:prepared.fingerprint,restoration:'Create a new job from project.json and settings.json. This package does not resume an interrupted render.'});
   const entries=[];const collect=path=>{for(const file of readdirSync(path)){const name=join(path,file);const info=lstatSync(name);assert(!info.isSymbolicLink(),'symlinks forbidden');if(info.isDirectory())collect(name);else{assert(info.isFile(),'non-file entry');entries.push({path:relative(target,name).split(sep).join('/'),bytes:info.size,sha256:fileSha256(name)});}}};collect(target);entries.sort((a,b)=>a.path.localeCompare(b.path));
   let codeCommit=null,workingTreeDirty=null;try{codeCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT}).toString().trim();workingTreeDirty=!!execFileSync('git',['status','--porcelain'],{cwd:ROOT}).toString().trim();}catch{}
@@ -55,5 +60,6 @@ export function verifyProjectBackup(directory){
  const config=JSON.parse(readFileSync(join(root,'project.json'),'utf8'));const paths=[...Object.entries(config).filter(([k])=>k.endsWith('Path')).map(([,v])=>v),...(config.backgroundAudio?[config.backgroundAudio.localFile]:[]),...(config.illustrations??[]).map(i=>i.localFile),...(config.soundAssets??[]).map(i=>i.localFile),...(config.videoAssets??[]).map(i=>i.localFile),...(config.overlayAssets??[]).map(i=>i.localFile)];
  assert(paths.every(path=>seen.has(path))&&config.fontDirectory==='fonts','configuration points outside verified files');
  if(config.subjectLayersPath){const data=JSON.parse(readFileSync(join(root,config.subjectLayersPath),'utf8'));const nested=[data.matte?.localFile,...(data.events??[]).map(e=>e.localFile)];assert(nested.every(path=>typeof path==='string'&&seen.has(path)),'subject layer points outside verified files');}
+ if(config.foregroundEffectsPath){const d=JSON.parse(readFileSync(join(root,config.foregroundEffectsPath),'utf8'));const nested=[d.matte?.localFile,...(d.events??[]).filter(e=>e.type==='behind-video').map(e=>e.localFile)];assert(nested.every(path=>typeof path==='string'&&seen.has(path)),'foreground layer points outside verified files');}
  return {valid:true,files:manifest.files.length,bytes,codeCommit:manifest.codeCommit,workingTreeDirty:manifest.workingTreeDirty};
 }

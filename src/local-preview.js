@@ -1,3 +1,4 @@
+import {foregroundEffectFilters} from './foreground-effects.js';
 import {subjectLayerFilters} from './subject-layers.js';
 import {drawElements} from './elements.js';
 import {renderAudioFilters} from './sound-effects.js';
@@ -229,6 +230,7 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   let base='base';
   const zoomFilter=semanticZoomFilter(plan.semantic??{zooms:[]});
   if(zoomFilter){filters.push(`[base]${zoomFilter}[semantic-base]`);base='semantic-base';}
+  const fg=foregroundEffectFilters(plan.foregroundEffects,base,1+plan.selectedMedia.length+(plan.illustrations?.length??0)+2*(plan.subjectLayers?.length??0)+(plan.ambientOverlays?.length??0));filters.push(...fg.filters);base=fg.base;
   for(const [i,d]of plan.selectedMedia.entries()){
     filters.push(`[${i+1}:v]trim=start=${d.sourceIn}:end=${d.sourceOut},setpts=PTS-${d.sourceIn}/TB,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1,fps=fps=30:start_time=0,setpts=PTS+${d.start}/TB[broll${i}]`);
     filters.push(`[${base}][broll${i}]overlay=eof_action=pass:repeatlast=0:enable='gte(t,${d.start})*lt(t,${d.end})'[composed${i}]`);base=`composed${i}`;
@@ -260,7 +262,7 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   if(hasTransitions){const global=globalTransitionFilters(plan.globalTransitions,'captioned');filters.push(...global.filters,`[${global.base}]null[${plan.finishFade?'finish-input':'video'}]`);}
   if(plan.finishFade){const f=plan.finishFade;filters.push(`[${hasTransitions?'finish-input':'captioned'}]fade=t=out:st=${f.start}:d=${f.duration}[video]`);}
   assert(!plan.audioMix||hasAudio,'background music requires original voice track');
-  filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0) +2*(plan.subjectLayers?.length??0)+(plan.ambientOverlays?.length??0),{hasAudio}));
+  filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0) +2*(plan.subjectLayers?.length??0)+(plan.ambientOverlays?.length??0)+(plan.foregroundEffects?1+plan.foregroundEffects.events.filter(e=>e.type==='behind-video').length:0),{hasAudio}));
   return filters.join(';\n')+'\n';
 }
 

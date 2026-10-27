@@ -100,3 +100,35 @@ La huella ahora liga el plan compilado, estilo, hashes de fuente/recursos/matte,
 fuentes y música, motor, renderer y script/validador de receta; antes sólo cubría
 el archivo de capas. Dos pruebas nuevas validan límites y la invalidación de la
 huella al cambiar cada dependencia. 209tests/checkPASS; sin cambiar el render previo.
+
+
+## Integración de máscara IA y vídeo detrás del sujeto · 27/10/2026
+
+La prueba MODNet ya existente del25/10 estaba en foreground-work-20261025 y no
+formaba parte del motor activo. Se integra foreground-effects.js sin sustituir
+subject-layers.js ni las comprobaciones previas. reviewedForeground admite máscara
+FFV1/gray512×896/30fps ligada al SHA del bruto y a la huella exacta de cámara,
+zoom, anchors y timeMap. Se permite el último fotograma de una duración fraccionaria.
+Tres intervalos como máximo de blur/texto/vídeo por tipo; selección de vídeos
+privados por ID y SHA verificados, sin su audio original. La máscara restaura el
+sujeto delante de la composición; captions y badges aprobados se dibujan después.
+
+Se añade foreground-effects al plan externo existente con validación completa
+antes de ejecutar. Los planes pueden conservar la máscara en copia/restauración;
+se rechazan rutas fuera del paquete y recursos modificados. El resumen/revisión
+operativa muestra capas, B-roll, overlays y SFX de biblioteca. 15/15 pruebas
+focalizadas PASS, además de prueba de píxeles de FFmpeg que conserva rojo del
+sujeto y muestra el vídeo azul únicamente fuera de la máscara.
+
+Prueba nueva: espiritualidad gratuita, fuente SHA17802a14f4d38f8cfa5427ee6f607367a6b99419b91494623e6e55bf3b6013f7.
+Se reutiliza MODNet ONNX SHA07c308cf0fc7e6e8b2065a12ed7fc07e1de8febb7dc7839d7b7f15dd66584df9;
+225frames inferidos en19–21,5s,34–36,5s,43–45,5s; máscara2127frames/70,9s,
+319,1s CPU-local de pared y432204KiB de pico. Nueve muestras revisadas; bordes
+de pelo suaves. Estado sample-reviewed, nunca aceptación de toda la toma.
+
+Qwen3-1.7B local se ensayó como Director pero se rechazó: duraciones demasiado
+cortas, intervalos fuera de rangos y argumento central incompleto. No se aplicó
+su salida ni se presenta como Director autónomo listo. La propuesta corregida
+procede del análisis de ChatGPT Work sobre locución y muestras visuales; el motor
+existente la valida/ejecuta. Sin llamadas Gemini, nuevas descargas o gasto externo.
+Render completo y crítica final pendientes al escribir esta sección.

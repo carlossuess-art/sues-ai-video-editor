@@ -35,5 +35,5 @@ export function buildTemplateRecipe(plan,settings){
 }
 export function editionCounts(plan){
  const zooms=plan.semantic?.zooms?.length??0;
- return {captions:plan.captions.length,zoomCycles:zooms,zoomIns:zooms,zoomOuts:zooms,motions:(plan.semantic?.motions?.length??0)+(plan.masterGraphics?.length??0),cards:plan.graphics?.length??0,transitions:plan.globalTransitions?.length??0,images:plan.illustrations?.length??0,soundEffects:(plan.soundEffects?.events?.length??0)+(plan.customSfx?.events?.length??0),cuts:plan.segments?.length?Math.max(0,plan.segments.length-1):0};
+ return {...(plan.foregroundEffects?{foregroundScenes:plan.foregroundEffects.matte.activeRanges.length,behindVideos:plan.foregroundEffects.events.filter(e=>e.type==='behind-video').length,behindTexts:plan.foregroundEffects.events.filter(e=>e.type==='behind-text').length}:{}),captions:plan.captions.length,zoomCycles:zooms,zoomIns:zooms,zoomOuts:zooms,motions:(plan.semantic?.motions?.length??0)+(plan.masterGraphics?.length??0),cards:plan.graphics?.length??0,transitions:plan.globalTransitions?.length??0,images:plan.illustrations?.length??0,soundEffects:(plan.soundEffects?.events?.length??0)+(plan.customSfx?.events?.length??0),cuts:plan.segments?.length?Math.max(0,plan.segments.length-1):0};
 }

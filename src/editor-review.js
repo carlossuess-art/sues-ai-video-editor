@@ -1,5 +1,9 @@
 export function editorReview(plan,director,settings){
  const events=[
+  ...(plan.foregroundEffects?.events??[]).map(e=>({type:'foreground-'+e.type,start:e.start,end:e.end,assetId:e.assetId,text:e.lines?.join(' '),reason:e.reason??'Composición detrás del sujeto con máscara IA ligada al vídeo y reencuadre',verification:plan.foregroundEffects.matte.method,reviewStatus:plan.foregroundEffects.matte.reviewStatus})),
+  ...(plan.selectedMedia??[]).map(e=>({type:'broll',start:e.start,end:e.end,assetId:e.assetId,reason:e.reason,verification:'sha256-bound-private-resource'})),
+  ...(plan.ambientOverlays??[]).map(e=>({type:'overlay',start:e.start,end:e.end,assetId:e.assetId,reason:e.reason,verification:'sha256-bound-private-resource'})),
+  ...(plan.customSfx?.events??[]).map(e=>({type:'library-sfx',start:e.start,end:e.end??e.start+(e.duration??0),assetId:e.assetId,verification:'sha256-bound-private-resource'})),
   ...(plan.subjectLayers??[]).map(e=>({type:'behind-subject-resource',start:e.start,end:e.end,assetId:e.assetId,scope:e.scope,reason:'Recurso editorial detrás del sujeto con matte revisado',verification:e.matte.method,automaticPersonDetection:false})),
   ...(plan.elements??[]).map(e=>({type:'elements-'+e.format,start:e.start,end:e.end,text:e.label,secondary:e.secondary,number:e.number,reason:'Estructura elegida por el usuario',scope:e.scope,sourceWordIndexes:e.sourceWordIndexes,verification:e.timing,copyOrigin:e.copyOrigin})),
   ...(plan.semantic?.zooms??[]).map(e=>({type:'zoom',start:e.start,end:e.end,reason:e.reason,sourceWordIndexes:e.evidence?.sourceWordIndexes??[],verification:e.evidence?.method??'editorial'})),

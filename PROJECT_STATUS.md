@@ -1,3 +1,19 @@
+## Nueva edición con máscara y capas · 27/10/2026
+
+Carlos rechaza5f291c06 como insuficiente: tres B-roll y sin elementos detrás.
+Se integra el compositor MODNet de la rama existente al motor activo; primera
+preparación623944a1-6f8a-408c-bcfb-8cb1bb658452, todavía sin render. Cinco zooms,
+cuatro motions (cross/check/number), B-roll desde6s y tres escenas de profundidad.
+Máscara225frames inferidos,9muestras revisadas; resto cero y vínculo cámara/SHA.
+Plan externo foreground-effects conectado, recuperación y prueba de píxeles PASS.
+15/15 focalizadas PASS; suite completa en curso. Modelo Director Qwen3-1.7B
+rechazado por incumplimientos; dirección revisada de Work, no autonomía declarada.
+Siguiente: terminar suite, validar plan externo, render, revisar capas/checks/B-roll
+sobreMP4, medir audio, abrir en app, actualizar checkpoint y Roadmap. No declarar
+acabado por compilar. Datos privados en resource-audit-drive-20261026/video-brain-depth-20261027/.
+
+---
+
 ## Mezcla de efectos con memoria acotada · 26/10/2026
 
 La nueva edición independiente 5f291c06-7c4a-43af-8821-28a090d2a2f2 falló al

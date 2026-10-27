@@ -35,7 +35,11 @@ export function reviewExternalPlan(text,{project,settings,assets=[],commandPlann
   try{
    if(!op||typeof op!=='object'||Array.isArray(op))fail('Operación inválida.');
    const signature=JSON.stringify(op);if(seen.has(signature))fail('Operación duplicada.');seen.add(signature);
-   if(op.type==='audio-levels'){
+   if(op.type==='foreground-effects'){
+    if(!keys(op,['type','data'])||!op.data||op.data.schema!=='sues-foreground-effects/v1'||op.data.sourceSha256!==imported.sourceSha256||rows.slice(0,-1).some(r=>r.foreground))fail('Una composición de máscara ligada al vídeo por plan.');
+    next.reviewedForeground=structuredClone(op.data);row.foreground=true;
+    row.description='Capas con máscara IA: '+(op.data.events?.filter(e=>e.type==='behind-video').length??0)+' vídeos y '+(op.data.events?.filter(e=>e.type==='behind-text').length??0)+' textos detrás del presentador; pendientes de revisión del render';
+   }else if(op.type==='audio-levels'){
     if(!keys(op,['type','voiceGain','sfxGain','musicGain','levelResources'])||typeof op.levelResources!=='boolean')fail('Niveles de audio inválidos');
     Object.assign(next,{voiceNormalization:true,voiceGain:op.voiceGain,sfxGain:op.sfxGain,musicGain:op.musicGain,levelResources:op.levelResources});
     next.sfxEvents=(next.sfxEvents??[]).map(e=>({...e,gain:op.sfxGain}));
