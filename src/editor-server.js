@@ -1,4 +1,4 @@
-import {DriveResourceCache,loadAuditedDrive} from './drive-resource-library.js';
+import {DriveResourceCache,loadAuditedDrive,auditedCandidates} from './drive-resource-library.js';
 import {directorAssets,saveDirectorJSON,completeDirectorCatalog} from './director-context.js';
 import {CloudDirector,buildDirectorInstructions} from './cloud-director.js';
 import {PlaybackPreviews} from './playback-preview.js';
@@ -20,7 +20,7 @@ import http from 'node:http';
 import {readFileSync,statSync,createReadStream,openSync,readSync,closeSync,existsSync,writeFileSync,renameSync} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {randomBytes,timingSafeEqual} from 'node:crypto';
+import {createHash,randomBytes,timingSafeEqual} from 'node:crypto';
 import {VideoIntake,projectConfig,projectReady} from './video-intake.js';
 import {RENDERED_MOTIONS} from './semantic-render.js';
 import {MOTION_ALIASES} from './foundation-integration.js';
@@ -205,8 +205,17 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      const search=q=>{if(/^BR-\d{4}$/.test(q)){const found=byNumber(q);return found.map(c=>({id:c.driveId,title:c.editorialTitleEs??c.visibleContentEs??q,kind:'video',availability:installed.has(c.sha256)?'private-operational':'remote-drive-only'}));}return searchPrivateLibrary(directory,q,{limit:5}).results;};
      const adapted=adaptCreativePlan(b.text,catalog.sourceSha256,{search,resolveId});
      let review=null;if(adapted.converted.operations.length)review=reviewExternalPlan(JSON.stringify(adapted.converted),{project,settings:source.settings,assets:assets.list(),commandPlanner:planInstructions});
+     // Offer only audited, uniquely matched remote B-roll; never replace the selection.
+     for(const row of review?.rows??[]){
+      if(row.status!=='missing-resource')continue;
+      const op=adapted.converted.operations[row.index-1];if(op?.type!=='broll'||typeof op.resourceId!=='string')continue;
+      const matches=auditedCandidates(audit).filter(c=>c.sha256===op.resourceId||c.catalogueNumber===op.resourceId);
+      if(matches.length!==1)continue;const c=matches[0];
+      adapted.unresolved.push({line:0,original:'Recurso solicitado: '+op.resourceId,status:'missing-resource',description:'Disponible en Drive; requiere recuperación y nueva validación.',candidates:[{id:c.driveId,title:c.editorialTitleEs??c.visibleContentEs,kind:'video',availability:'remote-drive-only'}]});
+     }
      const record={schema:'sues-creative-import/v1',sourceJobId:id,sourceFingerprint:source.fingerprint,createdAt:new Date().toISOString(),...adapted,review};
-     const file=join(jobs.dir(id),'creative-plan-'+adapted.id+'-'+source.fingerprint+'.json');if(!existsSync(file))saveDirectorJSON(file,record);
+     const revision=createHash('sha256').update(JSON.stringify({adapted,review})).digest('hex');
+     const file=join(jobs.dir(id),'creative-plan-'+adapted.id+'-'+source.fingerprint+'-'+revision+'.json');if(!existsSync(file))saveDirectorJSON(file,record);
      return json(res,200,{...record,canApply:adapted.unresolved.length===0&&review?.canApply===true});
     }
     if(action==='library-cues'&&req.method==='GET'){

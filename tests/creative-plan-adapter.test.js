@@ -28,6 +28,11 @@ test('Director proposal with a single technical block preserves prose without tr
  assert.throws(()=>adaptCreativePlan(raw+'\n```json\n'+JSON.stringify(plan)+'\n```',sha),/más de un bloque/);
  assert.throws(()=>adaptCreativePlan(raw,'b'.repeat(64)),/otro vídeo/);
 });
+test('short B-roll IDs in JSON resolve only if the exact installed resource is known',()=>{
+ const sha='a'.repeat(64),id='c'.repeat(64),raw=JSON.stringify({schema:'sues-edit-plan/v1',sourceSha256:sha,operations:[{type:'broll',resourceId:'BR-0003',start:5,end:8,reason:'Apoyo visual del discurso'}]});
+ const hit=adaptCreativePlan(raw,sha,{resolveId:q=>q==='BR-0003'?id:null});assert.equal(hit.converted.operations[0].resourceId,id);assert.equal(hit.items[0].status,'adaptation');assert.equal(hit.original,raw);
+ assert.equal(adaptCreativePlan(raw,sha,{resolveId:()=>null}).converted.operations[0].resourceId,'BR-0003');
+});
 test('private creative review preserves input, checks stale requests and blocks unknown resources',async()=>{
  const f=fixture(),app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles});app.jobs.autoStart=false;
  try{

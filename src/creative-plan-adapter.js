@@ -25,6 +25,11 @@ export function adaptCreativePlan(text,sourceSha256,{search,resolveId}={}){
   if(plan.sourceSha256!==sourceSha256)throw Error('El plan pertenece a otro vídeo.');
   const hasProse=blocks.length&&original.replace(blocks[0][0],'').trim();
   const items=hasProse?[{line:0,original:'Propuesta creativa adjunta',status:'reference',note:'Se conserva íntegra como referencia. Solo se ejecutarán las operaciones del JSON revisado; comprueba que incluye todas las decisiones que deseas.'}]:[];
+  for(const op of plan.operations){
+   if(op?.type!=='broll'||typeof op.resourceId!=='string'||!/^BR-\d{4}$/.test(op.resourceId)||typeof resolveId!=='function')continue;
+   const short=op.resourceId,resolved=resolveId(short);if(!resolved)continue;
+   op.resourceId=resolved;items.push({line:0,original:short,status:'adaptation',note:'Identificador resuelto al recurso instalado '+resolved+'. Comprueba su contenido y el fragmento.'});
+  }
   return {id,format:hasProse?'director-document':'json',original:text,converted:plan,items,unresolved:[]};
  }
  const operations=[],items=[],unresolved=[];
