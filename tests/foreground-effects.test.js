@@ -57,3 +57,15 @@ test('reviewed foreground can share time with bounded foreground check badges',(
  const compatible={...plan,semantic:{...plan.semantic,motions:[{start:6,end:7,params:{motionId:'CHECK_GREEN_01'}}]}};const d=fixture();d.cameraSpaceSha256=foregroundSpaceHash(compatible);assert.doesNotThrow(()=>prepareForegroundEffects(d,compatible));
  const unsafe={...plan,semantic:{...plan.semantic,motions:[{start:6,end:7,params:{motionId:'QUOTE_CARD_01'}}]}};assert.throws(()=>prepareForegroundEffects(fixture(),unsafe),/another composition/);
 });
+
+
+test('bounded background region feathers into original while preserving subject',()=>{
+ const resource={localFile:file,sha256:digest,rights:'owned',duration:4},v={type:'behind-video',start:6,end:8.8,assetId:digest,sourceIn:0,opacity:1,reason:'Zona detrás del sujeto',region:{x:0,y:0,width:1080,height:960,featherBottom:400}};
+ const f=fixture();f.events=[v];assert.doesNotThrow(()=>prepareForegroundEffects(f,plan,()=>resource));
+ for(const r of [{...v.region,height:2000},{...v.region,x:-1},{...v.region,featherBottom:1000},{...v.region,width:1079}]){const x=fixture();x.events=[{...v,region:r}];assert.throws(()=>prepareForegroundEffects(x,plan,()=>resource),/invalid local video region/);}
+ const graph=foregroundEffectFilters({events:[{...v,start:0,end:1}]},'base',1),script=join(dir,'feather.ffscript');
+ writeFileSync(script,'[0:v]format=yuv420p[base];\n'+graph.filters.join(';\n')+';\n['+graph.base+']trim=start=0.5:end=0.534,setpts=PTS-STARTPTS[sample]\n');
+ const data=execFileSync('ffmpeg',['-v','error','-f','lavfi','-i','color=c=red:s=1080x1920:r=30:d=1.2','-f','lavfi','-i','color=c=white:s=512x896:r=30:d=1.2,drawbox=x=256:y=0:w=256:h=896:color=black:t=fill,format=gray','-f','lavfi','-i','color=c=blue:s=1080x1920:r=30:d=1.2','-filter_complex_threads','1','-filter_complex_script',script,'-map','[sample]','-frames:v','1','-f','rawvideo','-pix_fmt','rgb24','-'],{timeout:60000,maxBuffer:8*1024*1024});
+ const pixel=(x,y)=>[...data.subarray((y*1080+x)*3,(y*1080+x)*3+3)],subject=pixel(100,100),top=pixel(980,100),fade=pixel(980,760),bottom=pixel(980,1100);
+ assert.ok(subject[0]>240&&subject[2]<10,String(subject));assert.ok(top[2]>240&&top[0]<10,String(top));assert.ok(fade[0]>70&&fade[2]>70,String(fade));assert.ok(bottom[0]>240&&bottom[2]<10,String(bottom));
+});
