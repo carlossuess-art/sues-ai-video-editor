@@ -1,6 +1,6 @@
 import {DriveResourceCache} from './drive-resource-library.js';
 import {directorAssets,saveDirectorJSON,completeDirectorCatalog} from './director-context.js';
-import {CloudDirector} from './cloud-director.js';
+import {CloudDirector,buildDirectorInstructions} from './cloud-director.js';
 import {PlaybackPreviews} from './playback-preview.js';
 import {reviewInstructionExecution} from './instruction-execution.js';
 import {externalCatalog,reviewExternalPlan} from './external-edit-plan.js';
@@ -182,7 +182,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|ai-plan|library-cues|poster))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|ai-plan|ai-context|library-cues|poster))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
@@ -198,6 +198,14 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      if(!Number.isInteger(limit)||limit<1||limit>8)return json(res,400,{error:'Límite de sugerencias no válido'});
      try{return json(res,200,proposeLibraryCues(directory,jobs.loadProfile(job.profileId).inputs.transcript,{limit}));}
      catch(error){if(['ENOENT','EACCES','EPERM'].includes(error.code))return json(res,503,{error:'El índice privado de recursos no está disponible'});throw error;}
+    }
+    if(action==='ai-context'&&req.method==='POST'){
+     const b=await body(req,8192),source=jobs.get(id);
+     if(b.fingerprint!==source.fingerprint)return json(res,409,{error:'El proyecto ha cambiado. Guarda y vuelve a preparar la información.'});
+     if(typeof (b.prompt??'')!=='string'||(b.prompt??'').length>4000)return json(res,400,{error:'Encargo demasiado largo.'});
+     const project=jobs.loadProfile(source.profileId),catalog=completeDirectorCatalog(externalCatalog(project,source.settings,directorAssets(assets,directory)),source.settings);
+     const instructions=buildDirectorInstructions(catalog,b.prompt??'');
+     return json(res,200,{provider:'gemini',model:'gemini-3.8-flash',video:'Se enviaría el vídeo original completo con audio.',requestedFramesPerSecond:1,actualFramesVerified:false,reasoningLevel:'medium',catalogAssetCount:catalog.assets.length,captionCount:catalog.captions.length,instructions,sourceFingerprint:source.fingerprint,sent:false});
     }
     if(action==='ai-plan'&&req.method==='GET'){
      const latest=join(jobs.dir(id),'ai-plan-latest.json');

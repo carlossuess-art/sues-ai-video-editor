@@ -4,7 +4,7 @@ import {mkdtempSync,writeFileSync,readFileSync,rmSync,chmodSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {randomUUID,createHash} from 'node:crypto';
-import {CloudDirector} from '../src/cloud-director.js';
+import {CloudDirector,buildDirectorInstructions} from '../src/cloud-director.js';
 import {createEditorServer} from '../src/editor-server.js';
 import {fixture} from './helpers/editor-fixture.js';
 const key='test-only-secret-not-a-live-key';
@@ -83,5 +83,22 @@ test('authenticated cloud route validates stale requests and returned operations
   assert.equal((await call({provider:'gemini',fingerprint:'old'})).status,409);assert.equal(calls,0);
   const res=await call({provider:'gemini',fingerprint:job.fingerprint,requestId:randomUUID()}),r=await res.json();
   assert.equal(res.status,200);assert.equal(r.review.canApply,true);assert.equal(r.renderStarted,false);assert.equal(calls,1);assert.equal(app.jobs.get(job.id).revision,1);assert.equal(app.jobs.children.size,0);assert.equal(app.jobs.list().length,1);
+ }finally{await app.close();rmSync(f.dir,{recursive:true,force:true});}
+});
+
+
+test('context preview is authenticated, read-only and matches the exact prompt sent to the provider',async()=>{
+ const f=fixture();let calls=0,transmitted;
+ const app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,cloudDirector:{providers:()=>[{id:'gemini',configured:true}],generate:async({catalog,prompt})=>{calls++;transmitted=buildDirectorInstructions(catalog,prompt);const plan={schema:catalog.schema,sourceSha256:catalog.sourceSha256,operations:[{type:'transition',resourceId:'warm',start:3,duration:.4}]};return {text:JSON.stringify(plan),plan,provider:'gemini',model:'gemini-3.8-flash'};}}});
+ try{
+  const launch=await app.listen(),url=launch.split('/#')[0],job=app.jobs.create('test'),path=url+'/api/jobs/'+job.id+'/ai-context';
+  assert.equal((await fetch(path,{method:'POST'})).status,401);
+  const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}}),headers={Cookie:session.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'};
+  const request=async(payload)=>fetch(path,{method:'POST',headers,body:JSON.stringify(payload)});
+  assert.equal((await request({fingerprint:'old',prompt:'hola'})).status,409);
+  const result=await (await request({fingerprint:job.fingerprint,prompt:'muestra el pago'})).json();
+  assert.equal(result.sent,false);assert.equal(result.requestedFramesPerSecond,1);assert.equal(result.actualFramesVerified,false);assert.equal(calls,0);assert.match(result.instructions,/ENCARGO:muestra el pago/);
+  const plan=await fetch(url+'/api/jobs/'+job.id+'/ai-plan',{method:'POST',headers,body:JSON.stringify({provider:'gemini',fingerprint:job.fingerprint,requestId:randomUUID(),prompt:'muestra el pago'})});
+  assert.equal(plan.status,200);assert.equal(calls,1);assert.equal(result.instructions,transmitted);assert.equal(app.jobs.children.size,0);
  }finally{await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });

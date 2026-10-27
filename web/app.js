@@ -649,6 +649,8 @@ function showCloudResult(result,id){
  if(result.state!=='COMPLETE')return;
  if(result.stale||current.fingerprint!==result.sourceFingerprint){$('cloud-status').textContent='El plan está guardado, pero los ajustes han cambiado. Compruébalo de nuevo antes de ejecutar.';return;}
  $('external-plan-text').value=result.text;externalReview={...result.review,text:result.text,jobId:id};externalRequest=null;
+ if(typeof result.inputInstructions==='string'){$('cloud-context-text').value=result.inputInstructions;$('cloud-context-text').hidden=false;$('cloud-context-summary').textContent='Instrucciones enviadas en esta petición · '+result.model+' · vídeo y audio · 1 fotograma por segundo solicitado. La respuesta se muestra en Plan de edición externo.';}
+
  const box=$('external-result');box.replaceChildren(node('strong',result.review.canApply?'Plan de Gemini listo para ejecutar':'Plan de Gemini recibido: revisa las operaciones pendientes'));
  for(const row of result.review.rows)box.append(node('p',(row.status==='ready'?'✓ ':'Pendiente · ')+row.description));
  for(const note of result.review.notes??[])box.append(node('p',note));
@@ -663,6 +665,13 @@ async function resumeCloudPlan(id){
  else if(result.state!=='NONE')showCloudResult(result,id);
  else await checkCloudProviders();
 }
+$('cloud-context').onclick=()=>work(async()=>{
+ if(!current)throw Error('Prepara primero el vídeo para revisar la información.');
+ const id=current.id,result=await api('jobs/'+id+'/ai-context','POST',{prompt:$('director-prompt').value,fingerprint:current.fingerprint});
+ if(current?.id!==id)return;
+ $('cloud-context-summary').textContent=(previewDirty?'Aviso: muestra los ajustes guardados; hay cambios sin aplicar. ':'')+'Sin enviar. Modelo configurado: '+result.model+' · vídeo y audio completos · 1 fotograma por segundo solicitado · '+result.captionCount+' frases · '+result.catalogAssetCount+' recursos. Revisa también el catálogo y encargo completos a continuación.';
+ $('cloud-context-text').value=result.instructions;$('cloud-context-text').hidden=false;
+});
 $('cloud-check').onclick=()=>work(async()=>{await checkCloudProviders();if(current)await resumeCloudPlan(current.id);});
 $('cloud-provider').onchange=()=>{$('cloud-provider').value='gemini';};
 async function requestCloudPlan(){
