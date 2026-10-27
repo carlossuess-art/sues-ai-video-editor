@@ -5,6 +5,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {proposeLibraryCues} from '../src/director-library-cues.js';
 import {searchPrivateLibrary} from '../src/private-library-search.js';
+import {directorAssets} from '../src/director-context.js';
 
 const transcript=(text)=>({version:'1.0',language:'es',sourceDuration:30,
  words:text.split(' ').map((w,i)=>({text:w,start:2+i*.5,end:2+(i+1)*.5}))});
@@ -64,5 +65,14 @@ test('search exposes exact-vs-synonym evidence and preserves review/remote separ
   assert.deepEqual(sparkle.lexicalEvidence.exactTerms,['revelacion']);
   assert.equal(sparkle.creativeApproval,'review-required');
   assert.ok(broad.results.some(r=>r.id==='remote'&&r.availability==='remote-drive-only'));
+ }finally{rmSync(root,{recursive:true,force:true});}
+});
+
+
+test('director includes real sampled description and filters risky review overlays',()=>{
+ const root=setup();try{const assetId='a'.repeat(64),badId='b'.repeat(64);
+ writeFileSync(join(root,'library','complete-visual-audit-v1.json'),JSON.stringify({items:[{assetId,descriptionEs:'Manos contando billetes',reviewScope:'sampled-frames-only',sampleSeconds:[1,2],riskFlags:[]},{assetId:badId,descriptionEs:'Marca ajena',reviewScope:'sampled-frames-only',riskFlags:['visible-third-party-marking']}]}));
+ const library={list:()=>[{id:assetId,kind:'video',title:'Pago'},{id:badId,kind:'video',title:'Marca'}],semanticCatalog:()=>({assets:[]})};
+ const result=directorAssets(library,root);assert.equal(result.length,1);assert.equal(result[0].visualDescription,'Manos contando billetes');assert.equal(result[0].visualReviewScope,'sampled-frames-only');assert.equal(result[0].creativeApproval,'review-required');
  }finally{rmSync(root,{recursive:true,force:true});}
 });

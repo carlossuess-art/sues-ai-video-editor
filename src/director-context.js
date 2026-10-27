@@ -9,7 +9,7 @@ export function directorAssets(library,directory){
   const file=join(directory,'library',name);if(!existsSync(file))continue;
   for(const row of JSON.parse(readFileSync(file,'utf8')).items??[]){if(!row.assetId)continue;const previous=visual.get(row.assetId)??{};visual.set(row.assetId,{...previous,...row,riskFlags:[...new Set([...(previous.riskFlags??[]),...(row.riskFlags??[])])]});}
  }
- return library.list().filter(a=>!/(?:QA|comprobación|revisión interna)/i.test(a.title??'')).filter(a=>!(visual.get(a.id)?.riskFlags??[]).some(f=>['visible-third-party-marking','unrelated-on-screen-text'].includes(f))).map(a=>({...a,emotions:semantics.get(a.id)?.semantics?.emotionTags??[],narrativeRoles:semantics.get(a.id)?.semantics?.narrativeRoles??[],creativeApproval:semantics.get(a.id)?.approvedForProduction===true?'approved':'review-required'}));
+ return library.list().filter(a=>!/(?:QA|comprobación|revisión interna)/i.test(a.title??'')).filter(a=>!(visual.get(a.id)?.riskFlags??[]).some(f=>['visible-third-party-marking','unrelated-on-screen-text'].includes(f))).map(a=>({...a,emotions:semantics.get(a.id)?.semantics?.emotionTags??[],narrativeRoles:semantics.get(a.id)?.semantics?.narrativeRoles??[],creativeApproval:semantics.get(a.id)?.approvedForProduction===true?'approved':'review-required',visualDescription:visual.get(a.id)?.descriptionEs,visualReviewScope:visual.get(a.id)?.reviewScope??visual.get(a.id)?.scope}));
 }
 
 export function completeDirectorCatalog(catalog,settings){

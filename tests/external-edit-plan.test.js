@@ -37,3 +37,11 @@ test('HTTP review is private and read-only; stale/partial plans rejected; execut
  await app.close();const restarted=createEditorServer(options);try{assert.equal(restarted.jobs.get(child.id).instructions.at(-1).text,text);}finally{await restarted.close();}
  }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });
+
+
+test('model catalog exposes sampled descriptions with provenance only for reviewed assets',()=>{
+ const f=fixture();try{const project=loadProject(f.profiles.test),settings=prepareProject(project,{}).settings;
+ const assets=[{id:'a'.repeat(64),kind:'video',title:'clip',visualDescription:'Persona caminando',visualReviewScope:'sampled-frames-only'}, {id:'b'.repeat(64),kind:'video',title:'otro',visualDescription:'no verificado'}];
+ const cat=externalCatalog(project,settings,assets);assert.equal(cat.assets[0].visualDescription,'Persona caminando');assert.equal(cat.assets[0].visualReviewScope,'sampled-frames-only');assert.ok(!('visualDescription' in cat.assets[1]));
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
+});
