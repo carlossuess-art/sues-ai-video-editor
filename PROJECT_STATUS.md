@@ -1170,3 +1170,5 @@ Selección conceptual: la revisión prioriza recursos locales dentro de hasta 20
 
 
 27-10-2026 · Importación del Director: versión limitada instalada en el editor activo, rama feat/paste-creative-plan-20261027 (código df1df29b9f20e4ebdb5605fe1dbcdafbeff5946e). El servicio fue reiniciado sin trabajos activos; comprobados HTML, sesión, salud y rechazo de revisión con proyecto obsoleto. En navegador real se verificaron el proyecto existente y el panel «Pegar plan del Director IA». En entorno aislado se verificaron búsqueda, selección, Drive, revisión, render, reproducción y exportación. Texto libre complejo y escucha humana completa siguen pendientes. No se envió material a Gemini. 374/375 pruebas en contenedor; la prueba Git restante pasó en el servidor. Rollback de archivos: /opt/sues-video-setup/creative-plan-file-rollback-20261027.
+
+27-10-2026 · El botón «Preparar información para el Director IA» fue probado en navegador aislado y visto en producción. Prepara contexto local con esquema e identificador del vídeo para copiar, sin envíos automáticos a IA. Archivos web de commit be9b73dc88b23c9acbc3399fbe0cf104eb3bce64 aplicados al servicio activo.
