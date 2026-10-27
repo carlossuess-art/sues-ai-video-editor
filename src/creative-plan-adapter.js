@@ -58,7 +58,7 @@ export function adaptCreativePlan(text,sourceSha256,{search,resolveId}={}){
   let candidates=[];
   if(cells.length>=3&&typeof search==='function'){
    const query=rawId.slice(0,180).trim();
-   if(query&&!/^[a-f0-9]{64}$/i.test(query)){try{candidates=search(query).slice(0,5).map(({id,title,kind,availability})=>({id,title,kind,availability}));}catch{}}
+   if(query&&!/^[a-f0-9]{64}$/i.test(query)){try{const rank={'private-operational':0,'remote-drive-only':1,'reference-only':2};candidates=search(query).slice().sort((a,b)=>(rank[a.availability]??3)-(rank[b.availability]??3)).slice(0,5).map(({id,title,kind,availability,catalogueNumber,description,visualReview})=>({id,title,kind,availability,catalogueNumber,description,visualReview}));}catch{}}
   }
   unresolved.push({line:i+1,original:line,status:'unsupported-or-ambiguous',description:'Esta instrucción necesita adaptación o datos precisos; no se ejecutará automáticamente.',candidates});
  }

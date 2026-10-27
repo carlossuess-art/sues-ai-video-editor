@@ -202,7 +202,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      const audit=loadAuditedDrive(directory),installed=new Set(assets.list().map(a=>a.id));
      const byNumber=q=>audit.cards.filter(c=>c.catalogueNumber===q&&!audit.excluded.has(c.driveId)&&!audit.excludedHashes.has(c.sha256));
      const resolveId=q=>{if(!/^BR-\d{4}$/.test(q))return null;const matches=byNumber(q);return matches.length===1&&installed.has(matches[0].sha256)?matches[0].sha256:null;};
-     const search=q=>{if(/^BR-\d{4}$/.test(q)){const found=byNumber(q);return found.map(c=>({id:c.driveId,title:c.editorialTitleEs??c.visibleContentEs??q,kind:'video',availability:installed.has(c.sha256)?'private-operational':'remote-drive-only'}));}return searchPrivateLibrary(directory,q,{limit:5}).results;};
+     const search=q=>{if(/^BR-\d{4}$/.test(q)){const found=byNumber(q);return found.map(c=>({id:c.driveId,title:c.editorialTitleEs??c.visibleContentEs??q,kind:'video',availability:installed.has(c.sha256)?'private-operational':'remote-drive-only'}));}return searchPrivateLibrary(directory,q,{limit:20}).results;};
      const adapted=adaptCreativePlan(b.text,catalog.sourceSha256,{search,resolveId});
      let review=null;if(adapted.converted.operations.length)review=reviewExternalPlan(JSON.stringify(adapted.converted),{project,settings:source.settings,assets:assets.list(),commandPlanner:planInstructions});
      // Offer only audited, uniquely matched remote B-roll; never replace the selection.

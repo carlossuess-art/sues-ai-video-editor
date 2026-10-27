@@ -502,8 +502,21 @@ $('external-review').onclick=()=>work(async()=>{
  for(const item of result.unresolved??[]){
   box.append(node('p','Pendiente · '+item.original));
   for(const c of item.candidates??[]){
-   const row=node('div',undefined,'media-asset');row.append(node('p','Posible recurso para revisar: '+c.title+' · '+c.kind+' · '+c.availability+' · '+c.id,'small'));
-   if(c.availability==='remote-drive-only'&&/^[\w-]{10,160}$/.test(c.id)){
+   const row=node('div',undefined,'media-asset');row.append(node('p','Posible recurso para revisar: '+(c.catalogueNumber?c.catalogueNumber+' · ':'')+c.title+' · '+c.kind+' · '+c.availability+' · '+c.id,'small'));
+   if(c.description)row.append(node('p',c.description,'small'));
+   row.append(node('p','Coincidencia de catálogo; comprueba su contenido y el fragmento antes de aprobarlo.','small'));
+   if(c.availability==='private-operational'&&/^[a-f0-9]{64}$/.test(c.id)&&Number.isInteger(item.line)&&item.line>0){
+    const lines=raw.split(/\r?\n/),line=lines[item.line-1],cells=line?.trim().startsWith('|')?line.trim().replace(/^\||\|$/g,'').split('|').map(x=>x.trim()):[];
+    const kind=(cells.length===4?cells[1]:cells.length===5?cells[2]:'').toLowerCase(),index=cells.length===4?2:3;
+    if(line?.trim()===item.original&&((kind==='b-roll'&&c.kind==='video')||(kind==='sfx'&&c.kind==='sfx'))){
+     const choose=node('button','Usar este recurso y volver a validar');choose.type='button';choose.onclick=()=>{
+      if(current?.id!==result.sourceJobId||$('external-plan-text').value!==raw){error(new Error('El proyecto o el plan han cambiado. Vuelve a analizarlo.'));return;}
+      cells[index]=c.id;lines[item.line-1]='| '+cells.join(' | ')+' |';$('external-plan-text').value=lines.join('\n');invalidateExternal();
+      box.append(node('p','Recurso elegido. Analiza de nuevo el plan antes de aprobarlo; el plan anterior sigue guardado.','small'));
+     };row.append(choose);
+    }
+   }
+   if(c.availability==='remote-drive-only'&&c.kind==='video'&&/^[\w-]{10,160}$/.test(c.id)){
     const button=node('button','Recuperar este recurso de Drive');button.type='button';
     button.onclick=()=>work(async()=>{
      if(current?.id!==result.sourceJobId||$('external-plan-text').value!==raw)throw Error('El proyecto o el plan han cambiado. Vuelve a analizarlo.');
