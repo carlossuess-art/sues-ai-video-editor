@@ -518,6 +518,19 @@ $('external-review').onclick=()=>work(async()=>{
  }
  for(const row of result.review?.rows??[])box.append(node('p',(row.status==='ready'?'✓ ':'Pendiente · ')+row.description));
  for(const note of result.review?.notes??[])box.append(node('p',note));
+ const rows=result.review?.rows??[],ready=rows.filter(r=>r.status==='ready');
+ const omitted=rows.filter(r=>r.status!=='ready').length+(result.unresolved?.length??0);
+ if(!result.canApply&&ready.length&&omitted){
+  const partial=node('button','Preparar solo las operaciones compatibles');partial.type='button';
+  box.append(node('p','Alternativa: excluir las instrucciones pendientes y volver a validar las '+ready.length+' compatibles. El plan original queda guardado. Esta acción no inicia la edición.','small'),partial);
+  partial.onclick=()=>{
+   if(current?.id!==result.sourceJobId||$('external-plan-text').value!==raw){error(new Error('El proyecto o el plan han cambiado. Vuelve a analizarlo.'));return;}
+   const selected=new Set(ready.map(r=>r.index));
+   const draft={...result.converted,operations:result.converted.operations.filter((_,i)=>selected.has(i+1))};
+   $('external-plan-text').value=JSON.stringify(draft,null,2);invalidateExternal();
+   box.append(node('p','Se ha preparado una alternativa sin las instrucciones pendientes. Analiza de nuevo el plan antes de aprobarlo. El original sigue guardado.','small'));
+  };
+ }
  if(result.review)externalReview={...result.review,canApply:result.canApply,text:converted,raw,jobId:current.id};
  $('external-execute').disabled=!result.canApply;
 });
