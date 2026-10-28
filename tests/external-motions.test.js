@@ -35,6 +35,7 @@ test('motion review rejects unsupported recipes, missing faces, hidden effects, 
    const r=review(operations);assert.equal(r.canApply,false,JSON.stringify(operations));assert.equal(r.changes,null);
   }
   assert.equal(review([{...op,resourceId:'MOGRT'}]).rows[0].status,'unsupported');
+  assert.throws(()=>reviewExternalPlan(JSON.stringify({...catalog.example,operations:[op]}),{project,settings:{...settings,motions:false},commandPlanner:planInstructions}),/línea temporal/);
   const faceless={...project,inputs:{...project.inputs,camera:{...project.inputs.camera,mode:'full-frame-fit'},visionFrames:project.inputs.visionFrames.map(f=>({...f,faces:[]}))}};
   assert.ok(externalCatalog(faceless,settings).motionResources.every(r=>!r.available));
   assert.equal(review([op],faceless).rows[0].status,'unsupported');assert.equal(review([op],faceless).canApply,false);

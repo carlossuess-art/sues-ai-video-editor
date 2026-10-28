@@ -113,6 +113,8 @@ export function prepareProject(project,settings={}){
  plan.captions=captionHierarchy(editedCaptions.map(c=>({...c,emphasisWordIndexes:c.source==='manual'?[]:c.wordIndexes.filter(i=>emphasis.has(i))})),inputs.transcript.words,plan.policy.captions);
  for(const id of options.hiddenCaptionIds)if(!plan.captions.some(c=>c.id===id))throw new Error('Hidden caption does not belong to this edit: '+id);
  plan.hiddenCaptionIds=options.hiddenCaptionIds;
+ for(const id of Object.keys(options.captionTransforms))if(!plan.captions.some(c=>c.id===id))throw Error('Caption transform does not belong to this edit: '+id);
+ plan.captionTransforms=options.captionTransforms;
  for(const [id,value]of Object.entries(options.keywordOverrides)){
   const c=plan.captions.find(c=>c.id===id);if(!c)throw new Error('Unknown keyword caption: '+id);
   c.emphasisWordIndexes=[];
@@ -156,6 +158,7 @@ export function prepareProject(project,settings={}){
  plan.automaticDirector=director.audit;
  plan.pending=plan.pending.filter(p=>p!=='automated-director-selection');plan.pending.push('llm-semantic-director-and-human-review');
  const fingerprint=createHash('sha256').update(JSON.stringify(stable({inputs:project.inputs,boundHashes:project.boundHashes??{},fontHashes:project.fontHashes??{},settings:options,selectedAssets,engine:ENGINE_HASH}))).digest('hex');
+ if(Object.keys(plan.captionTransforms??{}).length)buildPreviewASS(plan);
  return {plan,director,settings:options,fingerprint,resourceBindings};
 }
 export function writePreparedBundle(project,prepared,outputDirectory){

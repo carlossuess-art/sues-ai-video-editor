@@ -54,7 +54,7 @@ export function foregroundEffectFilters(data,base,input){
    const slot=input+1+videoIndex++,d=e.end-e.start,fade=Math.min(.2,d/3);
    const r=e.region??{x:0,y:0,width:1080,height:1920,featherBottom:0};
    const feather=r.featherBottom?`,geq=lum='lum(X,Y)':cb='cb(X,Y)':cr='cr(X,Y)':a='alpha(X,Y)*clip((H-Y)/${r.featherBottom},0,1)'`:'';
-   filters.push(`[${slot}:v]trim=start=${e.sourceIn}:duration=${d},setpts=PTS-STARTPTS,scale=${r.width}:${r.height}:force_original_aspect_ratio=increase,crop=${r.width}:${r.height},setsar=1,fps=30,format=yuva420p,colorchannelmixer=aa=${e.opacity}${feather},fade=t=in:d=${fade}:alpha=1,fade=t=out:st=${d-fade}:d=${fade}:alpha=1,setpts=PTS+${e.start}/TB[fg-video${i}]`);
+   filters.push(`[${slot}:v]trim=start=${e.sourceIn}:duration=${d},setpts=PTS-STARTPTS,scale=${r.width}:${r.height}:force_original_aspect_ratio=increase,crop=${r.width}:${r.height},setsar=1,fps=30,format=yuva420p,colorchannelmixer=aa=${e.opacity}${feather},fade=t=in:d=${fade}:alpha=1,fade=t=out:st=${d-fade}:d=${fade}:alpha=1,tpad=start_mode=add:start_duration=${e.start}:color=black@0,setpts=PTS-STARTPTS[fg-video${i}]`);
    filters.push(`[${background}][fg-video${i}]overlay=x=${r.x}:y=${r.y}:eof_action=pass:repeatlast=0:enable='${enabled}'[fg-effect${i}]`);
   }else{
    const fade=`min(clip((t-${e.start})/0.2,0,1),clip((${e.end}-t)/0.2,0,1))`;

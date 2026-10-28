@@ -36,7 +36,7 @@ export class AdjustmentPreviews{
   if(this.running||this.playbackBusy()||this.jobs.posterBusy.size||this.jobs.children.size||this.jobs.queued().length||this.jobs.publishing.size)throw Error('Hay otro render activo. Espera antes de previsualizar.');
   this.prune();const directory=join(this.directory,key);
   if(existsSync(directory))rmSync(directory,{recursive:true,force:true});
-  mkdirSync(directory,{mode:0o700});writePreparedBundle(project,prepared,join(directory,'bundle'));
+  mkdirSync(directory,{mode:0o700});try{writePreparedBundle(project,prepared,join(directory,'bundle'));}catch(error){rmSync(directory,{recursive:true,force:true});throw error;}
   const t={key,jobId,state:'RUNNING',start,duration,settingsFingerprint:prepared.fingerprint,createdAt:Date.now()};
   this.tasks.set(key,t);this.save(t);this.jobs.previewBusy=true;
   const fd=openSync(join(directory,'worker.log'),'wx',0o600);

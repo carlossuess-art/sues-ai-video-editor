@@ -128,12 +128,15 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
       event(0,start,end,'Caption',`{\\an7\\pos(${b.left-20},${b.top})\\p1\\bord0\\shad0\\1c&H191208&\\1a&H38&\\fad(${fade},${fade})}m 18 0 l ${w-18} 0 b ${w} 0 ${w} 0 ${w} 18 l ${w} ${h-18} b ${w} ${h} ${w} ${h} ${w-18} ${h} l 18 ${h} b 0 ${h} 0 ${h} 0 ${h-18} l 0 18 b 0 0 0 0 18 0`);
     }
     const hierarchy=hierarchyLayout(c,plan.policy.captions,captionBox);
-    const p=plan.policy.captions,b=captionBox,displayLines=p.inlineGroups?[c.text]:c.lines,normalSize=fitCaptionSize(displayLines,p);
-    const normalRows=displayLines.map((text,i)=>({text,size:normalSize,x:(b.left+b.right)/2,y:(b.top+b.bottom)/2+(i-(displayLines.length-1)/2)*normalSize*1.1,role:'companion'}));
+    const manual=plan.captionTransforms?.[c.id],p=plan.policy.captions,b=manual?{left:captionBox.left+manual.dx,right:captionBox.right+manual.dx,top:captionBox.top+manual.dy,bottom:captionBox.bottom+manual.dy}:captionBox,displayLines=p.inlineGroups?[c.text]:c.lines,normalSize=fitCaptionSize(displayLines,p);
+    const normalRows=displayLines.map((text,i)=>({text,size:normalSize,x:(captionBox.left+captionBox.right)/2,y:(captionBox.top+captionBox.bottom)/2+(i-(displayLines.length-1)/2)*normalSize*1.1,role:'companion'}));
     const progressive=progressiveRuns(c,hierarchy??normalRows,p);
     if(hierarchy||progressive){
       const p=plan.policy.captions,fade=p.fadeMs??60;
-      for(const row of progressive??hierarchy){
+      for(const originalRow of progressive??hierarchy){
+        const transform=plan.captionTransforms?.[c.id];
+        const row=transform?{...originalRow,x:540+(originalRow.x-540)*transform.scale+transform.dx,y:(captionBox.top+captionBox.bottom)/2+(originalRow.y-(captionBox.top+captionBox.bottom)/2)*transform.scale+transform.dy,size:originalRow.size*transform.scale}:originalRow;
+        if(transform&&(row.x<40||row.x>1040||row.y-row.size<40||row.y+row.size>1800))throw Error('El subtítulo queda fuera de la zona visible. Reduce el tamaño o muévelo hacia el centro: '+c.id);
         const start=row.start??c.start,end=row.end??c.end,settle=Math.round((row.settle??0)*1000);
         const entrance=row.character?`\\move(${row.x},${row.y+8},${row.x},${row.y},0,${settle})\\frz-3\\t(0,${settle},\\frz0)`:`\\pos(${row.x},${row.y})`;
         const kinetic=plan.dopaminMaster&&!row.character?`\\fscy${row.role==='keyword'?125:88}\\t(0,130,\\fscy100)`:'';
@@ -162,7 +165,7 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
       continue;
     }
     let wordOffset=0;const content=c.lines.map(line=>line.split(' ').map(word=>{const index=c.wordIndexes[wordOffset++],text=safeText(word);return c.emphasisWordIndexes?.includes(index)?`{\\1c${gold}&}${text}{\\1c${white}&}`:text;}).join(' ')).join('\\N');
-    const size=fitCaptionSize(c.lines,p),fade=p.fadeMs??60,entrance=p.entranceMs??180,motion=p.mode==='short-groups'?`${typefaceTags(p)}\\fs${size}\\fscx${p.scaleX}\\fsp${p.tracking}\\fad(${fade},${fade})\\fscy98\\t(0,${entrance},\\fscy100)`:'';
+    const size=fitCaptionSize(c.lines,p)*(plan.captionTransforms?.[c.id]?.scale??1),fade=p.fadeMs??60,entrance=p.entranceMs??180,motion=p.mode==='short-groups'?`${typefaceTags(p)}\\fs${size}\\fscx${p.scaleX}\\fsp${p.tracking}\\fad(${fade},${fade})\\fscy98\\t(0,${entrance},\\fscy100)`:'';
     if(p.shadow){const s=p.shadow,dx=s.distancePx*Math.cos(s.angleDeg*Math.PI/180),dy=s.distancePx*Math.sin(s.angleDeg*Math.PI/180),alpha=Math.round((1-s.opacity)*255).toString(16).padStart(2,'0').toUpperCase();event(0,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2+dx},${(b.top+b.bottom)/2+dy})${motion}\\1c&H000000&\\1a&H${alpha}&\\blur${s.blurPx}\\bord0\\shad0}${c.lines.map(safeText).join('\\N')}`);}
     event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})${motion}}${content}`);
   }

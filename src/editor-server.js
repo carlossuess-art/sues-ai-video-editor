@@ -1,3 +1,4 @@
+import {timelineFrames} from './timeline-frames.js';
 import {AdjustmentPreviews} from './adjustment-previews.js';
 import {DriveResourceCache,loadAuditedDrive,auditedCandidates} from './drive-resource-library.js';
 import {directorAssets,saveDirectorJSON,completeDirectorCatalog} from './director-context.js';
@@ -193,7 +194,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|adjust-preview))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|adjust-preview))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
@@ -320,6 +321,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      const file=jobs.backupMedia(id),size=statSync(file).size;let range;try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
      res.setHeader('Content-Type','application/x-tar');res.setHeader('Content-Disposition','attachment; filename="SUES_PROYECTO.tar"');res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();const stream=createReadStream(file,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
     }
+    if(action==='timeline-frames'&&req.method==='GET'){try{const data=await timelineFrames(jobs,id);if(url.searchParams.get('media')==='1'){res.setHeader('Content-Type','image/jpeg');res.setHeader('Cache-Control','private, max-age=3600');return res.end(readFileSync(data.file));}const {file,...metadata}=data;return json(res,200,metadata);}catch(e){return json(res,409,{error:e.message});}}
     if(action==='poster'&&req.method==='GET'){try{const file=await jobs.poster(id);res.setHeader('Content-Type','image/jpeg');return res.end(readFileSync(file));}catch{return json(res,404,{error:'Poster unavailable'});}}
     if(action==='review'&&req.method==='GET')return json(res,200,jobs.review(id));
     if(action==='plan'&&req.method==='GET')return json(res,200,jobs.plan(id));

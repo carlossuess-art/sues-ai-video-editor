@@ -164,6 +164,14 @@ def render(source, bundle, output, preview_start=None, preview_duration=None):
     def window_script(script, label, audio=False):
         content = pathlib.Path(script).read_text() if pathlib.Path(script).is_absolute() else (bundle / script).read_text()
         content = content.strip().rstrip(';').replace('[' + label + ']', '[fragment-full-' + label + ']')
+        if not audio:
+            # Keep original edit timestamps, but do not run composition/mattes for
+            # the preceding minutes when only a short adjustment is requested.
+            anchor = re.search(r'concat=n=\d+:v=1:a=0\[base\]', content)
+            if anchor:
+                position = anchor.end()
+                window = ";\n[base]select='gte(t,%s)*lt(t,%s)'[fragment-window-base]" % (preview_start, preview_start + preview_duration)
+                content = content[:position] + window + content[position:].replace('[base]', '[fragment-window-base]')
         filters = ('atrim' if audio else 'trim') + '=start=%s:end=%s,' % (preview_start, preview_start + preview_duration)
         filters += 'asetpts=PTS-STARTPTS' if audio else 'setpts=PTS-STARTPTS,scale=540:960:flags=lanczos'
         target = output.parent / ('fragment-' + label + '.ffscript')
