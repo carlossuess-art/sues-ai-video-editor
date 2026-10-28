@@ -8,6 +8,7 @@ import {adaptCreativePlan} from './creative-plan-adapter.js';
 import {prepareProject} from './local-pipeline.js';
 import {planInstructions} from './instruction-director.js';
 import {LocalAnalysis} from './local-analysis.js';
+import {proposedSourceReview} from './source-cuts.js';
 import {googleAuth,readGoogleConfig,GOOGLE_CALLBACK} from './editor-google-auth.js';
 import {STYLE_VARIANTS} from './style-variants.js';
 import {ProjectRecovery} from './project-recovery.js';
@@ -152,6 +153,13 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      res.setHeader('Content-Type',a.mimeType);res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();const stream=createReadStream(a.localFile,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
     }
     if(path==='/api/uploads'&&req.method==='GET')return json(res,200,intake.list());
+    const sourceSuggestions=/^\/api\/uploads\/([a-f0-9]{64})\/cut-suggestions$/.exec(path);
+    if(sourceSuggestions&&req.method==='GET'){
+      const id=sourceSuggestions[1],upload=intake.list().find(u=>u.id===id);
+      if(!upload||upload.state!=='READY'||!upload.profileId||!Object.hasOwn(profiles,upload.profileId))return json(res,409,{error:'Transcribe primero el vídeo para proponer cortes. Los cortes manuales se pueden marcar en cualquier momento.'});
+      const config=projectConfig(profiles[upload.profileId]),transcript=JSON.parse(readFileSync(config.transcriptPath,'utf8'));
+      return json(res,200,proposedSourceReview(transcript));
+    }
     if(path==='/api/recoveries'&&req.method==='GET')return json(res,200,recoveries.list());
     if(path==='/api/recoveries'&&req.method==='POST'){
      req.setTimeout(900000);const recovered=await recoveries.receive(req);
@@ -314,7 +322,10 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(action==='cancel'&&req.method==='POST')return json(res,202,jobs.cancel(id));
     if(action==='preview'&&['GET','HEAD'].includes(req.method)){const source=await jobs.media(id),file=await previews.ensure(id,source);return sourceStream(req,res,file);}
     if(action==='media'&&['GET','HEAD'].includes(req.method)){
-     const file=await jobs.media(id),size=statSync(file).size;let range;
+     const source=await jobs.media(id),quality=url.searchParams.get('resolution');
+     if(quality){const job=jobs.get(id);if(!job.editorialReview?.pass||job.editorialReview.fingerprint!==job.fingerprint)return json(res,409,{error:'Valida esta versión antes de descargar la exportación final.'});}
+     if(quality&&!['720','1080'].includes(quality))return json(res,400,{error:'Resolución no compatible'});
+     const file=quality==='720'?await previews.ensure(id,source,{quality:'720'}):source,size=statSync(file).size;let range;
      try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
      res.setHeader('Content-Type','video/mp4');res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);
      if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);
@@ -323,7 +334,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     }
     return json(res,405,{error:'Method not allowed'});
    }
-   const files={'/':['index.html','text/html; charset=utf-8'],'/playback-buffer.js':['playback-buffer.js','text/javascript; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8'],'/studio.css':['studio.css','text/css; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon.svg':['icon.svg','image/svg+xml']};
+   const files={'/':['index.html','text/html; charset=utf-8'],'/playback-buffer.js':['playback-buffer.js','text/javascript; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8'],'/studio.css':['studio.css','text/css; charset=utf-8'],'/manual-adjust.css':['manual-adjust.css','text/css; charset=utf-8'],'/source-cuts.css':['source-cuts.css','text/css; charset=utf-8'],'/manual-adjust.js':['manual-adjust.js','text/javascript; charset=utf-8'],'/source-cuts-ui.js':['source-cuts-ui.js','text/javascript; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon.svg':['icon.svg','image/svg+xml']};
    if(req.method!=='GET'||!Object.hasOwn(files,path))return json(res,404,{error:'Not found'});
    const [file,type]=files[path];res.setHeader('Content-Type',type);res.end(readFileSync(join(WEB,file)));
   }catch(error){if(res.headersSent)return res.destroy();const safe=/not found|Unknown profile/i.test(error.message)?404:/busy|ready|changed|transition|owned|Adjustments|queue full|closing/.test(error.message)?409:400;json(res,safe,{error:error.code?'No se pudo acceder al recurso local configurado':error.message.replaceAll(directory,'[local]')});}

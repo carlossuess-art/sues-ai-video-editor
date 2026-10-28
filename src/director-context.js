@@ -14,7 +14,7 @@ export function directorAssets(library,directory){
 
 export function completeDirectorCatalog(catalog,settings){
  const next={...catalog,assets:catalog.assets.filter(a=>a.kind!=='audio'||Number.isFinite(a.duration)&&a.duration>=catalog.duration)};
- const keys=['styleId','captionWords','voiceGain','voiceNormalization','sfxGain','sfxEnabled','levelResources','musicAssetId','musicGain','musicEnabled','duckMusic','zoomIntensity','motions','graphicCards','transitions','videoEvents','overlayEvents','sfxEvents'];
+ const keys=['sourceCuts','hiddenCaptionIds','captionOverrides','captionTimingOverrides','styleId','captionWords','voiceGain','voiceNormalization','sfxGain','sfxEnabled','levelResources','musicAssetId','musicGain','musicEnabled','duckMusic','zoomIntensity','motions','graphicCards','transitions','videoEvents','overlayEvents','sfxEvents'];
  next.currentSettings=Object.fromEntries(keys.filter(k=>settings[k]!==undefined).map(k=>[k,structuredClone(settings[k])]));
  return next;
 }

@@ -1,5 +1,5 @@
 // Shell only. Never cache API responses, cookies, transcripts, videos or tokens.
-const CACHE='sues-shell-v26-demand-previews',SHELL=['/','/app.js','/playback-buffer.js','/app.css','/studio.css','/icon.svg','/manifest.webmanifest'];
+const CACHE='sues-shell-v28-timeline-exports',SHELL=['/','/app.js','/playback-buffer.js','/app.css','/studio.css','/manual-adjust.css','/manual-adjust.js','/source-cuts.css','/source-cuts-ui.js','/icon.svg','/manifest.webmanifest'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('sues-shell-')&&k!==CACHE).map(k=>caches.delete(k))))));
 self.addEventListener('fetch',event=>{const url=new URL(event.request.url);if(event.request.method!=='GET'||url.origin!==self.location.origin||!SHELL.includes(url.pathname)||url.search)return;event.respondWith(fetch(event.request).catch(()=>caches.match(url.pathname)));});

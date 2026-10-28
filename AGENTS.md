@@ -1,3 +1,7 @@
+## Continuidad vigente · 28/10/2026
+
+Leer primero docs/SUES_V1_CLOSURE_20261028.md y la entrada superior de PROJECT_STATUS.md. El servidor contiene cambios posteriores a los SHAs históricos. El árbol de integración está en /opt/sues-video-setup/v1-closure-work-20261028, rama feat/v1-closure-20261028. No sobrescribir otros worktrees ni inferir V1 por tests. IDs estables del proyecto y evidencias en esa guía.
+
 # Continuidad de SUES AI VIDEO EDITOR
 
 Lee PROJECT_STATUS.md y docs/SUES_GENERAL_STUDIO.md antes de continuar.

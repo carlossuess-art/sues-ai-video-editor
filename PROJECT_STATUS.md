@@ -1,3 +1,15 @@
+## Continuidad V1 · 28/10/2026 · bloque actual
+
+Rama feat/v1-closure-20261028 recupera7b89935 y el trabajo posterior del servidor, preservando los worktrees originales. Contrato de tiempos recortados, validador semántico/hook, jerarquía de textos, tiempos de captions, borradores y export720 separada implementados. 390/391 suite completa; único caso Git pasa2/2 en host. 33/33 tests recuperados de GitHub y12/12 dirigidos finales. QA autenticada móvil/tablet/escritorio sin erroresJS ni overflow. Clip real10s recortado con decodePASS y fuente intacta. Render completo y despliegue pendientes en este checkpoint. V1 abierta; global oficial48% sin recalcular. Sin llamadas de pago. Fuente de continuidad: docs/SUES_V1_CLOSURE_20261028.md.
+
+## 28/10/2026 · Ajustes manuales posteriores al render · RAMA AISLADA (NO DESPLEGADA)
+
+Rama local `feat/manual-adjust-studio-20261028`, ruta `/opt/sues-video-setup/manual-adjust-work-20261028`. Commits `bf59fbd` (snapshot de 27 archivos pendientes) y `bf2f688` (modo manual). Se ha implementado Validar/Ajustar, pista y categorías de eventos, ocultar subtítulos por ID conservando transcripción/voz, edición manual de B-roll/SFX/imágenes/gráficos instalados, deshacer, sustitución, nueva versión y render sin Director IA. El editor de producción sigue en `/opt/sues-video-setup/release-update.78zyka2k`, sin cambios por esta misión.
+
+QA: 12/12 pruebas dirigidas, navegador móvil/escritorio mock con acciones reales, `npm run check` PASS, contenedor FFmpeg 376/377; prueba Git no aplicable al contenedor y 2/2 PASS en host. No se ha realizado E2E autenticado con MP4 completo real de la nueva versión; no declarar V1 validada ni desplegar. Plan y limitaciones en `docs/SUES_MANUAL_ADJUST_IMPLEMENTATION_20261028.md`.
+
+---
+
 ## Nueva edición con máscara y capas · 27/10/2026
 
 Exportación nueva5e5384e2-da7e-4225-8f64-5a5d271ea69e DONE,70,9s1080×1920,
@@ -1145,36 +1157,10 @@ abre individualmente; trabajosguardados tambiénplegados. ELEMENTS con etiquetas
 enespañol manteniendo valorespersistidos; al elegirformato seabre susección.
 
 
-### Importación de plan creativo (2026-10-27, rama de trabajo)
-
-Prototipo aislado: `creative-review` conserva el texto original, convierte JSON `sues-edit-plan/v1` y tablas explícitas de tiempo/tipo/recurso/motivo, valida con el pipeline existente y detecta instrucciones ambiguas o no soportadas. Resuelve códigos cortos de B-roll únicamente si corresponden de forma inequívoca a material instalado y no excluido. Ofrece candidatos sin seleccionarlos automáticamente. No utiliza Gemini.
-
-Pruebas: 13 pruebas automatizadas; render aislado de 13,4 s con BR-0078 entre 5 y 8 s y un SFX a los 2 s. Un fotograma a 6,5 s confirma el B-roll; el filtro de audio y resumen del motor confirman la inclusión del SFX, pendiente escucha completa. No se ha desplegado en producción ni se ha comprobado la interfaz desplegada.
-
-Limitaciones: no interpreta de forma general texto libre ni todas las tablas del Film Director; no materializa recursos de Drive desde este flujo; composiciones ambiguas quedan bloqueadas, sin sustituciones silenciosas. Falta revisión audiovisual completa, más pruebas de seguridad e integración, y verificar despliegue antes de declarar terminado el flujo. Siguiente acción: completar compatibilidad real de formatos y acceso a recursos, escuchar el render, probar la interfaz y desplegar solo tras validación. Coste externo: 0 USD.
-
-
-Actualización: el documento del Director con propuesta más un único bloque JSON puede revisarse como conjunto; solo el JSON produce operaciones. El resultado avisa de que la propuesta es referencia, no confirma su ejecución. En la revisión se puede solicitar recuperar un candidato remoto concreto y validar de nuevo. Prueba real aislada: BR-0003 (930907 bytes) recuperado de Drive y comprobado por SHA256; 9 pruebas dirigidas de importación y biblioteca superadas. La caché temporal está limitada, pero los recursos importados también se guardan en la biblioteca de medios persistente; falta una política de limpieza segura de esos medios. No se ha desplegado; pendiente la prueba completa de interfaz y audición, y el tratamiento de texto creativo libre.
-
-Prueba de extremo a extremo aislada: revisión de tabla con BR-0003 remoto → recuperación validada en Drive → nueva revisión → render DONE de 13,4 s. A 6,5 s se observa una persona al volante dentro de un autobús con grandes bandas negras en el vídeo vertical: no se confirma que el fragmento represente la descripción resumida de la ficha; la pertinencia y el formato requieren revisión. No es una aprobación estética ni una escucha. Los identificadores B-roll cortos del JSON se resuelven solo con coincidencia instalada unívoca; se ofrecen candidatos remotos inequívocos sin reemplazo automático. Revisiones de conversión persistidas por contenido. 12 pruebas dirigidas superadas. No desplegado.
-
-Aclaración sobre almacenamiento: el código de la biblioteca persistente ya establece un máximo de 512 archivos y 2 GiB; la caché de Drive tiene un límite independiente de 128 MiB. Los recursos instalados no se eliminan automáticamente al expulsar su copia de caché, por lo que puede alcanzarse la cuota; falta definir y verificar una limpieza que no rompa proyectos.
-
-Prueba real en navegador aislado: botón visible, pegado, revisión, descarga de BR-0007 desde Drive, nueva revisión y ejecución. Render DONE; la vista previa reprodujo 2,4 s con imagen de 720×1280 y la exportación descargó un MP4 de 9877946 bytes. Se revisó una hoja de fotogramas: el B-roll de aves aparece entre imágenes del vídeo original. El contenido se ha verificado por muestras, no escuchado íntegramente ni aprobado estéticamente. Se corrigió la firma incorrecta de tres peticiones de recuperación Drive, descubierta mediante esta prueba. 33 pruebas de integración y servidor superadas en red aislada. Sin despliegue.
-
-Prueba adicional de navegador: un plan con un B-roll ejecutable y una máscara declarada no soportada bloquea el render. Se ofrece preparar solo los elementos compatibles; tras pulsar expresamente la alternativa, el botón de render sigue desactivado hasta una nueva validación. El plan previo queda guardado. Batería completa aislada: 372/373; el único fallo fue la prueba Git porque Git no existe en la imagen de pruebas, y la misma prueba pasó en el servidor.
-
-Compatibilidad añadida: tablas explícitas de cinco columnas inicio/fin/tipo/recurso/motivo o start_s/end_s/type/asset_id/reason. Probado en navegador; columnas extra quedan pendientes, no se descartan. Las seis pruebas del adaptador pasan. Comprobación técnica del audio de la prueba con SFX: nivel medio -32,7 dB y pico -11,7 dB; requiere audición humana para valorar inteligibilidad y mezcla.
-
-Selección conceptual: la revisión prioriza recursos locales dentro de hasta 20 coincidencias, muestra descripción cuando existe y permite escoger explícitamente un candidato de tipo compatible. El plan cambia solo tras la elección y requiere nueva validación; la selección se basa en coincidencia textual, no certifica adecuación semántica ni revisión íntegra. Probado en navegador con «aves grandes»; 14 pruebas dirigidas pasan.
-
-
 27-10-2026 · Importación del Director: versión limitada instalada en el editor activo, rama feat/paste-creative-plan-20261027 (código df1df29b9f20e4ebdb5605fe1dbcdafbeff5946e). El servicio fue reiniciado sin trabajos activos; comprobados HTML, sesión, salud y rechazo de revisión con proyecto obsoleto. En navegador real se verificaron el proyecto existente y el panel «Pegar plan del Director IA». En entorno aislado se verificaron búsqueda, selección, Drive, revisión, render, reproducción y exportación. Texto libre complejo y escucha humana completa siguen pendientes. No se envió material a Gemini. 374/375 pruebas en contenedor; la prueba Git restante pasó en el servidor. Rollback de archivos: /opt/sues-video-setup/creative-plan-file-rollback-20261027.
 
 27-10-2026 · El botón «Preparar información para el Director IA» fue probado en navegador aislado y visto en producción. Prepara contexto local con esquema e identificador del vídeo para copiar, sin envíos automáticos a IA. Archivos web de commit be9b73dc88b23c9acbc3399fbe0cf104eb3bce64 aplicados al servicio activo.
 
 27-10-2026 · Evaluación aislada de Qwen3-1.7B Q4 como traductor de texto (sin red, datos sintéticos): FAIL. Ante un B-roll exacto y una cadena detrás del sujeto con acercamiento y SFX, devolvió campos y tipos ajenos al esquema, duración cero y omitió la cadena. No se integró ni se aplicó su salida. Falta un intérprete fiable y autorizado para lenguaje libre general. Prueba de audio del mismo montaje con voz normalizada al 150 %: -15,5 LUFS/-1,6 dBTP frente a -29,3 LUFS/-11,7 dBTP sin normalización; no equivale a escucha humana.
-
-El adaptador acepta frases B-roll temporales explícitas con ID y motivo («Del 5 al 8 segundos: B-roll BR-0007 — Aves en vuelo»). En navegador aislado, el plan se valida; máscara, zoom o instrucciones no reconocidas siguen pendientes. Revisión humana y validador existente obligatorios. 15 pruebas dirigidas de adaptador/Drive/plan externo aprobadas.
 
 27-10-2026 · Frases temporales explícitas desplegadas: validación en proyecto real de prueba reconoció una operación B-roll con recurso existente, canApply=true y sin iniciar render. 15 pruebas dirigidas y navegador aislado pasan. Código 5c59bc47726b38c4f091019c6e75efbc15714080; rollback parcial before-timed-prose. El texto complejo general sigue pendiente y no se envió material a Gemini.

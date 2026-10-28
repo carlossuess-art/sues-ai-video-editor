@@ -16,6 +16,7 @@ test('light preview decodes, keeps duration/audio and leaves export bytes intact
   generate(source);const before=hash(source);const [a,b]=await Promise.all([cache.ensure(id,source),cache.ensure(id,source)]);assert.equal(a,b);
   const info=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-show_format','-of','json',a],{encoding:'utf8'}));
   const v=info.streams.find(s=>s.codec_type==='video');assert.equal(v.width,720);assert.equal(v.height,1280);assert.ok(info.streams.some(s=>s.codec_type==='audio'));assert.ok(Math.abs(Number(info.format.duration)-1)<.12);
+  const final720=await cache.ensure(id,source,{quality:'720'});assert.notEqual(final720,a);assert.ok(statSync(final720).size>statSync(a).size);const encoded=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-of','json',final720],{encoding:'utf8'}));assert.equal(encoded.streams.find(s=>s.codec_type==='video').width,720);const audio=p=>execFileSync('ffmpeg',['-v','error','-i',p,'-map','0:a:0','-c','copy','-f','adts','-']);assert.deepEqual(audio(final720),audio(source));
   assert.equal(hash(source),before);assert.ok(statSync(a).size<statSync(source).size);const timestamp=statSync(a).mtimeMs;await cache.ensure(id,source);assert.equal(statSync(a).mtimeMs,timestamp);
   await assert.rejects(cache.ensure('../escape',source));const bytes=readFileSync(a);assert.ok(bytes.indexOf(Buffer.from('moov'))<bytes.indexOf(Buffer.from('mdat')));
  }finally{await cache.close();rmSync(dir,{recursive:true,force:true});}
@@ -28,6 +29,8 @@ test('preview endpoint is private and seekable while the export endpoint retains
   const path='/api/jobs/'+job.id+'/preview';assert.equal((await fetch(base+path)).status,401);
   const login=await fetch(base+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}}),headers={Cookie:login.headers.get('set-cookie').split(';')[0]};
   const preview=await fetch(base+path,{headers:{...headers,Range:'bytes=0-1023'}});assert.equal(preview.status,206);assert.equal((await preview.arrayBuffer()).byteLength,1024);assert.equal(preview.headers.get('cache-control'),'no-store');
+  assert.equal((await fetch(base+'/api/jobs/'+job.id+'/media?resolution=720',{headers})).status,409);record.editorialReview={pass:true,fingerprint:record.fingerprint};
+  const light=await fetch(base+'/api/jobs/'+job.id+'/media?resolution=720',{headers:{...headers,Range:'bytes=1024-2047'}});assert.equal(light.status,206);assert.equal((await light.arrayBuffer()).byteLength,1024);
   const full=await fetch(base+'/api/jobs/'+job.id+'/media',{headers});assert.equal(createHash('sha256').update(Buffer.from(await full.arrayBuffer())).digest('hex'),hash(source));
  }finally{if(app)await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });
