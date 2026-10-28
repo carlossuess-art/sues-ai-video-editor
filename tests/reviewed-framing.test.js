@@ -37,7 +37,7 @@ test('explicit full-frame cards reuse the renderer and never silently disappear 
   const project=loadProject(f.profiles.test);faceless(project);
   const settings=prepareProject(project,{motions:true}).settings,catalog=externalCatalog(project,settings),caption=catalog.captions[1];
   const card={type:'card',captionId:caption.id,layout:'grid',heading:'Una idea',bodyLines:['Conserva la voz']};
-  const review=(operations,s=settings)=>reviewExternalPlan(JSON.stringify({...catalog.example,operations}),{project,settings:s,commandPlanner:planInstructions});
+  const review=(operations,s=settings)=>reviewExternalPlan(JSON.stringify({...externalCatalog(project,s).example,operations}),{project,settings:s,commandPlanner:planInstructions});
   const accepted=review([card]);assert.equal(accepted.canApply,true,JSON.stringify(accepted));
   const p=prepareProject(project,accepted.changes);assert.equal(p.plan.graphics.length,1);assert.match(p.plan.graphics[0].scope,/intentionally/);
   assert.equal(review([card],{...settings,motions:false}).canApply,false);

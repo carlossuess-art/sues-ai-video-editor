@@ -1,3 +1,11 @@
+## Decisión de Carlos · V1 asistida / V1.1 API · 28/10/2026
+
+V1: subir el vídeo al editor o compartirlo con ChatGPT y obtener la edición final deseada con asistencia humana/ChatGPT, revisión, ajustes y exportación. La API de Gemini NO es requisito de aceptación ni bloqueo de V1. V1.1: automatizar el mismo resultado mediante Gemini solo cuando aporte valor; evitar llamadas y costes siempre que sea posible. No invocar Gemini ni otros servicios de pago por esta continuación. Carlos conserva la aceptación creativa del resultado; no inferirla de tests.
+
+## Continuidad vigente · 28/10/2026
+
+Leer primero docs/SUES_V1_CLOSURE_20261028.md y la entrada superior de PROJECT_STATUS.md. El servidor contiene cambios posteriores a los SHAs históricos. La continuación asistida está en /opt/sues-video-setup/v1-assisted-preview-work-20261028, rama feat/v1-assisted-preview-20261028, sobre el cierre f0817d0. La base anterior permanece en /opt/sues-video-setup/v1-closure-work-20261028. No sobrescribir otros worktrees ni inferir V1 por tests. IDs estables del proyecto y evidencias en esa guía.
+
 # Continuidad de SUES AI VIDEO EDITOR
 
 Lee PROJECT_STATUS.md y docs/SUES_GENERAL_STUDIO.md antes de continuar.

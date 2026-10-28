@@ -1,3 +1,13 @@
+# Estado vigente · 28/10/2026 · V1 asistida
+
+La V1 permite subir vídeo al editor o trabajar con ChatGPT para lograr la edición final, revisar, ajustar y exportar. La automatización por API de Gemini pertenece a V1.1 y no es necesaria para cerrar V1. La valoración creativa corresponde a Carlos.
+
+Producción: https://editor.suesholistics.com. Continuación `feat/v1-assisted-preview-20261028`, sobre el cierre `feat/v1-closure-20261028`; `main` no representa el código activo. Recortes reversibles, eliminación de silencios, importación del plan, ajustes manuales, validación por versión, proxy y exportaciones 720p/1080p verificados en la base. Nuevo botón **Ver fragmento de ajuste**: borrador exacto de 4 s, sin generar toda la exportación; puede tardar al procesar el prefijo. Originales y 38 versiones conservados. No se ha consumido API de pago.
+
+Leer [estado actual](PROJECT_STATUS.md), [evidencias y recuperación](docs/SUES_V1_CLOSURE_20261028.md) y [contrato de fragmentos](docs/SUES_ADJUSTMENT_FRAGMENTS.md). Las entradas siguientes son históricas y no sustituyen el estado vigente.
+
+---
+
 > Frontend de referencia auditado en Work: [QA, integración y despliegue](docs/SUES_WORK_VALIDATION_20261019.md).
 > La validación local no acredita una actualización de producción.
 
@@ -20,7 +30,7 @@
 
 # SUES AI VIDEO EDITOR
 
-## Estado vigente · 23/10/2026
+## Estado histórico · 23/10/2026
 
 Esta rama ya contiene más capacidades que la POC original. **No interpretar un commit como despliegue.**
 

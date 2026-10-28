@@ -144,7 +144,7 @@ def cache_library_sfx(bundle, duration, output_parent, input_paths):
         raise
 
 
-def render(source, bundle, output):
+def render(source, bundle, output, preview_start=None, preview_duration=None):
     source = source.resolve(strict=True)
     bundle = bundle.resolve(strict=True)
     output = output.resolve()
@@ -153,6 +153,22 @@ def render(source, bundle, output):
     manifest = json.loads((bundle / 'manifest.json').read_text())
     if manifest.get('kind') != 'local-preview' or manifest.get('productionReady') is not False:
         raise ValueError('Expected a prepared local preview bundle')
+    fragment = preview_start is not None or preview_duration is not None
+    if fragment:
+        if not all(isinstance(n, (int, float)) and math.isfinite(n) for n in [preview_start, preview_duration]) or preview_start < 0 or not .1 <= preview_duration <= 8 or preview_start + preview_duration > manifest['duration'] + 1e-6:
+            raise ValueError('Invalid adjustment preview window')
+        if not (bundle / 'video.ffscript').is_file() or not (bundle / 'audio.ffscript').is_file():
+            raise ValueError('Adjustment previews require a separated bundle')
+    expected_duration = preview_duration if fragment else manifest['duration']
+    expected_size = (540, 960) if fragment else (1080, 1920)
+    def window_script(script, label, audio=False):
+        content = pathlib.Path(script).read_text() if pathlib.Path(script).is_absolute() else (bundle / script).read_text()
+        content = content.strip().rstrip(';').replace('[' + label + ']', '[fragment-full-' + label + ']')
+        filters = ('atrim' if audio else 'trim') + '=start=%s:end=%s,' % (preview_start, preview_start + preview_duration)
+        filters += 'asetpts=PTS-STARTPTS' if audio else 'setpts=PTS-STARTPTS,scale=540:960:flags=lanczos'
+        target = output.parent / ('fragment-' + label + '.ffscript')
+        target.write_text(content + ';\n[fragment-full-' + label + ']' + filters + '[' + label + ']\n')
+        return str(target)
     info = probe(source)
     video = next(s for s in info['streams'] if s['codec_type'] == 'video')
     audio = [s for s in info['streams'] if s['codec_type'] == 'audio']
@@ -309,7 +325,8 @@ def render(source, bundle, output):
             vfd, vpath = tempfile.mkstemp(prefix='.sues-video-', suffix='.mp4', dir=output.parent)
             os.close(vfd)
             video_temporary = pathlib.Path(vpath)
-            command += ['-filter_complex_threads', '1', '-filter_complex_script', 'video.ffscript',
+            video_script = window_script('video.ffscript', 'video') if fragment else 'video.ffscript'
+            command += ['-filter_complex_threads', '1', '-filter_complex_script', video_script,
                         '-map', '[video]', '-an', '-c:v', 'libx264', '-threads', '2',
                         '-preset', 'veryfast', '-crf', '22', '-pix_fmt', 'yuv420p',
                         '-map_metadata', '-1', '-progress', str(output.parent / 'ffmpeg-progress.txt'),
@@ -348,6 +365,8 @@ def render(source, bundle, output):
                 cache_directory = (library_cache or sfx_cache)['directory']
                 audio_script = str(cache_directory / 'cached-audio.ffscript')
                 pathlib.Path(audio_script).write_text(';\n'.join(adapters + clauses) + '\n')
+            if fragment:
+                audio_script = window_script(audio_script, 'mixed-audio', audio=True)
             command += ['-threads', '2', '-i', str(video_temporary),
                         '-filter_complex_threads', '1', '-filter_complex_script', audio_script,
                         '-map', str(video_index) + ':v:0', '-map', '[mixed-audio]',
@@ -367,9 +386,9 @@ def render(source, bundle, output):
             subprocess.run(command, cwd=bundle, stdout=log, stderr=subprocess.STDOUT, check=True)
         result = probe(temporary)
         encoded = next(s for s in result['streams'] if s['codec_type'] == 'video')
-        if (encoded['width'], encoded['height'], encoded['r_frame_rate']) != (1080, 1920, '30/1'):
+        if (encoded['width'], encoded['height'], encoded['r_frame_rate']) != (*expected_size, '30/1'):
             raise ValueError('Unexpected output dimensions/rate')
-        if abs(float(encoded['duration']) - manifest['duration']) > 1/30 + .001:
+        if abs(float(encoded['duration']) - expected_duration) > 1/30 + .001:
             raise ValueError('Output duration drift exceeds one frame')
         subprocess.run(['ffmpeg', '-v', 'error', '-xerror', '-err_detect', 'explode', '-threads', '2', '-i', str(temporary), '-f', 'null', '-'], check=True)
         if any(digest(m['path']) != m['sha256'] for m in bound_media):
@@ -393,13 +412,16 @@ def render(source, bundle, output):
             raise ValueError('Source changed during render')
         audit = {'version': '1.0', 'sourceSha256': before, 'sourcePreserved': True,
                  'voiceGain': manifest.get('voiceGain', 1), 'resourceLeveling': {'music': bool(manifest.get('audioMix', {}).get('levelResources')) if manifest.get('audioMix') else False, 'proceduralSfx': bool(manifest.get('soundEffects', {}).get('levelResources')), 'librarySfx': bool(manifest.get('customSfx', {}).get('levelResources'))},
-                 'durationPlanned': manifest['duration'], 'durationEncoded': float(encoded['duration']),
+                 'durationPlanned': expected_duration, 'durationEncoded': float(encoded['duration']),
                  'output': output.name, 'outputSha256': digest(temporary), 'bytes': temporary.stat().st_size,
                  'video': {'codec': encoded['codec_name'], 'width': encoded['width'], 'height': encoded['height'], 'fps': encoded['r_frame_rate']},
                  'foregroundEffects': ({k:v for k,v in foreground.items() if k!='path'} if foreground else None), 'subjectLayers': [{k: v for k, v in layer.items() if k not in ('mask', 'resource')} for layer in subject_layers], 'soundEffects': manifest.get('soundEffects'), 'customSfx': {'assets': [{k: v for k, v in s.items() if k != 'path'} for s in sounds], 'events': manifest.get('customSfx', {}).get('events', [])}, 'audioPresent': bool(audio), 'backgroundAudio': ({k: v for k, v in music.items() if k != 'path'} if music else None), 'broll': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in bound_media], 'ambientOverlays': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False, 'visualAcceptance': False} for m in overlays], 'mastering': manifest.get('mastering'), 'voiceEffects': {'version': manifest.get('voiceEffects', {}).get('version'), 'events': manifest.get('voiceEffects', {}).get('events', []), 'humanListeningAccepted': False}, 'captions': len(manifest['captions']), 'illustrations': [{'assetId': m['assetId'], 'sha256': m['sha256'], 'sourceAudio': False} for m in illustrations],
                  'font': {'family': expected_family, 'regularSha256': digest(font), 'boldSha256': digest(bold_font), 'extraFaces': extra_fonts},
                  'ffmpeg': subprocess.check_output(['ffmpeg', '-version'], text=True).splitlines()[0],
                  'librarySfxCache': ({'sources':library_cache['sources'],'batchSize':library_cache['batchSize']} if library_cache else None), 'denseSfxCache': ({'sources':sfx_cache['sources'],'batchSize':sfx_cache['batchSize']} if sfx_cache else None), 'voiceNormalization': normalization_audit, 'renderPasses': ['video', 'audio-mux'] if separated else ['legacy-combined'], 'fullDecode': 'pass', 'productionReady': False, 'externalCostUSD': 0}
+        if fragment:
+            audit['previewWindow'] = {'start': preview_start, 'duration': preview_duration, 'sourceTimelineDuration': manifest['duration']}
+            audit['isFinalExport'] = False
         # Exclusive creation prevents a race from overwriting another output.
         os.link(temporary, output)
         output.with_suffix('.audit.json').write_text(json.dumps(audit, indent=2) + '\n')
@@ -423,8 +445,10 @@ def main():
     p.add_argument('--source', required=True, type=pathlib.Path)
     p.add_argument('--bundle', required=True, type=pathlib.Path)
     p.add_argument('--out', required=True, type=pathlib.Path)
+    p.add_argument('--preview-start', type=float)
+    p.add_argument('--preview-duration', type=float)
     args = p.parse_args()
-    print(json.dumps(render(args.source, args.bundle, args.out), indent=2))
+    print(json.dumps(render(args.source, args.bundle, args.out, args.preview_start, args.preview_duration), indent=2))
 
 
 if __name__ == '__main__':

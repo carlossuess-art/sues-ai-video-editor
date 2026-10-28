@@ -1,0 +1,25 @@
+.source-cut-panel[hidden]{display:none!important}
+.source-cut-panel{border:1px solid #466a7a;background:#10212e;color:#eff6f9;padding:14px;border-radius:14px;margin:8px 0 14px}
+.source-cut-title{display:flex;justify-content:space-between;align-items:center;gap:10px}.source-cut-title h2{margin:0;font-size:20px}
+.source-cut-title span{font-size:12px;color:#9cc3d1;white-space:nowrap}
+.source-cut-panel .small{font-size:12px;line-height:1.45;color:#c3d2dc}
+.source-cut-actions,.source-cut-commit{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:9px 0}
+.source-cut-panel button{min-height:43px;font-size:12px;padding:7px}
+.source-cut-ruler{display:flex;justify-content:space-between;font-size:11px;color:#9fbac8}
+.source-cut-timeline{position:relative;height:40px;border-radius:8px;background:#132e40;margin:8px 0 10px;overflow:hidden;cursor:pointer}
+.source-cut-timeline:before{content:'';position:absolute;top:20px;left:0;right:0;background:#00a6db;height:3px}
+#source-cut-blocks{position:absolute;inset:0}.source-cut-block{position:absolute;top:8px;height:23px;border:1px solid #ffe7a0;border-radius:4px;background:#e8ad29;opacity:.3}
+.source-cut-block.selected{opacity:1;background:#ffb62d}
+#source-cut-playhead{position:absolute;top:0;bottom:0;left:0;border-left:2px solid white;pointer-events:none}
+.source-cut-list{max-height:240px;overflow-y:auto;display:grid;gap:6px;margin-bottom:10px}
+.source-cut-row{display:flex;gap:10px;align-items:flex-start;padding:9px;background:#1b3442;border-radius:8px;cursor:pointer;font-size:13px;line-height:1.4}
+.source-cut-row input{accent-color:#efb638;margin-top:3px;width:18px;height:18px;flex:0 0 18px}
+.source-cut-row strong{display:block;font-size:12px}.source-cut-row small{display:block;color:#bbced8;font-size:11px}
+.source-cut-manual{margin:10px 0;border:1px solid #426070;padding:10px;border-radius:9px;font-size:13px}
+.source-cut-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.source-cut-fields label{font-size:12px;display:grid;gap:5px}.source-cut-fields input{min-width:0;font-size:16px}
+.source-cut-preview-toggle{display:block;font-size:12px;margin:12px 0}.source-cut-preview-toggle input{accent-color:#0bbfdf}
+.source-cut-summary{font-size:14px;font-weight:700;color:#f5e2b0}
+.source-cut-commit button{min-height:49px;font-weight:700}
+@media(max-width:420px){.source-cut-actions,.source-cut-commit{grid-template-columns:1fr}.source-cut-panel{padding:10px}}
+
+.export-quality{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 10px}.export-quality>label{font-size:13px;font-weight:700}.export-quality select{font-size:16px;min-height:40px;max-width:100%;padding:7px 9px}.export-quality .small{flex:1 1 100%;font-size:12px;color:#b8c9d5;margin:0}

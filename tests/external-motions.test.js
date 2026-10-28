@@ -30,7 +30,7 @@ test('four native motions compile from external plans with literal corrected cap
 test('motion review rejects unsupported recipes, missing faces, hidden effects, duplicate targets and unsafe bounds atomically',()=>{
  const f=fixture();try{
   const project=loadProject(f.profiles.test),settings=prepareProject(project,{}).settings,catalog=externalCatalog(project,settings),op={type:'motion',resourceId:'NUMBER_BADGE_GOLD_01',captionId:catalog.captions[1].id,number:4};
-  const review=(operations,p=project,s=settings)=>reviewExternalPlan(JSON.stringify({...catalog.example,operations}),{project:p,settings:s,commandPlanner:planInstructions});
+  const review=(operations,p=project,s=settings)=>reviewExternalPlan(JSON.stringify({...externalCatalog(p,s).example,operations}),{project:p,settings:s,commandPlanner:planInstructions});
   for(const operations of [[{...op,number:0}],[{...op,number:100}],[{...op,number:1.5}],[{...op,captionId:'missing'}],[{...op,start:5}],[{...op,text:'Inventado'}],[{...op,path:'/tmp/test'}],[{...op,resourceId:'STRIKE_TEXT_01'}],[op,{...op,number:5}],[op,{type:'command',text:'sin motions'}],[{type:'command',text:'sin motions'},op]]){
    const r=review(operations);assert.equal(r.canApply,false,JSON.stringify(operations));assert.equal(r.changes,null);
   }

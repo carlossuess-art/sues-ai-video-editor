@@ -1,3 +1,4 @@
+import {applyManualVisualVisibility} from './manual-visuals.js';
 import {prepareForegroundEffects} from './foreground-effects.js';
 import {applyDopaminMaster,finishDopaminAudio,selectAutomaticPreviewBrolls} from './dopamin-master.js';
 import {applyResourceLevels} from './audio-levels.js';
@@ -26,7 +27,7 @@ import {buildAutomaticDirector,validateEditorSettings} from './automatic-directo
 import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,buildVideoPassFilter,buildAudioPassFilter,wrapCaption} from './local-preview.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RENDER_SCRIPT=join(ROOT,'scripts/templates/render_local_preview.py');
-export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['foreground-effects.js','dopamin-master.js','audio-levels.js','reviewed-framing.js','template-recipe.js','custom-sfx.js','voice-effects.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
+export const ENGINE_HASH=createHash('sha256').update(Buffer.concat(['manual-visuals.js','caption-presentation.js','source-cuts.js','foreground-effects.js','dopamin-master.js','audio-levels.js','reviewed-framing.js','template-recipe.js','custom-sfx.js','voice-effects.js','subject-layers.js','elements.js','depth-text.js','graphic-timing.js','sound-effects.js','technical-paper.js','motion-drawings.js','graphic-scenes.js','motion-overlays.js','style-variants.js','graphic-blocks.js','text-presets.js','illustrations.js','caption-motion.js','caption-hierarchy.js','font-kits.js','short-captions.js','audio-mix.js','automatic-director.js','local-pipeline.js','local-preview.js','semantic-render.js','transcript.js','template.js','cinematic-style.js','director-contract.js','motion-library.js','vision.js','reframe.js','time-map.js','brand-kit.js','foundation-integration.js'].map(f=>readFileSync(join(ROOT,'src',f))).concat(readFileSync(RENDER_SCRIPT)))).digest('hex');
 export function fileSha256(path){const fd=openSync(path,'r'),hash=createHash('sha256'),buffer=Buffer.allocUnsafe(1024*1024);try{let size;while((size=readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,size));return hash.digest('hex');}finally{closeSync(fd);}}
 const read=p=>JSON.parse(readFileSync(p,'utf8'));
 const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
@@ -110,6 +111,8 @@ export function prepareProject(project,settings={}){
  }
  const emphasis=new Set(decisions.flatMap(d=>(d.evidence?.hits??[]).map(h=>h.wordIndex)));
  plan.captions=captionHierarchy(editedCaptions.map(c=>({...c,emphasisWordIndexes:c.source==='manual'?[]:c.wordIndexes.filter(i=>emphasis.has(i))})),inputs.transcript.words,plan.policy.captions);
+ for(const id of options.hiddenCaptionIds)if(!plan.captions.some(c=>c.id===id))throw new Error('Hidden caption does not belong to this edit: '+id);
+ plan.hiddenCaptionIds=options.hiddenCaptionIds;
  for(const [id,value]of Object.entries(options.keywordOverrides)){
   const c=plan.captions.find(c=>c.id===id);if(!c)throw new Error('Unknown keyword caption: '+id);
   c.emphasisWordIndexes=[];
@@ -132,13 +135,21 @@ export function prepareProject(project,settings={}){
  plan.mastering={enabled:options.masteringEnabled,mode:'fixed-headroom',gainDb:-1.8,peakSafetyDb:-1.5,integratedLufsAcceptance:'pending-listening'};
  plan.ambientOverlays=overlayAssets;
  if(overlayAssets.length){plan.pending.push('ambient-overlays-visual-review');}
+ if(options.motions&&(options.reviewedForeground||inputs.foregroundEffects)){plan.foregroundEffects=prepareForegroundEffects(structuredClone(options.reviewedForeground??inputs.foregroundEffects),plan,asset);plan.pending.push('foreground-matte-human-review');}
+ applyManualVisualVisibility(plan,options.hiddenVisualEventIds);
  plan.soundEffects=prepareSoundEffects(plan,options);
  finishDopaminAudio(plan,options);
  plan.voiceGain=options.voiceGain;
  plan.voiceEffects=prepareVoiceEffects(options.voiceEvents,plan.duration);
  if(options.levelResources)applyResourceLevels(plan);
  if(plan.voiceEffects.events.length){plan.pending.push('voice-processing-human-listening-review');}
- if(options.motions&&(options.reviewedForeground||inputs.foregroundEffects)){plan.foregroundEffects=prepareForegroundEffects(structuredClone(options.reviewedForeground??inputs.foregroundEffects),plan,asset);plan.pending.push('foreground-matte-human-review');}
+
+ for(const [id,timing]of Object.entries(options.captionTimingOverrides)){
+  const c=plan.captions.find(c=>c.id===id);if(!c||timing.end>plan.duration)throw Error('Caption timing outside this edit: '+id);
+  const ratio=(timing.end-timing.start)/(c.end-c.start);
+  c.wordCues=(c.wordCues??[]).map(w=>({...w,start:timing.start+(w.start-c.start)*ratio,end:timing.start+(w.end-c.start)*ratio}));
+  Object.assign(c,timing,{timingOrigin:'manual-edit-timeline'});
+ }
  plan.templateRecipe=recipe;plan.editionCounts=editionCounts(plan);
  if(plan.soundEffects.events.length||plan.customSfx.events.length){plan.pending=plan.pending.filter(p=>p!=='music-and-sfx');plan.pending.push('sound-design-human-review');}
  const director={...automatic,...(manual.length||chosenMotions.length?{selection:'offline-lexical-baseline-with-user-review-v1'}:{}),decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length,manualHighlights:manual.length,manualMotions:chosenMotions.length}};

@@ -7,6 +7,7 @@ import {validateMotionChoices} from './motion-overlays.js';
 import {validateGraphicSettings} from './graphic-blocks.js';
 import {validateKeywordOverrides} from './text-presets.js';
 import {validateTranscript,mapWordsToTimeline} from './transcript.js';
+import {normalizeSourceCuts,keptSegments} from './source-cuts.js';
 import {compileTemplatePolicy} from './template.js';
 const assert=(ok,msg)=>{if(!ok)throw new Error(`Automatic director: ${msg}`);};
 const normalize=s=>s.normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
@@ -17,9 +18,9 @@ const LEXICON=new Map([
 ]);
 export function validateEditorSettings(settings={}){
  assert(settings&&typeof settings==='object'&&!Array.isArray(settings),'settings object');
- assert(Object.keys(settings).every(k=>['reviewedForeground','automaticPreviewBroll','reviewedDepthText','voiceGain','levelResources','voiceNormalization','reviewedFraming','zoomEvents','autoRecipe','sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','captionOverrides','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','videoEvents','overlayEvents','voiceEvents','masteringEnabled','profileImages','styleId','elements'].includes(k)),'unknown setting');
+ assert(Object.keys(settings).every(k=>['reviewedForeground','automaticPreviewBroll','reviewedDepthText','voiceGain','levelResources','voiceNormalization','reviewedFraming','zoomEvents','autoRecipe','sfxEvents','sfxEnabled','sfxGain','motionChoices','zoomIntensity','motions','sourceCuts','captionOverrides','captionTimingOverrides','hiddenVisualEventIds','hiddenCaptionIds','highlightCaptions','captionWords','keywordOverrides','musicEnabled','musicGain','duckMusic','graphicCards','transitions','musicAssetId','imageEvents','videoEvents','overlayEvents','voiceEvents','masteringEnabled','profileImages','styleId','elements'].includes(k)),'unknown setting');
  validateElements(settings.elements);
- const value={reviewedForeground:null,automaticPreviewBroll:false,reviewedDepthText:null,voiceGain:1,levelResources:false,voiceNormalization:false,reviewedFraming:null,zoomEvents:[],autoRecipe:false,sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],videoEvents:[],overlayEvents:[],voiceEvents:[],masteringEnabled:false,profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,captionOverrides:{},highlightCaptions:[],...settings};
+ const value={reviewedForeground:null,automaticPreviewBroll:false,reviewedDepthText:null,voiceGain:1,levelResources:false,voiceNormalization:false,reviewedFraming:null,zoomEvents:[],autoRecipe:false,sfxEvents:[],sfxEnabled:false,sfxGain:.35,motionChoices:[],styleId:'SUES_CALMA',musicAssetId:null,imageEvents:[],videoEvents:[],overlayEvents:[],voiceEvents:[],masteringEnabled:false,profileImages:true,graphicCards:[],transitions:[],keywordOverrides:{},musicEnabled:true,musicGain:null,duckMusic:true,captionWords:3,zoomIntensity:1,motions:true,sourceCuts:[],captionOverrides:{},captionTimingOverrides:{},hiddenVisualEventIds:[],hiddenCaptionIds:[],highlightCaptions:[],...settings};
  assert(value.reviewedForeground===null||value.reviewedForeground&&typeof value.reviewedForeground==='object'&&!Array.isArray(value.reviewedForeground),'reviewed foreground object');
  assert(typeof value.automaticPreviewBroll==='boolean','automatic preview B-roll boolean');
  assert(value.reviewedDepthText===null||value.reviewedDepthText&&typeof value.reviewedDepthText==='object'&&!Array.isArray(value.reviewedDepthText),'reviewed depth object');
@@ -68,6 +69,13 @@ export function validateEditorSettings(settings={}){
  value.keywordOverrides=validateKeywordOverrides(value.keywordOverrides);
  assert(typeof value.musicEnabled==='boolean'&&typeof value.duckMusic==='boolean'&&(value.musicGain===null||Number.isFinite(value.musicGain)&&value.musicGain>=0&&value.musicGain<=.18),'music settings invalid');
  assert(typeof value.motions==='boolean','motions boolean');
+ assert(Array.isArray(value.sourceCuts)&&value.sourceCuts.length<=60&&value.sourceCuts.every(c=>c&&Object.keys(c).length===2&&Object.keys(c).every(k=>k==='start'||k==='end')&&Number.isFinite(c.start)&&Number.isFinite(c.end)&&c.start>=0&&c.end>c.start),'sourceCuts must be ordered time ranges');
+ assert(Array.isArray(value.hiddenCaptionIds)&&value.hiddenCaptionIds.length<=500&&value.hiddenCaptionIds.every(id=>typeof id==='string'&&/^seg-\d{3,}$/.test(id))&&new Set(value.hiddenCaptionIds).size===value.hiddenCaptionIds.length,'hiddenCaptionIds must be unique caption ids');
+ value.hiddenCaptionIds=[...value.hiddenCaptionIds].sort();
+ assert(Array.isArray(value.hiddenVisualEventIds)&&value.hiddenVisualEventIds.length<=500&&value.hiddenVisualEventIds.every(id=>typeof id==='string'&&/^[a-f0-9]{64}$/.test(id))&&new Set(value.hiddenVisualEventIds).size===value.hiddenVisualEventIds.length,'hidden visual event IDs invalid');
+ value.hiddenVisualEventIds=[...value.hiddenVisualEventIds].sort();
+ assert(value.captionTimingOverrides&&typeof value.captionTimingOverrides==='object'&&!Array.isArray(value.captionTimingOverrides)&&Object.keys(value.captionTimingOverrides).length<=500,'captionTimingOverrides object');
+ for(const [id,t]of Object.entries(value.captionTimingOverrides))assert(/^seg-\d{3,}$/.test(id)&&t&&Object.keys(t).length===2&&Object.keys(t).every(k=>['start','end'].includes(k))&&Number.isFinite(t.start)&&Number.isFinite(t.end)&&t.start>=0&&t.end-t.start>=1/30,'caption timing invalid');
  assert(value.captionOverrides&&typeof value.captionOverrides==='object'&&!Array.isArray(value.captionOverrides),'captionOverrides object');
  assert(Object.keys(value.captionOverrides).length<=500,'too many overrides');
  for(const [id,text]of Object.entries(value.captionOverrides)){
@@ -83,29 +91,30 @@ export function validateEditorSettings(settings={}){
 export function buildAutomaticDirector({transcript,template,brand,camera,settings={}}){
  validateTranscript(transcript);const policy=compileTemplatePolicy(template,brand),options=validateEditorSettings(settings);
  assert(Object.hasOwn(STYLE_VARIANTS,template.id),'style renderer unavailable');
- const segments=[{in:0,out:transcript.sourceDuration}];
+ const cuts=normalizeSourceCuts(transcript,options.sourceCuts,{preserveSpeech:false});
+ const segments=keptSegments(transcript.sourceDuration,cuts);
  const mapped=mapWordsToTimeline(transcript,segments);
- assert(mapped.words.length===transcript.words.length,'speech preservation');
- const cutoff=transcript.sourceDuration-Math.max(3,policy.outro.duration),candidates=[];
+ if(!cuts.length)assert(mapped.words.length===transcript.words.length,'speech preservation');
+ const cutoff=mapped.duration-Math.max(3,policy.outro.duration),candidates=[];
  const maxBase=Math.max(...camera.keyframes.map(k=>k.zoom));
  assert(Number.isFinite(maxBase)&&maxBase>=1&&maxBase<=1.6,'camera zoom');
  const target=policy.camera.targetZoom??Math.max(policy.camera.baseZoom,1.08);
  const scale=Math.min(options.zoomIntensity===0?1:policy.camera.baseZoom+(target-policy.camera.baseZoom)*options.zoomIntensity,policy.camera.maxZoom,1.6/maxBase);
  const permitted=policy.camera.zoomReasons;
- for(let i=0;i<transcript.words.length;i++){
-  for(let count=3;count<=6&&i+count<=transcript.words.length;count++){
-   const words=transcript.words.slice(i,i+count),text=words.map(w=>w.text.trim()).join(' '),hits=words.flatMap((w,k)=>{
-    const kind=LEXICON.get(normalize(w.text));return kind&&permitted.includes(kind)?[{wordIndex:i+k,kind,token:w.text}]:[];
+ for(let i=0;i<mapped.words.length;i++){
+  for(let count=3;count<=6&&i+count<=mapped.words.length;count++){
+   const words=mapped.words.slice(i,i+count),text=words.map(w=>w.text.trim()).join(' '),hits=words.flatMap((w,k)=>{
+    const kind=LEXICON.get(normalize(w.text));return kind&&permitted.includes(kind)?[{wordIndex:w.sourceWordIndex??i+k,kind,token:w.text}]:[];
    });
    if(words.slice(0,-1).some(w=>/[.!?…]$/.test(w.text)))continue;
    if(!hits.length||text.length>52||words[0].start<2||words.at(-1).end>cutoff)continue;
    const start=words[0].start,end=words.at(-1).end;
    if(end-start<.6||end-start>6)continue;
-   candidates.push({text,start,end,sourceWordIndexes:words.map((_,k)=>i+k),hits,score:hits.length*10+(/[.!?…]$/.test(text)?3:0)-count*.1,uncertainWordIndexes:words.flatMap((w,k)=>w.timingUncertain?[i+k]:[])});
+   candidates.push({text,start,end,sourceWordIndexes:words.map((w,k)=>w.sourceWordIndex??i+k),hits,score:hits.length*10+(/[.!?…]$/.test(text)?3:0)-count*.1,uncertainWordIndexes:words.flatMap((w,k)=>w.timingUncertain?[i+k]:[])});
   }
  }
  candidates.sort((a,b)=>b.score-a.score||a.start-b.start||a.sourceWordIndexes[0]-b.sourceWordIndexes[0]);
- const profile=visualProfile(template.id),decisions=[],chosen=[],limit=Math.min(profile.maxZoomEvents,Math.floor(transcript.sourceDuration/profile.secondsPerZoom));
+ const profile=visualProfile(template.id),decisions=[],chosen=[],limit=Math.min(profile.maxZoomEvents,Math.floor(mapped.duration/profile.secondsPerZoom));
  if(limit>0&&options.zoomIntensity>0&&scale>=policy.camera.baseZoom){
   for(const c of candidates){
    const start=c.start,end=Math.min(cutoff,Math.max(c.end,start+2.4));
@@ -123,5 +132,5 @@ export function buildAutomaticDirector({transcript,template,brand,camera,setting
  // Full-frame uploads have no face analysis. Do not invent subjects or eye anchors.
  if(camera.mode==='full-frame-fit')decisions.length=0;
  return {version:'1.0',templateId:template.id,timeSpace:'edit-timeline',selection:'offline-lexical-baseline-v1',decisions,segments,
-  audit:{method:'deterministic Spanish lexical baseline; not LLM semantic understanding',framing:camera.mode??'existing-camera',faceAnalysis:camera.mode==='full-frame-fit'?'unavailable; full image preserved':'existing',sourceWords:transcript.words.length,mappedWords:mapped.words.length,omittedWords:0,cutsRemoved:0,externalCostUSD:0,visualProfile:profile,candidates:candidates.length,uncertainWordIndexes:transcript.words.flatMap((w,i)=>w.timingUncertain?[i]:[]),settings:options}};
+  audit:{method:'deterministic Spanish lexical baseline; not LLM semantic understanding',framing:camera.mode??'existing-camera',faceAnalysis:camera.mode==='full-frame-fit'?'unavailable; full image preserved':'existing',sourceWords:transcript.words.length,mappedWords:mapped.words.length,omittedWords:transcript.words.length-mapped.words.length,cutsRemoved:cuts.length,externalCostUSD:0,visualProfile:profile,candidates:candidates.length,uncertainWordIndexes:transcript.words.flatMap((w,i)=>w.timingUncertain?[i]:[]),settings:options}};
 }

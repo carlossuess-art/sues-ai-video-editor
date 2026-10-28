@@ -1,3 +1,4 @@
+import {applyManualVisualVisibility} from './manual-visuals.js';
 import {editorialAcceptance} from './editor-acceptance.js';
 import {dopaminQualityGate} from './dopamin-quality-gate.js';
 import {createProjectBackup,verifyProjectBackup} from './project-backup.js';
@@ -42,7 +43,7 @@ export class EditorJobs{
  transition(job,state){if(!canTransition(job.state,state))throw new Error(`Invalid transition ${job.state} -> ${state}`);job.state=state;job.updatedAt=now();job.history.push({state,at:job.updatedAt});this.save(job);}
  get(id){this.dir(id);return this.jobs.get(id);}
  view(job){return {id:job.id,profileId:job.profileId,projectId:job.projectId??job.profileId,projectTitle:job.projectTitle??job.title,parentId:job.parentId??null,instructions:job.instructions??[],title:job.title,state:job.state,revision:job.revision??0,backupReady:!!job.backup&&job.backup.revision===job.revision,backupBusy:this.backupBusy.has(job.id),editorialReview:job.editorialReview??null,canUndo:job.state==='PREVIEW_READY'&&(job.undo?.length??0)>0,progress:renderProgress(join(this.dir(job.id),'render-'+(job.attempt??1),'ffmpeg-progress.txt'),job.summary?.duration,job.state),storageReady:!!job.artifact,queuePosition:job.state==='QUEUED'?this.queued().findIndex(j=>j.id===job.id)+1:null,createdAt:job.createdAt,updatedAt:job.updatedAt,settings:job.settings,summary:job.summary,fingerprint:job.fingerprint,error:job.error??null,cancelRequested:job.cancelRequested??false,attempt:job.attempt??0,history:job.history};}
- review(id){const {manifest,director}=this.plan(id);return editorReview(manifest,director,this.get(id).settings);}
+ review(id){const {manifest,director}=this.plan(id);return {...editorReview(manifest,director,this.get(id).settings),editorialQuality:dopaminQualityGate(manifest)};}
  health(){return {version:'1.0',mode:'local-worker',status:this.closing?'stopping':'available',queue:{rendering:this.children.size,waiting:this.queued().length,saving:this.publishing.size,capacity:this.maxQueued},storage:{provider:'private-local',remote:false},dependencyReadiness:'use-editor-doctor'};}
  list(){return [...this.jobs.values()].map(j=>this.view(j)).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));}
  create(profileId,settings={},metadata={}){
@@ -64,7 +65,7 @@ export class EditorJobs{
   catch(error){job.error=error.message;this.transition(job,'FAILED');throw error;}
  }
  summary(p){return {editionCounts:p.plan.editionCounts,musicPresent:!!p.plan.audioMix,soundEffects:p.plan.editionCounts.soundEffects,framing:p.plan.camera.mode,duration:p.plan.duration,styleId:p.plan.policy.templateId,sourceWords:p.director.audit.sourceWords,mappedWords:p.director.audit.mappedWords,omittedWords:p.director.audit.omittedWords,captions:p.plan.captions.length,zooms:p.plan.semantic.zooms.length,motions:p.plan.semantic.motions.length+(p.plan.graphics?.length??0)+(p.plan.elements?.length??0)+(p.plan.subjectLayers?.length??0)+(p.plan.masterGraphics?.length??0),transitions:p.plan.globalTransitions?.length??0,manualHighlights:p.director.audit.manualHighlights??0,rejections:p.director.audit.rejections,externalCostUSD:0,productionReady:false};}
- plan(id){const job=this.get(id),bundle=join(this.dir(id),job.bundle);return {manifest:JSON.parse(readFileSync(join(bundle,'manifest.json'),'utf8')),director:JSON.parse(readFileSync(join(bundle,'director.json'),'utf8'))};}
+ plan(id){const job=this.get(id),bundle=join(this.dir(id),job.bundle);const manifest=JSON.parse(readFileSync(join(bundle,'manifest.json'),'utf8'));if(!manifest.manualVisuals)applyManualVisualVisibility(manifest,job.settings.hiddenVisualEventIds??[]);return {manifest,quality:dopaminQualityGate(manifest),director:JSON.parse(readFileSync(join(bundle,'director.json'),'utf8'))};}
  adjust(id,settings,{recordHistory=true}={}){
   const job=this.get(id);if(this.backupBusy.has(id))throw new Error('Backup busy');if(job.state!=='PREVIEW_READY')throw new Error('Adjustments require PREVIEW_READY; duplicate completed jobs to adjust');
   if(recordHistory&&((settings.captionWords!==undefined&&settings.captionWords!==(job.settings.captionWords??3))||(settings.styleId!==undefined&&settings.styleId!==(job.settings.styleId??'SUES_CALMA')))&&((settings.elements?.items??[]).length||(settings.motionChoices??[]).length||(settings.graphicCards??[]).length||(settings.transitions??[]).length||Object.keys(settings.keywordOverrides??{}).length||Object.keys(settings.captionOverrides??{}).length||(settings.highlightCaptions??[]).length))throw new Error('Changing caption groups requires resetting caption edits and highlights');
@@ -104,17 +105,18 @@ export class EditorJobs{
  render(id){
   if(this.closing)throw new Error('Worker is closing');
   const job=this.get(id);if(['QUEUED','RENDERING','PUBLISHING','DONE'].includes(job.state))return this.view(job);
+  if(this.previewBusy)throw Error('Espera a que termine la previsualización del fragmento.');
   if(job.state==='PUBLISH_FAILED'){this.publish(job);return this.view(job);}
   if(!['PREVIEW_READY','FAILED'].includes(job.state)||!job.bundle)throw new Error('Job is not ready to render');
   if(this.queued().length>=this.maxQueued)throw new Error('Render queue full');
   this.validatePrepared(job);
   const quality=dopaminQualityGate(this.plan(id).manifest);
-  if(!quality.pass)throw new Error('Montaje DOPAMIN incompleto: faltan '+quality.issues.join('; ')+'.');
+  if(this.plan(id).manifest.policy.templateId==='SUES_DOPAMIN'&&!quality.pass)throw new Error('Montaje DOPAMIN incompleto: faltan '+quality.issues.join('; ')+'.');
   job.queueOrder=this.nextQueueOrder++;job.enqueuedAt=now();job.cancelRequested=false;delete job.error;
   this.transition(job,'QUEUED');if(this.autoStart)this.drain();return this.view(job);
  }
  drain(){
-  if(this.closing||!this.autoStart||this.children.size)return;
+  if(this.closing||this.previewBusy||!this.autoStart||this.children.size)return;
   clearTimeout(this.retryTimer);this.retryTimer=null;
   for(const job of this.queued()){
    let project,lock;
@@ -181,13 +183,13 @@ export class EditorJobs{
   const job=this.get(id);if(job.state!=='DONE')throw Error('Poster unavailable');
   const target=join(this.dir(id),'poster.jpg');try{if(statSync(target).isFile())return target;}catch{}
   if(this.posterBusy.has(id))return this.posterBusy.get(id);
-  if(this.children.size||this.queued().length||this.publishing.size||this.closing)throw Error('Poster deferred while the editor is busy');
-  const predecessors=[...this.posterBusy.values()];const pending=(async()=>{await Promise.allSettled(predecessors);if(this.children.size||this.queued().length||this.closing)throw Error('Poster deferred while the editor is busy');const temp=join(this.dir(id),'.poster-'+randomUUID()+'.jpg');try{
+  if(this.previewBusy||this.children.size||this.queued().length||this.publishing.size||this.closing)throw Error('Poster deferred while the editor is busy');
+  const predecessors=[...this.posterBusy.values()];const pending=(async()=>{await Promise.allSettled(predecessors);if(this.previewBusy||this.children.size||this.queued().length||this.closing)throw Error('Poster deferred while the editor is busy');const temp=join(this.dir(id),'.poster-'+randomUUID()+'.jpg');try{
    const source=await this.media(id);await promisify(execFile)('ffmpeg',['-v','error','-threads','1','-ss','0.3','-i',source,'-frames:v','1','-vf','scale=480:-2','-threads','1','-y',temp],{timeout:15000,maxBuffer:65536});renameSync(temp,target);return target;
   }finally{rmSync(temp,{force:true});this.posterBusy.delete(id);}})();
   this.posterBusy.set(id,pending);void pending.catch(()=>{}).finally(()=>this.posterBusy.delete(id));return pending;
  }
- async recordReview(id,value){const job=this.get(id);if(job.state!=='DONE')throw new Error('Video not ready for review');const audit=await this.audit(id);job.editorialReview=editorialAcceptance(value,{fingerprint:job.fingerprint,outputSha256:audit.outputSha256});this.save(job);return job.editorialReview;}
+ async recordReview(id,value){const job=this.get(id);if(job.state!=='DONE')throw new Error('Video not ready for review');const audit=await this.audit(id);job.editorialReview=editorialAcceptance(value,{fingerprint:job.fingerprint,outputSha256:audit.outputSha256});job.editorialReview.technicalQuality=dopaminQualityGate(this.plan(id).manifest);job.editorialReview.pass=job.editorialReview.pass&&job.editorialReview.technicalQuality.pass;this.save(job);return job.editorialReview;}
  async backup(id){
   const job=this.get(id);if(!['PREVIEW_READY','DONE'].includes(job.state))throw new Error('Project not ready for backup');if(this.backupBusy.has(id))throw new Error('Backup busy');
   if(job.backup?.revision===job.revision)return {ready:true,bytes:job.backup.bytes,sha256:job.backup.sha256};
