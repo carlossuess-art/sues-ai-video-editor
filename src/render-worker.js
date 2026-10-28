@@ -32,6 +32,7 @@ export function validateRenderResult(request){
  const audit=JSON.parse(readFileSync(request.output.replace(/\.mp4$/,'.audit.json'),'utf8')),stat=statSync(request.output);
  assert(stat.isFile()&&stat.size>8,'output file missing/empty');
  const fd=openSync(request.output,'r'),signature=Buffer.alloc(8);try{assert(readSync(fd,signature,0,8,0)===8&&signature.toString('ascii',4,8)==='ftyp','MP4 signature');}finally{closeSync(fd);}
+ assert(!audit.previewWindow&&audit.isFinalExport!==false,'an adjustment fragment is not a final export');
  assert(audit.version==='1.0'&&audit.sourcePreserved===true&&audit.fullDecode==='pass'&&audit.audioPresent===true,'audit incomplete');
  assert(audit.sourceSha256===request.sourceSha256,'source audit mismatch');
  assert(audit.bytes===stat.size&&audit.outputSha256===fileSha256(request.output),'output checksum/size mismatch');

@@ -1,3 +1,15 @@
+## Continuación asistida · 28/10/2026
+
+Vista previa exacta del borrador desde Ajustar: fragmento de 4 s (API 0,5–8 s), 540×960, motor audiovisual existente, caché de 4 fragmentos, cancelación y exclusión de render concurrente. No crea ni valida una versión final. El botón Guardar y generar mantiene la exportación completa y las versiones anteriores. No hay llamadas nuevas a Gemini ni servicios de pago.
+
+Pruebas: 408/409 en contenedor, única prueba Git ausente pasada en host (2/2); check PASS. Test real de fragmento verifica cortes 4–6 s, remapeo a audio 880 Hz, Range, persistencia, caché y cancelación. Navegador móvil/escritorio sin errores y con borrador conservado; 30,2 s primer fragmento con reproducción principal ya lista, 1,85 s reutilización. Se inspeccionó el fotograma con «PRUEBA DE AJUSTE». El motor puede procesar el prefijo de la línea temporal; no se promete vista instantánea.
+
+Director privado 1.4.1: V1 asistida / V1.1 Gemini, ocho archivos conservados y lectura posterior verificada. Backup del código activo restaurado y arrancado con sesión/salud PASS. Código 4497a0d desplegado y smoke público PASS: 38 versiones intactas, sesión200, Range206/1024 bytes, servicios activos y memoria de producción sin cambios/0 OOM. Fragmentos probados en web pública móvil/tablet/escritorio, caché ~1,1–1,5 s y sin erroresJS; no se envió revisión del propietario. Ver docs/SUES_V1_CLOSURE_20261028.md. La valoración creativa del vídeo final corresponde a Carlos.
+
+## Decisión de Carlos · V1 asistida / V1.1 API · 28/10/2026
+
+V1: subir el vídeo al editor o compartirlo con ChatGPT y obtener la edición final deseada con asistencia humana/ChatGPT, revisión, ajustes y exportación. La API de Gemini NO es requisito de aceptación ni bloqueo de V1. V1.1: automatizar el mismo resultado mediante Gemini solo cuando aporte valor; evitar llamadas y costes siempre que sea posible. No invocar Gemini ni otros servicios de pago por esta continuación. Carlos conserva la aceptación creativa del resultado; no inferirla de tests.
+
 ## V1 · bloque técnico desplegado · 28/10/2026
 
 Código existente recuperado y mejoras desplegadas. Rama feat/v1-closure-20261028.
