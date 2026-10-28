@@ -1,3 +1,5 @@
+**Estado vigente:** código recuperado e integrado en feat/v1-closure-20261028, ya desplegado. Ampliado con tiempos de captions, borradores recuperables y catálogo reversible de capas automáticas. El resto documenta el checkpoint histórico; pendientes y pruebas actuales en SUES_V1_CLOSURE_20261028.md.
+
 # SUES AI VIDEO EDITOR · Ajustes manuales V1 · 28/10/2026
 
 ## Objetivo

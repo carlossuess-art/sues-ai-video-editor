@@ -41,3 +41,14 @@ test('main graphic replaces only literal complete caption; other spoken informat
  const plan={...base,graphics:[],foregroundEffects:{events:[{type:'behind-text',start:1,end:4,lines:['CAMBIO','PROFUNDO']}]}};
  const p=captionPresentation(plan,{text:'transformación',start:2,end:3});assert.equal(p.action,'relocate');assert.ok(p.box.top>=1440);
 });
+
+test('Director can suppress a semantic duplicate without changing speech or restoring manual decisions',()=>{
+ const f=fixture();try{
+  const project=loadProject(f.profiles.test),settings={hiddenCaptionIds:['seg-001']},catalog=externalCatalog(project,settings),caption=catalog.captions[1];
+  const review=operations=>reviewExternalPlan(JSON.stringify({...catalog.example,operations}),{project,settings});
+  const op={type:'caption-visibility',captionId:caption.id,hidden:true,reason:'El gráfico conserva toda la información de esta frase'};
+  const r=review([op]);assert.equal(r.canApply,true);assert.ok(r.changes.hiddenCaptionIds.includes('seg-001'));assert.ok(r.changes.hiddenCaptionIds.includes(caption.id));
+  const changed=prepareProject(project,r.changes),before=prepareProject(project,settings);assert.equal(changed.plan.duration,before.plan.duration);assert.deepEqual(changed.plan.timeMap,before.plan.timeMap);assert.deepEqual(changed.plan.captions.map(c=>c.text),before.plan.captions.map(c=>c.text));
+  assert.equal(review([{...op,hidden:false}]).canApply,false);assert.equal(review([{...op,captionId:'seg-999'}]).canApply,false);
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
+});

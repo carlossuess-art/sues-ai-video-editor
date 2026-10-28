@@ -1,10 +1,12 @@
+**Estado vigente:** integración desplegada y probada; este documento conserva la historia de implementación. Consultar SUES_V1_CLOSURE_20261028.md para pruebas y pendientes actuales.
+
 # SUES Editor · Recorte del bruto y calidades de descarga · 28/10/2026
 
 ## Estado
 
-**Rama aislada:** `feat/manual-adjust-studio-20261028` (local en `srv1841004`).
+**Base histórica:** `feat/manual-adjust-studio-20261028` (local en `srv1841004`).
 **Proyecto:** `/opt/sues-video-setup/manual-adjust-work-20261028`.
-**Producción:** contenedor `sues-video-editor` sigue montando `/opt/sues-video-setup/release-update.78zyka2k` y **no recibió este código**.
+**Producción:** contenedor `sues-video-editor` sigue montando `/opt/sues-video-setup/release-update.78zyka2k` y recibió posteriormente la integración de feat/v1-closure-20261028; ver SUES_V1_CLOSURE_20261028.md.
 
 ## Funciones implementadas
 
@@ -14,7 +16,7 @@
 4. Posibles muletillas y repeticiones textuales cercanas se presentan separadamente. **No** hay aún detección semántica avanzada por modelo IA ni análisis VAD de respiraciones: cualquier propuesta que quite voz exige revisión humana.
 5. Usuario puede seleccionar/desmarcar candidatos individualmente, marcar inicio y final manualmente con controles y saltar los tramos en la vista previa del original.
 6. Al continuar, pasa `sourceCuts` (rangos sobre el **bruto original**) al contrato de edición; se almacenan en settings y fingerprint para que sean reversibles. `keptSegments` + `buildTimeMap` + `mapWordsToTimeline` y render FFmpeg reconstruyen tanto vídeo como audio/subtítulos. La fuente original no cambia.
-7. Selector de descarga: **1080p** usa el MP4 final `/api/jobs/{id}/media`; **720p ligero** usa el MP4 del sistema existente de previsualización `/api/jobs/{id}/preview`. Ambos se sirven autenticados y con soporte HTTP Range. No genera nuevamente el montaje ni usa IA.
+7. Selector de descarga: **1080p** usa el MP4 final `/api/jobs/{id}/media`; **720p ligero** usa `/api/jobs/{id}/media?resolution=720`, exportación separada CRF20/Lanczos/5Mb/s y audio copiado. El proxy `/preview` conserva CRF28/1,2Mb/s. Ambos se sirven autenticados y con soporte HTTP Range. No genera nuevamente el montaje ni usa IA.
 8. `src/editor-server.js` incluye archivos JS/CSS nuevos en allowlist; `web/sw.js` versión v27 cachea las nuevas hojas y scripts públicos del shell, nunca API/media.
 
 ## Infraestructura de reproducción realmente desplegada
@@ -39,7 +41,7 @@
 - Verificar que al aplicar cortes antes del plan Gemini se recalculan encuadres, efectos y tiempos de recursos sincronizados; aquellos que apunten al material fuente no deben perder sincronía.
 - No volver a aplicar planes para el bruto sin remapear operaciones si hay cortes posteriores.
 - Comprobar que los cortes propuestos no truncan sílabas y que el render no deja saltos de audio; los timestamps Whisper pueden ser imprecisos. El usuario debe poder escuchar cada límite.
-- La selección de la «calidad 720p» usa la misma compresión de la vista ligera (CRF 28); si se quiere exportación 720p de alta calidad como producto diferenciado, añadir codificación por demanda a bitrate superior, caché y pruebas.
+- Resuelto posteriormente: exportación720 separada del proxy, con caché y pruebas de bytes/audio/Range.
 - Proteger abandono/navegación durante la revisión de recortes y corregir la posible persistencia accidental de un análisis anterior.
 - No hacer merge ni desplegar producción hasta validar y preservar ramas del editor y pendientes de Work.
 

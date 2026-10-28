@@ -50,3 +50,14 @@ body[data-post-mode="adjust"] #post-render-actions,body[data-post-mode="validati
  body[data-post-mode="adjust"] #tool-panel,
  body[data-post-mode="validation"] #tool-panel{z-index:2;min-height:0!important}
 }
+
+/* Keep the player visible while adjusting: export and buffering controls live
+   in the review view and must not consume the compact player's entire row. */
+body[data-post-mode="adjust"] #video-panel .export-quality,
+body[data-post-mode="validation"] #video-panel .export-quality,
+body[data-post-mode="adjust"] #video-panel .playback-buffer,
+body[data-post-mode="validation"] #video-panel .playback-buffer{display:none!important}
+@media(max-width:700px){
+ body[data-post-mode="adjust"] #video-panel,body[data-post-mode="validation"] #video-panel{display:flex!important;flex-direction:column!important}
+ body[data-post-mode="adjust"] #video-panel .preview-wrap,body[data-post-mode="validation"] #video-panel .preview-wrap{flex:1 1 150px!important;min-height:140px!important;height:calc(100% - 75px)!important}
+}

@@ -1,3 +1,4 @@
+import {applyManualVisualVisibility} from './manual-visuals.js';
 import {editorialAcceptance} from './editor-acceptance.js';
 import {dopaminQualityGate} from './dopamin-quality-gate.js';
 import {createProjectBackup,verifyProjectBackup} from './project-backup.js';
@@ -64,7 +65,7 @@ export class EditorJobs{
   catch(error){job.error=error.message;this.transition(job,'FAILED');throw error;}
  }
  summary(p){return {editionCounts:p.plan.editionCounts,musicPresent:!!p.plan.audioMix,soundEffects:p.plan.editionCounts.soundEffects,framing:p.plan.camera.mode,duration:p.plan.duration,styleId:p.plan.policy.templateId,sourceWords:p.director.audit.sourceWords,mappedWords:p.director.audit.mappedWords,omittedWords:p.director.audit.omittedWords,captions:p.plan.captions.length,zooms:p.plan.semantic.zooms.length,motions:p.plan.semantic.motions.length+(p.plan.graphics?.length??0)+(p.plan.elements?.length??0)+(p.plan.subjectLayers?.length??0)+(p.plan.masterGraphics?.length??0),transitions:p.plan.globalTransitions?.length??0,manualHighlights:p.director.audit.manualHighlights??0,rejections:p.director.audit.rejections,externalCostUSD:0,productionReady:false};}
- plan(id){const job=this.get(id),bundle=join(this.dir(id),job.bundle);const manifest=JSON.parse(readFileSync(join(bundle,'manifest.json'),'utf8'));return {manifest,quality:dopaminQualityGate(manifest),director:JSON.parse(readFileSync(join(bundle,'director.json'),'utf8'))};}
+ plan(id){const job=this.get(id),bundle=join(this.dir(id),job.bundle);const manifest=JSON.parse(readFileSync(join(bundle,'manifest.json'),'utf8'));if(!manifest.manualVisuals)applyManualVisualVisibility(manifest,job.settings.hiddenVisualEventIds??[]);return {manifest,quality:dopaminQualityGate(manifest),director:JSON.parse(readFileSync(join(bundle,'director.json'),'utf8'))};}
  adjust(id,settings,{recordHistory=true}={}){
   const job=this.get(id);if(this.backupBusy.has(id))throw new Error('Backup busy');if(job.state!=='PREVIEW_READY')throw new Error('Adjustments require PREVIEW_READY; duplicate completed jobs to adjust');
   if(recordHistory&&((settings.captionWords!==undefined&&settings.captionWords!==(job.settings.captionWords??3))||(settings.styleId!==undefined&&settings.styleId!==(job.settings.styleId??'SUES_CALMA')))&&((settings.elements?.items??[]).length||(settings.motionChoices??[]).length||(settings.graphicCards??[]).length||(settings.transitions??[]).length||Object.keys(settings.keywordOverrides??{}).length||Object.keys(settings.captionOverrides??{}).length||(settings.highlightCaptions??[]).length))throw new Error('Changing caption groups requires resetting caption edits and highlights');

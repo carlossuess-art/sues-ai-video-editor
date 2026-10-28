@@ -1,6 +1,19 @@
-## Continuidad V1 · 28/10/2026 · bloque actual
+## V1 · bloque técnico desplegado · 28/10/2026
 
-Rama feat/v1-closure-20261028 recupera7b89935 y el trabajo posterior del servidor, preservando los worktrees originales. Contrato de tiempos recortados, validador semántico/hook, jerarquía de textos, tiempos de captions, borradores y export720 separada implementados. 390/391 suite completa; único caso Git pasa2/2 en host. 33/33 tests recuperados de GitHub y12/12 dirigidos finales. QA autenticada móvil/tablet/escritorio sin erroresJS ni overflow. Clip real10s recortado con decodePASS y fuente intacta. Render completo y despliegue pendientes en este checkpoint. V1 abierta; global oficial48% sin recalcular. Sin llamadas de pago. Fuente de continuidad: docs/SUES_V1_CLOSURE_20261028.md.
+Código existente recuperado y mejoras desplegadas. Rama feat/v1-closure-20261028.
+Recortes confirmables, silencio~0,5s, contrato edit-timeline/fingerprint, validador
+semántico/hook, jerarquía textual, Validar/Ajustar, capas reversibles, borradores y
+export720 separado del proxy.37versiones previas intactas; copia/recuperación probadas.
+Nueva revisión e5d48158-777e-4273-86ee-8970db623ab5:70,9s,1080×1920,
+SHA dddfa227ee6a01d1e9ed60f3ebd5bf99d877cbb7d3872ca53305646f46c9df45.
+Audio idéntico al anterior,decodePASS,fuente intacta; sin aprobación estética.
+Suite406/407; único caso Git pasa2/2 en host. Compatibilidad adicional15/15.
+UI autenticada móvil/tablet/escritorio; subida real, cortes, dos renders10s,
+validación/descargas/reinicio en QA; HTTPS yRange206 en producción. Skill1.4.0.
+V1 ABIERTA: Director autónomo real pendiente de autorización específica de consumo
+y aceptación creativa del propietario. Sin llamadas de pago;globaloficial48%sinrecalcular.
+Detalles, límites, P0/P1/P2, backups y continuación exacta:
+docs/SUES_V1_CLOSURE_20261028.md.
 
 ## 28/10/2026 · Ajustes manuales posteriores al render · RAMA AISLADA (NO DESPLEGADA)
 
