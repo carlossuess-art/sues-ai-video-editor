@@ -1,6 +1,7 @@
 /* Non-destructive manual-adjust studio. The export is never modified in place. */
 (()=>{
  'use strict';
+ let fragmentBusy=false,fragmentEpoch=0,activeFragment=null,fragmentCancelRequested=false;
  let kind='captions',selected=null,draft=null,history=[],parentId=null,touched=new Set();
  const n=(tag,label,cls)=>{const el=document.createElement(tag);if(label!==undefined)el.textContent=label;if(cls)el.className=cls;return el;};
  const clone=value=>structuredClone(value);
@@ -15,7 +16,7 @@
  const persist=()=>{try{if(draftKey())localStorage.setItem(draftKey(),JSON.stringify({fingerprint:current.fingerprint,snapshot:snapshot()}));}catch{}};
  const snapshot=()=>({draft:clone(draft),touched:[...touched],captions:captionFields(),musicGain:$('music-gain').value});
  const restore=s=>{draft=clone(s.draft);touched=new Set(s.touched);for(const f of $('captions').querySelectorAll('textarea[data-id]'))if(Object.hasOwn(s.captions,f.dataset.id))f.value=s.captions[f.dataset.id];$('music-gain').value=s.musicGain;$('music-value').textContent=s.musicGain+' %';};
- function change(fn,field){if(!canEdit())return;const previous=snapshot();try{fn();if(field)touched.add(field);history.push(previous);if(history.length>40)history.shift();markPreviewDirty();persist();status('Ajustes pendientes. El reproductor muestra la versión anterior; guarda y genera para ver el nuevo resultado.');}catch(err){restore(previous);status('No se pudo aplicar el ajuste: '+err.message);}render();}
+ function change(fn,field){if(!canEdit())return;const previous=snapshot();try{fn();if(field)touched.add(field);history.push(previous);if(history.length>40)history.shift();invalidateFragment();markPreviewDirty();persist();status('Ajustes pendientes. El reproductor muestra la versión anterior; guarda y genera para ver el nuevo resultado.');}catch(err){restore(previous);status('No se pudo aplicar el ajuste: '+err.message);}render();}
  const manifestItems=()=>{
   if(!plan?.manifest)return [];
   const p=plan.manifest;
@@ -115,12 +116,13 @@
    const entry=button(time(item.start)+' · '+item.title,()=>selectEvent(item));entry.title=item.title;entry.setAttribute('aria-pressed',String(item.key===selected));list.append(entry);
   }
   if(!items.length)list.append(n('p',kind==='music'?'No hay pista musical disponible.':'No hay elementos editables de esta categoría en el montaje.'));
-  inspector(items);seeked();$('adjust-undo').disabled=!history.length;$('adjust-apply').disabled=!previewDirty;
+  inspector(items);seeked();$('adjust-undo').disabled=!history.length;$('adjust-apply').disabled=!previewDirty||fragmentBusy;
  }
+ function invalidateFragment(){fragmentEpoch++;const v=$('adjust-fragment-video');v.pause();v.removeAttribute('src');v.load();v.hidden=true;}
  function changeMode(mode){document.body.dataset.postMode=mode;$('adjust-studio').hidden=mode!=='adjust';$('validation-studio').hidden=mode!=='validation';if(mode==='adjust')render();}
  function load(job){
   if(!job||job.state!=='DONE'){if(document.body.dataset.postMode)changeMode('off');$('post-render-actions').hidden=true;parentId=null;draft=null;return;}
-  parentId=job.id;history=[];selected=null;touched.clear();
+  invalidateFragment();parentId=job.id;history=[];selected=null;touched.clear();
   draft={hiddenVisualEventIds:clone(job.settings.hiddenVisualEventIds??[]),captionTimingOverrides:clone(job.settings.captionTimingOverrides??{}),hiddenCaptionIds:[...(job.settings.hiddenCaptionIds??[])],videoEvents:clone(job.settings.videoEvents??[]),sfxEvents:clone(job.settings.sfxEvents??[]),graphicCards:clone(job.settings.graphicCards??[]),imageEvents:clone(job.settings.imageEvents??[])};
   $('post-render-actions').hidden=false;$('post-validate').disabled=false;
   for(const [key,name] of [['captions','captionsReviewed'],['framing','framingReviewed'],['audio','audioReviewed']])$('quick-review-'+key).checked=job.editorialReview?.[name]??false;
@@ -136,6 +138,32 @@
  for(const b of $('adjust-kinds').querySelectorAll('[data-adjust-kind]'))b.onclick=()=>{kind=b.dataset.adjustKind;selected=null;render();};
  $('adjust-undo').onclick=()=>{const prev=history.pop();if(!prev)return;restore(prev);markPreviewDirty();persist();status('Último cambio deshecho. La nueva versión aún no se ha generado.');render();};
  $('adjust-reset').onclick=()=>{if(!canEdit())return;if(previewDirty&&!confirm('Descartar los ajustes pendientes y volver a la versión guardada?'))return;try{localStorage.removeItem(draftKey());}catch{}work(async()=>{await select(parentId);changeMode('adjust');showPlayer('preview');});};
+ $('adjust-preview').onclick=async()=>{
+  if(!canEdit()||fragmentBusy)return;
+  const epoch=++fragmentEpoch,id=parentId,fingerprint=current.fingerprint,patch=settings();
+  const item=manifestItems().find(e=>e.key===selected),focus=item?.start??player().currentTime??0;
+  const start=Math.max(0,Math.min(duration()-.5,focus-.7)),length=Math.min(4,duration()-start);
+  fragmentBusy=true;activeFragment=null;fragmentCancelRequested=false;$('adjust-preview').disabled=true;$('adjust-apply').disabled=true;
+  const dialog=$('adjust-fragment-dialog'),video=$('adjust-fragment-video');video.pause();video.removeAttribute('src');video.hidden=true;
+  $('adjust-fragment-status').textContent='Preparando '+length.toFixed(1)+' s del borrador desde '+time(start)+'. Puede tardar según la posición del fragmento.';dialog.showModal();
+  try{
+   let result=await api('jobs/'+id+'/adjust-preview','POST',{fingerprint,settings:patch,start,duration:length});
+   activeFragment={id,key:result.key};if(fragmentCancelRequested)await api('jobs/'+id+'/adjust-preview?key='+result.key,'DELETE',{});
+   for(let attempt=0;result.state==='RUNNING'&&attempt<900;attempt++){
+    await new Promise(r=>setTimeout(r,1000));
+    result=await api('jobs/'+id+'/adjust-preview?key='+result.key);
+    if(epoch===fragmentEpoch)$('adjust-fragment-status').textContent='Preparando fragmento · '+result.elapsedSeconds+' s de proceso. La versión completa sigue guardada.';
+   }
+   if(result.state!=='READY')throw Error(result.error||'El fragmento no está disponible. Puedes volver a solicitarlo.');
+   if(epoch!==fragmentEpoch||parentId!==id)return;
+   video.src='/api/jobs/'+id+'/adjust-preview?key='+result.key+'&media=1';video.hidden=false;video.load();
+   $('adjust-fragment-status').textContent='Borrador · '+time(result.start)+'–'+time(result.start+result.duration)+' del montaje. Este fragmento no valida ni sustituye la exportación completa.';
+   status('Fragmento del borrador listo. Guarda y genera cuando quieras aplicar el montaje completo.');
+  }catch(e){if(epoch===fragmentEpoch)$('adjust-fragment-status').textContent=e.message;}
+  finally{fragmentBusy=false;$('adjust-preview').disabled=false;if(canEdit())render();}
+ };
+ $('adjust-fragment-close').onclick=()=>{$('adjust-fragment-video').pause();$('adjust-fragment-dialog').close();};
+ $('adjust-fragment-dialog').addEventListener('close',()=>{$('adjust-fragment-video').pause();if(fragmentBusy){fragmentCancelRequested=true;if(activeFragment)void api('jobs/'+activeFragment.id+'/adjust-preview?key='+activeFragment.key,'DELETE',{}).catch(e=>status(e.message));}});
  $('adjust-apply').onclick=()=>work(async()=>{
   if(!canEdit()||!previewDirty)return;
   $('adjust-apply').disabled=true;status('Preparando nueva versión sin utilizar servicios de IA…');
@@ -144,7 +172,7 @@
    await api('jobs/'+next.id+'/render','POST',{});
    try{localStorage.removeItem(draftKey());}catch{}
    await select(next.id);changeMode('off');$('workflow-status').textContent='Montaje manual en proceso. La versión original sigue guardada.';
-  }finally{if(canEdit())$('adjust-apply').disabled=!previewDirty;}
+  }finally{if(canEdit())$('adjust-apply').disabled=!previewDirty||fragmentBusy;}
  });
  $('quick-validate-save').onclick=()=>work(async()=>{
   if(!canEdit()||previewDirty)throw Error('Genera primero la versión con los últimos ajustes.');

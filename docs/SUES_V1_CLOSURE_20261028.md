@@ -1,9 +1,12 @@
+## Decisión de Carlos · V1 asistida / V1.1 API · 28/10/2026
+
+V1: subir el vídeo al editor o compartirlo con ChatGPT y obtener la edición final deseada con asistencia humana/ChatGPT, revisión, ajustes y exportación. La API de Gemini NO es requisito de aceptación ni bloqueo de V1. V1.1: automatizar el mismo resultado mediante Gemini solo cuando aporte valor; evitar llamadas y costes siempre que sea posible. No invocar Gemini ni otros servicios de pago por esta continuación. Carlos conserva la aceptación creativa del resultado; no inferirla de tests.
+
 # SUES AI VIDEO EDITOR · Cierre técnico del bloque V1 · 28/10/2026
 
 ## Estado actual
 
-Mejoras DESPLEGADAS. V1 todavía ABIERTA: faltan la prueba real del Director
-autónomo con consumo expresamente autorizado y la aceptación creativa del propietario.
+Mejoras DESPLEGADAS. Criterio actualizado por Carlos: V1 asistida, con resultado final revisable/exportable mediante editor y ayuda de ChatGPT. Gemini API pasa a V1.1 y NO bloquea V1. La aceptación creativa corresponde al propietario.
 No se ejecutaron llamadas de inferencia de pago ni se cambiaron suscripciones.
 
 Web: https://editor.suesholistics.com
@@ -104,17 +107,15 @@ El inspector permite ocultar/restaurar capas automáticas; mover o retimar
 máscaras y algunas animaciones compiladas requiere ampliar su contrato y
 recalcular geometría/mattes. No se presentan controles falsos.
 El reproductor manual muestra explícitamente el último MP4 mientras hay cambios:
-no existe aún preview exacto por capas del borrador.
+La continuación asistida añade una vista exacta de fragmentos; no hay reproducción instantánea por capas.
 
 ## Prioridad restante
 
-P0: probar una sola solicitud real del Director con el vídeo/análisis existentes
-cuando Carlos autorice específicamente el consumo; comprobar plan completo,
-contrato, semántica y render. Obtener después su valoración creativa.
-No repetir Whisper ni reanalizar biblioteca ya disponible sin motivo.
+P0: completar el flujo asistido, corregir limitaciones útiles del ajuste y facilitar la revisión/exportación de Carlos sin API.
+V1.1: automatización vía Gemini opcional y con autorización de consumo.
 
 P1: cortes semánticos avanzados, VAD/respiraciones, ranking narrativo,
-preview corto/por capas, edición fina de animaciones/máscaras y tactilidad.
+preview instantáneo por capas, edición fina de animaciones/máscaras y tactilidad.
 P2: keyframes y funciones profesionales ajenas al criterio mínimo.
 
 ## Recuperación y siguiente acción exacta
@@ -125,9 +126,24 @@ Estado mutable: state-before.tgz, verificado.
 Compatibilidad histórica tiene respaldo adicional editor-jobs-first-release.js.
 No hay medios privados ni credenciales en Git.
 
-Siguiente: abrir la versión de revisión, valorar imagen/voz/recursos y ajustar
-si procede. Para verificar autonomía, preparar su catálogo actual y una única
-POST jobs/{id}/ai-plan?async=1 con fingerprint actual y proveedor Gemini, solo tras
-autorización específica; sin reintentos ni cambio de proveedor automáticos.
-Guardar respuesta y validaciones; ejecutar solo un plan compatible.
-Fase9abierta; global oficial previo48%, sin recalcular porcentajes por tests.
+Siguiente: Carlos revisa el vídeo completo e5d48158-777e-4273-86ee-8970db623ab5, comunica correcciones o lo valida y descarga. Fragmentos desplegados y verificados. Gemini se reserva para V1.1. No recalcular porcentajes por número de tests.
+
+## Continuación V1 asistida · fragmentos de ajustes
+
+- Botón Ver fragmento de ajuste: ventana de 4 s alrededor del elemento elegido, 540×960, mismo compositor y mezcla del montaje. API privada admite 0,5–8 s. Incluye remapeo de cortes; no exporta un render completo por cada movimiento.
+- El render puede procesar parte anterior de la línea temporal. En navegador real: primer fragmento 30,2 s, reutilización 1,85 s; un ensayo anterior con trabajo concurrente tardó 67,4 s. No confundir estas mediciones con un SLA.
+- Caché de cuatro ventanas vinculadas a proyecto y fingerprint del borrador; autenticación y Range. Solicitudes repetidas reutilizan el resultado. Cancelar el diálogo detiene el proceso. Arranque recupera interrupciones. Un fragmento nunca satisface validateRenderResult ni permite validar la exportación final.
+- Exclusión con render, publicación, pósters y generación de proxy para preservar el techo de memoria existente. No se han cambiado límites ni instalado dependencias.
+- 409 pruebas: 408 PASS en imagen sin Git; prueba Git 2/2 en host. Check PASS. Prueba audiovisual sintética con cortes, audio de 880 Hz en el intervalo esperado, caché/reinicio/cancelación y conservación del original. QA real móvil393×852 y escritorio1440×1000 con texto modificado visible; borrador persiste y exportación sigue bloqueada mientras hay cambios.
+- Director privado 1.4.1 publicado y leído de nuevo: V1 asistida, Gemini para V1.1. La nueva versión conserva identidad, configuración, privacidad y ocho archivos; no se efectuó inferencia de pago.
+- Recuperación preparada: v1-assisted-preview-qa-20261028/live-code-before.tgz, SHA256 50f417ab189d40a52e282135281da44c744e9675ef713879cce71562fcfe9d4b; 184 archivos comparados, restaurados y arranque/sesión/salud comprobados.
+
+El vídeo final de revisión sigue siendo e5d48158-777e-4273-86ee-8970db623ab5. La valoración del propietario, escucha humana y aceptación de la calidad creativa siguen pendientes. Gemini no bloquea V1.
+
+## Despliegue verificado de la continuación
+
+Código 4497a0d aplicado a los diez archivos runtime diferentes, sin mezclar ramas ni alterar otros worktrees. Respaldo de estado JSON verificado; rollback del código anterior restaurado y arrancado antes de desplegar. Reinicio sin trabajos activos. HTTPS/sesión200, Range206 de 1024 bytes, 38 versiones con idénticos estados/fingerprints. Range permanente, Whisper y Desktop Commander activos; WhatsApp/Caddy intactos. Memoria de producción permanece1900MiB, OOMKilled=false.
+
+Navegador público móvil393×852/tablet820×1180/escritorio1440×1000: fragmento540×960/4 s, texto editado visible, borrador conservado, exportación bloqueada, cero erroresJS, sin overflow y versión final sin modificar. Caché medida1,06/1,45/1,37 s. El primer render en producción tardó31,9 s. El ensayo de Chromium con techo artificial350MiB agotó el timeout de reproducción; la repetición de QA con900MiB pasó. No se aumentó memoria del editor.
+
+Resultados privados: deploy-result.json, production-fragment-result.json y capturas production-*-fragment.png bajo v1-assisted-preview-qa-20261028. No se pulsó Validar ni se atribuye aprobación creativa a Carlos. El cierre técnico asistido queda disponible para su valoración final; Gemini es V1.1.

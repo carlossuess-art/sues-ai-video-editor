@@ -105,6 +105,7 @@ export class EditorJobs{
  render(id){
   if(this.closing)throw new Error('Worker is closing');
   const job=this.get(id);if(['QUEUED','RENDERING','PUBLISHING','DONE'].includes(job.state))return this.view(job);
+  if(this.previewBusy)throw Error('Espera a que termine la previsualización del fragmento.');
   if(job.state==='PUBLISH_FAILED'){this.publish(job);return this.view(job);}
   if(!['PREVIEW_READY','FAILED'].includes(job.state)||!job.bundle)throw new Error('Job is not ready to render');
   if(this.queued().length>=this.maxQueued)throw new Error('Render queue full');
@@ -115,7 +116,7 @@ export class EditorJobs{
   this.transition(job,'QUEUED');if(this.autoStart)this.drain();return this.view(job);
  }
  drain(){
-  if(this.closing||!this.autoStart||this.children.size)return;
+  if(this.closing||this.previewBusy||!this.autoStart||this.children.size)return;
   clearTimeout(this.retryTimer);this.retryTimer=null;
   for(const job of this.queued()){
    let project,lock;
@@ -182,8 +183,8 @@ export class EditorJobs{
   const job=this.get(id);if(job.state!=='DONE')throw Error('Poster unavailable');
   const target=join(this.dir(id),'poster.jpg');try{if(statSync(target).isFile())return target;}catch{}
   if(this.posterBusy.has(id))return this.posterBusy.get(id);
-  if(this.children.size||this.queued().length||this.publishing.size||this.closing)throw Error('Poster deferred while the editor is busy');
-  const predecessors=[...this.posterBusy.values()];const pending=(async()=>{await Promise.allSettled(predecessors);if(this.children.size||this.queued().length||this.closing)throw Error('Poster deferred while the editor is busy');const temp=join(this.dir(id),'.poster-'+randomUUID()+'.jpg');try{
+  if(this.previewBusy||this.children.size||this.queued().length||this.publishing.size||this.closing)throw Error('Poster deferred while the editor is busy');
+  const predecessors=[...this.posterBusy.values()];const pending=(async()=>{await Promise.allSettled(predecessors);if(this.previewBusy||this.children.size||this.queued().length||this.closing)throw Error('Poster deferred while the editor is busy');const temp=join(this.dir(id),'.poster-'+randomUUID()+'.jpg');try{
    const source=await this.media(id);await promisify(execFile)('ffmpeg',['-v','error','-threads','1','-ss','0.3','-i',source,'-frames:v','1','-vf','scale=480:-2','-threads','1','-y',temp],{timeout:15000,maxBuffer:65536});renameSync(temp,target);return target;
   }finally{rmSync(temp,{force:true});this.posterBusy.delete(id);}})();
   this.posterBusy.set(id,pending);void pending.catch(()=>{}).finally(()=>this.posterBusy.delete(id));return pending;
