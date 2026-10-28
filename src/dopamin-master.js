@@ -125,7 +125,7 @@ export function selectAutomaticPreviewBrolls(proposal,options,duration){
   if(!c)continue;
   used.add(c.assetId);out.push({assetId:c.assetId,start:cue.start,end:cue.end,sourceIn:c.evidence.suggestedSourceRange.startSec,
    reason:('Propuesta automática para revisar: '+cue.narrative.label).slice(0,160)});
-  if(out.length>=3)break;
+  if(out.length>=50)break;
  }
  return out;
 }

@@ -32,7 +32,7 @@ function automaticBox(faces,plan,placed,item){
 }
 
 export function prepareIllustrations(items=[],plan,visionFrames=[]){
- assert(Array.isArray(items)&&items.length<=6,'at most six resources');
+ assert(Array.isArray(items)&&items.length<=50,'at most 50 resources');
  if(!items.length)return [];
  const track=stabilizeFaceTrack(buildFaceTrack(visionFrames));
  const placed=[];

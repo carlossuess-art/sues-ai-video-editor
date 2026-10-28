@@ -29,7 +29,7 @@ export function applyReviewedFraming(inputs,value){
   template:{...inputs.template,captions:{...inputs.template.captions,inlineGroups:true,fontSize:104}}};
 }
 export function validateZoomEvents(events=[]){
- if(!Array.isArray(events)||events.length>8)throw Error('Hasta ocho acercamientos explícitos');
+ if(!Array.isArray(events)||events.length>50)throw Error('Hasta 50 acercamientos explícitos');
  let previous=-Infinity;
  for(const e of events){
   if(!e||Object.keys(e).some(k=>!['start','end','scale','reason'].includes(k))||

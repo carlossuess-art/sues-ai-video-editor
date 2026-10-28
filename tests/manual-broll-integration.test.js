@@ -32,6 +32,14 @@ test('manual B-roll respects cinematic shot length, opening, closing, gaps, cove
  ])assert.throws(()=>buildExplicitBrollPlan({policy:policy(),duration:24,events:invalid}));
 });
 
+test('five distinct B-rolls fit a 71-second edit while unsafe overlaps still fail',()=>{
+ const clips=Array.from({length:5},(_,i)=>event({assetId:String(i+1).repeat(64),start:4+i*11,end:7+i*11}));
+ const plan=buildExplicitBrollPlan({policy:policy(),duration:71,events:clips});
+ assert.equal(plan.decisions.length,5);
+ assert.ok(plan.coverage<.4);
+ assert.throws(()=>buildExplicitBrollPlan({policy:policy(),duration:71,events:[clips[0],{...clips[1],start:6,end:9}]}));
+});
+
 test('Gemini plan binds a real private video resource and composes video without changing speech/caption timing',()=>{
  const f=fixture();
  try{

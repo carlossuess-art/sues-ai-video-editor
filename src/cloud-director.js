@@ -105,7 +105,7 @@ export class CloudDirector{
    if(fileSha256(sourcePath)!==catalog.sourceSha256)fail('El vídeo original cambió durante el análisis.');
    if(output.text.length>30000)fail('El plan de IA supera el límite ejecutable.');
    let plan;try{plan=JSON.parse(output.text);}catch{fail('La IA no devolvió un plan JSON completo.');}
-   if(plan.schema!=='sues-edit-plan/v1'||plan.sourceSha256!==catalog.sourceSha256||!Array.isArray(plan.operations)||plan.operations.length<1||plan.operations.length>60)fail('La IA devolvió un plan de otro material o formato.');
+   if(plan.schema!=='sues-edit-plan/v1'||plan.sourceSha256!==catalog.sourceSha256||!Array.isArray(plan.operations)||plan.operations.length<1||plan.operations.length>200)fail('La IA devolvió un plan de otro material o formato.');
    const result={provider,model:providers[provider].model,plan,text:JSON.stringify(plan),rawResponse:output.text,inputInstructions:instructions,usage:output.usage,inputMode:output.inputMode,sampledFrames:output.sampledFrames,remoteFileDeleted:provider==='gemini'?this.lastCleanup:null,requiresExecutionReview:true,humanAcceptance:false};
    atomic(file,{state:'COMPLETE',provider,fingerprint,finishedAt:new Date().toISOString(),result});return result;
   }catch(error){

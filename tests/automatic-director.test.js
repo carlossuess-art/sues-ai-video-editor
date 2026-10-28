@@ -48,7 +48,7 @@ test('user-selected quotes use caption evidence and edited text, replacing autom
  assert.equal(quotes.length,1);assert.equal(quotes[0].params.bindings.quote,text);assert.equal(quotes[0].rule,'user-caption-quote-v1');assert.deepEqual(quotes[0].evidence.sourceWordIndexes,c.wordIndexes);assert.equal(quotes[0].evidence.textOrigin,'user-edited-caption');assert.equal(p.director.audit.omittedWords,0);assert.equal(p.plan.captions[0].start,c.start);
 });
 test('manual highlights reject unknown, duplicate, excessive and unsafe choices instead of silently discarding',()=>{
- for(const highlightCaptions of [['seg-001','seg-001'],['seg-001','seg-002','seg-003','seg-004'],['../file']])assert.throws(()=>validateEditorSettings({highlightCaptions}));
+ for(const highlightCaptions of [['seg-001','seg-001'],Array.from({length:51},(_,i)=>`seg-${String(i+1).padStart(3,'0')}`),['../file']])assert.throws(()=>validateEditorSettings({highlightCaptions}));
  const project={inputs:fixture()};assert.throws(()=>prepareProject(project,{highlightCaptions:['seg-999']}),/Unknown highlight/);
  const c=prepareProject(project).plan.captions[0];project.inputs.visionFrames.forEach(f=>{f.faces[0].y=0;f.faces[0].height=1500;});assert.throws(()=>prepareProject(project,{highlightCaptions:[c.id]}),/frase.*segura/);
 });

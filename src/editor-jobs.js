@@ -1,4 +1,5 @@
 import {editorialAcceptance} from './editor-acceptance.js';
+import {dopaminQualityGate} from './dopamin-quality-gate.js';
 import {createProjectBackup,verifyProjectBackup} from './project-backup.js';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
@@ -106,7 +107,10 @@ export class EditorJobs{
   if(job.state==='PUBLISH_FAILED'){this.publish(job);return this.view(job);}
   if(!['PREVIEW_READY','FAILED'].includes(job.state)||!job.bundle)throw new Error('Job is not ready to render');
   if(this.queued().length>=this.maxQueued)throw new Error('Render queue full');
-  this.validatePrepared(job);job.queueOrder=this.nextQueueOrder++;job.enqueuedAt=now();job.cancelRequested=false;delete job.error;
+  this.validatePrepared(job);
+  const quality=dopaminQualityGate(this.plan(id).manifest);
+  if(!quality.pass)throw new Error('Montaje DOPAMIN incompleto: faltan '+quality.issues.join('; ')+'.');
+  job.queueOrder=this.nextQueueOrder++;job.enqueuedAt=now();job.cancelRequested=false;delete job.error;
   this.transition(job,'QUEUED');if(this.autoStart)this.drain();return this.view(job);
  }
  drain(){

@@ -36,9 +36,9 @@ export function validateEditorSettings(settings={}){
  assert([1,2,3].includes(value.captionWords),'captionWords 1, 2 or 3');
  assert(Object.hasOwn(STYLE_VARIANTS,value.styleId),'style id');
  assert(value.musicAssetId===null||typeof value.musicAssetId==='string'&&/^[a-f0-9]{64}$/.test(value.musicAssetId),'music asset id');
- assert(typeof value.profileImages==='boolean'&&Array.isArray(value.imageEvents)&&value.imageEvents.length<=6,'image settings');
+ assert(typeof value.profileImages==='boolean'&&Array.isArray(value.imageEvents)&&value.imageEvents.length<=50,'image settings');
  for(const e of value.imageEvents)assert(e&&Object.keys(e).every(k=>['assetId','start','end'].includes(k))&&typeof e.assetId==='string'&&/^[a-f0-9]{64}$/.test(e.assetId)&&Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.start>=0&&e.end-e.start>=.6&&e.end-e.start<=8,'image event invalid');
- assert(Array.isArray(value.videoEvents)&&value.videoEvents.length<=3,'maximum three B-roll clips');
+ assert(Array.isArray(value.videoEvents)&&value.videoEvents.length<=50,'maximum 50 B-roll clips');
  let lastEnd=-Infinity;const videoIds=new Set();
  for(const e of value.videoEvents){
   assert(e&&Object.keys(e).every(k=>['assetId','start','end','sourceIn','reason'].includes(k))&&
@@ -49,7 +49,7 @@ export function validateEditorSettings(settings={}){
    'B-roll event invalid or overlapping');
   lastEnd=e.end;videoIds.add(e.assetId);
  }
- assert(Array.isArray(value.overlayEvents)&&value.overlayEvents.length<=2,'máximo dos capas ambientales');
+ assert(Array.isArray(value.overlayEvents)&&value.overlayEvents.length<=50,'máximo 50 capas ambientales');
  let previousOverlayEnd=-Infinity;
  for(const e of value.overlayEvents){
   assert(e&&Object.keys(e).every(k=>['assetId','start','end','sourceIn','intensity','reason'].includes(k))&&
@@ -74,7 +74,7 @@ export function validateEditorSettings(settings={}){
   assert(/^seg-\d{3,}$/.test(id),'caption id');
   assert(typeof text==='string'&&text.trim().length>0&&text.length<=52&&!/[\x00-\x1f\x7f]/.test(text),'caption override text');
  }
- assert(Array.isArray(value.highlightCaptions)&&value.highlightCaptions.length<=3&&value.highlightCaptions.every(id=>typeof id==='string'&&/^seg-\d{3,}$/.test(id))&&new Set(value.highlightCaptions).size===value.highlightCaptions.length,'highlightCaptions: up to3 unique caption ids');
+ assert(Array.isArray(value.highlightCaptions)&&value.highlightCaptions.length<=50&&value.highlightCaptions.every(id=>typeof id==='string'&&/^seg-\d{3,}$/.test(id))&&new Set(value.highlightCaptions).size===value.highlightCaptions.length,'highlightCaptions: up to 50 unique caption ids');
  value.highlightCaptions=[...value.highlightCaptions].sort();
  return structuredClone(value);
 }

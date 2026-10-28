@@ -13,7 +13,7 @@ const overlap=(a,b)=>a.start<b.end-1e-6&&a.end>b.start+1e-6;
 export function validateElements(value){
  if(value===undefined||value===null)return true;
  assert(object(value)&&Object.keys(value).every(k=>['format','items'].includes(k))&&ELEMENT_FORMATS.includes(value.format),'formato desconocido');
- assert(Array.isArray(value.items)&&value.items.length>=1&&value.items.length<=10,'elige entre uno y diez elementos');
+ assert(Array.isArray(value.items)&&value.items.length>=1&&value.items.length<=50,'elige entre uno y 50 elementos');
  const ids=new Set(),ranks=new Set();
  for(const item of value.items){
   assert(object(item)&&Object.keys(item).every(k=>['captionId','endCaptionId','label','secondary','number'].includes(k))&&id(item.captionId)&&!ids.has(item.captionId),'ancla duplicada o inválida');ids.add(item.captionId);

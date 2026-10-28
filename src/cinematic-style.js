@@ -23,7 +23,7 @@ export function validateCinematicStyle(style){
  // Manual choices are never labeled semantically inferred or visually approved.
 export function buildExplicitBrollPlan({policy,duration,events=[]}){
   validateCinematicStyle(policy?.visualStyle);
-  assert(Array.isArray(events)&&events.length<=3,'up to three B-roll clips');
+  assert(Array.isArray(events)&&events.length<=50,'up to 50 B-roll clips');
   const rules=policy.visualStyle.broll,closing=Math.max(rules.closingPresenterSeconds,policy.outro?.duration??0);
   let previousEnd=-Infinity,coverage=0;const used=new Set(),decisions=[];
   for(const e of events){

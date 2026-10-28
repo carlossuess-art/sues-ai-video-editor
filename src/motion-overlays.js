@@ -3,7 +3,7 @@ export const EDITOR_MOTIONS=Object.freeze({check:'Marca de verificación',cross:
 export const EDITOR_MOTION_IDS=Object.freeze({check:'CHECK_GREEN_01',cross:'CROSS_RED_01',strike:'STRIKE_TEXT_01',number:'NUMBER_BADGE_GOLD_01',divider:'DIVIDER_LINE_01'});
 export function validateMotionChoices(choices=[]){
  const fail=message=>{throw new Error('Motion choices: '+message);};
- if(!Array.isArray(choices)||choices.length>5)fail('up to five choices');
+ if(!Array.isArray(choices)||choices.length>50)fail('up to 50 choices');
  for(const c of choices){
   if(!c||!Object.keys(c).every(k=>['captionId','type','number'].includes(k))||!/^seg-\d{3,}$/.test(c.captionId)||!Object.hasOwn(EDITOR_MOTIONS,c.type))fail('invalid choice');
   if(c.type==='number'&&(!Number.isInteger(c.number)||c.number<1||c.number>99))fail('number 1..99');

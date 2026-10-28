@@ -37,11 +37,13 @@ test('rejects unknown timing, unreviewed candidate or a malicious source suggest
  assert.throws(()=>make({...cue,decision:'suggestion-only'},candidate,catalog,''),/revisión/);
  assert.throws(()=>make(cue,{...candidate,evidence:{...candidate.evidence,visualContentVerified:true}},catalog,''),/revisión/);
 });
-test('keeps non-overlapping existing JSON operations and refuses more than three reviewed B-rolls',()=>{
+test('keeps existing operations, allows five B-rolls and refuses more than 50',()=>{
  const old={schema:catalog.schema,sourceSha256:sha,operations:[{type:'music',resourceId:'sfx'}]};
  const text=make(cue,candidate,catalog,JSON.stringify(old)),after=parseExternalPlan(text);
  assert.equal(after.operations.length,2);
  assert.equal(old.operations.length,1);
- const three={...old,operations:[{type:'broll',start:14,end:17},{type:'broll',start:18,end:20},{type:'broll',start:21,end:23}]};
- assert.throws(()=>make(cue,candidate,catalog,JSON.stringify(three)),/tres B-rolls/);
+ const four={...old,operations:Array.from({length:4},(_,i)=>({type:'broll',start:14+i*4,end:17+i*4}))};
+ assert.equal(JSON.parse(make(cue,candidate,catalog,JSON.stringify(four))).operations.length,5);
+ const fifty={...old,operations:Array.from({length:50},(_,i)=>({type:'broll',start:14+i*4,end:17+i*4}))};
+ assert.throws(()=>make(cue,candidate,catalog,JSON.stringify(fifty)),/50 B-rolls/);
 });

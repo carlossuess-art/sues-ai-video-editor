@@ -12,7 +12,7 @@ export function prepareSubjectLayers(data,plan){
  assert(['guided-grabcut-v1','manual-rotoscope-raster-v1'].includes(m.method)&&['full-visible-subject','upper-body'].includes(m.scope)&&m.reviewStatus==='reviewed','reviewed contour provenance required');
  assert(m.width===1080&&m.height===1920&&m.fps===30&&finite(m.duration)&&Math.abs(m.duration-plan.duration)<1/30,'matte geometry/timing');
  assert(Array.isArray(m.reviewedRanges)&&m.reviewedRanges.length>=1&&m.reviewedRanges.length<=12&&m.reviewedRanges.every(r=>finite(r.start)&&finite(r.end)&&r.start>=0&&r.end>r.start&&r.end<=plan.duration),'reviewed temporal ranges');
- assert(Array.isArray(data.events)&&data.events.length<=6,'at most six events');
+ assert(Array.isArray(data.events)&&data.events.length<=50,'at most 50 events');
  const region=m.scope==='upper-body'?m.reviewedRegion:{top:0,bottom:1920};
  assert(region&&[region.top,region.bottom].every(finite)&&region.top>=0&&region.bottom<=1920&&region.bottom>region.top,'reviewed region required');
  const ids=new Set(),events=[];

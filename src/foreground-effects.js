@@ -19,19 +19,19 @@ export function prepareForegroundEffects(data,plan,resolveAsset){
   !Number.isFinite(m.duration)||m.frames!==Math.ceil(plan.duration*30-1e-7)||Math.abs(m.duration-plan.duration)>1/30+1e-6)fail('matte geometry/provenance');
  if(lstatSync(m.localFile).isSymbolicLink()||createHash('sha256').update(readFileSync(m.localFile)).digest('hex')!==m.sha256)fail('matte file changed');
  const bounded=e=>e&&Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.start>=0&&e.end>e.start&&e.end<=plan.duration;
- if(!Array.isArray(m.activeRanges)||!m.activeRanges.length||m.activeRanges.length>6||!m.activeRanges.every(bounded))fail('matte coverage');
- if(!Array.isArray(data.events)||!data.events.length||data.events.length>9)fail('events required');
+ if(!Array.isArray(m.activeRanges)||!m.activeRanges.length||m.activeRanges.length>50||!m.activeRanges.every(bounded))fail('matte coverage');
+ if(!Array.isArray(data.events)||!data.events.length||data.events.length>150)fail('events required');
  let blur=0,text=0,video=0;
  for(const e of data.events){
   if(!bounded(e)||!m.activeRanges.some(r=>r.start<=e.start&&r.end>=e.end))fail('event outside matte coverage');
   if(e.type==='background-blur'){
-   if(++blur>3||!exact(e,['type','start','end','sigma'])||!Number.isFinite(e.sigma)||e.sigma<2||e.sigma>20)fail('bounded blur required');
+   if(++blur>50||!exact(e,['type','start','end','sigma'])||!Number.isFinite(e.sigma)||e.sigma<2||e.sigma>20)fail('bounded blur required');
   }else if(e.type==='behind-text'){
-   if(++text>3||!exact(e,['type','start','end','lines'])||!Array.isArray(e.lines)||!e.lines.length||e.lines.length>2||
+   if(++text>50||!exact(e,['type','start','end','lines'])||!Array.isArray(e.lines)||!e.lines.length||e.lines.length>2||
     e.lines.some(s=>typeof s!=='string'||!/^[A-ZÁÉÍÓÚÜÑ0-9 ]{1,12}$/u.test(s)))fail('bounded literal text required');
    if(plan.policy.captions.font!=='Montserrat')fail('real Montserrat required');
   }else if(e.type==='behind-video'){
-   if(++video>3||!exact(e,['type','start','end','assetId','sourceIn','opacity','reason','localFile','sha256','rights','mediaDuration','region'])||!sha(e.assetId)||!Number.isFinite(e.sourceIn)||e.sourceIn<0||!Number.isFinite(e.opacity)||e.opacity<=0||e.opacity>1||typeof e.reason!=='string'||e.reason.length<5||e.reason.length>160)fail('bounded video resource required');
+   if(++video>50||!exact(e,['type','start','end','assetId','sourceIn','opacity','reason','localFile','sha256','rights','mediaDuration','region'])||!sha(e.assetId)||!Number.isFinite(e.sourceIn)||e.sourceIn<0||!Number.isFinite(e.opacity)||e.opacity<=0||e.opacity>1||typeof e.reason!=='string'||e.reason.length<5||e.reason.length>160)fail('bounded video resource required');
    if(e.region!==undefined){
     const r=e.region;if(!exact(r,['x','y','width','height','featherBottom'])||![r.x,r.y,r.width,r.height,r.featherBottom].every(Number.isInteger)||r.x<0||r.y<0||r.width<32||r.height<32||r.x+r.width>1080||r.y+r.height>1920||r.width%2||r.height%2||r.featherBottom<0||r.featherBottom>r.height)fail('invalid local video region');
    }
@@ -58,7 +58,7 @@ export function foregroundEffectFilters(data,base,input){
    filters.push(`[${background}][fg-video${i}]overlay=x=${r.x}:y=${r.y}:eof_action=pass:repeatlast=0:enable='${enabled}'[fg-effect${i}]`);
   }else{
    const fade=`min(clip((t-${e.start})/0.2,0,1),clip((${e.end}-t)/0.2,0,1))`;
-   const draw=e.lines.map((text,n)=>`drawtext=fontfile=fonts/Montserrat-ExtraBold.ttf:text='${text}':fontsize=${fitCaptionSize([text],{font:'Montserrat',fontRole:'keyword',fontSize:140},780)}:fontcolor=0xff7a18:alpha='${fade}':borderw=2:bordercolor=0xffd3a4:shadowcolor=0x331100:shadowx=3:shadowy=5:x=(w-tw)/2:y=${560+n*300}-12*(t-${e.start}):enable='${enabled}'`).join(',');
+   const draw=e.lines.map((text,n)=>`drawtext=fontfile=fonts/Montserrat-ExtraBold.ttf:text='${text}':fontsize=${fitCaptionSize([text],{font:'Montserrat',fontRole:'keyword',fontSize:140},780)}:fontcolor=0xff7a18:alpha='${fade}':borderw=2:bordercolor=0xffd3a4:shadowcolor=0x331100:shadowx=3:shadowy=5:x=(w-tw)/2:y=${120+n*160}-12*(t-${e.start}):enable='${enabled}'`).join(',');
    filters.push(`[${background}]${draw}[fg-effect${i}]`);
   }
   background=`fg-effect${i}`;

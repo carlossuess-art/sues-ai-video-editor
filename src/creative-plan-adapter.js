@@ -63,6 +63,6 @@ export function adaptCreativePlan(text,sourceSha256,{search,resolveId}={}){
   }
   unresolved.push({line:i+1,original:line,status:'unsupported-or-ambiguous',description:'Esta instrucción necesita adaptación o datos precisos; no se ejecutará automáticamente.',candidates});
  }
- if(operations.length>60||unresolved.length>200)throw Error('El plan supera los límites de revisión.');
+ if(operations.length>200||unresolved.length>200)throw Error('El plan supera los límites de revisión.');
  return {id,format:'creative-text',original:text,converted:{schema:'sues-edit-plan/v1',sourceSha256,operations},items,unresolved};
 }
