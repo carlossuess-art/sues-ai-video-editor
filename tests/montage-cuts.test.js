@@ -39,6 +39,7 @@ test('real montage render and output-clock fragment keep voice and captions alig
   const pcm=execFileSync('ffmpeg',['-v','error','-ss','4.2','-i',join(f.dir,'cut.mp4'),'-t','0.5','-map','0:a:0','-ac','1','-ar','48000','-f','f32le','-']);const samples=new Float32Array(pcm.buffer.slice(pcm.byteOffset,pcm.byteOffset+pcm.byteLength));
   const power=f=>{let x=0,y=0;for(let i=0;i<samples.length;i++){x+=samples[i]*Math.cos(2*Math.PI*f*i/48000);y+=samples[i]*Math.sin(2*Math.PI*f*i/48000);}return Math.hypot(x,y);};assert.ok(power(880)>power(440)*10);
   execFileSync('python3',[RENDER_SCRIPT,'--source',source,'--bundle',join(f.dir,'cut'),'--out',join(f.dir,'fragment.mp4'),'--preview-start','3','--preview-duration','3'],{stdio:'pipe',timeout:180000});
+  for(const t of [.2,1.2,2.2]){const x=frame('fragment',t),y=frame('cut',t+3);let e=0;for(let i=0;i<x.length;i++)e+=Math.abs(x[i]-y[i]);assert.ok(e/x.length<3,'Fragment lost composition phase at '+t);}
   const audit=JSON.parse(readFileSync(join(f.dir,'fragment.audit.json')));assert.equal(audit.durationPlanned,3);assert.equal(audit.fullDecode,'pass');assert.equal(fileSha256(source),original);
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });

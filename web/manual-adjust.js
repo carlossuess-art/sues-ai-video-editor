@@ -101,7 +101,7 @@
   }));box.append(group);
  }
  function inspector(items){const box=$('adjust-inspector');box.replaceChildren();addAtPlayhead(box);const item=items.find(e=>e.key===selected);if(!item){box.append(n('p','Selecciona una capa. Arrastra el centro para moverla o sus extremos para cambiar su duración.'));return;}
-  box.append(n('h3',item.title),n('p',time(item.start)+'–'+time(item.end)+' · '+({captions:'Subtítulo',broll:'B-roll',images:'Imagen',masks:'Máscara',sfx:'Sonido',graphics:'Gráfico',motions:'Animación',music:'Música'}[kind]??kind)));
+  box.append(n('h3',item.title),n('p',time(toOutput(item.start))+'–'+time(toOutput(item.end))+' · '+({captions:'Subtítulo',broll:'B-roll',images:'Imagen',masks:'Máscara',sfx:'Sonido',graphics:'Gráfico',motions:'Animación',music:'Música'}[kind]??kind)));
   if(item.automatic){const hidden=draft.hiddenVisualEventIds.includes(item.id);box.append(button(hidden?'Restaurar imagen':'Ocultar imagen',()=>change(()=>{draft.hiddenVisualEventIds=hidden?draft.hiddenVisualEventIds.filter(id=>id!==item.id):[...draft.hiddenVisualEventIds,item.id];},'hiddenVisualEventIds')));return;}
   if(kind==='captions'){
    const old=draft.hiddenCaptionIds.includes(item.id);
@@ -110,8 +110,8 @@
    const move=delta=>change(()=>{const len=item.end-item.start,start=Math.max(0,Math.min(duration()-len,millis(item.start+delta)));draft.captionTimingOverrides[item.id]={start,end:millis(start+len)};},'captionTimingOverrides');
    times.append(button('−0,1 s',()=>move(-.1)),button('+0,1 s',()=>move(.1)));box.append(times);
    const fields=n('div',undefined,'adjust-field-grid'),values=[];
-   for(const [label,value]of [['Inicio',item.start],['Final',item.end]]){const lab=n('label',label),input=n('input');input.type='number';input.step='.1';input.min='0';input.max=String(duration());input.value=String(value);lab.append(input);fields.append(lab);values.push(input);}
-   box.append(fields,button('Aplicar tiempo',()=>change(()=>{const start=Number(values[0].value),end=Number(values[1].value);if(start<0||end>duration()||end-start<1/30)throw Error('Intervalo inválido');draft.captionTimingOverrides[item.id]={start,end};},'captionTimingOverrides')));
+   for(const [label,value]of [['Inicio',item.start],['Final',item.end]]){const lab=n('label',label),input=n('input');input.type='number';input.step='.1';input.min='0';input.max=String(displayDuration());input.value=String(millis(toOutput(value)));lab.append(input);fields.append(lab);values.push(input);}
+   box.append(fields,button('Aplicar tiempo',()=>change(()=>{const start=fromOutput(Number(values[0].value)),end=fromOutput(Number(values[1].value));if(start<0||end>duration()||end-start<1/30)throw Error('Intervalo inválido');draft.captionTimingOverrides[item.id]={start,end};},'captionTimingOverrides')));
    const field=$('captions').querySelector('textarea[data-id="'+item.id+'"]');if(field){const label=n('label','Texto del subtítulo'),input=n('input');input.type='text';input.maxLength=52;input.value=field.value;input.addEventListener('change',()=>{if(input.value.trim()&&input.value!==field.value)change(()=>{field.value=input.value.trim();});});label.append(input);box.append(label);}
    for(const [data,labelText] of [['keyword','Palabra a modificar'],['style','Color y acabado'],['scale','Tamaño de la palabra'],['level','Importancia']]){
     const source=$('captions').querySelector('select[data-'+data+'="'+item.id+'"]');if(!source)continue;
@@ -120,8 +120,8 @@
   }else if(kind==='masks'){
    const e=draft.reviewedForeground.events[item.id];
    const timing=n('div',undefined,'adjust-field-grid'),timingInputs=[];
-   for(const [label,value]of [['Inicio',item.start],['Final',item.end]]){const lab=n('label',label),input=n('input');input.type='number';input.step=String(1/30);input.min='0';input.max=String(duration());input.value=String(value);lab.append(input);timing.append(lab);timingInputs.push(input);}
-   box.append(timing,button('Aplicar tiempo',()=>changeMaskTimes(item.id,Number(timingInputs[0].value),Number(timingInputs[1].value))));
+   for(const [label,value]of [['Inicio',item.start],['Final',item.end]]){const lab=n('label',label),input=n('input');input.type='number';input.step=String(1/30);input.min='0';input.max=String(displayDuration());input.value=String(millis(toOutput(value)));lab.append(input);timing.append(lab);timingInputs.push(input);}
+   box.append(timing,button('Aplicar tiempo',()=>changeMaskTimes(item.id,fromOutput(Number(timingInputs[0].value)),fromOutput(Number(timingInputs[1].value)))));
 
    box.append(n('p','La máscara del sujeto permanece vinculada al vídeo. Estos controles ajustan el recurso y su degradado, no inventan una nueva segmentación.'));
    const numeric=(title,value,min,max,step,apply)=>{const label=n('label',title),field=n('input');field.type='number';field.min=String(min);field.max=String(max);field.step=String(step);field.value=String(value);field.setAttribute('aria-label',title);field.onchange=()=>change(()=>{const v=Number(field.value);if(!Number.isFinite(v)||v<min||v>max)throw Error('Valor fuera de rango');apply(v);},'reviewedForeground');label.append(field);box.append(label);};
@@ -136,8 +136,8 @@
    const controls=n('div',undefined,'adjust-inline');controls.append(button('−0,1 s',()=>changeTimes(item.id,{move:-.1})),button('+0,1 s',()=>changeTimes(item.id,{move:.1})));box.append(controls);
    if(['broll','images','sfx'].includes(kind)){
     const fields=n('div',undefined,'adjust-field-grid'),inputs=[];
-    for(const [name,value] of [['Inicio',item.start],['Final',item.end]]){const lab=n('label',name),field=n('input');field.type='number';field.min='0';field.max=String(duration());field.step='.1';field.value=String(value);lab.append(field);fields.append(lab);inputs.push(field);}
-    box.append(fields,button('Aplicar tiempo',()=>changeTimes(item.id,{start:Number(inputs[0].value),end:Number(inputs[1].value)})));
+    for(const [name,value] of [['Inicio',item.start],['Final',item.end]]){const lab=n('label',name),field=n('input');field.type='number';field.min='0';field.max=String(displayDuration());field.step='.1';field.value=String(millis(toOutput(value)));lab.append(field);fields.append(lab);inputs.push(field);}
+    box.append(fields,button('Aplicar tiempo',()=>changeTimes(item.id,{start:fromOutput(Number(inputs[0].value)),end:fromOutput(Number(inputs[1].value))})));
    }
    const prop={broll:'videoEvents',images:'imageEvents',sfx:'sfxEvents'}[kind],assetKind={broll:'video',images:'image',sfx:'sfx'}[kind],event=draft[prop][item.id];
    const candidates=assetLibrary.filter(a=>a.kind===assetKind&&a.id!==event.assetId&&a.rights&& (kind==='images'||!Number.isFinite(a.duration)||a.duration>=item.end-item.start));

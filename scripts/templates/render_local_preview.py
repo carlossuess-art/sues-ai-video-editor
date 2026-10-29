@@ -168,9 +168,23 @@ def render(source, bundle, output, preview_start=None, preview_duration=None):
             # Keep original edit timestamps, but do not run composition/mattes for
             # the preceding minutes when only a short adjustment is requested.
             anchor = re.search(r'concat=n=\d+:v=1:a=0\[base\]', content)
-            if anchor and not manifest.get('postEdit', {}).get('cuts'):
+            if anchor:
                 position = anchor.end()
-                window = ";\n[base]select='gte(t,%s)*lt(t,%s)'[fragment-window-base]" % (preview_start, preview_start + preview_duration)
+                window_start, window_end = preview_start, preview_start + preview_duration
+                post_edit = manifest.get('postEdit', {})
+                if post_edit.get('cuts'):
+                    spans = post_edit['spans']
+                    def original_time(at, end=False):
+                        span = next((s for s in spans if at < s['outputEnd'] - 1e-7 or end and at <= s['outputEnd'] + 1e-7), spans[-1])
+                        return span['start'] + max(0, min(span['end'] - span['start'], at - span['outputStart']))
+                    window_start = original_time(preview_start)
+                    window_end = original_time(preview_start + preview_duration, end=True)
+                    # The selected fragment still has global output timestamps;
+                    # the final window trim below resets them exactly once.
+                    if 'setpts=N/(30*TB)' not in content:
+                        raise ValueError('Post-edit fragment time projection missing')
+                    content = content.replace('setpts=N/(30*TB)', 'setpts=(N/30+%s)/TB' % preview_start)
+                window = ";\n[base]select='gte(t,%s)*lt(t,%s)'[fragment-window-base]" % (window_start - 1e-7, window_end - 1e-7)
                 content = content[:position] + window + content[position:].replace('[base]', '[fragment-window-base]')
         filters = ('atrim' if audio else 'trim') + '=start=%s:end=%s,' % (preview_start, preview_start + preview_duration)
         filters += 'asetpts=PTS-STARTPTS' if audio else 'setpts=PTS-STARTPTS,scale=540:960:flags=lanczos'
