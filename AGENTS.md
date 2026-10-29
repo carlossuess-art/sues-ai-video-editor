@@ -1,3 +1,7 @@
+## Continuidad vigente · 29/10/2026 · dividir/borrar publicado
+
+Leer primero la entrada superior de PROJECT_STATUS.md y docs/SUES_MONTAGE_SPLIT_DELETE_20261029.md. Rama activa feat/montage-split-delete-20261029; worktree /opt/sues-video-setup/touch-editor-work-20261028; despliegue /opt/sues-video-setup/release-update.78zyka2k. Código41479cd integra móvil en vivo/PWA y dividir/borrar conservando capas; main y las ramas oficiales citadas en entradas antiguas no representan producción. Verificar hashes/servicio antes de programar. QA aislada en /opt/sues-video-setup/montage-qa-20261029; no copiar sus medios ni tokens a Git. Los cortes8–9s de prueba no se aplicaron al proyecto productivo. No rehacer estas funciones ni pedir resubida del original. Sin Gemini ni proveedores nuevos; V1 asistida y valoración creativa del propietario. Mantener IDs/enlaces del repositorio y Roadmap en las instrucciones del proyecto.
+
 ## Decisión de Carlos · V1 asistida / V1.1 API · 28/10/2026
 
 V1: subir el vídeo al editor o compartirlo con ChatGPT y obtener la edición final deseada con asistencia humana/ChatGPT, revisión, ajustes y exportación. La API de Gemini NO es requisito de aceptación ni bloqueo de V1. V1.1: automatizar el mismo resultado mediante Gemini solo cuando aporte valor; evitar llamadas y costes siempre que sea posible. No invocar Gemini ni otros servicios de pago por esta continuación. Carlos conserva la aceptación creativa del resultado; no inferirla de tests.

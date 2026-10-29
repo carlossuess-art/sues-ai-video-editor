@@ -1,10 +1,10 @@
-# Estado vigente · 28/10/2026 · V1 asistida
+# Estado vigente · 29/10/2026 · V1 asistida · publicado
 
-La V1 permite subir vídeo al editor o trabajar con ChatGPT para lograr la edición final, revisar, ajustar y exportar. La automatización por API de Gemini pertenece a V1.1 y no es necesaria para cerrar V1. La valoración creativa corresponde a Carlos.
+Editor: https://editor.suesholistics.com. Código productivo41479cd, rama `feat/montage-split-delete-20261029`; `main` no representa producción. **Dividir aquí → seleccionar tramo → Borrar tramo → Aplicar cambios**. Deshacer y recuperar borrador; el borrado cierra huecos con todas las capas y conserva original/versiones anteriores.
 
-Producción: https://editor.suesholistics.com. Continuación `feat/v1-assisted-preview-20261028`, sobre el cierre `feat/v1-closure-20261028`; `main` no representa el código activo. Recortes reversibles, eliminación de silencios, importación del plan, ajustes manuales, validación por versión, proxy y exportaciones 720p/1080p verificados en la base. Nuevo botón **Ver fragmento de ajuste**: borrador exacto de 4 s, sin generar toda la exportación; puede tardar al procesar el prefijo. Originales y 38 versiones conservados. No se ha consumido API de pago.
+Edición móvil con texto visible al ampliar/mover, inspector legible y PWA instalable. Vista interactiva para ajustes y fragmento del motor final para comprobar efectos; la exportación completa crea una versión nueva. Sin API Gemini: automatización V1.1. No se infiere aprobación creativa por superar pruebas.
 
-Leer [estado actual](PROJECT_STATUS.md), [evidencias y recuperación](docs/SUES_V1_CLOSURE_20261028.md) y [contrato de fragmentos](docs/SUES_ADJUSTMENT_FRAGMENTS.md). Las entradas siguientes son históricas y no sustituyen el estado vigente.
+417/417 pruebas de motor+2/2 Git y regresiones dirigidas pasan. Exportación real de69,9s y comparación de imagen/mezcla verificadas; QA HTTPS móvil/escritorio, sesión,Range y PWA pasan.39proyectos productivos previos intactos. Leer [estado actual](PROJECT_STATUS.md) y [guía de cortes del montaje](docs/SUES_MONTAGE_SPLIT_DELETE_20261029.md) para pruebas, versión y límites. Los bloques siguientes son históricos.
 
 ---
 
