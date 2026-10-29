@@ -72,11 +72,14 @@ def editor_args(old):
     if {m['Destination'] for m in mounts} != {'/app', '/app/node_modules', '/state'}:
         raise RuntimeError('Montajes inesperados; no se modifica editor')
     memory = h.get('Memory') or 1024**3
-    if memory not in (1024**3, 1280 * 1024**2):
+    if memory not in (1024**3, 1280 * 1024**2, 1900 * 1024**2):
         raise RuntimeError('Límite de memoria del editor no revisado')
+    nano_cpus = h.get('NanoCpus') or 500000000
+    if nano_cpus not in (500000000, 800000000):
+        raise RuntimeError('Límite de CPU del editor no revisado')
     args = ['docker', 'create', '--name', EDITOR, '--restart', 'unless-stopped',
             '--network', 'host', '--read-only', '--cap-drop', 'ALL',
-            '--security-opt', 'no-new-privileges', '--cpus', '0.5', '--memory', str(memory),
+            '--security-opt', 'no-new-privileges', '--cpus', str(nano_cpus / 1000000000), '--memory', str(memory),
             '--pids-limit', '256', '--user', '1000:1000', '--workdir', '/app',
             '--tmpfs', '/tmp:rw,nosuid,size=256m', '--log-opt', 'max-size=5m',
             '--log-opt', 'max-file=2', '--stop-timeout', '45']

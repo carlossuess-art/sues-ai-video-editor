@@ -87,12 +87,20 @@ class MigrationTests(unittest.TestCase):
                'Config': {'Cmd': ['node', 'scripts/app/start.mjs', '/state/project.json', '/state/jobs', '3010'], 'User': '1000:1000', 'Env': []},
                'HostConfig': {'NetworkMode': 'host', 'ReadonlyRootfs': True},
                'Mounts': [{'Destination': d, 'Type': 'bind', 'Source': str(deploy.ROOT / str(i)), 'RW': d == '/state'} for i, d in enumerate(['/app', '/app/node_modules', '/state'])]}
-        for budget in (1024**3, 1280 * 1024**2):
+        for budget in (1024**3, 1280 * 1024**2, 1900 * 1024**2):
             old['HostConfig']['Memory'] = budget
             args = deploy.editor_args(old)
             self.assertEqual(args[args.index('--memory') + 1], str(budget))
             self.assertIn('--read-only', args)
             self.assertIn('no-new-privileges', args)
+        for cpu in (500000000, 800000000):
+            old['HostConfig']['NanoCpus'] = cpu
+            args = deploy.editor_args(old)
+            self.assertEqual(args[args.index('--cpus') + 1], str(cpu / 1000000000))
+        old['HostConfig']['NanoCpus'] = 1000000000
+        with self.assertRaises(RuntimeError):
+            deploy.editor_args(old)
+        old['HostConfig']['NanoCpus'] = 800000000
         old['HostConfig']['Memory'] = 4 * 1024**3
         with self.assertRaises(RuntimeError):
             deploy.editor_args(old)
