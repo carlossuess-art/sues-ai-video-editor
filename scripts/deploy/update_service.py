@@ -134,6 +134,13 @@ def install_credential(value, name):
     temporary.replace(target)
 
 
+def assert_analysis_idle():
+    mailbox = ROOT / 'editor/jobs/uploads/asr'
+    for path in mailbox.glob('*.status.json'):
+        if json.loads(path.read_text()).get('state') in ('QUEUED', 'RUNNING'):
+            raise RuntimeError('Hay análisis de voz activos; esperar antes de actualizar')
+
+
 def helper(release):
     path = release / 'scripts/deploy/activate_https.py'
     spec = importlib.util.spec_from_file_location('sues_verified_deploy', path)
@@ -245,11 +252,20 @@ def main(sha, diagnostic=False, setup_record=None):
         previous = EDITOR + '-before-update-' + stamp
         renamed = False
         setup_changed = False
+        worker_paused = False
+        assert_analysis_idle()
         try:
             print('Preparación verificada. Actualizando editor...', flush=True)
+            if run('systemctl', 'is-active', '--quiet', 'sues-editor-whisper.service', check=False).returncode == 0:
+                run('systemctl', 'stop', 'sues-editor-whisper.service')
+                worker_paused = True
+            assert_analysis_idle()
             run('docker', 'stop', '--time', '45', EDITOR)
             state_sha = backup_state(backup)
             print('Copia privada verificada SHA256: ' + state_sha, flush=True)
+            if worker_paused:
+                run('systemctl', 'start', 'sues-editor-whisper.service')
+                worker_paused = False
             if prepared_setup is not None:
                 install_credential(prepared_setup, 'admin-setup.json')
                 setup_changed = True
@@ -310,6 +326,9 @@ def main(sha, diagnostic=False, setup_record=None):
             else:
                 raise RuntimeError('ERROR DE RECUPERACIÓN: revisar contenedor anterior y backup privado')
             raise
+        finally:
+            if worker_paused:
+                run('systemctl', 'start', 'sues-editor-whisper.service')
 
 
 if __name__ == '__main__':

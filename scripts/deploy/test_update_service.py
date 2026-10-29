@@ -97,6 +97,9 @@ class UpdateTests(unittest.TestCase):
                         self.assertEqual((root/'editor/access/admin-setup.json').stat().st_mode & 0o777,0o600)
                         ownership.assert_called()
                         self.assertEqual(ownership.call_args.args[1:],(1000,1000))
+                if not (already or diagnostic or busy or dependencies_changed):
+                    self.assertIn(('systemctl', 'stop', 'sues-editor-whisper.service'), calls)
+                    self.assertIn(('systemctl', 'start', 'sues-editor-whisper.service'), calls)
                 self.assertFalse(any('caddy' in ' '.join(c).lower() for c in calls))
                 self.assertFalse(any(c[:2] == ('docker', 'rm') for c in calls))
 
@@ -166,3 +169,15 @@ class ReleaseIdentityTests(unittest.TestCase):
         with patch.object(updater,'run',return_value=SimpleNamespace(stdout='b'*40)) as run:
             self.assertFalse(updater.release_matches(release,sha))
             self.assertEqual(run.call_count,1)
+
+class AnalysisIdleTests(unittest.TestCase):
+    def test_queued_or_running_asr_blocks_update(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);mailbox=root/'editor/jobs/uploads/asr';mailbox.mkdir(parents=True)
+            with patch.object(updater,'ROOT',root):
+                for state in ('QUEUED','RUNNING'):
+                    (mailbox/'source.status.json').write_text(json.dumps({'state':state}))
+                    with self.assertRaisesRegex(RuntimeError,'análisis'):
+                        updater.assert_analysis_idle()
+                (mailbox/'source.status.json').write_text(json.dumps({'state':'COMPLETE'}))
+                updater.assert_analysis_idle()
