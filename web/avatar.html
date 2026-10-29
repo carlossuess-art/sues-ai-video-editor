@@ -1,0 +1,10 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SUES · Prueba de avatar</title><link rel="stylesheet" href="/avatar.css"></head><body><h1>Avatar · HeyGen</h1><p>Prueba independiente. No afecta a los vídeos del editor.</p><p id="health">Comprobando configuración…</p>
+<label>Avatar ID <input id="avatar" autocomplete="off" placeholder="ID del Digital Twin"></label>
+<label>Guion (usa voz del avatar o el ID elegido) <textarea id="script" rows="5"></textarea></label>
+<label>ID de voz opcional <input id="voice" autocomplete="off"></label>
+<label>O URL pública HTTPS de audio propio <input id="audio" type="url" placeholder="https://.../voz.mp3"></label>
+<fieldset><legend>Control de gasto</legend><label><input type="checkbox" id="approve" style="width:auto"> Autorizo esta generación de pago con mi avatar</label><small>Sin consentimiento, no se enviará ninguna generación.</small></fieldset>
+<button id="generate" disabled>Generar vídeo</button>
+<label>Consultar vídeo por ID <input id="videoId" autocomplete="off"></label><button id="check">Consultar estado</button>
+<p id="status" role="status"></p><p id="result"></p>
+<script src="/avatar.js" defer></script></body></html>
