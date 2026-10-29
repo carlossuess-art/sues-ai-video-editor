@@ -1,3 +1,7 @@
+## Edición móvil en vivo y PWA · 29/10/2026 · validación aislada PASS, pendiente despliegue
+
+Ver docs/SUES_LIVE_MOBILE_PWA_20261029.md. Nueva rama feat/live-mobile-preview-20261029. El marco mueve/escala ahora el texto libass real, con controles principales legibles y capas solapadas separadas. Color/tamaño/máscara comprobados en píxeles y fragmento FFmpeg real. PWA: manifiesto/iconos/CSP/instalación y shell offline verificados en Chromium persistente. No caché de medios privados; conexión requerida. 414/414 runtime +2/2 host iniciales,11/11 pruebas afectadas finales. Producción aún conserva697837b hasta despliegue verificado. No cierre CapCut/V1; dividir/borrar pista principal y gestos universales siguen pendientes. Sin Gemini ni costes externos.
+
 ## Continuación asistida · 28/10/2026
 
 Vista previa exacta del borrador desde Ajustar: fragmento de 4 s (API 0,5–8 s), 540×960, motor audiovisual existente, caché de 4 fragmentos, cancelación y exclusión de render concurrente. No crea ni valida una versión final. El botón Guardar y generar mantiene la exportación completa y las versiones anteriores. No hay llamadas nuevas a Gemini ni servicios de pago.

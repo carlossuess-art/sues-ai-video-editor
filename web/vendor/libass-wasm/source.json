@@ -1,0 +1,14 @@
+{
+  "package": "libass-wasm",
+  "version": "4.1.0",
+  "source": "https://github.com/libass/JavascriptSubtitlesOctopus",
+  "tarball": "https://registry.npmjs.org/libass-wasm/-/libass-wasm-4.1.0.tgz",
+  "integrity": "sha512-+RbYT/uuI6VHExCmGyUuMg3A2gQOaCRTzSn8GGDSf3q4cEoUNiINd9u4RGfZXA1UKafW+Hv8bmcKIX4FKbSh0Q==",
+  "files": {
+    "COPYRIGHT": "1272d301a909929c5ba3e64f54f208f07f93b1764dbee783e180a8d296923e79",
+    "subtitles-octopus.js": "34529687bafd19622763e0cc57749c51d64d47dd898ad898f48ce502cb89f25b",
+    "subtitles-octopus-worker.js": "f95f2186c6ea37701cd2badb65568d3e501404deaab7e8460722435cd37f8d56",
+    "LICENSE": "352fbab9abdf49eff4cb1bb010fe307022dc3f05a4d821afe1d2ebdc0e3db10e",
+    "subtitles-octopus-worker.wasm": "62892886b4a75dbc6a92e12fcd794c7ddaf95f395e09d4a75612c572612f42a9"
+  }
+}

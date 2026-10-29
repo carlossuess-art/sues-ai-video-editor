@@ -28,6 +28,9 @@ test('HTTP app protects sessions, origins and paths; persists edits and forbids 
   const create=await fetch(url+'/api/jobs',{method:'POST',headers,body:JSON.stringify({profileId:'test'})});assert.equal(create.status,201);
   const design=await (await fetch(url+'/api/design?profileId=test',{headers})).json();assert.equal(design.styles.filter(s=>s.available).length,5);assert.equal(design.motions.filter(m=>m.rendered).length,6);assert.equal(design.brand.fonts.primary,'Montserrat');
   const manifest=await (await fetch(url+'/manifest.webmanifest')).json();assert.equal(manifest.display,'standalone');
+  assert.ok(manifest.icons.some(i=>i.sizes==='192x192'));assert.ok(manifest.icons.some(i=>i.sizes==='512x512'));
+  const shell=await fetch(url+'/');assert.match(shell.headers.get('content-security-policy'),/manifest-src 'self'/);
+  for(const icon of manifest.icons){const response=await fetch(url+icon.src);assert.equal(response.status,200);assert.equal(response.headers.get('content-type'),'image/png');const bytes=Buffer.from(await response.arrayBuffer());assert.equal(bytes.readUInt32BE(16),Number(icon.sizes.split('x')[0]));}
   const worker=await (await fetch(url+'/sw.js')).text();assert.ok(!worker.includes("cache.add('/api/"));
   const job=await create.json();assert.equal(job.state,'PREVIEW_READY');
   assert.throws(()=>new EditorJobs({directory,profiles:f.profiles}),/busy/);

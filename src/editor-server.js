@@ -1,3 +1,4 @@
+import {LivePreviews} from './live-preview.js';
 import {timelineFrames} from './timeline-frames.js';
 import {AdjustmentPreviews} from './adjustment-previews.js';
 import {DriveResourceCache,loadAuditedDrive,auditedCandidates} from './drive-resource-library.js';
@@ -63,18 +64,19 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const cookie=value=>`sues_session=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_SECONDS}; Expires=${new Date(Date.now()+SESSION_SECONDS*1000).toUTCString()}${publicOrigin?'; Secure':''}`;
  const previews=new PlaybackPreviews(join(directory,'playback-previews'),{canBuild:()=>!jobs.children.size&&!jobs.previewBusy});const jobs=new EditorJobs({directory,profiles,renderer,storage});jobs.preparePlayback=(job,source)=>previews.ensure(job.id,source);let intake,assets,recoveries;try{assets=new MediaLibrary(join(directory,'assets'),{probe:assetProbe});jobs.assetResolver=(id,kind)=>assets.resolve(id,kind);jobs.narrativeResolver=transcript=>proposeLibraryCues(directory,transcript);jobs.defaultMusicResolver=duration=>{const rows=assets.list().filter(a=>a.kind==='audio'&&a.duration>=duration&&(()=>{const m=assets.metadata(a.id);return m?.license.rightsStatus==='verified'&&m.license.commercialUseAllowed;})()).sort((a,b)=>(b.id==='55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6')-(a.id==='55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6')||a.duration-b.duration);return rows[0]??null;};recoveries=new ProjectRecovery(join(directory,'recoveries'),profiles);intake=new VideoIntake(join(directory,'uploads'),profiles,{probe:intakeProbe});}catch(error){void jobs.close();throw error;}let expectedHost;
  const adjustmentPreviews=new AdjustmentPreviews(join(directory,'adjustment-previews'),jobs,{playbackBusy:()=>previews.pending.size>0});
+ const livePreviews=new LivePreviews(join(directory,'live-previews'),jobs,{busy:()=>previews.pending.size>0||!!adjustmentPreviews.running});
  const analysis=new LocalAnalysis(intake);
  const cloudRuns=new Set();
  const cloud=cloudDirector??new CloudDirector({credentialsFile:join(dirname(passwordFile),'cloud-director-keys.json')});
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
- const sourceStream=(req,res,file)=>{
+ const sourceStream=(req,res,file,contentType)=>{
   const size=statSync(file).size;let range;try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
   const fd=openSync(file,'r'),head=Buffer.alloc(12);try{readSync(fd,head,0,12,0);}finally{closeSync(fd);}
-  res.setHeader('Content-Type',head.subarray(0,4).equals(Buffer.from([0x1a,0x45,0xdf,0xa3]))?'video/webm':'video/mp4');res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();const stream=createReadStream(file,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
+  res.setHeader('Content-Type',contentType??(head.subarray(0,4).equals(Buffer.from([0x1a,0x45,0xdf,0xa3]))?'video/webm':'video/mp4'));res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();const stream=createReadStream(file,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
  };
  const server=http.createServer(async(req,res)=>{
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Cross-Origin-Resource-Policy','same-origin');
-  res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
+  res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; manifest-src 'self'; font-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
   try{
    if(req.headers.host!==expectedHost)return json(res,403,{error:'Host rejected'});
    if(req.headers.origin&&req.headers.origin!==origin)return json(res,403,{error:'Origin rejected'});
@@ -194,7 +196,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|adjust-preview))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
@@ -310,6 +312,10 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      const next=jobs.create(source.profileId,{...base,...proposal.changes},{parentId:id,requestId:b.requestId,instruction:{text:(b.prompt??'').trim(),actions:proposal.actions,at:new Date().toISOString()}});
      return json(res,202,jobs.render(next.id));
     }
+    if(action==='live-preview'){
+     if(req.method==='POST')return json(res,202,livePreviews.scene(id,await body(req,131072)));
+     if(['GET','HEAD'].includes(req.method)){const key=url.searchParams.get('key'),part=url.searchParams.get('part');if(part){const f=livePreviews.media(id,key,part);return sourceStream(req,res,f.file,f.mime);}return json(res,200,livePreviews.get(id,key));}
+    }
     if(action==='adjust-preview'){
      if(req.method==='DELETE')return json(res,202,adjustmentPreviews.cancel(id,url.searchParams.get('key')));
      if(req.method==='POST')return json(res,202,adjustmentPreviews.start(id,await body(req,131072)));
@@ -343,11 +349,13 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     }
     return json(res,405,{error:'Method not allowed'});
    }
-   const files={'/':['index.html','text/html; charset=utf-8'],'/playback-buffer.js':['playback-buffer.js','text/javascript; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8'],'/studio.css':['studio.css','text/css; charset=utf-8'],'/manual-adjust.css':['manual-adjust.css','text/css; charset=utf-8'],'/source-cuts.css':['source-cuts.css','text/css; charset=utf-8'],'/manual-adjust.js':['manual-adjust.js','text/javascript; charset=utf-8'],'/source-cuts-ui.js':['source-cuts-ui.js','text/javascript; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon.svg':['icon.svg','image/svg+xml']};
+   const liveVendors=['subtitles-octopus.js','subtitles-octopus-worker.js','subtitles-octopus-worker.wasm','LICENSE','COPYRIGHT','source.json'];
+   if(req.method==='GET'&&liveVendors.some(f=>path==='/vendor/libass-wasm/'+f)){const f=path.split('/').at(-1);res.setHeader('Content-Type',f.endsWith('.wasm')?'application/wasm':f.endsWith('.js')?'text/javascript; charset=utf-8':'text/plain; charset=utf-8');return res.end(readFileSync(join(WEB,'vendor/libass-wasm',f)));}
+   const files={'/pwa.js':['pwa.js','text/javascript; charset=utf-8'],'/pwa.css':['pwa.css','text/css; charset=utf-8'],'/icon-192.png':['icon-192.png','image/png'],'/icon-512.png':['icon-512.png','image/png'],'/icon-maskable.png':['icon-maskable.png','image/png'],'/apple-touch-icon.png':['apple-touch-icon.png','image/png'],'/live-preview.js':['live-preview.js','text/javascript; charset=utf-8'],'/live-preview.css':['live-preview.css','text/css; charset=utf-8'],'/':['index.html','text/html; charset=utf-8'],'/playback-buffer.js':['playback-buffer.js','text/javascript; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8'],'/studio.css':['studio.css','text/css; charset=utf-8'],'/manual-adjust.css':['manual-adjust.css','text/css; charset=utf-8'],'/source-cuts.css':['source-cuts.css','text/css; charset=utf-8'],'/manual-adjust.js':['manual-adjust.js','text/javascript; charset=utf-8'],'/source-cuts-ui.js':['source-cuts-ui.js','text/javascript; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon.svg':['icon.svg','image/svg+xml']};
    if(req.method!=='GET'||!Object.hasOwn(files,path))return json(res,404,{error:'Not found'});
    const [file,type]=files[path];res.setHeader('Content-Type',type);res.end(readFileSync(join(WEB,file)));
   }catch(error){if(res.headersSent)return res.destroy();const safe=/not found|Unknown profile/i.test(error.message)?404:/busy|ready|changed|ha cambiado|render activo|Espera a que termine|transition|owned|Adjustments|queue full|closing/.test(error.message)?409:400;json(res,safe,{error:error.code?'No se pudo acceder al recurso local configurado':error.message.replaceAll(directory,'[local]')});}
  });
  server.requestTimeout=900000;server.headersTimeout=10000;
- return {jobs,server,token,async listen(){await new Promise((r,j)=>{server.once('error',j);server.listen(port,'127.0.0.1',r);});origin??=`http://127.0.0.1:${server.address().port}`;expectedHost=new URL(origin).host;return `${origin}/#${token}`;},async close(){jobs.closing=true;await adjustmentPreviews.close();await previews.close();server.closeIdleConnections();await new Promise(r=>server.close(r));await jobs.close();}};
+ return {jobs,server,token,async listen(){await new Promise((r,j)=>{server.once('error',j);server.listen(port,'127.0.0.1',r);});origin??=`http://127.0.0.1:${server.address().port}`;expectedHost=new URL(origin).host;return `${origin}/#${token}`;},async close(){jobs.closing=true;await livePreviews.close();await adjustmentPreviews.close();await previews.close();server.closeIdleConnections();await new Promise(r=>server.close(r));await jobs.close();}};
 }

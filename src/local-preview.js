@@ -109,11 +109,13 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
   const white=assColor(plan.policy.captions.color),gold=assColor(plan.policy.captions.accent),dark=assColor(plan.renderColors.dark);
   let out=`[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 2\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Caption,${fontFamily},${plan.policy.captions.fontSize??56},${white},${gold},&H70000000,&H90000000,-1,0,0,0,100,100,0,0,1,2,1,5,120,180,0,1\nStyle: Outro,${fontFamily},44,${gold},${gold},${dark},${dark},0,0,0,0,100,100,0,0,1,0,0,5,120,180,0,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
   if(plan.policy.captions.font==='Montserrat')out=out.replace(',-1,0,0,0,100,100,0,0,1,2,1,5,120,180,0,1',',700,0,0,0,100,100,0,0,1,0,0,5,120,180,0,1');
-  const event=(layer,start,end,style,text)=>{out+=`Dialogue: ${layer},${timestamp(start)},${timestamp(end)},${style},,0,0,0,,${text}\n`;};
+  let eventCaptionId="";
+  const event=(layer,start,end,style,text)=>{out+=`Dialogue: ${layer},${timestamp(start)},${timestamp(end)},${style},${eventCaptionId},0,0,0,,${text}\n`;};
   drawDepthText(plan,event,safeText,assColor);
   drawMasterGraphics(plan,event,safeText,assColor);
   drawElements(plan,event,safeText,assColor);
   for(const c of plan.captions){
+    eventCaptionId=c.id;
     const presentation=captionPresentation(plan,c),captionBox=presentation.box??plan.layout.caption;
     if(presentation.action==='replace')continue;
     if((plan.hiddenCaptionIds??[]).includes(c.id)||masterGraphicCoversCaption(plan,c))continue;
@@ -136,7 +138,7 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
       for(const originalRow of progressive??hierarchy){
         const transform=plan.captionTransforms?.[c.id];
         const row=transform?{...originalRow,x:540+(originalRow.x-540)*transform.scale+transform.dx,y:(captionBox.top+captionBox.bottom)/2+(originalRow.y-(captionBox.top+captionBox.bottom)/2)*transform.scale+transform.dy,size:originalRow.size*transform.scale}:originalRow;
-        if(transform&&(row.x<40||row.x>1040||row.y-row.size<40||row.y+row.size>1800))throw Error('El subtítulo queda fuera de la zona visible. Reduce el tamaño o muévelo hacia el centro: '+c.id);
+        if(transform&&(row.x<40||row.x>1040||row.y-row.size*.65<40||row.y+row.size*.65>1880))throw Error('El subtítulo queda fuera de la zona visible. Reduce el tamaño o muévelo hacia el centro: '+c.id);
         const start=row.start??c.start,end=row.end??c.end,settle=Math.round((row.settle??0)*1000);
         const entrance=row.character?`\\move(${row.x},${row.y+8},${row.x},${row.y},0,${settle})\\frz-3\\t(0,${settle},\\frz0)`:`\\pos(${row.x},${row.y})`;
         const kinetic=plan.dopaminMaster&&!row.character?`\\fscy${row.role==='keyword'?125:88}\\t(0,130,\\fscy100)`:'';
@@ -169,6 +171,7 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
     if(p.shadow){const s=p.shadow,dx=s.distancePx*Math.cos(s.angleDeg*Math.PI/180),dy=s.distancePx*Math.sin(s.angleDeg*Math.PI/180),alpha=Math.round((1-s.opacity)*255).toString(16).padStart(2,'0').toUpperCase();event(0,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2+dx},${(b.top+b.bottom)/2+dy})${motion}\\1c&H000000&\\1a&H${alpha}&\\blur${s.blurPx}\\bord0\\shad0}${c.lines.map(safeText).join('\\N')}`);}
     event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})${motion}}${content}`);
   }
+  eventCaptionId="";
   drawGraphicBlocks(plan,event,safeText,assColor);
   for(const m of plan.semantic?.motions??[]){
     drawSymbolMotion(m,plan,event,safeText,assColor);
