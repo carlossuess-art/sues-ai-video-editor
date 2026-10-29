@@ -121,6 +121,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/logout'&&req.method==='POST'){res.setHeader('Set-Cookie',`sues_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${publicOrigin?'; Secure':''}`);return json(res,200,{ok:true});}
     if(path==='/api/avatar/heygen/capabilities'&&req.method==='GET')return json(res,200,{configured:heygen.configured(),generationEnabled:heygen.canGenerate(),provider:'heygen',realVideoVerified:false});
     if(path==='/api/avatar/heygen/avatars'&&req.method==='GET')return json(res,200,await heygen.listAvatars());
+    if(path==='/api/avatar/heygen/looks'&&req.method==='GET')return json(res,200,await heygen.listLooks());
     if(path==='/api/avatar/heygen/generate'&&req.method==='POST'){
      const b=await body(req,8192);return json(res,202,await heygen.createVideo({...b,approved:b.approved===true}));
     }
