@@ -27,3 +27,9 @@ test('sanitizes upstream failure, verifies video ID and permits safe polling',as
  const ok=createHeyGen({apiKey:'x',fetcher:async(url)=>({ok:true,json:async()=>({data:{status:'completed',video_url:'https://cdn.test/v.mp4',requested:url}})})});
  assert.equal((await ok.getVideo('v1')).data.status,'completed');
 });
+test('Digital Twin looks list uses documented endpoint and optional avatar default voice',async()=>{
+ const calls=[];const client=createHeyGen({apiKey:'fake',allowCharge:true,fetcher:async(url,opts)=>{calls.push({url,opts});return {ok:true,json:async()=>({data:[]})}}});
+ await client.listLooks();assert.equal(calls[0].url,'https://api.heygen.com/v3/avatars/looks?avatar_type=digital_twin&ownership=private');
+ await client.createVideo({avatarId:'lk_123',script:'Texto breve',approved:true});
+ assert.equal(JSON.parse(calls[1].opts.body).voice_id,undefined);
+});
