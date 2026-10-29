@@ -41,3 +41,13 @@ test('live cache media cannot be addressed with a foreign job or arbitrary files
   await cache.close();
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
+test('MPEG4 browser derivative retains the source and lives only in the private bounded preview cache',async()=>{
+ const {execFileSync}=await import('node:child_process');const {mkdirSync,readFileSync}=await import('node:fs');
+ const dir=mkdtempSync(join(tmpdir(),'sues-browser-codec-')),key='b'.repeat(64);try{
+  const source=join(dir,'original.mp4');execFileSync('ffmpeg',['-v','error','-f','lavfi','-i','testsrc2=size=108x192:rate=30:duration=2','-c:v','mpeg4','-q:v','3',source]);
+  const sha=fileSha256(source),cache=new LivePreviews(dir,{}),task={key,jobId:'owner',state:'PREPARING',files:{}};mkdirSync(join(dir,key));
+  await cache.browserVideos(task,{selectedMedia:[{localFile:source,sha256:sha}]});const proxy=task.browserVideoProxies[sha];assert.ok(proxy);assert.equal(fileSha256(source),sha);assert.equal(proxy.mime,'video/mp4');assert.notEqual(proxy.sha256,sha);
+  const probe=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-of','json',proxy.file],{encoding:'utf8'}));assert.equal(probe.streams[0].codec_name,'h264');assert.equal(probe.streams[0].pix_fmt,'yuv420p');assert.ok(proxy.file.startsWith(join(dir,key)));
+  const again={key,jobId:'owner',state:'PREPARING',files:{}};await cache.browserVideos(again,{selectedMedia:[{localFile:proxy.file,sha256:proxy.sha256}]});assert.deepEqual(again.browserVideoProxies,{});assert.equal(again.browserVideoCompatibility,1);await cache.close();
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});

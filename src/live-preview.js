@@ -58,11 +58,16 @@ export class LivePreviews{
    this.jobs.previewBusy=true;this.running={key,child:null,done:null};
    this.running.done=this.build(t,project,prepared).catch(e=>{t.state='FAILED';t.error='No se pudo preparar la vista interactiva. Conservamos el vídeo y el borrador.';t.detail=e.message;this.save(t);}).finally(()=>{this.running=null;this.jobs.previewBusy=false;this.jobs.drain();});
   }
+  if(t.state==='READY'&&t.browserVideoCompatibility!==1){
+   if(this.running||this.jobs.previewBusy||this.busy()||this.jobs.children.size||this.jobs.queued().length||this.jobs.publishing.size)throw Error('Hay otro render activo; la vista guardada se conserva.');
+   t.state='PREPARING';this.save(t);this.jobs.previewBusy=true;this.running={key,child:null,done:null};
+   this.running.done=this.browserVideos(t,prepared.plan).then(()=>{t.state='READY';this.save(t);}).catch(e=>{t.state='FAILED';t.error='No se pudo preparar un recurso para este navegador; el original se conserva.';t.detail=e.message;this.save(t);}).finally(()=>{this.running=null;this.jobs.previewBusy=false;this.jobs.drain();});
+  }
   const bind=a=>{
    if(!a?.localFile)return null;const sha=a.sha256??fileSha256(a.localFile),part='a-'+sha;
    if(!KEY.test(sha)||lstatSync(a.localFile).isSymbolicLink())throw Error('Invalid bound live resource');
-   t.files[part]={file:a.localFile,sha256:sha,size:statSync(a.localFile).size,mime:mime(a.localFile)};
-   return '/api/jobs/'+id+'/live-preview?key='+key+'&part='+part;
+   t.files[part]=t.browserVideoProxies?.[sha]??{file:a.localFile,sha256:sha,size:statSync(a.localFile).size,mime:mime(a.localFile)};
+   return '/api/jobs/'+id+'/live-preview?key='+key+'&part='+part+(t.browserVideoProxies?.[sha]?'&compat=1':'');
   };
   const clean=o=>Object.fromEntries(Object.entries(o??{}).filter(([k])=>!['localFile','sha256','rights','sourceSha256'].includes(k)));
   const videos=(p.selectedMedia??[]).map(e=>({...clean(e),url:bind(e)}));
@@ -107,7 +112,23 @@ export class LivePreviews{
   if(v?.width!==540||v?.height!==960||Math.abs(Number(probe.format.duration)-p.duration)>.12||fileSha256(project.sourcePath)!==project.boundHashes.source)throw Error('Live base verification failed');
   await run('ffmpeg',['-v','error','-xerror','-threads','1','-i',f,'-f','null','-'],{timeout:180000});
   t.files.base={file:f,sha256:fileSha256(f),size:statSync(f).size,mime:'video/mp4'};
+  await this.browserVideos(t,prepared.plan);
   t.state='READY';this.save(t);
+ }
+ async browserVideos(t,plan){
+  const unique=new Map([...(plan.selectedMedia??[]),...(plan.foregroundEffects?.events??[]).filter(e=>e.type==='behind-video')].filter(e=>e.localFile).map(e=>[e.localFile,e]));
+  t.browserVideoProxies??={};const dir=join(this.directory,t.key);
+  for(const [file,e]of unique){
+   const sha=e.sha256??fileSha256(file);if(t.browserVideoProxies[sha])continue;
+   const probe=JSON.parse((await run('ffprobe',['-v','error','-select_streams','v:0','-show_streams','-show_format','-of','json',file],{timeout:15000})).stdout),v=probe.streams[0];
+   if(['h264','vp8','vp9','av1'].includes(v?.codec_name))continue;
+   const name='browser-'+sha+'.mp4',target=join(dir,name);
+   await this.ffmpeg(['-v','error','-nostdin','-threads','1','-i',file,'-map','0:v:0','-vf','scale=540:960:force_original_aspect_ratio=decrease:force_divisible_by=2,fps=30','-an','-c:v','libx264','-threads','1','-preset','veryfast','-crf','26','-pix_fmt','yuv420p','-movflags','+faststart','-y',name],dir);
+   const checked=JSON.parse((await run('ffprobe',['-v','error','-show_streams','-show_format','-of','json',target],{timeout:15000})).stdout),cv=checked.streams.find(s=>s.codec_type==='video');
+   if(cv?.codec_name!=='h264'||statSync(target).size>40*1024*1024||Math.abs(Number(checked.format.duration)-Number(probe.format.duration))>.12||fileSha256(file)!==sha)throw Error('Browser video derivative verification failed');
+   const record={file:target,sha256:fileSha256(target),size:statSync(target).size,mime:'video/mp4'};t.browserVideoProxies[sha]=record;t.files['a-'+sha]=record;
+  }
+  t.browserVideoCompatibility=1;this.save(t);
  }
  ffmpeg(args,cwd){return new Promise((resolve,reject)=>{
   const child=spawn('ffmpeg',args,{cwd,stdio:['ignore','ignore','pipe']});if(this.running)this.running.child=child;
