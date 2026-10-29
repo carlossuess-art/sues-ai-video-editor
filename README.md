@@ -1,6 +1,6 @@
 # Estado vigente · 29/10/2026 · V1 asistida · publicado
 
-Editor: https://editor.suesholistics.com. Código productivo41479cd, rama `feat/montage-split-delete-20261029`; `main` no representa producción. **Dividir aquí → seleccionar tramo → Borrar tramo → Aplicar cambios**. Deshacer y recuperar borrador; el borrado cierra huecos con todas las capas y conserva original/versiones anteriores.
+Editor: https://editor.suesholistics.com. Código productivo53e8c2e, rama `feat/montage-split-delete-20261029`; `main` no representa producción. **Dividir aquí → seleccionar tramo → Borrar tramo → Aplicar cambios**. Deshacer y recuperar borrador; el borrado cierra huecos con todas las capas y conserva original/versiones anteriores.
 
 Edición móvil con texto visible al ampliar/mover, inspector legible y PWA instalable. Vista interactiva para ajustes y fragmento del motor final para comprobar efectos; la exportación completa crea una versión nueva. Sin API Gemini: automatización V1.1. No se infiere aprobación creativa por superar pruebas.
 

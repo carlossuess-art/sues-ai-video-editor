@@ -1,5 +1,7 @@
 ## PUBLICADO · Dividir/borrar + edición móvil en vivo + PWA · 29/10/2026
 
+Última revisión de código publicada:53e8c2e09172951ecec5b94b07d2033c137c0087, árbol c7120b50a6fdb078152ff9d1695bc4e68da68c64. Incluye la compatibilidad MPEG4 de la vista interactiva. Pruebas finales6/6 de compatibilidad/controles y nueva QA HTTPS móvil/escritorio/PWA pasan; diagnóstico público sin errores de medios. El MP4 y su motor no cambiaron con esta corrección.
+
 Base del motor de montaje verificada:41479cd4c4f93badf3f7e38aabd128a9eae20cad, rama feat/montage-split-delete-20261029, árbol de código e15e2dd6f56f349674dba21b807c8f3f07f58b9c. Integra móvil/PWA047b26f y táctil697837b. main no representa el código activo. VPS srv1841004, contenedor sues-video-editor, /app desde /opt/sues-video-setup/release-update.78zyka2k. Worktree /opt/sues-video-setup/touch-editor-work-20261028. Documentación posterior puede tener otro commit sin cambiar el motor. Guía docs/SUES_MONTAGE_SPLIT_DELETE_20261029.md.
 
 FUNCIONA: Dividir aquí, seleccionar/borrar tramo con cierre de huecos, restaurar, Deshacer y recuperar borrador. Las pistas, campos de inicio/final, vista nativa, fragmentos y base interactiva traducen sus relojes. La composición completa y la mezcla reciben los mismos cortes finales; se conservan las capas, su fase y los IDs de captions. No se reutiliza un MP4 aplanado como fuente. Aplicar cambios crea una versión nueva. Hasta60 rangos y120 divisiones; fotogramas30fps y mínimo0,5s conservado.
