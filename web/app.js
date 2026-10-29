@@ -377,13 +377,14 @@ function elementControls(c,job){
   const key=(current?.id||'')+'|'+captions.map(c=>c.id+':'+c.start+':'+c.end+':'+c.text).join('|');
   if(key!==lastSignature){
    lastSignature=key;segments.replaceChildren();
-   const d=Number(plan?.manifest?.duration)||Math.max(0,...captions.map(c=>c.end));
+   const canonicalDuration=Number(plan?.manifest?.duration)||Math.max(0,...captions.map(c=>c.end)),cuts=current?.settings?.montageCuts??[],project=t=>window.suesManualAdjust?.toOutput(t,cuts)??t,d=Number(plan?.manifest?.outputDuration)||canonicalDuration;
    for(const item of captions){
+    const start=project(item.start),end=project(item.end);if(end-start<.00001)continue;
     const button=document.createElement('button');button.type='button';button.className='timeline-segment';button.title=item.text+' · '+item.start.toFixed(1)+' s';
     button.textContent=item.text;button.dataset.start=String(item.start);button.dataset.end=String(item.end);
-    if(d>0){button.style.left=Math.max(0,Math.min(100,item.start/d*100))+'%';button.style.width=Math.max(.6,Math.min(100-item.start/d*100,(item.end-item.start)/d*100))+'%';}
+    if(d>0){button.style.left=Math.max(0,Math.min(100,start/d*100))+'%';button.style.width=Math.max(.6,Math.min(100-start/d*100,(end-start)/d*100))+'%';}
     button.addEventListener('click',()=>{
-     const v=player();if(v&&Number.isFinite(v.duration)&&v.duration>0){v.currentTime=Math.min(v.duration,item.start);v.dispatchEvent(new Event('timeupdate'));}
+     const v=player();if(v&&Number.isFinite(v.duration)&&v.duration>0){v.currentTime=Math.min(v.duration,document.body.dataset.livePreview==='true'?item.start:project(item.start));v.dispatchEvent(new Event('timeupdate'));}
      document.querySelector('[data-editor-tool="captions"]')?.click();
      $('caption-search').value='';$('caption-search').dispatchEvent(new Event('input'));
      const row=[...document.querySelectorAll('#captions .caption')].find(el=>el.querySelector('textarea')?.dataset.id===item.id);
@@ -395,7 +396,7 @@ function elementControls(c,job){
   const isMontage=player()===document.getElementById('video');
   const has=captions.length>0&&isMontage&&!previewDirty;
   segments.hidden=!has;hint.hidden=!has;track.hidden=!has;
-  const v=player(),time=v?.currentTime||0;
+  const v=player(),raw=v?.currentTime||0,time=v===document.getElementById('video')&&document.body.dataset.livePreview!=='true'?(window.suesManualAdjust?.fromOutput(raw,current?.settings?.montageCuts??[])??raw):raw;
   for(const element of segments.children){const active=time>=Number(element.dataset.start)&&time<Number(element.dataset.end);element.classList.toggle('playing',active);element.setAttribute('aria-current',active?'true':'false');}
  };
  const watcher=new MutationObserver(sync);

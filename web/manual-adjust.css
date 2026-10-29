@@ -110,3 +110,5 @@ body[data-post-mode="adjust"] .adjust-ruler,body[data-post-mode="adjust"] .adjus
  body[data-post-mode="adjust"] #player-label{display:none}
 }
 .touch-edit-target{background:rgba(6,25,36,.05);color:transparent;text-shadow:none}
+
+.montage-cut-toolbar{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;align-items:center}.montage-cut-toolbar button{min-height:44px;font-size:16px;padding:10px 14px}.montage-cut-toolbar output{flex-basis:100%;font-size:16px}.montage-main-lane{position:relative;height:64px}.montage-source-segment{position:absolute!important;top:0;height:60px;overflow:hidden;border:2px solid #6090a0;border-radius:6px;min-width:0;padding:0;color:transparent}.montage-source-segment[aria-pressed=true]{border:3px solid #ffad43;box-shadow:0 0 0 2px #ffad4360}.montage-source-segment .manual-film-frame{pointer-events:none}.montage-source-segment:focus-visible{outline:3px solid white}

@@ -155,11 +155,11 @@ def render(source, bundle, output, preview_start=None, preview_duration=None):
         raise ValueError('Expected a prepared local preview bundle')
     fragment = preview_start is not None or preview_duration is not None
     if fragment:
-        if not all(isinstance(n, (int, float)) and math.isfinite(n) for n in [preview_start, preview_duration]) or preview_start < 0 or not .1 <= preview_duration <= 8 or preview_start + preview_duration > manifest['duration'] + 1e-6:
+        if not all(isinstance(n, (int, float)) and math.isfinite(n) for n in [preview_start, preview_duration]) or preview_start < 0 or not .1 <= preview_duration <= 8 or preview_start + preview_duration > manifest.get('outputDuration', manifest['duration']) + 1e-6:
             raise ValueError('Invalid adjustment preview window')
         if not (bundle / 'video.ffscript').is_file() or not (bundle / 'audio.ffscript').is_file():
             raise ValueError('Adjustment previews require a separated bundle')
-    expected_duration = preview_duration if fragment else manifest['duration']
+    expected_duration = preview_duration if fragment else manifest.get('outputDuration', manifest['duration'])
     expected_size = (540, 960) if fragment else (1080, 1920)
     def window_script(script, label, audio=False):
         content = pathlib.Path(script).read_text() if pathlib.Path(script).is_absolute() else (bundle / script).read_text()
@@ -168,7 +168,7 @@ def render(source, bundle, output, preview_start=None, preview_duration=None):
             # Keep original edit timestamps, but do not run composition/mattes for
             # the preceding minutes when only a short adjustment is requested.
             anchor = re.search(r'concat=n=\d+:v=1:a=0\[base\]', content)
-            if anchor:
+            if anchor and not manifest.get('postEdit', {}).get('cuts'):
                 position = anchor.end()
                 window = ";\n[base]select='gte(t,%s)*lt(t,%s)'[fragment-window-base]" % (preview_start, preview_start + preview_duration)
                 content = content[:position] + window + content[position:].replace('[base]', '[fragment-window-base]')

@@ -1,3 +1,4 @@
+import {applyMontageFilters} from './montage-cuts.js';
 import {captionPresentation} from './caption-presentation.js';
 import {foregroundEffectFilters} from './foreground-effects.js';
 import {subjectLayerFilters} from './subject-layers.js';
@@ -272,7 +273,7 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   if(plan.finishFade){const f=plan.finishFade;filters.push(`[${hasTransitions?'finish-input':'captioned'}]fade=t=out:st=${f.start}:d=${f.duration}[video]`);}
   assert(!plan.audioMix||hasAudio,'background music requires original voice track');
   filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0) +2*(plan.subjectLayers?.length??0)+(plan.ambientOverlays?.length??0)+(plan.foregroundEffects?1+plan.foregroundEffects.events.filter(e=>e.type==='behind-video').length:0),{hasAudio}));
-  return filters.join(';\n')+'\n';
+  return applyMontageFilters(filters.join(';\n')+'\n',plan,{video:true,audio:hasAudio});
 }
 
 // Separate the visual graph from the voice/audio graph. Late audio sidechains
@@ -290,5 +291,5 @@ export function buildAudioPassFilter(plan){
  filters.push(`${spans.map((_,i)=>`[a${i}]`).join('')}concat=n=${spans.length}:v=0:a=1[audio]`);
  const mixed=renderAudioFilters(plan,1,{hasAudio:true});
  filters.push(...(mixed.length?mixed:['[audio]anull[mixed-audio]']));
- return filters.join(';\n')+'\n';
+ return applyMontageFilters(filters.join(';\n')+'\n',plan,{video:false,audio:true});
 }

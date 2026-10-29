@@ -12,7 +12,7 @@ const run=promisify(execFile),KEY=/^[a-f0-9]{64}$/;
 const hash=v=>createHash('sha256').update(JSON.stringify(v)).digest('hex');
 const mime=file=>({'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.wav':'audio/wav','.mp3':'audio/mpeg','.m4a':'audio/mp4','.ogg':'audio/ogg','.webm':'video/webm'}[extname(file).toLowerCase()]??'video/mp4');
 export function editableBasePlan(plan){
- const p=structuredClone(plan);
+ const p=structuredClone(plan);delete p.postEdit;delete p.outputDuration;
  p.captions=[];p.captionTransforms={};p.selectedMedia=[];p.illustrations=[];p.foregroundEffects=null;
  p.subjectLayers=[];p.ambientOverlays=[];p.globalTransitions=[];p.finishFade=null;
  p.audioMix=null;p.soundEffects={events:[]};p.customSfx={events:[]};p.voiceEffects={events:[]};
@@ -76,7 +76,7 @@ export class LivePreviews{
    captions:p.captions.map(c=>({id:c.id,start:c.start,end:c.end,text:c.text,box:p.layout.caption})),
    captionBox:p.layout.caption,transforms:p.captionTransforms??{},videos,images,overlays,foreground:fg,
    music,sfx,voiceGain:prepared.settings.voiceGain,proceduralSfx:{...p.soundEffects,events:(p.soundEffects?.events??[]).map(e=>({...e,end:e.start+e.duration,url:'/api/jobs/'+id+'/live-preview?key='+key+'&part=p-'+e.preset}))},
-   transitions:p.globalTransitions??[],finishFade:p.finishFade??null,duration:p.duration,
+   postEdit:p.postEdit??null,transitions:p.globalTransitions??[],finishFade:p.finishFade??null,duration:p.duration,
    unsupported:[...((p.globalTransitions??[]).length||p.finishFade?['Las transiciones y el fundido final se verifican con Ver fragmento.']:[]),...((p.subjectLayers??[]).length?['Las capas de máscara heredadas se comprueban con Ver fragmento.']:[]),...((p.ambientOverlays??[]).length?['Los overlays importados se comprueban con Ver fragmento.']:[]),...((p.voiceEffects?.events??[]).length?['Los filtros de voz se comprueban con Ver fragmento.']:[])],
    fidelity:{captions:'original-ASS-libass',spatial:'interactive-composition',audio:'interactive-audition-final-mix-requires-fragment'},isFinalExport:false};
  }

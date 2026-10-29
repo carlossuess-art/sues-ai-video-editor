@@ -28,8 +28,9 @@ export class AdjustmentPreviews{
   const job=this.jobs.get(jobId);if(job.state!=='DONE')throw Error('Espera a que termine el montaje.');
   if(request.fingerprint!==job.fingerprint)throw Error('El proyecto ha cambiado. Recarga la versión.');
   const project=this.jobs.loadProfile(job.profileId),prepared=prepareProject(project,request.settings);
-  if(!Number.isFinite(request.start)||!Number.isFinite(request.duration)||request.start<0||request.duration<.5||request.duration>8||request.start>=prepared.plan.duration-.1)throw Error('Preview window invalid');
-  const start=Math.floor(request.start*30)/30,duration=Math.min(Math.round(request.duration*30)/30,prepared.plan.duration-start);
+  const outputDuration=prepared.plan.outputDuration??prepared.plan.duration;
+  if(!Number.isFinite(request.start)||!Number.isFinite(request.duration)||request.start<0||request.duration<.5||request.duration>8||request.start>=outputDuration-.1)throw Error('Preview window invalid');
+  const start=Math.floor(request.start*30)/30,duration=Math.min(Math.round(request.duration*30)/30,outputDuration-start);
   const key=createHash('sha256').update(JSON.stringify({jobId,settings:prepared.fingerprint,start,duration})).digest('hex');
   const cached=this.tasks.get(key);if(cached?.state==='READY'){this.media(jobId,key);return this.view(cached);}
   if(cached?.state==='RUNNING')return this.view(cached);
