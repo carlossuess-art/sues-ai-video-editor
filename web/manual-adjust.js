@@ -24,7 +24,7 @@
  const persist=()=>{try{if(draftKey())localStorage.setItem(draftKey(),JSON.stringify({fingerprint:current.fingerprint,snapshot:snapshot()}));}catch{}};
  const keywordFields=()=>Object.fromEntries([...$('captions').querySelectorAll('select[data-keyword],select[data-level],select[data-style],select[data-scale]')].map(e=>[Object.keys(e.dataset)[0]+':'+Object.values(e.dataset)[0],e.value]));
  const snapshot=()=>({kind,selected,mainSelection,keywords:keywordFields(),draft:clone(draft),touched:[...touched],captions:captionFields(),musicGain:$('music-gain').value});
- const restore=s=>{if(['captions','broll','images','graphics','motions','masks','sfx','music'].includes(s.kind))kind=s.kind;selected=s.selected??null;mainSelection=s.mainSelection??null;draft=clone(s.draft);draft.montageCuts??=[];draft.montageSplits??=[];draft.captionTransforms??={};for(const e of $('captions').querySelectorAll('select[data-keyword],select[data-level],select[data-style],select[data-scale]')){const k=Object.keys(e.dataset)[0]+':'+Object.values(e.dataset)[0];if(s.keywords&&Object.hasOwn(s.keywords,k))e.value=s.keywords[k];}touched=new Set(s.touched);for(const f of $('captions').querySelectorAll('textarea[data-id]'))if(Object.hasOwn(s.captions,f.dataset.id))f.value=s.captions[f.dataset.id];$('music-gain').value=s.musicGain;$('music-value').textContent=s.musicGain+' %';};
+ const restore=s=>{if(['captions','broll','images','graphics','motions','masks','sfx','music'].includes(s.kind))kind=s.kind;selected=s.selected??null;mainSelection=s.mainSelection??null;draft=clone(s.draft);draft.montageCuts??=[];draft.montageSplits??=[];draft.captionTransforms??={};draft.zoomEvents??=clone(current.settings.zoomEvents??[]);draft.zoomIntensity??=current.settings.zoomIntensity??0;for(const e of $('captions').querySelectorAll('select[data-keyword],select[data-level],select[data-style],select[data-scale]')){const k=Object.keys(e.dataset)[0]+':'+Object.values(e.dataset)[0];if(s.keywords&&Object.hasOwn(s.keywords,k))e.value=s.keywords[k];}touched=new Set(s.touched);for(const f of $('captions').querySelectorAll('textarea[data-id]'))if(Object.hasOwn(s.captions,f.dataset.id))f.value=s.captions[f.dataset.id];$('music-gain').value=s.musicGain;$('music-value').textContent=s.musicGain+' %';};
  function change(fn,field){if(!canEdit())return;const previous=snapshot();try{fn();if(field)touched.add(field);history.push(previous);if(history.length>40)history.shift();invalidateFragment();markPreviewDirty();persist();window.suesLivePreview?.refresh();status(window.suesLivePreview?.isReady()?'Actualizando la vista interactiva. Aplicar cambios guardará una nueva versión.':'Ajustes pendientes. Preparando la vista interactiva.');}catch(err){restore(previous);status('No se pudo aplicar el ajuste: '+err.message);}render();}
  const manifestItems=()=>{
   if(!plan?.manifest)return [];
@@ -90,12 +90,18 @@
   picker.onchange=()=>{media.hidden=!picker.value;if(picker.value)media.src='/api/assets/'+picker.value+'/media';else media.removeAttribute('src');};group.append(media);
   const lengthLabel=n('label','Duración (s)'),length=n('input');length.type='number';length.min=kind==='broll'?'2.5':kind==='images'?'.6':'.03';length.max=kind==='images'?'8':'30';length.step='.1';length.value=kind==='sfx'?'.5':'3';length.setAttribute('aria-label','Duración del recurso nuevo');lengthLabel.append(length);group.append(lengthLabel);
   const reason=n('input');if(kind==='broll'){const label=n('label','Qué aporta este B-roll aquí');reason.maxLength=160;label.append(reason);group.append(label);}
+  const replace=n('input'),omitZoom=n('input');replace.type=omitZoom.type='checkbox';
+  if(kind==='broll'){for(const [input,text] of [[replace,'Sustituir B-rolls incompatibles en este intervalo'],[omitZoom,'Omitir zooms ocultos por este B-roll']]){const label=n('label',text);label.prepend(input);group.append(label);}}
   group.append(button('Añadir aquí',()=>{const asset=assetLibrary.find(a=>a.id===picker.value&&a.kind===assetKind);if(!asset){status('Elige un recurso de la biblioteca.');return;}
    const field={broll:'videoEvents',sfx:'sfxEvents',images:'imageEvents'}[kind],start=millis(player().currentTime),len=Number(length.value),end=millis(start+len);
    change(()=>{if(!Number.isFinite(len)||len<Number(length.min)||len>Number(length.max)||end>duration())throw Error('El recurso no cabe en ese intervalo');
     if(assetKind!=='image'&&Number.isFinite(asset.duration)&&len>asset.duration)throw Error('El archivo es más corto que el intervalo');
     const event={assetId:asset.id,start,...(kind==='sfx'?{sourceIn:0,duration:len,gain:.3}:{end})};
-    if(kind==='broll'){if(reason.value.trim().length<5)throw Error('Explica qué aporta el B-roll en ese momento');if(draft.videoEvents.some(e=>e.assetId===asset.id||start<e.end&&end>e.start))throw Error('El B-roll ya está utilizado o se solapa con otro');event.reason=reason.value.trim();event.sourceIn=0;}
+    if(kind==='broll'){if(reason.value.trim().length<5)throw Error('Explica qué aporta el B-roll en ese momento');const gap=plan.manifest.policy.visualStyle?.broll?.minPresenterGap??3;
+     if(replace.checked)draft.videoEvents=draft.videoEvents.filter(e=>e.end+gap<=start||end+gap<=e.start);
+     if(draft.videoEvents.some(e=>e.assetId===asset.id||start<e.end+gap&&end+gap>e.start))throw Error('El B-roll ya está utilizado o no deja el margen necesario con otro');
+     if(omitZoom.checked){draft.zoomEvents=(draft.zoomEvents??[]).filter(e=>e.end<=start||e.start>=end);if(!draft.zoomEvents.length)draft.zoomIntensity=0;touched.add('zoomEvents');touched.add('zoomIntensity');}
+     event.reason=reason.value.trim();event.sourceIn=0;}
     draft[field].push(event);draft[field].sort((a,b)=>a.start-b.start);const index=draft[field].indexOf(event);selected=(kind==='broll'?'broll-':kind==='images'?'image-':'sfx-')+index;
    },field);
   }));box.append(group);
@@ -211,6 +217,8 @@
   for(const b of $('adjust-kinds').querySelectorAll('[data-adjust-kind]'))b.setAttribute('aria-pressed',String(b.dataset.adjustKind===kind));
   if(!items.some(x=>x.key===selected))selected=null;
   const blocks=$('adjust-blocks'),list=$('adjust-event-list');blocks.replaceChildren();list.replaceChildren();
+  $('adjust-add-resource')?.remove();
+  if(['broll','sfx','images'].includes(kind)){const add=button('Añadir '+({broll:'B-roll',sfx:'sonido',images:'imagen'}[kind]),()=>{selected=null;render();openElementPanel();});add.id='adjust-add-resource';$('adjust-kinds').after(add);}
   for(const item of items){
    const segment=button(item.title,()=>selectEvent(item),'adjust-block'+(item.hidden?' is-hidden':''));segment.title=item.title+' · '+time(item.start)+'–'+time(item.end);segment.setAttribute('aria-pressed',String(item.key===selected));segment.style.left=(d?item.start/d*100:0)+'%';segment.style.width=(d?Math.max(.8,(item.end-item.start)/d*100):0)+'%';
    // Touch/mouse drag of timed B-roll, SFX and images. Small accidental movement is ignored.
@@ -232,7 +240,7 @@
  function load(job){
   if(!job||job.state!=='DONE'){if(document.body.dataset.postMode)changeMode('off');$('post-render-actions').hidden=true;parentId=null;draft=null;return;}
   invalidateFragment();parentId=job.id;history=[];selected=null;mainSelection=null;touched.clear();
-  draft={montageCuts:clone(job.settings.montageCuts??[]),montageSplits:clone(job.settings.montageSplits??[]),reviewedForeground:clone(job.settings.reviewedForeground??null),captionTransforms:clone(job.settings.captionTransforms??{}),hiddenVisualEventIds:clone(job.settings.hiddenVisualEventIds??[]),captionTimingOverrides:clone(job.settings.captionTimingOverrides??{}),hiddenCaptionIds:[...(job.settings.hiddenCaptionIds??[])],videoEvents:clone(job.settings.videoEvents??[]),sfxEvents:clone(job.settings.sfxEvents??[]),graphicCards:clone(job.settings.graphicCards??[]),imageEvents:clone(job.settings.imageEvents??[])};
+  draft={zoomEvents:clone(job.settings.zoomEvents??[]),zoomIntensity:job.settings.zoomIntensity??0,montageCuts:clone(job.settings.montageCuts??[]),montageSplits:clone(job.settings.montageSplits??[]),reviewedForeground:clone(job.settings.reviewedForeground??null),captionTransforms:clone(job.settings.captionTransforms??{}),hiddenVisualEventIds:clone(job.settings.hiddenVisualEventIds??[]),captionTimingOverrides:clone(job.settings.captionTimingOverrides??{}),hiddenCaptionIds:[...(job.settings.hiddenCaptionIds??[])],videoEvents:clone(job.settings.videoEvents??[]),sfxEvents:clone(job.settings.sfxEvents??[]),graphicCards:clone(job.settings.graphicCards??[]),imageEvents:clone(job.settings.imageEvents??[])};
   $('post-render-actions').hidden=false;$('post-validate').disabled=false;
   for(const [key,name] of [['captions','captionsReviewed'],['framing','framingReviewed'],['audio','audioReviewed']])$('quick-review-'+key).checked=job.editorialReview?.[name]??false;
   $('quick-review-major').value=String(job.editorialReview?.majorChanges??0);$('quick-review-minor').value=String(job.editorialReview?.minorChanges??0);
@@ -240,7 +248,7 @@
   try{const saved=JSON.parse(localStorage.getItem(draftKey()));if(saved?.fingerprint===job.fingerprint&&saved.snapshot?.draft){restore(saved.snapshot);markPreviewDirty();status('Ajustes pendientes recuperados. El reproductor conserva el último vídeo generado.');}}catch{}
   changeMode('off');render();
  }
- function settingsPatch(){if(!draft||!canEdit())return {};const data={montageCuts:clone(draft.montageCuts),montageSplits:clone(draft.montageSplits),reviewedForeground:clone(draft.reviewedForeground),captionTransforms:clone(draft.captionTransforms),hiddenVisualEventIds:clone(draft.hiddenVisualEventIds),captionTimingOverrides:clone(draft.captionTimingOverrides),hiddenCaptionIds:[...draft.hiddenCaptionIds].sort(),videoEvents:clone(draft.videoEvents),sfxEvents:clone(draft.sfxEvents),graphicCards:clone(draft.graphicCards),imageEvents:clone(draft.imageEvents)};return Object.fromEntries([...touched].map(k=>[k,data[k]]));}
+ function settingsPatch(){if(!draft||!canEdit())return {};const data={zoomEvents:clone(draft.zoomEvents??[]),zoomIntensity:draft.zoomIntensity,montageCuts:clone(draft.montageCuts),montageSplits:clone(draft.montageSplits),reviewedForeground:clone(draft.reviewedForeground),captionTransforms:clone(draft.captionTransforms),hiddenVisualEventIds:clone(draft.hiddenVisualEventIds),captionTimingOverrides:clone(draft.captionTimingOverrides),hiddenCaptionIds:[...draft.hiddenCaptionIds].sort(),videoEvents:clone(draft.videoEvents),sfxEvents:clone(draft.sfxEvents),graphicCards:clone(draft.graphicCards),imageEvents:clone(draft.imageEvents)};return Object.fromEntries([...touched].map(k=>[k,data[k]]));}
  $('post-adjust').onclick=()=>{if(!canEdit())return;showPlayer('preview',{allowPrevious:true});const v=player();v.preload='auto';if(v.readyState<2)v.load();changeMode('adjust');};
  $('post-validate').onclick=()=>{if(!canEdit()||previewDirty)return;changeMode('validation');};
  $('adjust-close').textContent='Pausar edición';$('adjust-close').onclick=()=>changeMode('off');

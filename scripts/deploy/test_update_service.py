@@ -153,3 +153,16 @@ class UpdateTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class ReleaseIdentityTests(unittest.TestCase):
+    def test_same_head_with_modified_or_deleted_tracked_files_is_not_the_release(self):
+        release=Path('/private/release')
+        sha='a'*40
+        for status in (' M src/editor.js\n',' D web/app.js\n','M  src/editor.js\n'):
+            with patch.object(updater,'run',side_effect=[SimpleNamespace(stdout=sha),SimpleNamespace(stdout=status)]):
+                self.assertFalse(updater.release_matches(release,sha))
+        with patch.object(updater,'run',side_effect=[SimpleNamespace(stdout=sha),SimpleNamespace(stdout='')]):
+            self.assertTrue(updater.release_matches(release,sha))
+        with patch.object(updater,'run',return_value=SimpleNamespace(stdout='b'*40)) as run:
+            self.assertFalse(updater.release_matches(release,sha))
+            self.assertEqual(run.call_count,1)

@@ -139,7 +139,7 @@ export class LivePreviews{
   const t=this.task(id,key);if(t.state!=='READY')throw Error('Live preview is preparing');
   if(!/^(base|matte|a-[a-f0-9]{64}|p-(whoosh|impact|draw|neon))$/.test(part??''))throw Error('Live resource not found');
   const f=t.files[part];if(!f||!existsSync(f.file)||lstatSync(f.file).isSymbolicLink()||statSync(f.file).size!==f.size)throw Error('Live resource changed');
-  const st=statSync(f.file),signature=st.size+':'+st.mtimeMs+':'+st.ctimeMs,cached=this.checkedFiles.get(f.file);
+  const st=statSync(f.file,{bigint:true}),signature=[st.dev,st.ino,st.size,st.mtimeNs,st.ctimeNs].join(':'),cached=this.checkedFiles.get(f.file);
   if(cached?.signature!==signature||cached?.sha256!==f.sha256){if(fileSha256(f.file)!==f.sha256)throw Error('Live resource changed');this.checkedFiles.set(f.file,{signature,sha256:f.sha256});}
   return f;
  }

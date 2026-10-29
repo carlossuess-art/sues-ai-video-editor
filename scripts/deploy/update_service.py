@@ -143,6 +143,15 @@ def helper(release):
     return module
 
 
+def release_matches(release, sha):
+    # HEAD alone cannot identify a release repaired in place. A dirty release
+    # must be replaced by a fresh checkout, even when its HEAD matches.
+    prefix = ('git', '-c', 'safe.directory=' + str(release), '-C', str(release))
+    if run(*prefix, 'rev-parse', 'HEAD').stdout.strip() != sha:
+        return False
+    return not run(*prefix, 'status', '--porcelain', '--untracked-files=no').stdout.strip()
+
+
 def main(sha, diagnostic=False, setup_record=None):
     os.umask(0o077)
     if os.geteuid() != 0 or not re.fullmatch('[a-f0-9]{40}', sha):
@@ -171,7 +180,7 @@ def main(sha, diagnostic=False, setup_record=None):
         old_release = Path(mounts['/app']['Source'])
         old_sha = run('git', '-c', 'safe.directory=' + str(old_release), '-C', str(old_release), 'rev-parse', 'HEAD').stdout.strip()
         print('Versión instalada: ' + old_sha + '\nVersión aprobada: ' + sha, flush=True)
-        if old_sha == sha and not diagnostic and prepared_setup is None:
+        if old_sha == sha and release_matches(old_release, sha) and not diagnostic and prepared_setup is None:
             health()
             assert_library_readable(ROOT / 'editor')
             if helper(old_release).status('https://' + HOST + '/', resolve=HOST + ':443:127.0.0.1') != '200':
@@ -188,6 +197,8 @@ def main(sha, diagnostic=False, setup_record=None):
         run('git', '-C', str(release), 'checkout', '--detach', 'FETCH_HEAD')
         if run('git', '-C', str(release), 'rev-parse', 'HEAD').stdout.strip() != sha:
             raise RuntimeError('El commit descargado no coincide')
+        if not release_matches(release, sha):
+            raise RuntimeError('El árbol de la release no coincide con el commit aprobado')
         if (release / 'package-lock.json').read_bytes() != (old_release / 'package-lock.json').read_bytes():
             raise RuntimeError('Cambian dependencias; no se actualiza el runtime automáticamente')
         print('Dependencias sin cambios; comprobando runtime existente.', flush=True)
