@@ -1,3 +1,37 @@
+## Publicado · correcciones de auditoría · 29/10/2026
+
+Release de aplicación cb7ec1a75451932778fc7295e09824fb6a615ccc, rama fix/audit-closure-20261029.
+Worktree /opt/sues-video-setup/audit-fixes-work-20261029; producción /opt/sues-video-setup/release-update.mvl0mllf.
+Se corrigieron el guard tras postEdit, sustitución explícita de B-roll/zooms, integridad
+de la caché con timestamps precisos y despliegue verificable. HEAD/árbol/marcador coherentes.
+Actualizador conserva1900MiB/0,8CPU observados, rechaza análisis activos y pausa solo Whisper
+inactivo durante la copia para evitar cambios del heartbeat. Primer intento se recuperó
+correctamente al detectar copia inconsistente; segundo pasó con backup verificado.
+Backup update-backup-20261029-182329-365998; evidencia audit-full-20261029.
+
+423/423 runtime,2/2 Git,14tests updater,6helper recursos y2catálogo. Navegador aislado
+móvil/escritorio sustituye B-roll explícitamente sin alterar padre. QA pública móvil/
+escritorio/PWA posteriorPASS. Nueva subida12s,Whisper real16palabras,CALMA,corte2–3s,
+export11s1080x1920,decode/fuente/RangePASS; otra mezcla aislada con3SFX realesPASS.
+No atribuir calidad creativa DOPAMIN a esas pruebas técnicas.
+
+Catálogo privado y MISMO JSON en Drive actualizados:3.390fichas (1.326nuevas metadata),
+215medios instalados/214seleccionables;31SFX con18nuevos únicos.20selecciones fuente
+incluían duplicados: no anunciar20recursos distintos.2.064fichas anteriores y exclusiones
+preservadas;738candidatos vídeo elegibles sin cambios. No afirmar revisión visual completa.
+39proyectos anteriores conservan hashes; después comenzó un render nuevo ajeno a la QA,
+total40. No cancelarlo ni reiniciar/desplegar mientras haya trabajos activos. Guard de
+actualización idempotente rechazó correctamente la operación en ese momento.
+
+Pendientes: controles universales gráficos/motions, preview exacto universal, música por
+segmentos, revisión/adaptación completa de biblioteca y recuperación MODNet/cámara general.
+GeminiV1.1 y clon separados. No cerrar V1 sin aceptación creativa de Carlos. Siguiente bloque:
+comprobar cola/SHA reales y continuar controles manuales; no repetir A01/A02 ni importación.
+Roadmap: https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit
+Informe: https://docs.google.com/document/d/1_Ny2nqYFnGq1kVt6xDtH59yGPUs8wEZFlakcBMxKZa4/edit
+
+---
+
 ## PUBLICADO · Dividir/borrar + edición móvil en vivo + PWA · 29/10/2026
 
 Última revisión de código publicada:53e8c2e09172951ecec5b94b07d2033c137c0087, árbol c7120b50a6fdb078152ff9d1695bc4e68da68c64. Incluye la compatibilidad MPEG4 de la vista interactiva. Pruebas finales6/6 de compatibilidad/controles y nueva QA HTTPS móvil/escritorio/PWA pasan; diagnóstico público sin errores de medios. El MP4 y su motor no cambiaron con esta corrección.

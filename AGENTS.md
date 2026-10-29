@@ -1,3 +1,13 @@
+## Continuidad vigente · auditoría corregida y publicada ·29/10/2026
+
+Leer entrada superior PROJECT_STATUS.md y docs/SUES_AUDIT_FIXES_20261029.md.
+Rama fix/audit-closure-20261029; worktree /opt/sues-video-setup/audit-fixes-work-20261029.
+Release cb7ec1a75451932778fc7295e09824fb6a615ccc; /app desde release-update.mvl0mllf,
+HEAD y marcador coinciden. A01/A02 corregidos; catálogo3.390,214seleccionables y18SFX
+nuevos únicos. No repetir esas importaciones ni confundir metadata con aprobación.
+Tras publicar había un render nuevo activo ajeno a QA: comprobar cola antes de reiniciar.
+No tocar clon/HeyGen. V1 asistida; GeminiV1.1; aceptación creativa de Carlos sigue abierta.
+
 ## Continuidad vigente · 29/10/2026 · dividir/borrar publicado
 
 Leer primero la entrada superior de PROJECT_STATUS.md y docs/SUES_MONTAGE_SPLIT_DELETE_20261029.md. Rama activa feat/montage-split-delete-20261029; worktree /opt/sues-video-setup/touch-editor-work-20261028; despliegue /opt/sues-video-setup/release-update.78zyka2k. Código53e8c2e integra compatibilidad de vídeos para el navegador, móvil en vivo/PWA y dividir/borrar conservando capas; main y las ramas oficiales citadas en entradas antiguas no representan producción. Verificar hashes/servicio antes de programar. QA aislada en /opt/sues-video-setup/montage-qa-20261029; no copiar sus medios ni tokens a Git. Los cortes8–9s de prueba no se aplicaron al proyecto productivo. No rehacer estas funciones ni pedir resubida del original. Sin Gemini ni proveedores nuevos; V1 asistida y valoración creativa del propietario. Mantener IDs/enlaces del repositorio y Roadmap en las instrucciones del proyecto.
