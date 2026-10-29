@@ -30,3 +30,8 @@ Branch: feat/heygen-avatar-api-v0-20261029. Isolated implementation, NOT deploye
 
 ## Next action
 Obtain a HeyGen API key through owner's authorized account (do not paste in chat), verify GET /v3/avatars and Avatar III entitlement; finish payment guardrails, then approve a 10–15s paid render. Only after that enable live generation and integrate actual MP4 into library and editor.
+
+## Look discovery
+- GET /v3/avatars/looks?avatar_type=digital_twin&ownership=private returns owned Digital Twin looks; use each look ID, not the avatar group ID, in /v3/videos.
+- UI filters supported_api_engines for avatar_iii; also allows manual look IDs.
+- Voice ID can be omitted to use the avatar's default voice as documented.
