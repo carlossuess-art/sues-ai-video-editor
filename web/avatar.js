@@ -1,0 +1,8 @@
+
+const $=x=>document.getElementById(x);
+const headers={'x-sues-request':'editor'};
+async function api(path,body){const r=await fetch('/api/avatar/heygen/'+path,{headers:{...headers,...(body?{'Content-Type':'application/json'}:{})},...(body?{method:'POST',body:JSON.stringify(body)}:{})});const x=await r.json();if(!r.ok)throw Error(x.error||'Error de API');return x}
+function fail(e){$('status').textContent=e.message}
+api('capabilities').then(x=>{$('health').textContent=x.configured?(x.generationEnabled?'HeyGen preparado para pruebas con autorización':'HeyGen configurado, generación bloqueada por seguridad'):'Falta configurar la clave HeyGen en el servidor';$('generate').disabled=!x.generationEnabled}).catch(fail);
+$('generate').onclick=async()=>{try{$('status').textContent='Enviando…';const x=await api('generate',{avatarId:$('avatar').value,script:$('script').value,voiceId:$('voice').value||undefined,audioUrl:$('audio').value||undefined,approved:$('approve').checked});$('videoId').value=x.data?.video_id||x.data?.id||'';$('status').textContent='Solicitud recibida. Comprueba el estado.'}catch(e){fail(e)}};
+$('check').onclick=async()=>{try{const x=await api('videos/'+encodeURIComponent($('videoId').value));const data=x.data||x;$('status').textContent='Estado: '+(data.status||'sin especificar');$('result').replaceChildren();if(data.video_url){const u=new URL(data.video_url);if(u.protocol!=='https:')throw Error('URL de vídeo no segura');const a=document.createElement('a');a.textContent='Abrir / descargar MP4';a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';$('result').append(a)}}catch(e){fail(e)}};
