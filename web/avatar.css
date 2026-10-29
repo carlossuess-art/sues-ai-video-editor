@@ -1,0 +1,2 @@
+
+body{font:17px system-ui;margin:0 auto;max-width:680px;padding:24px;color:#f1f4fa;background:#111827}label{display:block;margin:18px 0 6px}input,textarea,button,select{box-sizing:border-box;width:100%;padding:12px;font:inherit;border-radius:8px;border:1px solid #6a7280}input,textarea,select{background:#1f2937;color:white}button{background:#2563eb;color:white;margin-top:16px;cursor:pointer}button:disabled{opacity:.5}a{color:#93c5fd}small{color:#bac4d4}pre{overflow:auto;white-space:pre-wrap}fieldset{margin:15px 0;border:1px solid #526075;border-radius:8px}
