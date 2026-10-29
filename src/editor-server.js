@@ -1,3 +1,4 @@
+import {createHeyGen} from './heygen-avatar.js';
 import {PlaybackPreviews} from './playback-preview.js';
 import {reviewInstructionExecution} from './instruction-execution.js';
 import {externalCatalog,reviewExternalPlan} from './external-edit-plan.js';
@@ -54,6 +55,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const setup=loginSetup(passwordFile);
  let loginBusy=0;
  const cookie=value=>`sues_session=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_SECONDS}; Expires=${new Date(Date.now()+SESSION_SECONDS*1000).toUTCString()}${publicOrigin?'; Secure':''}`;
+ const heygen=createHeyGen();
  const previews=new PlaybackPreviews(join(directory,'playback-previews'));const jobs=new EditorJobs({directory,profiles,renderer,storage});jobs.preparePlayback=(job,source)=>previews.ensure(job.id,source);let intake,assets,recoveries;try{assets=new MediaLibrary(join(directory,'assets'),{probe:assetProbe});jobs.assetResolver=(id,kind)=>assets.resolve(id,kind);jobs.narrativeResolver=transcript=>proposeLibraryCues(directory,transcript);jobs.defaultMusicResolver=duration=>{const rows=assets.list().filter(a=>a.kind==='audio'&&a.duration>=duration&&(()=>{const m=assets.metadata(a.id);return m?.license.rightsStatus==='verified'&&m.license.commercialUseAllowed;})()).sort((a,b)=>(b.id==='55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6')-(a.id==='55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6')||a.duration-b.duration);return rows[0]??null;};recoveries=new ProjectRecovery(join(directory,'recoveries'),profiles);intake=new VideoIntake(join(directory,'uploads'),profiles,{probe:intakeProbe});}catch(error){void jobs.close();throw error;}let expectedHost;
  const analysis=new LocalAnalysis(intake);
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
@@ -117,6 +119,13 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(!eq(cookie,token)&&!sessions.valid(cookie))return json(res,401,{error:'Session required'});
     if(!['GET','HEAD'].includes(req.method)&&req.headers['x-sues-request']!=='editor')return json(res,403,{error:'Request header required'});
     if(path==='/api/logout'&&req.method==='POST'){res.setHeader('Set-Cookie',`sues_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${publicOrigin?'; Secure':''}`);return json(res,200,{ok:true});}
+    if(path==='/api/avatar/heygen/capabilities'&&req.method==='GET')return json(res,200,{configured:heygen.configured(),generationEnabled:heygen.canGenerate(),provider:'heygen',realVideoVerified:false});
+    if(path==='/api/avatar/heygen/avatars'&&req.method==='GET')return json(res,200,await heygen.listAvatars());
+    if(path==='/api/avatar/heygen/generate'&&req.method==='POST'){
+     const b=await body(req,8192);return json(res,202,await heygen.createVideo({...b,approved:b.approved===true}));
+    }
+    const heygenStatus=/^\/api\/avatar\/heygen\/videos\/([a-zA-Z0-9_-]{1,128})$/.exec(path);
+    if(heygenStatus&&req.method==='GET')return json(res,200,await heygen.getVideo(heygenStatus[1]));
     if(path==='/api/fonts'&&req.method==='GET')return json(res,200,fontCatalog());
     const fontMatch=/^\/api\/fonts\/([a-z-]+)\/(file|license)$/.exec(path);
     if(fontMatch&&['GET','HEAD'].includes(req.method)){const f=fontDownload(fontMatch[1],fontMatch[2]);if(!f)return json(res,404,{error:'Font not found'});const bytes=readFileSync(f.path);res.setHeader('Content-Type',f.contentType);res.setHeader('Content-Disposition',`attachment; filename="${f.filename}"`);res.setHeader('Content-Length',bytes.length);res.writeHead(200);return res.end(req.method==='HEAD'?undefined:bytes);}
@@ -243,7 +252,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     }
     return json(res,405,{error:'Method not allowed'});
    }
-   const files={'/':['index.html','text/html; charset=utf-8'],'/playback-buffer.js':['playback-buffer.js','text/javascript; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8'],'/studio.css':['studio.css','text/css; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon.svg':['icon.svg','image/svg+xml']};
+   const files={'/avatar.css':['avatar.css','text/css; charset=utf-8'],'/avatar.js':['avatar.js','text/javascript; charset=utf-8'],'/avatar':['avatar.html','text/html; charset=utf-8'],'/':['index.html','text/html; charset=utf-8'],'/playback-buffer.js':['playback-buffer.js','text/javascript; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8'],'/studio.css':['studio.css','text/css; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon.svg':['icon.svg','image/svg+xml']};
    if(req.method!=='GET'||!Object.hasOwn(files,path))return json(res,404,{error:'Not found'});
    const [file,type]=files[path];res.setHeader('Content-Type',type);res.end(readFileSync(join(WEB,file)));
   }catch(error){if(res.headersSent)return res.destroy();const safe=/not found|Unknown profile/i.test(error.message)?404:/busy|ready|changed|transition|owned|Adjustments|queue full|closing/.test(error.message)?409:400;json(res,safe,{error:error.code?'No se pudo acceder al recurso local configurado':error.message.replaceAll(directory,'[local]')});}
