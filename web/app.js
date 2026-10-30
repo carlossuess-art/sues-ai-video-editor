@@ -315,10 +315,11 @@ function elementSettings(){
  const items=[];
  for(const row of $('captions').querySelectorAll('[data-element-row]')){
   if(!row.querySelector('[data-element-use]').checked)continue;
-  items.push({captionId:row.dataset.elementRow,endCaptionId:row.querySelector('[data-element-end]').value,label:row.querySelector('[data-element-label]').value.trim(),...(['COMPARE','Q&A'].includes(format)?{secondary:row.querySelector('[data-element-secondary]').value.trim()}:{}),...(format==='RANKING'?{number:Number(row.querySelector('[data-element-number]').value)}:{})});
+  const existing=current?.settings.elements?.items.find(e=>e.captionId===row.dataset.elementRow);
+  items.push({captionId:row.dataset.elementRow,endCaptionId:row.querySelector('[data-element-end]').value,label:row.querySelector('[data-element-label]').value.trim(),...(['COMPARE','Q&A'].includes(format)?{secondary:row.querySelector('[data-element-secondary]').value.trim()}:{}),...(format==='RANKING'?{number:Number(row.querySelector('[data-element-number]').value)}:{}),...(format==='TRUE_FALSE'?{answer:row.querySelector('[data-element-answer]').value}:{}),...(existing?.revealOffset!==undefined?{revealOffset:existing.revealOffset}:{})});
  }
  if(!items.length)throw new Error('Marca al menos un subtítulo como elemento o elige Sin estructura ELEMENTS.');
- return {format,items};
+ return {format,items,...(current?.settings.elements?.offset!==undefined?{offset:current.settings.elements.offset}:{})};
 }
 function elementControls(c,job){
  const box=node('details');box.dataset.elementRow=c.id;box.append(node('summary','Elemento de lista, comparación o proceso'));
@@ -327,6 +328,8 @@ function elementControls(c,job){
  const input=(title,key,value)=>{const label=node('label',title),field=document.createElement('input');field.dataset[key]='';field.value=value;field.maxLength=48;label.append(field);box.append(label);return field;};
  input('Texto principal / opción A / pregunta','elementLabel',chosen?.label??c.text);
  input('Opción B / respuesta (COMPARE o Q&A)','elementSecondary',chosen?.secondary??'');
+ const answer=node('label','Respuesta · verdadero o falso'),answerSelect=document.createElement('select');answerSelect.dataset.elementAnswer='';
+ for(const [value,title] of [['true','Verdadero'],['false','Falso']]){const option=node('option',title);option.value=value;answerSelect.append(option);}answerSelect.value=chosen?.answer??'true';answer.append(answerSelect);answer.hidden=$('elements-format').value!=='TRUE_FALSE';box.append(answer);
  const number=input('Posición (sólo RANKING)','elementNumber',chosen?.number??1);number.type='number';number.min=1;number.max=10;
  const label=node('label','Hasta el final de este subtítulo'),end=document.createElement('select');end.dataset.elementEnd='';
  for(const other of plan.manifest.captions.filter(other=>other.start>=c.start&&other.end-c.start<=12)){const o=node('option',other.end.toFixed(2)+' s · '+other.text);o.value=other.id;end.append(o);}end.value=chosen?.endCaptionId??c.id;label.append(end);box.append(label);

@@ -12,6 +12,10 @@ test('manual caption transforms survive normalization, change ASS and reject for
   const moved=prepareProject(project,{profileImages:false,captionTransforms:{[id]:{dx:20,dy:-100,scale:1.2}}});
   assert.equal(moved.settings.captionTransforms[id].dx,20);
   assert.notEqual(buildPreviewASS(base.plan),buildPreviewASS(moved.plan));
+  const oversized=prepareProject(project,{profileImages:false,captionTransforms:{[id]:{dx:0,dy:0,scale:4}}});
+  assert.equal(oversized.settings.captionTransforms[id].scale,4);
+  assert.notEqual(buildPreviewASS(base.plan),buildPreviewASS(oversized.plan));
+  assert.throws(()=>prepareProject(project,{profileImages:false,captionTransforms:{[id]:{dx:0,dy:0,scale:13}}}));
   assert.throws(()=>prepareProject(project,{captionTransforms:{[id]:{dx:0,dy:0,scale:Infinity}}}));
   assert.throws(()=>prepareProject(project,{captionTransforms:{'seg-999999':{dx:0,dy:0,scale:1}}}));
  }finally{rmSync(f.dir,{recursive:true,force:true});}

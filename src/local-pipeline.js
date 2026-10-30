@@ -63,7 +63,9 @@ export function prepareProject(project,settings={}){
  const selectedAssets=[];const asset=(id,kind)=>{const bound=kind==='sfx'?project.inputs.soundAssets?.find(a=>a.assetId===id):kind==='video'?project.inputs.videoAssets?.find(a=>a.assetId===id):kind==='overlay'?project.inputs.overlayAssets?.find(a=>a.assetId===id):null;if(bound){if(fileSha256(bound.localFile)!==bound.sha256)throw new Error('SFX integrity changed');selectedAssets.push({id,sha256:bound.sha256,kind});return bound;}if(typeof project.resolveAsset!=='function')throw new Error('La biblioteca de recursos no está conectada a este proyecto');const value=project.resolveAsset(id,kind);selectedAssets.push({id,sha256:value.sha256,kind});return value;};
  if(options.musicAssetId){const m=asset(options.musicAssetId,'audio');if(m.duration<inputs.source.duration)throw new Error('La música es más corta que el vídeo. Elige una pista completa.');inputs.backgroundAudio={assetId:m.assetId,rights:m.rights,localFile:m.localFile,gain:.12};}
  if(!options.profileImages)inputs.illustrations=[];
- for(const e of options.imageEvents){const a=asset(e.assetId,'image');inputs.illustrations=[...(inputs.illustrations??[]),{assetId:a.assetId,rights:a.rights,role:'illustration',localFile:a.localFile,sha256:a.sha256,sourceSha256:project.boundHashes.source,timeSpace:'edit-timeline',start:e.start,end:e.end,placement:'auto-subject',motion:'slow-push',box:{left:120,right:900,top:140,bottom:420},featherPx:100,fadeSeconds:Math.min(.3,(e.end-e.start)/3)}];}
+ const explicitImages=[];
+ for(const e of options.imageEvents){const a=asset(e.assetId,'image');const v={assetId:a.assetId,rights:a.rights,role:'illustration',localFile:a.localFile,sha256:a.sha256,sourceSha256:project.boundHashes.source,timeSpace:'edit-timeline',start:e.start,end:e.end,placement:e.box?'manual-editor':'auto-subject',motion:e.box?'none':'slow-push',box:e.box??{left:120,right:900,top:140,bottom:420},mask:e.box?'none':undefined,featherPx:e.box?0:100,fadeSeconds:Math.min(.3,(e.end-e.start)/3)};explicitImages.push(v);inputs.illustrations=[...(inputs.illustrations??[]),v];}
+
  if(options.styleId==='SUES_DOPAMIN'&&options.autoRecipe&&options.automaticPreviewBroll&&!options.videoEvents.length&&project.resolveNarrativeBrolls)options.videoEvents=selectAutomaticPreviewBrolls(project.resolveNarrativeBrolls(),options,inputs.source.duration);
  const explicitBroll=options.videoEvents.map(e=>{
   const a=asset(e.assetId,'video');if(!Number.isFinite(a.duration))throw new Error('B-roll sin duración verificada');
@@ -78,6 +80,11 @@ export function prepareProject(project,settings={}){
   return {assetId:a.assetId,sha256:a.sha256,kind:'overlay',localFile:a.localFile,
     rights:a.rights,mediaDuration:a.duration,sourceIn:e.sourceIn??0,sourceOut:(e.sourceIn??0)+e.end-e.start,
     start:e.start,end:e.end,intensity:e.intensity,reason:e.reason,placement:'lower-half',originalVoice:true};
+ });
+ const musicTracks=options.musicTracks.map(e=>{
+  const a=asset(e.assetId,'audio'),sourceIn=e.sourceIn??0;
+  if(!Number.isFinite(a.duration)||sourceIn+e.end-e.start>a.duration+1e-6)throw Error('La pista de música es más corta que el fragmento seleccionado');
+  return {...e,sourceIn,assetId:a.assetId,sha256:a.sha256,localFile:a.localFile,rights:a.rights,duration:e.end-e.start};
  });
  const resourceBindings={backgroundAudio:inputs.backgroundAudio,illustrations:inputs.illustrations??[],videoAssets:explicitBroll,overlayAssets};
  if(!options.musicEnabled||options.musicGain===0)delete inputs.backgroundAudio;else if(inputs.backgroundAudio)inputs.backgroundAudio={...inputs.backgroundAudio,...(options.musicGain!==null?{gain:options.musicGain}:{}),duckEnabled:options.duckMusic};
@@ -116,6 +123,8 @@ export function prepareProject(project,settings={}){
  plan.hiddenCaptionIds=options.hiddenCaptionIds;
  for(const id of Object.keys(options.captionTransforms))if(!plan.captions.some(c=>c.id===id))throw Error('Caption transform does not belong to this edit: '+id);
  plan.captionTransforms=options.captionTransforms;
+ for(const [id,keys] of Object.entries(options.captionScaleKeyframes)){const c=plan.captions.find(c=>c.id===id);if(!c||keys.some(k=>k.time>c.end-c.start+1e-6))throw Error('Keyframe de subtítulo fuera del fragmento: '+id);}
+ plan.captionScaleKeyframes=options.captionScaleKeyframes;
  for(const [id,value]of Object.entries(options.keywordOverrides)){
   const c=plan.captions.find(c=>c.id===id);if(!c)throw new Error('Unknown keyword caption: '+id);
   c.emphasisWordIndexes=[];
@@ -128,8 +137,9 @@ export function prepareProject(project,settings={}){
  applyDopaminMaster(plan,options);
  plan.depthText=options.motions?prepareDepthText(options.reviewedDepthText??inputs.depthText,plan):[];
  plan.finishFade=finishFadeFor(plan);
- plan.audioSourceAvailable=!!project.inputs.backgroundAudio||!!options.musicAssetId;
- plan.illustrations=prepareIllustrations(options.motions?(inputs.illustrations??[]):[],plan,inputs.visionFrames);
+ plan.audioSourceAvailable=!!project.inputs.backgroundAudio||!!options.musicAssetId||!!musicTracks.length;
+ plan.musicTracks=musicTracks;
+ plan.illustrations=prepareIllustrations(options.motions?(inputs.illustrations??[]):explicitImages,plan,inputs.visionFrames);
  if(options.elements)plan.elements=prepareElements(options.elements,plan,{enabled:options.motions,profile:visualProfile(options.styleId)});
  if(inputs.subjectLayers)plan.subjectLayers=options.motions?prepareSubjectLayers(inputs.subjectLayers,plan):[];
  plan.customSfx=prepareCustomSfx(options.sfxEvents,plan.duration,asset,{voiceNormalized:options.voiceNormalization});resourceBindings.soundAssets=plan.customSfx.assets;
@@ -139,6 +149,30 @@ export function prepareProject(project,settings={}){
  plan.ambientOverlays=overlayAssets;
  if(overlayAssets.length){plan.pending.push('ambient-overlays-visual-review');}
  if(options.motions&&(options.reviewedForeground||inputs.foregroundEffects)){plan.foregroundEffects=prepareForegroundEffects(structuredClone(options.reviewedForeground??inputs.foregroundEffects),plan,asset);plan.pending.push('foreground-matte-human-review');}
+ for(const [id,override] of Object.entries(options.motionLayerOverrides)){
+  const motion=plan.semantic.motions.find(e=>e.id===id);
+  if(!motion)throw Error('Motion no disponible en este montaje: '+id);
+  const offset=override.offset??0;
+  if(motion.start+offset<0||motion.end+offset>plan.duration-plan.policy.outro.duration)throw Error('Motion fuera del vídeo');
+  motion.start+=offset;motion.end+=offset;
+  const layerIds=new Set(motion.instance.layers.map(l=>l.id));
+  for(const [name,layer] of Object.entries(override.layers)){
+   if(!layerIds.has(name))throw Error('Capa de motion inexistente: '+name);
+   const before=motion.layerTimes[name],delta=layer.offset??0;
+   const start=before.start+offset+delta,end=Math.min(motion.end,before.end+offset+delta);
+   if(start<motion.start-1e-6||end>motion.end+1e-6||end<=start)throw Error('Capa fuera de la composición');
+   motion.layerTimes[name]={start,end};
+   if(layer.text!==undefined){
+    const target=motion.instance.layers.find(l=>l.id===name);
+    if(target.kind!=='text')throw Error('Solo las capas de texto se pueden renombrar');
+    const words=layer.text.trim().split(/\s+/);if(words.some(w=>w.length>26))throw Error('Palabra demasiado larga para motion');
+    target.content=layer.text.trim();
+    motion.lines=layer.text.length<=26?[layer.text]:[words.slice(0,Math.ceil(words.length/2)).join(' '),words.slice(Math.ceil(words.length/2)).join(' ')];
+    if(motion.lines.some(l=>l.length>26))throw Error('Texto demasiado largo para motion');
+   }
+  }
+  for(const layer of motion.instance.layers){if(!Object.hasOwn(override.layers,layer.id)){const before=motion.layerTimes[layer.id];motion.layerTimes[layer.id]={start:before.start+offset,end:before.end+offset};}}
+ }
  applyManualVisualVisibility(plan,options.hiddenVisualEventIds);
  plan.soundEffects=prepareSoundEffects(plan,options);
  finishDopaminAudio(plan,options);

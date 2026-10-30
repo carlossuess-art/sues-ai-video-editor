@@ -34,7 +34,7 @@ function automaticBox(faces,plan,placed,item){
 export function prepareIllustrations(items=[],plan,visionFrames=[]){
  assert(Array.isArray(items)&&items.length<=50,'at most 50 resources');
  if(!items.length)return [];
- const track=stabilizeFaceTrack(buildFaceTrack(visionFrames));
+ const track=items.some(item=>item.placement!=='manual-editor')?stabilizeFaceTrack(buildFaceTrack(visionFrames)):null;
  const placed=[];
  return items.map((input,index)=>{
   let item={...input};
@@ -43,19 +43,21 @@ export function prepareIllustrations(items=[],plan,visionFrames=[]){
   assert(item.sourceSha256===plan.source.sha256&&/^[a-f0-9]{64}$/.test(item.sourceSha256),'resource must be bound to this source');
   assert(item.timeSpace==='edit-timeline'&&Number.isFinite(item.start)&&Number.isFinite(item.end)&&item.start>=0&&item.end>item.start&&item.end<=plan.duration,'time bounds');
   assert(typeof item.localFile==='string'&&item.localFile.startsWith('/')&&/^[a-f0-9]{64}$/.test(item.sha256),'verified local asset');
-  assert(item.placement===undefined||item.placement==='auto-subject','placement mode');
-  assert(item.mask===undefined||['soft-top','soft-bottom'].includes(item.mask),'mask direction');
-  assert(item.motion===undefined||item.motion==='slow-push','image motion');
+  assert(item.placement===undefined||['auto-subject','manual-editor'].includes(item.placement),'placement mode');
+  assert(item.mask===undefined||['soft-top','soft-bottom','none'].includes(item.mask),'mask direction');
+  assert(item.motion===undefined||['slow-push','none'].includes(item.motion),'image motion');
   assert(item.edgeToEdge===undefined||typeof item.edgeToEdge==='boolean','edge-to-edge mode');
-  const faces=projectedFaces(item,plan,track);
+  const manual=item.placement==='manual-editor';const faces=manual?[]:projectedFaces(item,plan,track);
   if(item.placement==='auto-subject')item={...item,...automaticBox(faces,plan,placed,item)};
-  const b=item.box;assert(b&&['left','right','top','bottom'].every(k=>Number.isInteger(b[k]))&&b.left>=(item.edgeToEdge?0:120)&&b.right<=(item.edgeToEdge?1080:900)&&b.top>=(item.edgeToEdge?0:120)&&b.bottom<=1170&&b.right>b.left&&b.bottom>b.top,'safe resource box');
-  assert(Number.isFinite(item.featherPx)&&item.featherPx>=20&&item.featherPx<=(b.bottom-b.top)/2&&Number.isFinite(item.fadeSeconds)&&item.fadeSeconds>=.1&&item.fadeSeconds<=Math.min(.5,(item.end-item.start)/3),'mask/fade bounds');
-  assert(![...(plan.semantic?.motions??[]),...(plan.graphics??[])].some(m=>m.start<item.end&&m.end>item.start),'resource overlaps motion card');
-  assert(!plan.selectedMedia.some(m=>m.start<item.end&&m.end>item.start),'resource overlaps full-frame B-roll');
+  const b=item.box;assert(b&&['left','right','top','bottom'].every(k=>Number.isInteger(b[k]))&&b.right>b.left&&b.bottom>b.top&&
+   (manual?(b.left>=-1080&&b.right<=2160&&b.top>=-1920&&b.bottom<=3840&&b.right-b.left>=64&&b.bottom-b.top>=64):
+    (b.left>=(item.edgeToEdge?0:120)&&b.right<=(item.edgeToEdge?1080:900)&&b.top>=(item.edgeToEdge?0:120)&&b.bottom<=1170)),'safe resource box');
+  assert(Number.isFinite(item.featherPx)&&item.featherPx>=(manual?0:20)&&item.featherPx<=(b.bottom-b.top)/2&&Number.isFinite(item.fadeSeconds)&&item.fadeSeconds>=.1&&item.fadeSeconds<=Math.min(.5,(item.end-item.start)/3),'mask/fade bounds');
+  assert(manual||![...(plan.semantic?.motions??[]),...(plan.graphics??[])].some(m=>m.start<item.end&&m.end>item.start),'resource overlaps motion card');
+  assert(manual||!plan.selectedMedia.some(m=>m.start<item.end&&m.end>item.start),'resource overlaps full-frame B-roll');
   assert(!faces.some(face=>overlaps(b,face)),'resource overlaps sampled face');
-  assert(!placed.some(other=>other.start<item.end&&other.end>item.start&&overlaps(b,other.box)),'resources overlap');
-  assert(!overlaps(b,plan.layout.caption)&&!overlaps(b,plan.layout.outro),'resource overlaps captions or closing');
+  assert(manual||!placed.some(other=>other.start<item.end&&other.end>item.start&&overlaps(b,other.box)),'resources overlap');
+  assert(manual||!overlaps(b,plan.layout.caption)&&!overlaps(b,plan.layout.outro),'resource overlaps captions or closing');
   const value={...item,instanceId:'illustration-'+(index+1),kind:'still-image',fit:'cover',mask:item.mask??'soft-bottom',sourceAudio:false};placed.push(value);return value;
  });
 }
@@ -76,7 +78,8 @@ export function illustrationFilters(items,base,inputStart){
   }
   // Spatial feather and temporal fade are independent operations. rgba makes
   // opaque photographs and existing alpha images follow the same mask contract.
-  filters.push(`[${input}]${sizing}format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='alpha(X,Y)*clip(${item.mask==='soft-top'?'Y':`(${h}-Y)`}/${item.featherPx},0,1)',fps=30,trim=duration=${d},setpts=PTS-STARTPTS,fade=t=in:st=0:d=${item.fadeSeconds}:alpha=1,fade=t=out:st=${d-item.fadeSeconds}:d=${item.fadeSeconds}:alpha=1,setpts=PTS+${item.start}/TB[illustration${i}]`);
+  const transparency=item.mask==='none'?"format=rgba":`format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='alpha(X,Y)*clip(${item.mask==='soft-top'?'Y':`(${h}-Y)`}/${item.featherPx},0,1)'`;
+  filters.push(`[${input}]${sizing}${transparency},fps=30,trim=duration=${d},setpts=PTS-STARTPTS,fade=t=in:st=0:d=${item.fadeSeconds}:alpha=1,fade=t=out:st=${d-item.fadeSeconds}:d=${item.fadeSeconds}:alpha=1,setpts=PTS+${item.start}/TB[illustration${i}]`);
   filters.push(`[${base}][illustration${i}]overlay=x=${b.left}:y=${b.top}:eof_action=pass:repeatlast=0:enable='gte(t,${item.start})*lt(t,${item.end})'[illustrated${i}]`);base=`illustrated${i}`;
  }
  return {filters,base};

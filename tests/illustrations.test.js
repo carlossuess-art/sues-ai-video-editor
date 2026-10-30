@@ -43,3 +43,17 @@ test('photographic motion and edge-to-edge supports keep face and caption collis
   assert.throws(()=>prepareIllustrations([{...item,box:{left:0,right:1080,top:400,bottom:1000}}],plan,project.inputs.visionFrames),/face/);
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });
+
+test('explicitly placed still image can move and enlarge over presenter, with the same geometry in FFmpeg overlay',()=>{
+ const f=fixture();try{
+  const project=loadProject(f.profiles.test),plan=prepareProject(project).plan;plan.source.sha256='a'.repeat(64);
+  const box={left:-400,right:1200,top:300,bottom:1700};
+  const e={assetId:'manual-image',rights:'owned',role:'illustration',sourceSha256:plan.source.sha256,sha256:'b'.repeat(64),localFile:'/tmp/manual.png',timeSpace:'edit-timeline',start:2,end:4,placement:'manual-editor',motion:'none',mask:'none',box,featherPx:0,fadeSeconds:.2};
+  const valid=prepareIllustrations([e],plan,project.inputs.visionFrames);
+  assert.deepEqual(valid[0].box,box);
+  const graph=illustrationFilters(valid,'base',1).filters.join(';');
+  assert.ok(graph.includes('overlay=x=-400:y=300'));
+  assert.ok(!graph.includes('geq='));
+  assert.throws(()=>prepareIllustrations([{...e,box:{...box,left:-2000}}],plan,project.inputs.visionFrames),/safe resource box/);
+ }finally{rmSync(f.dir,{recursive:true,force:true});}
+});

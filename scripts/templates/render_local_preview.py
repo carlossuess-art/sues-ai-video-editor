@@ -280,6 +280,16 @@ def render(source, bundle, output, preview_start=None, preview_duration=None):
         if stream is None or float(stream.get('duration', details['format']['duration'])) + 1e-6 < mix['sourceOut']:
             raise ValueError('Music missing audio or too short; implicit looping is disabled')
         music = {'path': media, 'sha256': digest(media), 'assetId': mix['assetId'], 'rights': mix['rights'], 'gain': mix['gain']}
+    music_tracks = []
+    for item in manifest.get('musicTracks', []):
+        media = pathlib.Path(item['localFile']).resolve(strict=True)
+        if media.is_symlink() or item.get('rights') not in ('owned','licensed') or item.get('sha256') != item.get('assetId') or digest(media) != item.get('sha256'):
+            raise ValueError('Music track provenance/sha256 invalid')
+        details = probe(media)
+        stream = next((x for x in details['streams'] if x['codec_type'] == 'audio'), None)
+        if stream is None or float(details['format']['duration']) + 1e-6 < item['sourceIn'] + item['duration']:
+            raise ValueError('Music track missing audio or selected source segment too long')
+        music_tracks.append({'path':media,'sha256':item['sha256'],'assetId':item['assetId']})
     sounds = []
     for item in manifest.get('customSfx', {}).get('assets', []):
         path = pathlib.Path(item['localFile'])
@@ -365,12 +375,14 @@ def render(source, bundle, output, preview_start=None, preview_duration=None):
             command = ['ffmpeg', '-v', 'verbose', '-threads', '2', '-i', str(voice_source)]
             if music:
                 command += ['-threads', '2', '-i', str(music['path'])]
+            for track in music_tracks:
+                command += ['-threads', '2', '-i', str(track['path'])]
             for sound in sounds:
                 command += ['-threads', '2', '-i', str(sound['path'])]
-            video_index = 1 + int(bool(music)) + len(sounds)
+            video_index = 1 + int(bool(music)) + len(music_tracks) + len(sounds)
             sfx_cache = cache_dense_sfx(bundle, manifest['duration'], output.parent)
             audio_script = 'audio.ffscript'
-            input_paths = [voice_source] + ([music['path']] if music else []) + [sound['path'] for sound in sounds]
+            input_paths = [voice_source] + ([music['path']] if music else []) + [track['path'] for track in music_tracks] + [sound['path'] for sound in sounds]
             library_cache = cache_library_sfx(bundle, manifest['duration'], output.parent, input_paths)
             clauses = sfx_cache['clauses'] if sfx_cache else [c.strip() for c in (bundle / audio_script).read_text().strip().split(';\n')]
             adapters = []
@@ -398,11 +410,13 @@ def render(source, bundle, output, preview_start=None, preview_duration=None):
         else:
             if music:
                 command += ['-threads', '2', '-i', str(music['path'])]
+            for track in music_tracks:
+                command += ['-threads', '2', '-i', str(track['path'])]
             for sound in sounds:
                 command += ['-threads', '2', '-i', str(sound['path'])]
             command += ['-filter_complex_threads', '1', '-filter_complex_script', 'filter.ffscript', '-map', '[video]']
             if audio:
-                command += ['-map', '[mixed-audio]' if music or manifest.get('soundEffects', {}).get('events') or manifest.get('customSfx', {}).get('events') or manifest.get('voiceEffects', {}).get('events') or manifest.get('mastering', {}).get('enabled') or manifest.get('voiceGain', 1) != 1 else '[audio]']
+                command += ['-map', '[mixed-audio]' if music or music_tracks or manifest.get('soundEffects', {}).get('events') or manifest.get('customSfx', {}).get('events') or manifest.get('voiceEffects', {}).get('events') or manifest.get('mastering', {}).get('enabled') or manifest.get('voiceGain', 1) != 1 else '[audio]']
             command += ['-c:v', 'libx264', '-threads', '2', '-preset', 'veryfast', '-crf', '22', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-map_metadata', '-1', '-movflags', '+faststart', '-progress', str(output.parent / 'ffmpeg-progress.txt'), '-nostats', '-y', str(temporary)]
         with (bundle / 'render.log').open('w') as log:
             subprocess.run(command, cwd=bundle, stdout=log, stderr=subprocess.STDOUT, check=True)

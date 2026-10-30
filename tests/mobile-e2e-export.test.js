@@ -1,0 +1,50 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {mkdtempSync,readFileSync,writeFileSync,cpSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join,resolve} from 'node:path';
+import {createHash} from 'node:crypto';
+import {prepareLocalPreview,buildPreviewASS,buildPreviewFilter,buildVideoPassFilter,buildAudioPassFilter} from '../src/local-preview.js';
+import {prepareIllustrations} from '../src/illustrations.js';
+const run=(cmd,args)=>execFileSync(cmd,args,{timeout:180000,maxBuffer:16*1024*1024});
+const read=p=>JSON.parse(readFileSync(p,'utf8'));
+const digest=f=>createHash('sha256').update(readFileSync(f)).digest('hex');
+test('real MP4 export contains editable oversized caption keyframes, manual image and two independently automated music layers',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'sues-mobile-e2e-'));
+ try{
+  const src=join(dir,'source.mp4'),musicA=join(dir,'music-a.wav'),musicB=join(dir,'music-b.wav'),png=join(dir,'static.png');
+  run('ffmpeg',['-v','error','-threads','1','-f','lavfi','-i','smptebars=size=108x192:rate=30:duration=11','-f','lavfi','-i','sine=frequency=440:sample_rate=48000:duration=11','-c:v','libx264','-threads','1','-pix_fmt','yuv420p','-c:a','aac','-shortest','-y',src]);
+  for(const [file,freq] of [[musicA,250],[musicB,880]])run('ffmpeg',['-v','error','-f','lavfi','-i',`sine=frequency=${freq}:sample_rate=48000:duration=11`,'-y',file]);
+  run('ffmpeg',['-v','error','-f','lavfi','-i','color=c=red:s=480x270:r=1:d=1','-frames:v','1','-y',png]);
+  const plan=prepareLocalPreview({template:read('examples/templates/sues-calma.template.json'),brand:read('examples/brand-kit.sues.json'),source:{width:108,height:192,duration:11,sha256:digest(src)},segments:[{in:0,out:11}],transcript:{version:'1.0',language:'es',sourceDuration:11,words:[{text:'DESPIERTA',start:1,end:2}]},camera:{keyframes:[0,11].map(time=>({time,x:0,y:0,width:108,height:192,zoom:1}))}});
+  assert.ok(plan.captions.length);
+  plan.captionScaleKeyframes={[plan.captions[0].id]:[{time:0,value:1},{time:.25,value:3},{time:.5,value:1}]};
+  plan.musicTracks=[{assetId:digest(musicA),sha256:digest(musicA),rights:'owned',localFile:musicA,start:0,end:6,sourceIn:0,duration:6,gain:.6,keyframes:[{time:0,value:.6},{time:1,value:0},{time:3,value:0},{time:4,value:.6}]},{assetId:digest(musicB),sha256:digest(musicB),rights:'owned',localFile:musicB,start:1.5,end:5.5,sourceIn:0,duration:4,gain:.3,keyframes:[]}];
+  const manualImage={assetId:digest(png),sha256:digest(png),rights:'owned',role:'illustration',localFile:png,sourceSha256:plan.source.sha256,timeSpace:'edit-timeline',start:7,end:10,placement:'manual-editor',motion:'none',mask:'none',box:{left:0,right:880,top:480,bottom:1250},featherPx:0,fadeSeconds:.2};
+  plan.illustrations=prepareIllustrations([manualImage],plan,[]);
+  for(const [name,content] of [['manifest.json',JSON.stringify(plan)],['captions.ass',buildPreviewASS(plan)],['filter.ffscript',buildPreviewFilter(plan)],['video.ffscript',buildVideoPassFilter(plan)],['audio.ffscript',buildAudioPassFilter(plan)]])writeFileSync(join(dir,name),content);
+  cpSync('assets/fonts/montserrat',join(dir,'fonts'),{recursive:true});
+  assert.ok(readFileSync(join(dir,'captions.ass'),'utf8').includes('\\t(0,250,\\fscx'));
+  assert.ok(readFileSync(join(dir,'audio.ffscript'),'utf8').includes('[music-track-1]'));
+  const result=join(dir,'export.mp4');
+  try{run('python3',[resolve('scripts/templates/render_local_preview.py'),'--source',src,'--bundle',dir,'--out',result]);}catch(error){throw new Error(readFileSync(join(dir,'render-video.log'),'utf8').slice(-3200),{cause:error});}
+  const audit=read(join(dir,'export.audit.json'));
+  assert.equal(audit.audioPresent,true);assert.equal(audit.sourcePreserved,true);assert.equal(audit.fullDecode,'pass');assert.deepEqual(audit.renderPasses,['video','audio-mux']);
+  const streams=JSON.parse(run('ffprobe',['-v','error','-show_entries','stream=codec_type,width,height:format=duration','-of','json',result]).toString());
+  assert.ok(streams.streams.some(e=>e.codec_type==='video'&&e.width===1080&&e.height===1920));
+  assert.ok(streams.streams.some(e=>e.codec_type==='audio'));
+  assert.ok(Math.abs(Number(streams.format.duration)-11)<.1);
+  const pcm=at=>run('ffmpeg',['-v','error','-ss',String(at),'-i',result,'-t','0.22','-vn','-ar','48000','-ac','1','-f','f32le','-']);
+  const energy=(buf,hz)=>{const n=buf.byteLength/4;let a=0,b=0;for(let i=0;i<n;i++){const x=buf.readFloatLE(i*4),phase=2*Math.PI*hz*i/48000;a+=x*Math.cos(phase);b+=x*Math.sin(phase);}return Math.hypot(a,b)/n;};
+  const first=pcm(.4),middle=pcm(2),end=pcm(4.7);
+  assert.ok(energy(first,250)>.006,'first music audible before muted interval');
+  assert.ok(energy(middle,250)<energy(first,250)*.15,'keyframes mute first music during speech');
+  assert.ok(energy(middle,880)>.001,'second music audible independently during silence');
+  assert.ok(energy(end,250)>.005,'music comes back');
+  const frame=at=>run('ffmpeg',['-v','error','-ss',String(at),'-i',result,'-frames:v','1','-vf','crop=600:450:50:550,scale=120:90','-pix_fmt','rgb24','-f','rawvideo','-']);
+  const before=frame(6),during=frame(8),pixelDiff=before.reduce((sum,v,i)=>sum+Math.abs(v-during[i]),0)/before.length;
+  assert.ok(pixelDiff>10,'manual image overlay is actually visible in the exported MP4');
+  console.log('E2E-MOBILE-EXPORT-PASS',JSON.stringify({audio:3,musicStems:2,imagePixelDiff:pixelDiff,duration:streams.format.duration}));
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});

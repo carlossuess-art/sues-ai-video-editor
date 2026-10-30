@@ -25,14 +25,14 @@ export function motionChoicesToDecisions(choices,plan,enabled=true){
 export function drawSymbolMotion(m,plan,event,safeText,assColor){
  const id=m.params.motionId;if(!['CHECK_GREEN_01','CROSS_RED_01','STRIKE_TEXT_01'].includes(id))return;
  const b=m.box,cx=(b.left+b.right)/2,cy=(b.top+b.bottom)/2,clip=`\\clip(${b.left},${b.top},${b.right},${b.bottom})`;
- const shape=(start,color,path,x,y)=>event(3,start,m.end,'Outro',`{${clip}\\an7\\pos(${x},${y})\\p1\\bord0\\shad0\\1c${assColor(color)}&\\fad(100,150)}${path}`);
+ const shape=(start,color,path,x,y)=>event(3,start,m.layerTimes.icon?.end??m.end,'Outro',`{${clip}\\an7\\pos(${x},${y})\\p1\\bord0\\shad0\\1c${assColor(color)}&\\fad(100,150)}${path}`);
  if(id==='STRIKE_TEXT_01'){
   const size=m.fontSize;
-  event(2,m.start,m.end,'Outro',`{${clip}\\pos(${cx},${cy})\\fs${size}\\b1\\1c${assColor('#FFFFFF')}&\\fad(120,150)}${m.lines.map(safeText).join('\\N')}`);
+  event(2,m.layerTimes.text?.start??m.start,m.layerTimes.text?.end??m.end,'Outro',`{${clip}\\pos(${cx},${cy})\\fs${size}\\b1\\1c${assColor('#FFFFFF')}&\\fad(120,150)}${m.lines.map(safeText).join('\\N')}`);
   for(let i=0;i<m.lines.length;i++){
    const y=cy+(i-(m.lines.length-1)/2)*size*1.2;
    event(3,m.layerTimes.strike.start,m.end,'Outro',`{${clip}\\an7\\pos(${b.left+20},${y})\\p1\\bord0\\shad0\\1c${assColor('#FF786B')}&\\fscx0\\t(0,180,\\fscx100)\\fad(60,150)}m 0 0 l ${b.right-b.left-40} 0 ${b.right-b.left-40} 5 0 5`);
   }
- }else if(id==='CHECK_GREEN_01')shape(m.start,'#67D79A','m 0 50 l 14 36 38 60 86 6 100 20 39 88',cx-50,cy-50);
- else shape(m.start,'#FF786B','m 0 14 l 14 0 50 36 86 0 100 14 64 50 100 86 86 100 50 64 14 100 0 86 36 50',cx-50,cy-50);
+ }else if(id==='CHECK_GREEN_01')shape(m.layerTimes.icon?.start??m.start,'#67D79A','m 0 50 l 14 36 38 60 86 6 100 20 39 88',cx-50,cy-50);
+ else shape(m.layerTimes.icon?.start??m.start,'#FF786B','m 0 14 l 14 0 50 36 86 0 100 14 64 50 100 86 86 100 50 64 14 100 0 86 36 50',cx-50,cy-50);
 }

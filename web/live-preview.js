@@ -108,8 +108,9 @@ function compose(t){
  for(const e of scene.videos??[]){const source=asset(e.url,'video');if(t>=e.start&&t<e.end){if(mediaAt(source,e.sourceIn+t-e.start,playing))cover(ctx,source,0,0,540,960);}else if(source&&!source.paused)source.pause();}
  for(const e of scene.images??[]){
   if(t<e.start||t>=e.end)continue;const img=asset(e.url,'image');if(!img.complete||!img.naturalWidth)continue;
-  const b=e.box,fade=e.fadeSeconds??.2,alpha=Math.max(0,Math.min(1,(t-e.start)/fade,(e.end-t)/fade));
-  fadedImage(img,{x:b.left/2,y:b.top/2,w:(b.right-b.left)/2,h:(b.bottom-b.top)/2},e.featherPx/2,e.mask==='soft-top'?'top':'bottom',alpha,e.motion==='slow-push'?1.02+.06*(t-e.start)/(e.end-e.start):1);
+  const edited=draft?.imageEvents?.find(x=>x.assetId===e.assetId&&Math.abs(x.start-e.start)<.001&&Math.abs(x.end-e.end)<.001);
+  const b=edited?.box??e.box,fade=e.fadeSeconds??.2,alpha=Math.max(0,Math.min(1,(t-e.start)/fade,(e.end-t)/fade));
+  fadedImage(img,{x:b.left/2,y:b.top/2,w:(b.right-b.left)/2,h:(b.bottom-b.top)/2},edited?.box?0:e.featherPx/2,e.mask==='soft-top'?'top':'bottom',alpha,!edited?.box&&e.motion==='slow-push'?1.02+.06*(t-e.start)/(e.end-e.start):1);
  }
  // Imported ambient overlays need their original alpha/codec. When unavailable,
  // retain the explicit fragment fallback instead of pretending a layer rendered.
@@ -121,6 +122,15 @@ function audioFrame(t){
  const speaking=(scene.captions??[]).some(c=>t>=c.start&&t<c.end);
  if(scene.music){const e=scene.music,media=asset(e.url,'audio'),gain=Number($('music-gain').value)/100,fade=Math.min(1,t/e.fadeIn,(scene.duration-t)/e.fadeOut);
   mediaAt(media,e.sourceIn+t,playing&&$('music-enabled').checked,true,gain*Math.max(0,fade)*($('music-duck').checked&&speaking ? .5 : 1));}
+ for(const [i,e] of (scene.musicTracks??[]).entries()){
+  const active=t>=e.start&&t<e.end,key=e.url+'#music='+i,media=active?asset(key,'audio'):resources.get(key);
+  if(active){
+   const editing=state()?.draft?.musicTracks?.[i]??e;
+   const keys=editing.keyframes??[];let g=editing.gain;
+   if(keys.length){const at=t-e.start;if(at<=keys[0].time)g=keys[0].value;else if(at>=keys.at(-1).time)g=keys.at(-1).value;else for(let j=1;j<keys.length;j++)if(at<=keys[j].time){const a=keys[j-1],b=keys[j],f=(at-a.time)/(b.time-a.time);g=a.value+(b.value-a.value)*f;break;}}
+   mediaAt(media,(e.sourceIn??0)+t-e.start,playing,true,Math.min(1,Math.max(0,g)));
+  }else if(media&&!media.paused)media.pause();
+ }
  const automatic=scene.proceduralSfx?.events??[];
  for(const [i,e]of automatic.entries()){const key=e.url+'#auto='+i,at=t>=e.start&&t<e.end,media=at?asset(key,'audio'):resources.get(key);if(at)mediaAt(media,t-e.start,playing,true,(scene.proceduralSfx.gain??0)*(e.weight??1)*(speaking?.65:1));else if(media&&!media.paused)media.pause();}
  const events=scene.sfx??[];for(const [i,e]of events.entries()){const key=e.url+'#cue='+i,at=t>=e.start&&t<e.end,media=at?asset(key,'audio'):resources.get(key);
@@ -177,7 +187,7 @@ function stop(){
  if(voiceNode){voiceNode.disconnect();voiceNode.connect(audioContext.destination);}if(voiceGain)voiceGain.gain.value=1;
  oldSrc=null;scene=null;captionWrap.style.transform='';viewZoom=1;const surface=document.querySelector('.touch-edit-surface');if(surface)surface.style.transform='';
 }
-function refresh(){if(!active())return;clearTimeout(timer);timer=setTimeout(start,100);}
+function refresh(){if(!active())return;clearTimeout(timer);timer=setTimeout(start,20);}
 function gesture(id,t){
  if(!ready||!scene)return;const base=scene.transforms[id]??{dx:0,dy:0,scale:1},b=scene.captionBox;
  captionWrap.style.transformOrigin=((540+base.dx)/1080*100)+'% '+(((b.top+b.bottom)/2+base.dy)/1920*100)+'%';

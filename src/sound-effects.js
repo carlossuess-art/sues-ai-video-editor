@@ -3,6 +3,7 @@ import {customSfxFilter} from './custom-sfx.js';
 import {voiceEffectsFilter} from './voice-effects.js';
 import {secretRevealTime} from './graphic-timing.js';
 import {backgroundAudioFilter} from './audio-mix.js';
+import {audioVolumeExpression} from './timeline-keyframes.js';
 const assert=(ok,msg)=>{if(!ok)throw Error('Sound effects: '+msg);};
 // Original deterministic synthesis recipes. No stock downloads or external models.
 export const SOUND_PRESETS=Object.freeze({
@@ -41,7 +42,7 @@ export function soundEffectsFilter(sfx,duration,base){
 }
 export function renderAudioFilters(plan,musicIndex,{hasAudio=true}={}){
  const procedural=!!plan.soundEffects?.events?.length,custom=!!plan.customSfx?.events?.length,voice=!!plan.voiceEffects?.events?.length;
- assert(hasAudio||!procedural&&!custom&&!voice&&!plan.audioMix,'effects require original audio');
+ assert(hasAudio||!procedural&&!custom&&!voice&&!plan.audioMix&&!(plan.musicTracks?.length),'effects require original audio');
  let filters=voiceEffectsFilter(plan.voiceEffects,plan.duration);
  let input=voice?'voice-styled':'audio';
  const voiceGain=plan.voiceGain??1;assert(Number.isFinite(voiceGain)&&voiceGain>=0&&voiceGain<=2,'voice gain');
@@ -49,8 +50,22 @@ export function renderAudioFilters(plan,musicIndex,{hasAudio=true}={}){
  const background=backgroundAudioFilter(plan.audioMix,musicIndex).map(f=>f.replaceAll('[audio]',`[${input}]`));
  filters.push(...background);
  let mixed=!!plan.audioMix;
+ const tracks=plan.musicTracks??[];
+ if(tracks.length){
+  const baseInput=mixed?'mixed-audio':input;
+  if(mixed)filters=filters.map(f=>f.replaceAll('[mixed-audio]','[music-underlay]'));
+  const stems=tracks.map((e,i)=>{
+   const local=audioVolumeExpression(e.keyframes,e.gain),delay=Math.round(e.start*48000);
+   const out=`music-track-${i}`;
+   filters.push(`[${musicIndex+(plan.audioMix?1:0)+i}:a]atrim=start=${e.sourceIn}:duration=${e.duration},asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume='${local}':eval=frame,adelay=${delay}S:all=1[${out}]`);
+   return `[${out}]`;
+  });
+  filters.push(`[${mixed?'music-underlay':baseInput}]${stems.join('')}amix=inputs=${stems.length+1}:duration=first:dropout_transition=0:normalize=0,alimiter=limit=0.95:level=0:latency=1[mixed-audio]`);
+  mixed=true;
+ }
+
  if(procedural){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-sfx-audio]'));filters.push(...soundEffectsFilter(plan.soundEffects,plan.duration,mixed?'before-sfx-audio':input));mixed=true;}
- if(custom){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-custom-audio]'));filters.push(...customSfxFilter(plan.customSfx,plan.duration,musicIndex+(plan.audioMix?1:0),mixed?'before-custom-audio':input));mixed=true;}
+ if(custom){filters=filters.map(f=>f.replaceAll('[mixed-audio]','[before-custom-audio]'));filters.push(...customSfxFilter(plan.customSfx,plan.duration,musicIndex+(plan.audioMix?1:0)+(plan.musicTracks?.length??0),mixed?'before-custom-audio':input));mixed=true;}
  if((voice||voiceGain!==1)&&!mixed)filters.push(`[${input}]anull[mixed-audio]`);
  if(plan.mastering?.enabled){
   const upstream=filters.length?'pre-master-audio':'audio';

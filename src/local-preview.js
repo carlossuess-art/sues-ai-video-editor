@@ -102,6 +102,16 @@ export function prepareLocalPreview({template,brand,transcript,camera,source,seg
 
 const assColor=hex=>'&H00'+hex.slice(5,7)+hex.slice(3,5)+hex.slice(1,3);
 const safeText=text=>text.replaceAll('\\','＼').replaceAll('{','｛').replaceAll('}','｝').replace(/[\r\n]/g,' ');
+function captionScaleTags(plan,caption,scaleX=100){
+ const keys=plan.captionScaleKeyframes?.[caption.id];if(!keys?.length)return '';
+ const first=keys[0].value;
+ let tag=`\\fscx${Math.round(scaleX*first)}\\fscy${Math.round(100*first)}`;
+ for(let i=1;i<keys.length;i++){
+  const a=keys[i-1],b=keys[i];
+  tag+=`\\t(${Math.round(a.time*1000)},${Math.round(b.time*1000)},\\fscx${Math.round(scaleX*b.value)}\\fscy${Math.round(100*b.value)})`;
+ }
+ return tag;
+}
 const timestamp=time=>{
   const n=Math.round(time*100);return `${Math.floor(n/360000)}:${String(Math.floor(n/6000)%60).padStart(2,'0')}:${String(Math.floor(n/100)%60).padStart(2,'0')}.${String(n%100).padStart(2,'0')}`;
 };
@@ -139,11 +149,12 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
       for(const originalRow of progressive??hierarchy){
         const transform=plan.captionTransforms?.[c.id];
         const row=transform?{...originalRow,x:540+(originalRow.x-540)*transform.scale+transform.dx,y:(captionBox.top+captionBox.bottom)/2+(originalRow.y-(captionBox.top+captionBox.bottom)/2)*transform.scale+transform.dy,size:originalRow.size*transform.scale}:originalRow;
-        if(transform&&(row.x<40||row.x>1040||row.y-row.size*.65<40||row.y+row.size*.65>1880))throw Error('El subtítulo queda fuera de la zona visible. Reduce el tamaño o muévelo hacia el centro: '+c.id);
+        // User-directed oversized typography may intentionally extend beyond the picture.
+        // ASS clips it naturally to the 1080x1920 render frame; no hidden safe-zone clamp.
         const start=row.start??c.start,end=row.end??c.end,settle=Math.round((row.settle??0)*1000);
         const entrance=row.character?`\\move(${row.x},${row.y+8},${row.x},${row.y},0,${settle})\\frz-3\\t(0,${settle},\\frz0)`:`\\pos(${row.x},${row.y})`;
         const kinetic=plan.dopaminMaster&&!row.character?`\\fscy${row.role==='keyword'?125:88}\\t(0,130,\\fscy100)`:'';
-        const style=`${kinetic}${entrance}${typefaceTags(p,row.role==='keyword'?'keyword':'normal',row.italic)}\\fs${row.size}\\fscx${row.scaleX??p.scaleX}\\i${row.italic?1:0}\\fsp${row.character?0:p.tracking}\\fad(${Math.min(fade,Math.round((end-start)*150))},${fade})${p.shadow?'\\bord0\\shad0':''}`;
+        const style=`${kinetic}${entrance}${typefaceTags(p,row.role==='keyword'?'keyword':'normal',row.italic)}\\fs${row.size}\\fscx${row.scaleX??p.scaleX}${captionScaleTags(plan,c,row.scaleX??p.scaleX)}\\i${row.italic?1:0}\\fsp${row.character?0:p.tracking}\\fad(${Math.min(fade,Math.round((end-start)*150))},${fade})${p.shadow?'\\bord0\\shad0':''}`;
         const preset=keywordPreset(c.keyword),palette=preset.colors;
         if(p.shadow){
           const s=p.shadow,dx=s.distancePx*Math.cos(s.angleDeg*Math.PI/180),dy=s.distancePx*Math.sin(s.angleDeg*Math.PI/180),alpha=Math.round((1-s.opacity)*255).toString(16).padStart(2,'0').toUpperCase();
@@ -169,8 +180,8 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
     }
     let wordOffset=0;const content=c.lines.map(line=>line.split(' ').map(word=>{const index=c.wordIndexes[wordOffset++],text=safeText(word);return c.emphasisWordIndexes?.includes(index)?`{\\1c${gold}&}${text}{\\1c${white}&}`:text;}).join(' ')).join('\\N');
     const size=fitCaptionSize(c.lines,p)*(plan.captionTransforms?.[c.id]?.scale??1),fade=p.fadeMs??60,entrance=p.entranceMs??180,motion=p.mode==='short-groups'?`${typefaceTags(p)}\\fs${size}\\fscx${p.scaleX}\\fsp${p.tracking}\\fad(${fade},${fade})\\fscy98\\t(0,${entrance},\\fscy100)`:'';
-    if(p.shadow){const s=p.shadow,dx=s.distancePx*Math.cos(s.angleDeg*Math.PI/180),dy=s.distancePx*Math.sin(s.angleDeg*Math.PI/180),alpha=Math.round((1-s.opacity)*255).toString(16).padStart(2,'0').toUpperCase();event(0,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2+dx},${(b.top+b.bottom)/2+dy})${motion}\\1c&H000000&\\1a&H${alpha}&\\blur${s.blurPx}\\bord0\\shad0}${c.lines.map(safeText).join('\\N')}`);}
-    event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})${motion}}${content}`);
+    if(p.shadow){const s=p.shadow,dx=s.distancePx*Math.cos(s.angleDeg*Math.PI/180),dy=s.distancePx*Math.sin(s.angleDeg*Math.PI/180),alpha=Math.round((1-s.opacity)*255).toString(16).padStart(2,'0').toUpperCase();event(0,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2+dx},${(b.top+b.bottom)/2+dy})${motion}${captionScaleTags(plan,c,p.scaleX)}\\1c&H000000&\\1a&H${alpha}&\\blur${s.blurPx}\\bord0\\shad0}${c.lines.map(safeText).join('\\N')}`);}
+    event(1,c.start,c.end,'Caption',`{\\pos(${(b.left+b.right)/2},${(b.top+b.bottom)/2})${motion}${captionScaleTags(plan,c,p.scaleX)}}${content}`);
   }
   eventCaptionId="";
   drawGraphicBlocks(plan,event,safeText,assColor);
@@ -180,16 +191,16 @@ export function buildPreviewASS(plan,{fontFamily=plan.policy.captions.font}={}){
     const goldCode=assColor(plan.policy.captions.accent).slice(4);
     if(m.params.motionId==='QUOTE_CARD_01'&&m.backgroundTreatment){
       const size=fitCaptionSize(m.lines,{...plan.policy.captions,fontSize:104});
-      event(2,m.start,m.end,'Outro',`{\\an7\\pos(${b.left},${b.top})\\p1\\bord0\\1c&H${paint}&\\1a&H35&\\fad(350,350)}m 0 0 l 780 0 780 300 0 300`);
-      event(3,m.start,m.end,'Outro',`{\\pos(${cx},${cy})\\fs${size}\\b1\\fad(350,350)}${m.lines.map(safeText).join('\\N')}`);
+      event(2,m.layerTimes.panel?.start??m.start,m.layerTimes.panel?.end??m.end,'Outro',`{\\an7\\pos(${b.left},${b.top})\\p1\\bord0\\1c&H${paint}&\\1a&H35&\\fad(350,350)}m 0 0 l 780 0 780 300 0 300`);
+      event(3,m.layerTimes.quote?.start??m.start,m.layerTimes.quote?.end??m.end,'Outro',`{\\pos(${cx},${cy})\\fs${size}\\b1\\fad(350,350)}${m.lines.map(safeText).join('\\N')}`);
     }else if(m.params.motionId==='QUOTE_CARD_01'){
-      event(2,m.start,m.end,'Outro',`{\\an7\\pos(${b.left},${b.top})\\p1\\bord0\\1c&H${paint}&\\1a&H35&\\fad(200,250)}m 0 0 l 780 0 780 150 0 150`);
-      event(3,m.start,m.end,'Outro',`{\\pos(${cx},${cy})\\fs44\\b1\\fad(200,250)}${m.lines.map(safeText).join('\\N')}`);
+      event(2,m.layerTimes.panel?.start??m.start,m.layerTimes.panel?.end??m.end,'Outro',`{\\an7\\pos(${b.left},${b.top})\\p1\\bord0\\1c&H${paint}&\\1a&H35&\\fad(200,250)}m 0 0 l 780 0 780 150 0 150`);
+      event(3,m.layerTimes.quote?.start??m.start,m.layerTimes.quote?.end??m.end,'Outro',`{\\pos(${cx},${cy})\\fs44\\b1\\fad(200,250)}${m.lines.map(safeText).join('\\N')}`);
     }else if(m.params.motionId==='DIVIDER_LINE_01'){
-      event(3,m.start,m.end,'Outro',`{\\an7\\pos(${b.left},${cy})\\p1\\bord0\\1c&H${goldCode}&\\fscx0\\t(0,300,\\fscx100)\\fad(100,250)}m 0 0 l 780 0 780 3 0 3`);
+      event(3,m.layerTimes.line?.start??m.start,m.layerTimes.line?.end??m.end,'Outro',`{\\an7\\pos(${b.left},${cy})\\p1\\bord0\\1c&H${goldCode}&\\fscx0\\t(0,300,\\fscx100)\\fad(100,250)}m 0 0 l 780 0 780 3 0 3`);
     }else if(m.params.motionId==='NUMBER_BADGE_GOLD_01'){
       const number=m.instance.layers.find(l=>l.id==='number').content,labelSize=m.fontSize;
-      event(3,m.start,m.end,'Outro',`{\\pos(${b.left+50},${cy})\\fs64\\b1\\1c${assColor(plan.policy.captions.accent)}&\\fad(180,200)}${number}`);
+      event(3,m.layerTimes.number?.start??m.start,m.layerTimes.number?.end??m.end,'Outro',`{\\pos(${b.left+50},${cy})\\fs64\\b1\\1c${assColor(plan.policy.captions.accent)}&\\fad(180,200)}${number}`);
       event(3,m.layerTimes.label.start,m.layerTimes.label.end,'Outro',`{\\clip(${b.left+120},${b.top},${b.right},${b.bottom})\\pos(${cx+55},${cy})\\1c${white}&\\fs${labelSize}\\fad(180,200)}${m.lines.map(safeText).join('\\N')}`);
     }
   }
@@ -271,7 +282,7 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
   const hasTransitions=!!plan.globalTransitions?.length;filters.push(`[${base}]ass=filename=${assFile}:fontsdir=fonts[${hasTransitions||plan.finishFade?'captioned':'video'}]`);
   if(hasTransitions){const global=globalTransitionFilters(plan.globalTransitions,'captioned');filters.push(...global.filters,`[${global.base}]null[${plan.finishFade?'finish-input':'video'}]`);}
   if(plan.finishFade){const f=plan.finishFade;filters.push(`[${hasTransitions?'finish-input':'captioned'}]fade=t=out:st=${f.start}:d=${f.duration}[video]`);}
-  assert(!plan.audioMix||hasAudio,'background music requires original voice track');
+  assert(!(plan.audioMix||(plan.musicTracks??[]).length)||hasAudio,'background music requires original voice track');
   filters.push(...renderAudioFilters(plan,1+plan.selectedMedia.length+(plan.illustrations?.length??0) +2*(plan.subjectLayers?.length??0)+(plan.ambientOverlays?.length??0)+(plan.foregroundEffects?1+plan.foregroundEffects.events.filter(e=>e.type==='behind-video').length:0),{hasAudio}));
   return applyMontageFilters(filters.join(';\n')+'\n',plan,{video:true,audio:hasAudio});
 }
@@ -280,7 +291,7 @@ export function buildPreviewFilter(plan,{assFile='captions.ass',hasAudio=true}={
 // must not pull the shared A/V concat ahead and retain full-resolution frames.
 export function buildVideoPassFilter(plan,options={}){
  const visual=structuredClone(plan);
- visual.audioMix=null;visual.soundEffects={events:[]};visual.customSfx={events:[]};
+ visual.audioMix=null;visual.musicTracks=[];visual.soundEffects={events:[]};visual.customSfx={events:[]};
  visual.voiceEffects={events:[]};visual.mastering={enabled:false};visual.voiceGain=1;
  return buildPreviewFilter(visual,{...options,hasAudio:false});
 }

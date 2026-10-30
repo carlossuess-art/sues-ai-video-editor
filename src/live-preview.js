@@ -1,4 +1,5 @@
 import {fitCaptionSize} from './font-kits.js';
+import {hierarchyLayout} from './caption-hierarchy.js';
 import {SOUND_PRESETS} from './sound-effects.js';
 import {resourceLevelFilter} from './audio-levels.js';
 import {mkdirSync,readFileSync,writeFileSync,existsSync,statSync,rmSync,cpSync,lstatSync,readdirSync} from 'node:fs';
@@ -15,7 +16,7 @@ export function editableBasePlan(plan){
  const p=structuredClone(plan);delete p.postEdit;delete p.outputDuration;
  p.captions=[];p.captionTransforms={};p.selectedMedia=[];p.illustrations=[];p.foregroundEffects=null;
  p.subjectLayers=[];p.ambientOverlays=[];p.globalTransitions=[];p.finishFade=null;
- p.audioMix=null;p.soundEffects={events:[]};p.customSfx={events:[]};p.voiceEffects={events:[]};
+ p.audioMix=null;p.musicTracks=[];p.soundEffects={events:[]};p.customSfx={events:[]};p.voiceEffects={events:[]};
  p.voiceGain=1;p.mastering={enabled:false};
  // Drawings remain in the browser's original ASS track. Only background
  // treatments stay in the clean plate; no text or resource is burned in.
@@ -76,11 +77,14 @@ export class LivePreviews{
   const fg=p.foregroundEffects?{events:p.foregroundEffects.events.map(e=>({...clean(e),draftIndex:(prepared.settings.reviewedForeground?.events??[]).findIndex(v=>v.type===e.type&&v.start===e.start&&v.end===e.end&&v.assetId===e.assetId),...(e.type==='behind-text'?{textSizes:e.lines.map(line=>fitCaptionSize([line],{font:'Montserrat',fontRole:'keyword',fontSize:140},780))}:{}),...(e.type==='behind-video'?{url:bind(e)}:{})})),matte:'/api/jobs/'+id+'/live-preview?key='+key+'&part=matte'}:null;
   const sfx=(p.customSfx?.events??[]).map(e=>({...clean(e),url:bind(p.customSfx.assets[e.input])}));
   const music=p.audioMix?{...clean(p.audioMix),url:bind(p.audioMix)}:null;
+  const musicTracks=(p.musicTracks??[]).map(e=>({...clean(e),url:bind(e)}));
   this.save(t);
   return {...this.view(t),base:'/api/jobs/'+id+'/live-preview?key='+key+'&part=base',ass:buildPreviewASS(p),
    captions:p.captions.map(c=>({id:c.id,start:c.start,end:c.end,text:c.text,box:p.layout.caption})),
-   captionBox:p.layout.caption,transforms:p.captionTransforms??{},videos,images,overlays,foreground:fg,
-   music,sfx,voiceGain:prepared.settings.voiceGain,proceduralSfx:{...p.soundEffects,events:(p.soundEffects?.events??[]).map(e=>({...e,end:e.start+e.duration,url:'/api/jobs/'+id+'/live-preview?key='+key+'&part=p-'+e.preset}))},
+   captionBox:p.layout.caption,transforms:p.captionTransforms??{},
+   captionFontSizes:Object.fromEntries(p.captions.map(c=>{const hierarchy=hierarchyLayout(c,p.policy.captions,p.layout.caption);const size=hierarchy?.find(row=>row.role==='keyword')?.size??fitCaptionSize(p.policy.captions.inlineGroups?[c.text]:c.lines,p.policy.captions);return [c.id,size];})),
+   videos,images,overlays,foreground:fg,
+   music,musicTracks,sfx,voiceGain:prepared.settings.voiceGain,proceduralSfx:{...p.soundEffects,events:(p.soundEffects?.events??[]).map(e=>({...e,end:e.start+e.duration,url:'/api/jobs/'+id+'/live-preview?key='+key+'&part=p-'+e.preset}))},
    postEdit:p.postEdit??null,transitions:p.globalTransitions??[],finishFade:p.finishFade??null,duration:p.duration,
    unsupported:[...((p.globalTransitions??[]).length||p.finishFade?['Las transiciones y el fundido final se verifican con Ver fragmento.']:[]),...((p.subjectLayers??[]).length?['Las capas de máscara heredadas se comprueban con Ver fragmento.']:[]),...((p.ambientOverlays??[]).length?['Los overlays importados se comprueban con Ver fragmento.']:[]),...((p.voiceEffects?.events??[]).length?['Los filtros de voz se comprueban con Ver fragmento.']:[])],
    fidelity:{captions:'original-ASS-libass',spatial:'interactive-composition',audio:'interactive-audition-final-mix-requires-fragment'},isFinalExport:false};

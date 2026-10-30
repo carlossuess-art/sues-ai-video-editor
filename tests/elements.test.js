@@ -11,9 +11,9 @@ import {EditorJobs} from '../src/editor-jobs.js';
 import {visualProfile,applyStyleVariant} from '../src/style-variants.js';
 import {editorReview} from '../src/editor-review.js';
 
-const config=(format,captions)=>({format,items:[{captionId:captions[0].id,endCaptionId:captions[1].id,label:'Primera idea',...(['COMPARE','Q&A'].includes(format)?{secondary:'Segunda idea'}:{}),...(format==='RANKING'?{number:5}:{})}]});
+const config=(format,captions)=>({format,items:[{captionId:captions[0].id,endCaptionId:captions[1].id,label:'Primera idea',...(['COMPARE','Q&A'].includes(format)?{secondary:'Segunda idea'}:{}),...(format==='RANKING'?{number:5}:{}),...(format==='TRUE_FALSE'?{answer:'false'}:{})}]});
 
-test('ELEMENTS six formats combine with both visual profiles without rewriting voice/timestamps',()=>{
+test('ELEMENTS formats combine with both visual profiles without rewriting voice/timestamps',()=>{
  const f=fixture();try{
   const project=loadProject(f.profiles.test),original=structuredClone(project.inputs);
   for(const styleId of ['SUES_CALMA','SUES_DOPAMIN']){
