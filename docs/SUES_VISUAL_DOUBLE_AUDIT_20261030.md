@@ -21,7 +21,7 @@ Proyecto de QA creado desde la interfaz usando material guardado de 13,41 s: ra�
 | V07 | Audio / motor | Dividir dentro de una rampa eliminaba el keyframe de frontera del primer tramo. | Preservar el valor interpolado en ambos lados; regresión compara continuidad. |
 | V08 | Carencia funcional | Efectos vacío no permite seleccionar ni colocar uno. | Añadir/mover/modificar/quitar warm, blur y radial del motor existente; fragmento FFmpeg real. No se simula preview instantáneo de filtros. |
 | V09 | Interacción / rendimiento | Completar un refresh pendiente mientras se escribe el tiempo del efecto borra el valor escrito. Reproducido en prueba ampliada (3,54 en vez de 5). | No reconstruir inspectores ajenos a captions al finalizar el refresh; regresión ampliada repite la edición. |
-| V10 | Clasificación | Catálogo histórico muestra `behind-video` en Motion además del B-roll con máscara. | Excluir ese duplicado histórico de Motion; no altera medios ni máscara. Revisión pública pendiente. |
+| V10 | Clasificación | Catálogo histórico muestra `behind-video` en Motion además del B-roll con máscara. | Excluir ese duplicado histórico de Motion; no altera medios ni máscara. Revisión pública posterior PASS en ambos tamaños: Motion deja de duplicar behind-video; B-roll mantiene ocho bloques. |
 
 También se protegen overrides opcionales de motions y se corrige +/- de fuente sobre keyframes y su interpolación. No se contabilizan como errores visuales independientes acreditados.
 
@@ -42,3 +42,21 @@ Operaciones principales ejecutadas al menos una vez: 17/32 (A2, C4, F4, G3, H4);
 ## Continuación exacta
 
 Verificar primero hashes de producción y cualquier render/análisis activo. Reutilizar el proyecto de QA y estos scripts. Terminar B-roll, composición Motion, ELEMENTS y los recorridos pendientes de captions/audio. A continuación ejecutar las 32 operaciones y comprobaciones transversales desde cero sobre la versión publicada. Cualquier fallo o nuevo despliegue reinicia el contador. No publicar `2/2` por sumar estas regresiones.
+
+## Publicación y comprobaciones posteriores
+
+Código remoto publicado `863d1d1ab05222df9aa5c1f67141c7463168d635`; documentación de estado `98c50980f2749dda00b18a8f2d53d457aa720ca7`. Los dos archivos públicos coinciden byte por byte con los blobs de GitHub y con el candidato probado. Cambio atómico sin reiniciar el motor ni tocar datos. HTTPS 200; 43 job.json previos intactos. Rollback por archivos: `/opt/sues-video-setup/visual-double-audit-20261030/rollback-static-863d1d1`.
+
+Regresiones completas dirigidas PUBLICADAS: caption 180px, imagen sin rostro, drag/pinch/selección y efectos añadir/mover/modificar/quitar/deshacer con fragmento MP4: PASS en 393x852 y 412x915 (`public-393.log`, `public-412.log`). Música keyframe/split/continuidad: PASS en ambos tamaños (`public-music.log`). Catálogo histórico: ocho pestañas inspeccionadas en ambos tamaños sin pageerror; máscara en B-roll y no duplicada en Motion (`legacy-inspect.log`). Son pruebas dirigidas; siguen **0/2 auditorías completas**.
+
+Exportación completa de la interfaz: H264/AAC 1080x1920, 13,400s, 12.880.889 bytes. El MP4 y los fotogramas fueron revisados, sin escucha subjetiva acreditada.
+
+### Carencias funcionales confirmadas y pendientes
+
+| ID | Pendiente |
+|---|---|
+| P01 | Movimiento/transformación de palabra individual independiente del resto del caption. |
+| P02 | Capas internas del motion histórico; el recurso inspeccionado solo ofrece ocultar/restaurar. |
+| P03 | Keyframes universales de propiedades en las ocho herramientas. |
+
+Registro: diez errores/desajustes corregidos con comprobaciones dirigidas y tres carencias funcionales confirmadas pendientes. Las operaciones aún no ejecutadas no se presentan como aprobadas ni como fallos reproducidos.
