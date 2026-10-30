@@ -162,7 +162,9 @@ async function start(){
   }
   await document.fonts.load('800 70px SuesStageExtraBold');
   busyRetries=0;ready=true;root.hidden=false;document.body.dataset.livePreview='true';installASS();
-  notify(data.unsupported.length?data.unsupported.join(' '):'');frame=-1;lastMeasured=null;
+  const advisory=data.unsupported.join(' ');notify(advisory);
+  if(advisory)setTimeout(()=>{if(active()&&ready&&message.textContent===advisory)message.hidden=true;},6500);
+  frame=-1;lastMeasured=null;
   if(!raf)raf=requestAnimationFrame(loop);
  }catch(e){if(active()&&mine===requestEpoch){if(/render activo|busy|Espera a que termine/i.test(e.message)&&busyRetries++<60){notify('Esperando a que termine la preparación anterior… Tu borrador se conserva.');clearTimeout(timer);timer=setTimeout(start,2000);}else notify(e.message+' · Puedes usar Ver fragmento.');}}
  finally{loading=false;}
@@ -192,9 +194,12 @@ function bounds(id){
   if(x1<=x0)return null;const box={left:x0/w*1080,right:x1/w*1080,top:y0/h*1920,bottom:y1/h*1920};lastMeasured={id,time:t,box};return adjustedBounds(box,id);
  }catch{return null;}
 }
-play.onclick=async()=>{if(!ready)return;if(video.paused){
+let playbackIntent=false,playbackSerial=0;
+video.addEventListener('pause',()=>{playbackIntent=false;playbackSerial++;});
+video.addEventListener('play',()=>{playbackIntent=true;});
+play.onclick=async()=>{if(!ready)return;playbackIntent=!playbackIntent;const serial=++playbackSerial;if(playbackIntent){
  try{if(!audioContext){audioContext=new AudioContext();voiceNode=audioContext.createMediaElementSource(video);voiceGain=audioContext.createGain();compressor=audioContext.createDynamicsCompressor();compressor.threshold.value=-2;compressor.ratio.value=20;voiceGain.connect(compressor).connect(audioContext.destination);}voiceNode.disconnect();voiceNode.connect(voiceGain);voiceGain.gain.value=Number($('voice-gain').value)/100;await audioContext.resume();}catch{}
- await video.play().catch(()=>{});
+ if(serial===playbackSerial&&playbackIntent)await video.play().catch(()=>{if(serial===playbackSerial)playbackIntent=false;});
  }else video.pause();};
 zoom.onclick=()=>{viewZoom=viewZoom===1?1.5:viewZoom===1.5?2:1;viewport();};
 new ResizeObserver(position).observe(video);
