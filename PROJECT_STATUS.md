@@ -1,3 +1,6 @@
+## 30/10/2026 · HOTPATCH MÓVIL PUBLICADO + QA PÚBLICA
+Ver docs/SUES_MOBILE_CAPCUT_UX_20261030.md: tres archivos estáticos hotpatched sobre release activa cb7ec1a en /opt/sues-video-setup/release-update.mvl0mllf, backup y SHA256 en /opt/sues-video-setup/manual-ux-review-20261029/rollback-mobile-20261030. HTTPS 200. Play/timeline, B-roll y navegación PASS 10 rondas también desde URL pública sin interceptar; suite completa en contenedor restrictivo 407/425, 18 fallos asociados a tests de upload/recuperación sin espacio/permisos adecuados. Falta gesto libre imágenes/gráficos y QA de teclado físico/export nuevo UI; no declarar V1 terminada. No HeyGen/Gemini.
+
 ## 30/10/2026 · EDITOR MÓVIL · RAMA AISLADA CAPCUT-STYLE, QA VISUAL
 Rama feat/mobile-capcut-navigation-20261030; base producción cb7ec1a auditada/integrada; no usar ramas main ni release históricas como fuente sin comprobar contenedor. Arquitectura UI: vídeo + timeline persistentes, categorías 4x2, inspector paginado, play en vídeo, scroll sólo horizontal de timeline, corrección de zoom 1,5x y carrera de reproducción, tiradores B-roll con fix decimal, borradores y deshacer. QA en /opt/sues-video-setup/manual-ux-review-20261029: 5 suites Chromium, 10 rondas cada una; 393x852 y 412x915; 14 tests seleccionados FFmpeg PASS; teclado 550px emulado. Documentación completa docs/SUES_MOBILE_CAPCUT_UX_20261030.md. Estado: NO CONFUNDIR QA CON DESPLIEGUE, pruebas en hardware real pendientes, compositor instantáneo de todas las capas e imágenes reubicables no incluidos.
 
@@ -995,6 +998,3 @@ b9969f8c468a15a7bc77409f862caf13d98596e2, árbol35157551f9b9d9e0685145fd357787ad
 Anterior6da5a3d. Oficial avanzó mediante lease desde080fe98, sin force. Despliegue
 systemd sues-editor-update-20261020-131347-725ebeca: SUCCESS/exitCode0 y systemd0.
 HTTPS200; API401 sin sesión; salud available y cola0/0/0. Cuatro trabajos y155
-archivos originales idénticos por SHA antes/después, incluida contraseña privada.
-
-239 tests+check PASS local y en copia aislada del VPS (Node/Git host22.23.3,
