@@ -163,11 +163,11 @@ async function start(){
   let data=await api('jobs/'+s.jobId+'/live-preview','POST',{fingerprint:current.fingerprint,settings:settings()});
   while(data.state==='PREPARING'&&active()&&mine===requestEpoch){notify('Preparando vista interactiva · '+data.percent+' %. Sólo se hace una vez por encuadre.');await new Promise(r=>setTimeout(r,1000));data={...data,...await api('jobs/'+s.jobId+'/live-preview?key='+data.key)};}
   if(!active()||mine!==requestEpoch)return;if(data.state!=='READY')throw Error(data.error??'Vista interactiva no disponible');
-  const previousKey=scene?.key;scene=data;visualDirty=true;
+  const wasReady=ready;const previousKey=scene?.key;scene=data;visualDirty=true;
   if(!ready||previousKey!==data.key){
    const at=ready?video.currentTime:window.suesManualAdjust.fromOutput(video.currentTime,current?.settings?.montageCuts??[]);video.pause();video.controls=false;video.src=data.base;video.preload='auto';video.load();
    await new Promise((resolve,reject)=>{const done=()=>{clearTimeout(timeout);video.removeEventListener('loadeddata',done);resolve();};const timeout=setTimeout(()=>reject(Error('No se pudo cargar el vídeo para editar')),30000);video.addEventListener('loadeddata',done);});
-   video.currentTime=Math.min(at,data.duration-.03);
+   const chosen=!wasReady?window.suesManualAdjust?.selectedRange?.():null;const desired=chosen&&(at<chosen.start||at>=chosen.end)?chosen.start:at;video.currentTime=Math.min(desired,data.duration-.03);
    if(data.foreground){matte.src=data.foreground.matte;matte.load();}
   }
   await document.fonts.load('800 70px SuesStageExtraBold');
@@ -177,7 +177,7 @@ async function start(){
   frame=-1;lastMeasured=null;
   if(!raf)raf=requestAnimationFrame(loop);
  }catch(e){if(active()&&mine===requestEpoch){if(/render activo|busy|Espera a que termine/i.test(e.message)&&busyRetries++<60){notify('Esperando a que termine la preparación anterior… Tu borrador se conserva.');clearTimeout(timer);timer=setTimeout(start,2000);}else notify(e.message+' · Puedes usar Ver fragmento.');}}
- finally{loading=false;}
+ finally{if(mine===requestEpoch){loading=false;if(state()?.kind==='captions')window.suesManualAdjust?.render();}}
 }
 function stop(){
  ++requestEpoch;busyRetries=0;enabled=false;ready=false;loading=false;clearTimeout(timer);cancelAnimationFrame(raf);raf=null;root.hidden=true;message.hidden=true;bar.hidden=true;delete document.body.dataset.livePreview;
@@ -187,7 +187,7 @@ function stop(){
  if(voiceNode){voiceNode.disconnect();voiceNode.connect(audioContext.destination);}if(voiceGain)voiceGain.gain.value=1;
  oldSrc=null;scene=null;captionWrap.style.transform='';viewZoom=1;const surface=document.querySelector('.touch-edit-surface');if(surface)surface.style.transform='';
 }
-function refresh(){if(!active())return;clearTimeout(timer);timer=setTimeout(start,20);}
+function refresh(){if(!active())return;loading=true;clearTimeout(timer);timer=setTimeout(start,20);}
 function gesture(id,t){
  if(!ready||!scene)return;const base=scene.transforms[id]??{dx:0,dy:0,scale:1},b=scene.captionBox;
  captionWrap.style.transformOrigin=((540+base.dx)/1080*100)+'% '+(((b.top+b.bottom)/2+base.dy)/1920*100)+'%';
