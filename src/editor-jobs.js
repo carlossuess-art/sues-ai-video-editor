@@ -105,7 +105,8 @@ export class EditorJobs{
  render(id){
   if(this.closing)throw new Error('Worker is closing');
   const job=this.get(id);if(['QUEUED','RENDERING','PUBLISHING','DONE'].includes(job.state))return this.view(job);
-  if(this.previewBusy)throw Error('Espera a que termine la previsualización del fragmento.');
+  // Accept the render into the persistent queue; drain() waits for previewBusy.
+  // Refusing after the UI has created the version left orphan PREVIEW_READY jobs.
   if(job.state==='PUBLISH_FAILED'){this.publish(job);return this.view(job);}
   if(!['PREVIEW_READY','FAILED'].includes(job.state)||!job.bundle)throw new Error('Job is not ready to render');
   if(this.queued().length>=this.maxQueued)throw new Error('Render queue full');

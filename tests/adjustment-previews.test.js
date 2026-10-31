@@ -33,7 +33,7 @@ test('draft fragments are exact-window private renders, cached, source-preservin
   assert.equal((await post({...request,duration:90})).status,400);
   const r=await post(request);assert.equal(r.status,202);let result=await r.json();const key=result.key;
   assert.equal((await (await post(request)).json()).key,key);
-  const other=app.jobs.create('test',settings);assert.throws(()=>app.jobs.render(other.id),/previsualización/);
+  const other=app.jobs.create('test',settings);const waiting=app.jobs.render(other.id);assert.equal(waiting.state,'QUEUED');assert.equal(app.jobs.children.size,0,'fragment and render must not run together');app.jobs.cancel(other.id);assert.equal(app.jobs.get(other.id).state,'CANCELLED');
   for(let i=0;result.state==='RUNNING'&&i<600;i++){await new Promise(r=>setTimeout(r,100));result=await (await fetch(base+path+'?key='+key,{headers})).json();}
   assert.equal(result.state,'READY',JSON.stringify(result));assert.equal(result.isFinalExport,false);
   const file=join(options.directory,'adjustment-previews',key,'fragment.mp4'),timestamp=statSync(file).mtimeMs;
