@@ -106,7 +106,7 @@ export function drawElements(plan,event,safeText,assColor){
   label(heading,cx,300,64,{color:accent});
   if(e.format==='TRUE_FALSE'){
    e.labels[0].forEach((line,i)=>label(line,cx,530+(i-(e.labels[0].length-1)/2)*110,e.sizes[0]));
-   const answer=e.answer==='true'?'✓ VERDADERO':'✕ FALSO';
+   const answer=e.answer==='true'?'✓ VERDADERO':'× FALSO';
    label(answer,cx,950,110,{color:e.answer==='true'?'#55DB9B':'#FF6772',at:e.revealAt});
   }else if(e.format==='COMPARE'){
    shape('m 0 0 l 2 0 2 530 0 530',509,450,accent);

@@ -34,7 +34,7 @@ export class AdjustmentPreviews{
   const key=createHash('sha256').update(JSON.stringify({jobId,settings:prepared.fingerprint,start,duration})).digest('hex');
   const cached=this.tasks.get(key);if(cached?.state==='READY'){this.media(jobId,key);return this.view(cached);}
   if(cached?.state==='RUNNING')return this.view(cached);
-  if(this.running||this.playbackBusy()||this.jobs.posterBusy.size||this.jobs.children.size||this.jobs.queued().length||this.jobs.publishing.size)throw Error('Hay otro render activo. Espera antes de previsualizar.');
+  if(this.running||this.jobs.previewBusy||this.playbackBusy()||this.jobs.posterBusy.size||this.jobs.children.size||this.jobs.queued().length||this.jobs.publishing.size)throw Error('Hay otro render activo. Espera antes de previsualizar.');
   this.prune();const directory=join(this.directory,key);
   if(existsSync(directory))rmSync(directory,{recursive:true,force:true});
   mkdirSync(directory,{mode:0o700});try{writePreparedBundle(project,prepared,join(directory,'bundle'));}catch(error){rmSync(directory,{recursive:true,force:true});throw error;}

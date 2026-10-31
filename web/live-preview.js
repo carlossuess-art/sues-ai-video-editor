@@ -25,7 +25,7 @@ const state=()=>window.suesManualAdjust?.liveState?.();
 const active=()=>enabled&&document.body.dataset.postMode==='adjust'&&state()?.jobId===jobId;
 const notify=text=>{message.textContent=text;message.hidden=!text;};
 const time=t=>{t=Math.max(0,t||0);return String(Math.floor(t/60)).padStart(2,'0')+':'+String(Math.floor(t%60)).padStart(2,'0');};
-const fonts=['montserrat-bold','montserrat-extrabold','montserrat-bold-italic','montserrat-extrabold-italic','anton','stencil','futhark'].map(id=>'/api/fonts/'+id+'/file');
+const fonts=['montserrat-bold','montserrat-extrabold','montserrat-bold-italic','montserrat-extrabold-italic','anton','stencil','futhark','inter-bold'].map(id=>'/api/fonts/'+id+'/file');
 function parts(ass){
  const lines=ass.split('\n'),head=lines.filter(l=>!l.startsWith('Dialogue:')).join('\n')+'\n',text=[],other=[];
  for(const line of lines.filter(l=>l.startsWith('Dialogue:'))){const name=line.split(',')[4];(/^seg-\d+$/.test(name)?text:other).push(line);}

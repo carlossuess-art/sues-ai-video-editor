@@ -31,6 +31,7 @@ test('draft fragments are exact-window private renders, cached, source-preservin
   const post=body=>fetch(base+path,{method:'POST',headers,body:JSON.stringify(body)});
   assert.equal((await post({...request,fingerprint:'old'})).status,409);
   assert.equal((await post({...request,duration:90})).status,400);
+  app.jobs.previewBusy=true;assert.equal((await post(request)).status,409,'live preview and fragment share the worker exclusion');assert.equal(app.adjustmentPreviews?.running??null,null);app.jobs.previewBusy=false;
   const r=await post(request);assert.equal(r.status,202);let result=await r.json();const key=result.key;
   assert.equal((await (await post(request)).json()).key,key);
   const other=app.jobs.create('test',settings);const waiting=app.jobs.render(other.id);assert.equal(waiting.state,'QUEUED');assert.equal(app.jobs.children.size,0,'fragment and render must not run together');app.jobs.cancel(other.id);assert.equal(app.jobs.get(other.id).state,'CANCELLED');
