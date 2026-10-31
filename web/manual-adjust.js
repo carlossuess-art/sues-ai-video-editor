@@ -179,7 +179,7 @@
    const volumeAtHead=()=>{const track=e.keyframes??[],t=localTime();return track.findIndex(k=>Math.abs(k.time-t)<1/60);};
    const updateGain=n=>{
     if(!beforeGain)beforeGain=snapshot();const g=Math.max(0,Math.min(1,Number(n)/100));
-    const at=volumeAtHead();if(at>=0)e.keyframes[at].value=g;else e.gain=g;
+    const at=volumeAtHead();if(at>=0)e.keyframes[at].value=g;else if(e.keyframes?.length){e.keyframes.push({time:millis(localTime()),value:g});e.keyframes.sort((a,b)=>a.time-b.time);}else e.gain=g;
     slider.value=numeric.value=String(Math.round(g*100));window.suesLivePreview?.markDirty();
    };
    const commitGain=()=>{
