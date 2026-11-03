@@ -29,7 +29,7 @@ const LINES=[
  {text:'SI QUIERES',start:9,frames:25,size:72,font:SANS,weight:700,color:WHITE},
  {text:'DESARROLLAR',start:38,frames:36,size:92,font:SANS,weight:800,color:GOLD},
  {text:'TU NIVEL DE',start:77,frames:26,size:83,font:SERIF,weight:700,color:WHITE},
- {text:'CONCIENCIA',start:107,frames:33,size:105,font:SANS,weight:800,color:GOLD},
+ {text:'CONCIENCIA',start:107,frames:22,size:105,font:SANS,weight:800,color:GOLD},
 ];
 const TextScene:React.FC=()=>{
  const f=useCurrentFrame();
@@ -81,7 +81,7 @@ export const CtaReal:React.FC<RealProps>=({hasNewVoice})=>{
  <Sequence from={T1} durationInFrames={T2-T1}><TextScene/></Sequence>
  <Sequence from={T2} durationInFrames={T3-T2}><Follow/></Sequence>
  <Sequence from={T3} durationInFrames={REAL_FRAMES-T3}><Brand/></Sequence>
- <Audio src={asset('cta-real-sfx.wav')} volume={0.48}/>
+ <Audio src={asset('cta-real-sfx.wav')} volume={1}/>
  {hasNewVoice?<Sequence from={T1}><Audio src={asset('cta-new-voice.wav')} volume={1}/></Sequence>:null}
  </AbsoluteFill>;
 };

@@ -12,7 +12,7 @@ const lines=[
  {t:'SI QUIERES',start:9,duration:25},
  {t:'DESARROLLAR',start:38,duration:36},
  {t:'TU NIVEL DE',start:77,duration:26},
- {t:'CONCIENCIA',start:107,duration:33}
+ {t:'CONCIENCIA',start:107,duration:22}
 ];
 let count=0;
 function addTick(time,gain=.28){
@@ -28,7 +28,7 @@ for(const line of lines){
  for(let k=0;k<line.t.length;k++){
   if(line.t[k]===' ')continue;
   const f=125+line.start+Math.ceil((k+1)*line.duration/line.t.length);
-  addTick(f/fps,.24+(k%4)*.035);
+  addTick(f/fps,.48+(k%4)*.055);
  }
 }
 addTick((269+39)/fps,.75);
