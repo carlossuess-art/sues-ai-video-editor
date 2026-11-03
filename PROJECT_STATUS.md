@@ -1,5 +1,15 @@
 ## Publicado · correcciones de auditoría · 29/10/2026
 
+## BIBLIOTECA DE TAPICES · 03/11/2026 (RAMA AISLADA)
+
+- Tres fondos verticales de motion graphics aprobados y guardados como imágenes privadas del editor (`/state/jobs/assets`, derechos declarados `owned`); inventario 228 → 231. Ningún vídeo original ha sido modificado.
+- Originales en Drive `03_MOTION GRAPHICS/06_TAPICES_MAESTROS`; copias optimizadas WebP en `experiments/remotion-cta/public/backgrounds`, rama `feat/remotion-cta-poc-20261103`.
+- 19 capturas de referencia analizadas: `experiments/remotion-cta/docs/ADN_REFERENCIAS_VISUALES_20261103.md`; tokens provisionales en `src/style-reference-draft.json`. No hay aprobación final de tipografías o tamaños, ni se ha desplegado una plantilla.
+- Contenedor de producción `sues-video-editor` mantenido activo, sin reinicio ni merge. La V1 y auditorías 0/2 no se dan por cerradas.
+- Siguiente: elegir segunda familia tipográfica, contrastar sobre ejemplos reales, añadir selector de tapiz a composición Remotion y auditar previsualización/MP4.
+- Variante de tapiz blanco/dorado solicitada, pero pendiente de generar y aprobar. Sin bloqueos técnicos para las tres imágenes ya guardadas.
+
+
 Release de aplicación cb7ec1a75451932778fc7295e09824fb6a615ccc, rama fix/audit-closure-20261029.
 Worktree /opt/sues-video-setup/audit-fixes-work-20261029; producción /opt/sues-video-setup/release-update.mvl0mllf.
 Se corrigieron el guard tras postEdit, sustitución explícita de B-roll/zooms, integridad
