@@ -28,17 +28,35 @@ const pop=(f:number,start:number)=> {
 const Tapiz:React.FC<{kind:number}>=({kind})=>{
  const f=useCurrentFrame();return <Img src={bg(kind)} style={{position:'absolute',inset:0,width:'102%',height:'102%',objectFit:'cover',left:'-1%',top:'-1%',transform:`scale(${1+f*0.000035})`}}/>;
 };
-const Source:React.FC<{sourceStart:number;scale?:number;right?:number;top?:number}>=({sourceStart,scale=1,right=0,top=0})=>
- <OffthreadVideo src={video('source')} muted startFrom={Math.round(sourceStart*FPS)} style={{position:'absolute',width:`${scale*100}%`,height:`${scale*100}%`,right,top,objectFit:'cover',filter:'drop-shadow(0 12px 28px rgba(0,0,0,.5))'}}/>;
-const Clip:React.FC<{s:number;e:number;n:string;inPoint:number}>=({s,e,n,inPoint})=>{
- const f=useCurrentFrame(),len=Math.round((e-s)*FPS),t=f/FPS;
- return <Sequence from={Math.round(s*FPS)} durationInFrames={len}>
-  <AbsoluteFill style={{opacity:opacityAt(t,0,(e-s),.16),background:DEEP}}>
-   <OffthreadVideo src={video(n)} muted startFrom={Math.round(inPoint*FPS)} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
-   <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.36),transparent 35%,rgba(0,0,0,.13))'}}/>
-  </AbsoluteFill>
- </Sequence>;
+const SourceCutout:React.FC<{sourceStart:number;scale?:number;right?:number;top?:number}>=({sourceStart,scale=1,right=0,top=0})=>{
+ const f=useCurrentFrame(),absolute=Math.round(sourceStart*FPS)+f;
+ const path=staticFile('full/matte/mask_'+String(absolute).padStart(4,'0')+'.png');
+ return <OffthreadVideo src={video('source')} muted startFrom={Math.round(sourceStart*FPS)} style={{
+   position:'absolute',width:`${scale*100}%`,height:`${scale*100}%`,right,top,
+   objectFit:'cover',WebkitMaskImage:`url("${path}")`,maskImage:`url("${path}")`,
+   WebkitMaskSize:'100% 100%',maskSize:'100% 100%',
+   filter:'drop-shadow(0 10px 26px rgba(0,0,0,.45))'
+ }}/>;
 };
+const SourceSoft:React.FC<{sourceStart:number;scale?:number;right?:number;top?:number}>=({sourceStart,scale=1,right=0,top=0})=>{
+ return <OffthreadVideo src={video('source')} muted startFrom={Math.round(sourceStart*FPS)} style={{
+  position:'absolute',width:`${scale*100}%`,height:`${scale*100}%`,right,top,objectFit:'cover',
+  WebkitMaskImage:'radial-gradient(ellipse 64% 64% at 50% 47%, #000 53%, transparent 96%)',
+  maskImage:'radial-gradient(ellipse 64% 64% at 50% 47%, #000 53%, transparent 96%)'
+ }}/>;
+};
+const ClipInner:React.FC<{e:number;s:number;n:string;inPoint:number}>=({e,s,n,inPoint})=>{
+ const f=useCurrentFrame(),t=f/FPS,d=e-s;
+ return <AbsoluteFill style={{opacity:opacityAt(t,0,d,.18),background:DEEP}}>
+ <OffthreadVideo src={video(n)} muted startFrom={Math.round(inPoint*FPS)} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+ <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.28),transparent 37%,rgba(0,0,0,.12))'}}/>
+ </AbsoluteFill>;
+};
+const Clip:React.FC<{s:number;e:number;n:string;inPoint:number}>=({s,e,n,inPoint})=>
+ <Sequence from={Math.round(s*FPS)} durationInFrames={Math.round((e-s)*FPS)}>
+   <ClipInner s={s} e={e} n={n} inPoint={inPoint}/>
+ </Sequence>;
+
 const AnimatedText:React.FC<{text:string;size:number;top:number;left?:number;color?:string;italic?:boolean;delay?:number;align?:'left'|'center';width?:number}>=({text,size,top,left=65,color=IVORY,italic=false,delay=0,align='left',width=960})=>{
  const f=useCurrentFrame(),a=pop(f,delay),opacity=enter(f,delay,6);
  return <div style={{position:'absolute',top,left,width,textAlign:align||'left',fontSize:size,color,fontFamily:italic?SERIF:SANS,fontStyle:italic?'italic':'normal',fontWeight:italic?650:800,lineHeight:1.03,letterSpacing:-2.4,textShadow:'0 5px 22px #000A',opacity,transform:`translateY(${(1-opacity)*26}px) scale(${a})`,transformOrigin:'left center'}}>{text}</div>;
@@ -88,7 +106,7 @@ const QuestionScene:React.FC=()=>{
  const f=useCurrentFrame(),k=enter(f,10,14);
  return <AbsoluteFill style={{background:DEEP}}>
  <Tapiz kind={3}/>
- <Source sourceStart={29.16} scale={.72} right={-10} top={265}/>
+ <SourceSoft sourceStart={29.16} scale={.82} right={-10} top={210}/>
  <div style={{position:'absolute',top:470,left:44,width:440,fontFamily:SANS,fontSize:62,fontWeight:800,lineHeight:1.17,color:IVORY,textShadow:'0 4px 20px #0009',opacity:k}}>
  ¿Y SI DEJAN<br/>DE <span style={{color:GOLD}}>QUERERME?</span>
  </div>
@@ -96,21 +114,34 @@ const QuestionScene:React.FC=()=>{
  </AbsoluteFill>;
 };
 const MaskScene:React.FC=()=>{
- const f=useCurrentFrame(),absolute=1505+f;
- const path=staticFile('full/matte/mask_'+String(absolute).padStart(4,'0')+'.png');
+ const f=useCurrentFrame();
  return <AbsoluteFill style={{background:DEEP}}>
  <Tapiz kind={3}/>
- <div style={{position:'absolute',top:408,left:65,right:65,fontFamily:SANS,fontWeight:800,fontSize:125,color:'#E5B177',lineHeight:1.05,textShadow:'0 4px 30px #000B',opacity:enter(f,12,12)}}>PARTES<br/>DE TI</div>
- <OffthreadVideo src={video('source')} startFrom={1505} muted style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',WebkitMaskImage:`url("${path}")`,maskImage:`url("${path}")`,WebkitMaskSize:'100% 100%',maskSize:'100% 100%'}}/>
- <div style={{position:'absolute',top:165,left:60,fontFamily:SERIF,fontStyle:'italic',fontSize:53,color:IVORY,opacity:enter(f,25,10)}}>¿Qué has dejado atrás?</div>
+ <div style={{position:'absolute',top:465,left:54,width:440,fontFamily:SANS,fontWeight:800,fontSize:81,color:'#E5B177',lineHeight:1.06,textShadow:'0 4px 30px #000B',opacity:enter(f,12,12)}}>PARTES<br/>DE TI</div>
+ <SourceCutout sourceStart={50.166667} scale={.86} right={-105} top={200}/>
+ <div style={{position:'absolute',top:320,left:55,width:370,fontFamily:SERIF,fontStyle:'italic',fontSize:42,color:IVORY,opacity:enter(f,23,9)}}>¿Qué has dejado atrás?</div>
  </AbsoluteFill>;
 };
-const FinalDecisions:React.FC=()=>{
+const FinalScene:React.FC=()=>{
  const f=useCurrentFrame();
- return <>{[{t:'ELIGE',s:0},{t:'SIN TRAICIONARTE',s:44},{t:'CADA DÍA',s:93}].map((v,i)=>{
- const k=pop(f,v.s);return <div key={i} style={{position:'absolute',left:55,top:210+i*168,padding:'16px 30px',background:'rgba(10,14,17,.76)',borderLeft:'8px solid '+GOLD,borderRadius:8,color:i===1?GOLD:IVORY,fontFamily:SANS,fontSize:i===1?46:57,fontWeight:800,opacity:k>0?1:0,transform:`scale(${k})`,transformOrigin:'left center'}}>{v.t}</div>;
- })}</>;
+ const cues=[
+  {text:'DEJA DE',start:43,top:710,color:IVORY,size:69},
+  {text:'TRAICIONARTE',start:58,top:815,color:GOLD,size:57},
+  {text:'CADA DÍA',start:145,top:1140,color:IVORY,size:64}
+ ];
+ return <AbsoluteFill style={{background:DEEP}}>
+  <Tapiz kind={3}/>
+  <div style={{position:'absolute',inset:0,background:'linear-gradient(90deg,#05070A77,transparent 80%)'}}/>
+  <SourceSoft sourceStart={58.53333} scale={.85} right={-90} top={230}/>
+  <div style={{position:'absolute',top:530,left:52,width:420,fontFamily:SERIF,fontStyle:'italic',fontSize:48,color:IVORY,opacity:enter(f,0,13)}}>El primer paso</div>
+  {cues.map((v,i)=>{
+   const k=pop(f,v.start);
+   if(f<v.start)return null;
+   return <div key={i} style={{position:'absolute',left:54,top:v.top,fontFamily:SANS,fontSize:v.size,fontWeight:800,color:v.color,lineHeight:1.03,textShadow:'0 5px 18px #000A',opacity:Math.min(1,k),transform:`scale(${k})`,transformOrigin:'left center'}}>{v.text}</div>;
+  })}
+ </AbsoluteFill>;
 };
+
 const Captions:React.FC=()=>{
  const f=useCurrentFrame(), t=f/FPS;const cue=(captions as {start:number;end:number;text:string}[]).find(x=>x.start<=t&&x.end>t);
  if(!cue||[ [7.74,12.32],[33.4,41.65] ].some(([a,b])=>t>=a&&t<=b))return null;
@@ -127,7 +158,6 @@ const Extra:React.FC=()=>{
  {t>=16.5&&t<20.8?<><AnimatedText text="NO" size={205} top={190} left={95} color={GOLD} delay={498}/><AnimatedText text="CULPA" size={90} top={405} left={95} delay={533}/></>:null}
  {t>=23.7&&t<26.5?<AnimatedText text="PONER LÍMITES" size={65} top={185} left={63} delay={720}/>:null}
  {t>=44.8&&t<47.78?<AnimatedText text="DESPERTAR" size={78} top={175} left={76} color={GOLD} delay={1350}/>:null}
- {t>=58.5&&t<65?<FinalDecisions/>:null}
  </>;
 };
 const AudioAccent:React.FC<{start:number;file:string;volume:number}>=({start,file,volume})=><Sequence from={Math.round(start*FPS)} durationInFrames={30}><Audio src={staticFile('full/'+file)} volume={volume}/></Sequence>;
@@ -146,6 +176,7 @@ export const FullVideo:React.FC=()=>{
  <Sequence from={Math.round(33.4*FPS)} durationInFrames={Math.round((41.65-33.4)*FPS)}><ChoiceScene/></Sequence>
  {S.map(x=><Clip key={x.n} {...x}/>)}
  <Sequence from={1505} durationInFrames={92}><MaskScene/></Sequence>
+ <Sequence from={1756} durationInFrames={END_ORIGINAL-1756}><FinalScene/></Sequence>
  <Sequence from={0} durationInFrames={END_ORIGINAL}><Extra/><Captions/><Audio src={bed} volume={.085}/></Sequence>
  <AudioAccent start={7.7} file="whoosh.wav" volume={.20}/>
  <AudioAccent start={21.4} file="whoosh.wav" volume={.13}/>
