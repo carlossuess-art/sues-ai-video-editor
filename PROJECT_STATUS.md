@@ -1,5 +1,14 @@
 ## Publicado · correcciones de auditoría · 29/10/2026
 
+## VIDEO COMPLETO 158404 · V2 GRÁFICOS SUSTITUTIVOS · 04/11/2026
+
+- Rama `feat/remotion-cta-poc-20261103`: tres vídeos sin licencia comercial acreditada (R2, R5, R6) sustituidos por composiciones propias sobre los tapices: RECHAZO/MIEDO (26,70–29,13), RECONOCER (47,80–49,82) y ENCAJAR (53,10–55,22). Se mantienen R1, R3 y R4 de Pexels con procedencia documentada.
+- Fuente original 65 s + cierre Maestro V3 11,307 s = 76,3 s previstos. Primer MP4 V1 sí renderizado, pero **V2 corregido NO renderizado ni publicado**.
+- Fotogramas V2 y compilación TypeScript verificados en VPS **antes** del último ajuste de máscara, pendientes de repetición después del ajuste. Tests estáticos y documento de reanudación guardados en GitHub.
+- Bloqueo: Desktop Commander Remote del VPS `srv1841004` dejó de contestar aunque aparecía Online con último contacto caducado. No reiniciar ni desplegar a ciegas. No cambiar porcentajes ni aceptación global.
+- Siguiente: restablecer acceso; ejecutar tests y renders reales; inspeccionar audio, máscaras, títulos y zonas seguras; registrar MP4 en biblioteca privada; solicitar aceptación creativa a Carlos. Ver `experiments/remotion-cta/docs/EDICION_158404_V2_20261104.md`.
+
+
 ## CTA MAESTRO V3 · CIERRE REUTILIZABLE · 03/11/2026
 
 - Cierre `SUES_CTA_MAESTRO_V3_OM_GALAXIA_POP.mp4` guardado como **recurso de tipo vídeo en la biblioteca privada del editor** (SHA-256 `3b66fc2bcf2393cc77e42bf8b7fb706b7d4f6c9c2ab2c9e1d6453fe6dcb08b49`). Tamaño: 1080×1920, 30 fps, 11,307 s, H.264/AAC.
