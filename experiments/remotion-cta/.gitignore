@@ -1,0 +1,6 @@
+# Dependencies, generated video and private assets must never enter Git
+/node_modules/
+/out/
+/public/
+/.cache/
+*.log
