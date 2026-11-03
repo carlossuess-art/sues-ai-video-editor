@@ -5,8 +5,8 @@ import captions from './full-captions.json';
 /**
  * SUES · 158404 private editorial review.
  * Original audio 00:00-01:05 intact; B-roll sources are MUTED.
- * R2/R5/R6: downloaded from social media, commercial rights not substantiated.
- * Do not publish without authorization or licensed substitutions.
+ * Published candidates limited to 3 separately traceable Pexels B-roll clips.
+ * Remaining scenes use original motion compositions and the authorized Carlos footage.
  */
 export const FPS = 30;
 export const END_ORIGINAL = 1950; // 65 s
@@ -19,7 +19,7 @@ const video=(name:string)=>staticFile('full/'+name+'.mp4');
 const bg=(i:number)=>staticFile('backgrounds/tapiz-0'+i+(i===1?'-cuadricula-antracita-ambar':i===2?'-perspectiva-ambar':'-ondas-cobre')+'.webp');
 const clamp=(n:number)=>Math.max(0,Math.min(1,n));
 const opacityAt=(time:number,a:number,b:number,edge=.18)=>clamp((time-a)/edge)*clamp((b-time)/edge);
-const S=[{s:21.45,e:23.7,n:'r1-chain',inPoint:.4},{s:26.7,e:29.13,n:'r2-alone',inPoint:1.5},{s:42.55,e:44.77,n:'r3-sun',inPoint:1.2},{s:47.8,e:49.82,n:'r5-mirror',inPoint:1.2},{s:53.1,e:55.22,n:'r6-pier',inPoint:1.2},{s:56.2,e:58.52,n:'r4-path',inPoint:1.0}];
+const S=[{s:21.45,e:23.7,n:'r1-chain',inPoint:.4},{s:42.55,e:44.77,n:'r3-sun',inPoint:1.2},{s:56.2,e:58.52,n:'r4-path',inPoint:1.0}];
 const enter=(f:number,start:number,duration=12)=>interpolate(f,[start,start+duration],[0,1],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
 const pop=(f:number,start:number)=> {
  const v=interpolate(f,[start,start+5,start+10,start+15],[0,.67,1.095,1],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
@@ -41,8 +41,8 @@ const SourceCutout:React.FC<{sourceStart:number;scale?:number;right?:number;top?
 const SourceSoft:React.FC<{sourceStart:number;scale?:number;right?:number;top?:number}>=({sourceStart,scale=1,right=0,top=0})=>{
  return <OffthreadVideo src={video('source')} muted startFrom={Math.round(sourceStart*FPS)} style={{
   position:'absolute',width:`${scale*100}%`,height:`${scale*100}%`,right,top,objectFit:'cover',
-  WebkitMaskImage:'radial-gradient(ellipse 64% 64% at 50% 47%, #000 53%, transparent 96%)',
-  maskImage:'radial-gradient(ellipse 64% 64% at 50% 47%, #000 53%, transparent 96%)'
+  WebkitMaskImage:'radial-gradient(ellipse 56% 47% at 58% 52%, #000 35%, rgba(0,0,0,.93) 62%, transparent 100%)',
+  maskImage:'radial-gradient(ellipse 56% 47% at 58% 52%, #000 35%, rgba(0,0,0,.93) 62%, transparent 100%)'
  }}/>;
 };
 const ClipInner:React.FC<{e:number;s:number;n:string;inPoint:number}>=({e,s,n,inPoint})=>{
@@ -142,6 +142,58 @@ const FinalScene:React.FC=()=>{
  </AbsoluteFill>;
 };
 
+
+// Licensed footage replaces social-media B-roll in all public-safe scenes.
+// The speaker is moved to the right, and the left quarter holds explanatory graphics.
+const RejectionScene:React.FC=()=>{
+ const f=useCurrentFrame(),p=1+Math.sin(f*.22)*.026;
+ return <AbsoluteFill style={{background:DEEP}}>
+  <Tapiz kind={3}/>
+  <div style={{position:'absolute',inset:0,background:'linear-gradient(90deg,#06090ACF,#06090A55 52%,transparent)'}}/>
+  <SourceSoft sourceStart={26.7} scale={.81} right={-100} top={190}/>
+  <div style={{position:'absolute',top:260,left:55,width:460,color:IVORY,fontFamily:SERIF,fontStyle:'italic',fontSize:52}}>Cuando aparece...</div>
+  <div style={{position:'absolute',top:385,left:55,width:505,color:GOLD,fontFamily:SANS,fontSize:88,fontWeight:800,letterSpacing:-2.5,lineHeight:1.04,opacity:enter(f,5,9)}}>EL MIEDO</div>
+  <svg style={{position:'absolute',left:66,top:600,opacity:enter(f,14,7),transform:'scale('+p+')'}} width="420" height="340" viewBox="0 0 420 340">
+   <path d="M119 120 C90 52 12 79 24 155 C36 220 122 272 208 300" fill="none" stroke="#EDC18B" strokeWidth="9" strokeLinecap="round"/>
+   <path d="M300 120 C331 52 408 79 397 155 C390 204 340 238 298 265" fill="none" stroke="#EDC18B" strokeWidth="9" strokeLinecap="round"/>
+   <path d="M210 64 L165 155 L226 168 L192 270" fill="none" stroke="#F6E2C4" strokeWidth="12" strokeLinejoin="round" strokeLinecap="round"/>
+   <path d="M250 285 L310 270" stroke="#E8B57C" strokeWidth="6" strokeLinecap="round"/>
+  </svg>
+  <div style={{position:'absolute',left:60,top:1020,width:430,color:IVORY,fontFamily:SANS,fontWeight:700,fontSize:44,opacity:enter(f,36,8)}}>¿Y si dejo de gustarles?</div>
+ </AbsoluteFill>;
+};
+const RecognitionScene:React.FC=()=>{
+ const f=useCurrentFrame();
+ return <AbsoluteFill style={{background:DEEP}}>
+  <Tapiz kind={2}/>
+  <div style={{position:'absolute',inset:0,background:'linear-gradient(90deg,#040608D8 0%,#06070855 60%,transparent)'}}/>
+  <SourceSoft sourceStart={47.8} scale={.82} right={-90} top={210}/>
+  <div style={{position:'absolute',left:55,top:320,color:IVORY,fontFamily:SERIF,fontSize:52,fontStyle:'italic',opacity:enter(f,0,8)}}>Mirar hacia dentro</div>
+  <div style={{position:'absolute',left:52,top:425,width:570,fontFamily:SANS,fontSize:74,fontWeight:800,letterSpacing:-2.5,color:GOLD,lineHeight:1.05,transform:'scale('+pop(f,12)+')',transformOrigin:'left center'}}>RECONOCER</div>
+  <svg style={{position:'absolute',left:60,top:660,opacity:enter(f,24,9)}} width="450" height="340" viewBox="0 0 450 340">
+   <rect x="48" y="22" width="304" height="280" rx="145" fill="none" stroke="#EED1A8" strokeWidth="9"/>
+   <path d="M210 76 C168 90 151 131 166 173 C180 208 232 227 228 272" stroke="#E9B576" strokeWidth="12" fill="none" strokeLinecap="round"/>
+   <path d="M234 76 C290 86 306 130 290 177 C273 218 232 229 235 272" stroke="#A88764" strokeWidth="10" fill="none" strokeDasharray="13 13" strokeLinecap="round"/>
+  </svg>
+ </AbsoluteFill>;
+};
+const FitScene:React.FC=()=>{
+ const f=useCurrentFrame();
+ return <AbsoluteFill style={{background:DEEP}}>
+  <Tapiz kind={1}/>
+  <div style={{position:'absolute',inset:0,background:'linear-gradient(90deg,#060809E8 0%,#07090B44 62%,transparent)'}}/>
+  <SourceSoft sourceStart={53.1} scale={.79} right={-100} top={235}/>
+  <div style={{position:'absolute',left:54,top:380,width:490,color:IVORY,fontFamily:SERIF,fontStyle:'italic',fontSize:48,opacity:enter(f,2,7)}}>¿Para qué?</div>
+  <div style={{position:'absolute',left:53,top:477,width:530,color:GOLD,fontFamily:SANS,fontSize:89,fontWeight:800,opacity:enter(f,12,7),lineHeight:1}}>ENCAJAR</div>
+  <svg style={{position:'absolute',top:655,left:60,opacity:enter(f,17,8)}} viewBox="0 0 460 330" width="430" height="300">
+   <path d="M40 70 H140 C126 118 185 150 205 102 C209 90 204 78 198 70 H316 V280 H207 C218 230 160 211 141 254 C138 262 138 271 142 280 H40 Z" fill="none" stroke="#F3D5A7" strokeWidth="10" strokeLinejoin="round"/>
+   <path d="M356 100 C386 86 422 114 407 149 C399 168 383 176 365 176 V247 H296 V200" stroke="#D4A46B" strokeWidth="10" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="12 12"/>
+   <path d="M347 113 L356 102 L367 118" fill="none" stroke="#F8E8CF" strokeWidth="8" strokeLinecap="round"/>
+  </svg>
+  <div style={{position:'absolute',left:58,top:1100,width:460,color:IVORY,fontFamily:SANS,fontSize:40,fontWeight:700,opacity:enter(f,35,8)}}>No necesitas dejar de ser tú.</div>
+ </AbsoluteFill>;
+};
+
 const Captions:React.FC=()=>{
  const f=useCurrentFrame(), t=f/FPS;const cue=(captions as {start:number;end:number;text:string}[]).find(x=>x.start<=t&&x.end>t);
  if(!cue||[ [7.74,12.32],[33.4,41.65] ].some(([a,b])=>t>=a&&t<=b))return null;
@@ -175,6 +227,9 @@ export const FullVideo:React.FC=()=>{
  <Sequence from={Math.round(29.16*FPS)} durationInFrames={Math.round((33.4-29.16)*FPS)}><QuestionScene/></Sequence>
  <Sequence from={Math.round(33.4*FPS)} durationInFrames={Math.round((41.65-33.4)*FPS)}><ChoiceScene/></Sequence>
  {S.map(x=><Clip key={x.n} {...x}/>)}
+ <Sequence from={Math.round(26.70*FPS)} durationInFrames={Math.round((29.13-26.70)*FPS)}><RejectionScene/></Sequence>
+ <Sequence from={Math.round(47.80*FPS)} durationInFrames={Math.round((49.82-47.80)*FPS)}><RecognitionScene/></Sequence>
+ <Sequence from={Math.round(53.10*FPS)} durationInFrames={Math.round((55.22-53.10)*FPS)}><FitScene/></Sequence>
  <Sequence from={1505} durationInFrames={92}><MaskScene/></Sequence>
  <Sequence from={1756} durationInFrames={END_ORIGINAL-1756}><FinalScene/></Sequence>
  <Sequence from={0} durationInFrames={END_ORIGINAL}><Extra/><Captions/><Audio src={bed} volume={.085}/></Sequence>
