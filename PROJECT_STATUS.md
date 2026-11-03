@@ -1,5 +1,13 @@
 ## Publicado · correcciones de auditoría · 29/10/2026
 
+## CTA MAESTRO V3 · CIERRE REUTILIZABLE · 03/11/2026
+
+- Cierre `SUES_CTA_MAESTRO_V3_OM_GALAXIA_POP.mp4` guardado como **recurso de tipo vídeo en la biblioteca privada del editor** (SHA-256 `3b66fc2bcf2393cc77e42bf8b7fb706b7d4f6c9c2ab2c9e1d6453fe6dcb08b49`). Tamaño: 1080×1920, 30 fps, 11,307 s, H.264/AAC.
+- Dos elementos reutilizables, con fondo transparente, registrados aparte: OM dorado `3868704729815c51ab84fea96e23e0eff31213b58134e6e3be49eff947863d98`; galaxia dorada `a9eb0f9b1f07fee8ecd6bf186d09e89090735c738634fb84371463fdb78e2b28`.
+- MP4, fuentes V3 y manual de reutilización almacenados en Drive `05_OUTROS · BRAND KIT/03_Cierres y llamadas a la acción`. PNG originales y WebP optimizados en `03_MOTION GRAPHICS/07_ELEMENTOS_TRANSPARENTES`.
+- Su orden final es **primero «Sígueme» con Instagram y después el logotipo auténtico**. Código/recurso todavía aislado de producción. El clip se puede utilizar como vídeo pre-renderizado, pero NO es todavía plantilla paramétrica integrada en Remotion del editor productivo.
+- Sin merge ni despliegue. Sin cambios en los porcentajes de avance de la V1. Siguiente: nuevo plan y montaje del vídeo completo cuando Carlos lo solicite, usando este cierre.
+
 ## BIBLIOTECA DE TAPICES · 03/11/2026 (RAMA AISLADA)
 
 - Tres fondos verticales de motion graphics aprobados y guardados como imágenes privadas del editor (`/state/jobs/assets`, derechos declarados `owned`); inventario 228 → 231. Ningún vídeo original ha sido modificado.
