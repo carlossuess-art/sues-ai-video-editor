@@ -1,0 +1,75 @@
+{
+  "id": "CTA-SUES-1080x1920",
+  "version": 1,
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "totalFrames": 330,
+  "scenes": {
+    "intro": {
+      "start": 0,
+      "duration": 138,
+      "spoken": "Soy Carlos, facilitador de procesos de transformación profunda."
+    },
+    "typewriter": {
+      "start": 138,
+      "duration": 108,
+      "spoken": "Si quieres desarrollar tu nivel de consciencia"
+    },
+    "instagram": {
+      "start": 246,
+      "duration": 51,
+      "spoken": "sígueme."
+    },
+    "brand": {
+      "start": 297,
+      "duration": 33,
+      "spoken": ""
+    }
+  },
+  "typingLines": [
+    {
+      "text": "SI QUIERES",
+      "start": 10,
+      "duration": 19,
+      "fontSize": 62,
+      "weight": 700,
+      "color": "#F2E9DB"
+    },
+    {
+      "text": "DESARROLLAR",
+      "start": 31,
+      "duration": 26,
+      "fontSize": 94,
+      "weight": 800,
+      "color": "#E8BA78"
+    },
+    {
+      "text": "TU NIVEL DE",
+      "start": 59,
+      "duration": 20,
+      "fontSize": 62,
+      "weight": 700,
+      "color": "#F2E9DB"
+    },
+    {
+      "text": "CONSCIENCIA",
+      "start": 81,
+      "duration": 26,
+      "fontSize": 96,
+      "weight": 800,
+      "color": "#E7B67A"
+    }
+  ],
+  "instagramClickLocalFrame": 31,
+  "assets": {
+    "carlosCutout": "assets/carlos-alpha.webm",
+    "neuralVideo": "assets/neural.mp4",
+    "omImage": "assets/om-alpha.png",
+    "galaxyImage": "assets/galaxy-alpha.png",
+    "instagramScreenshot": "assets/instagram-profile.png",
+    "logo": "assets/sues-logo.png",
+    "voice": "assets/voice.wav",
+    "sfx": "assets/sfx.wav"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "sues-remotion-cta-poc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "assets": "node scripts/prepare-assets.mjs",
+    "studio": "npm run assets && remotion studio src/index.ts",
+    "render": "npm run assets && remotion render src/index.ts CTA-SUES-1080x1920 out/cta-demo.mp4 --codec=h264 --concurrency=1",
+    "still": "npm run assets && remotion still src/index.ts CTA-SUES-1080x1920 out/cta-frame.png --frame=205",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.540",
+    "remotion": "4.0.540",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2"
+  }
+}
