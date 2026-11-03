@@ -1,0 +1,72 @@
+{
+  "schema": "sues-visual-reference-draft/v1",
+  "date": "2026-11-03",
+  "status": "provisional-awaits-user-font-validation",
+  "referenceImageCount": 19,
+  "output": {
+    "width": 1080,
+    "height": 1920
+  },
+  "fonts": {
+    "primary": {
+      "family": "Montserrat",
+      "weights": [
+        700,
+        800
+      ],
+      "status": "already-in-repo"
+    },
+    "secondary": {
+      "family": "editorial-italic-serif",
+      "candidate": "Playfair Display Italic",
+      "status": "not installed/unverified"
+    }
+  },
+  "subtitle": {
+    "baseSizePx": [
+      70,
+      94
+    ],
+    "emphasisSizePx": [
+      108,
+      152
+    ],
+    "italicSizePx": [
+      108,
+      148
+    ],
+    "placementNormalized": {
+      "x": [
+        0.1,
+        0.8
+      ],
+      "y": [
+        0.4,
+        0.66
+      ]
+    },
+    "shadow": "soft-dark"
+  },
+  "motion": {
+    "supportSizePx": [
+      58,
+      86
+    ],
+    "heroSizePx": [
+      112,
+      164
+    ],
+    "backgrounds": [
+      "tapiz-01-cuadricula-antracita-ambar.webp",
+      "tapiz-02-perspectiva-ambar.webp",
+      "tapiz-03-ondas-cobre.webp"
+    ],
+    "defaultSpeakerVisible": false
+  },
+  "assets": {
+    "source": "Drive 03_MOTION GRAPHICS/06_TAPICES_MAESTROS",
+    "status": "stored in private editor library",
+    "fourthWhiteGold": "pending"
+  },
+  "notes": "Ranges are provisional comparison tokens; Instagram screen captures contain UI overlays."
+}
