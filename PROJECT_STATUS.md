@@ -1398,3 +1398,5 @@ La tabla técnica de Carlos queda codificada como `sues-visual-grammar-158623-v1
 - Master Director en rama aislada: curvas de animación `linear`, `ease-in`, `ease-out`, `ease-in-out` implementadas y preservadas con cubic-bezier estándar; `spring` sigue bloqueado. 8/8 pruebas dirigidas, TypeScript y fotograma sintético Remotion PASS. No implica aceptación audiovisual ni despliegue. Detalle en `docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md`.
 
 - UI aislada Master Director: selección de curva por fotograma, guardada en versión nueva con revisión requerida. Smoke Chromium escritorio/móvil PASS con backend de prueba; no desplegado.
+
+- UI aislada Master Director ampliada para editar valores existentes de keyframes con versionado. Prueba de navegador escritorio/móvil PASS con fixture simulado; sin despliegue.

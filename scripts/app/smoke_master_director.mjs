@@ -42,10 +42,10 @@ try{
   await page.evaluate(()=>document.querySelector('#master-preview-history-open').click());
   assert.match(await page.locator('#master-preview-history-player').getAttribute('src'),/master-preview-media/);
   const dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(dimensions.scroll<=dimensions.width,JSON.stringify(dimensions));
-  await page.evaluate(()=>{const inp=document.querySelectorAll('#master-layer-controls input');inp[0].value='170';inp[4].value='2.5';inp[5].value='4.5';inp[6].value='Texto editado';document.querySelector('[data-master-easing="1"]').value='ease-in';document.querySelector('#master-layer-controls fieldset button').click();});
+  await page.evaluate(()=>{const inp=document.querySelectorAll('#master-layer-controls input');inp[0].value='170';inp[4].value='2.5';inp[5].value='4.5';inp[6].value='Texto editado';document.querySelector('[data-master-keyframe="1:x"]').value='125';document.querySelector('[data-master-easing="1"]').value='ease-in';document.querySelector('#master-layer-controls fieldset button').click();});
   await page.waitForFunction(()=>document.querySelector('#master-review-result').textContent.includes('nueva versión'),{timeout:30000});
   const edited=await page.evaluate(()=>JSON.parse(document.querySelector('#external-plan-text').value).operations[0]);
-  assert.equal(edited.parameters.visual.rect.x,170);assert.equal(edited.start,2.5);assert.equal(edited.end,4.5);assert.equal(edited.parameters.text,'Texto editado');assert.equal(edited.parameters.visual.keyframes[1].easing,'ease-in');
+  assert.equal(edited.parameters.visual.rect.x,170);assert.equal(edited.start,2.5);assert.equal(edited.end,4.5);assert.equal(edited.parameters.text,'Texto editado');assert.equal(edited.parameters.visual.keyframes[1].easing,'ease-in');assert.equal(edited.parameters.visual.keyframes[1].x,125);
   await page.evaluate(()=>document.querySelector('#master-versions-button').click());
   await page.waitForFunction(()=>!document.querySelector('#master-versions-label').hidden,{timeout:30000});
   await page.evaluate(id=>{document.querySelector('#master-versions-select').value=id;document.querySelector('#master-version-open').click();},originalRevision);

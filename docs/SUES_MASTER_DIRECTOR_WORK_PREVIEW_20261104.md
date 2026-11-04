@@ -41,3 +41,5 @@ El adaptador admite ahora `linear`, `ease-in`, `ease-out` y `ease-in-out` con cu
 Regresión específica posterior en copia aislada del editor: 114/114 PASS.
 
 El editor de la rama incorpora selector de curva por keyframe (desde el segundo), conserva valores no modificados y guarda cualquier cambio en una nueva versión que requiere revisión. En navegador aislado se verificaron revisión, aprobación, selección de curva, edición y conservación de versión tanto a 1440 como a 390 píxeles; proveedor y render de esa prueba son simulados. No es despliegue ni prueba creativa.
+
+Los controles de capa permiten editar valores existentes de keyframes: tiempo, desplazamiento, escala, rotación y opacidad; se mantienen intactas las propiedades ausentes. El cambio crea revisión nueva y el validador posterior verifica tiempos y compatibilidad. Chromium escritorio y móvil PASS con fixture simulado, incluyendo modificación y recuperación de versión previa. No se han probado aquí máscara dinámica ni Reel creativo.

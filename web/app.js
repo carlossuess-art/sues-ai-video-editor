@@ -611,6 +611,19 @@ async function masterDecision(mode){
   numberField('start','Inicio (segundos)',original.start);numberField('end','Final (segundos)',original.end);
   if(typeof original.parameters?.text==='string'){const label=document.createElement('label'),input=document.createElement('input');label.textContent='Texto';input.value=original.parameters.text;label.append(input);box.append(label);inputs.text=input;}
   if(node.visual)numberField('opacity','Opacidad (0–1)',node.visual.opacity,'.01');
+  const keyframeControls=[];
+  for(const [index,keyframe] of (node.visual?.keyframes??[]).entries()){
+   const group=document.createElement('fieldset'),heading=document.createElement('legend');
+   heading.textContent='Fotograma '+keyframe.atFrame;group.append(heading);
+   for(const key of ['atFrame','x','y','scale','rotation','opacity']){
+    if(keyframe[key]===undefined)continue;
+    const label=document.createElement('label'),input=document.createElement('input');
+    label.textContent=({atFrame:'Tiempo (fotograma)',x:'Desplazamiento horizontal',y:'Desplazamiento vertical',scale:'Escala',rotation:'Rotación',opacity:'Opacidad animada'})[key];
+    input.type='number';input.step=key==='atFrame'?'1':'any';input.value=String(keyframe[key]);input.dataset.masterKeyframe=index+':'+key;
+    label.append(input);group.append(label);keyframeControls.push({index,key,input});
+   }
+   box.append(group);
+  }
   const easingControls=[];
   for(const [index,keyframe] of (node.visual?.keyframes??[]).entries()){
    if(index===0)continue;
@@ -632,6 +645,11 @@ async function masterDecision(mode){
    if(node.visual?.rect){const rect=Object.fromEntries(['x','y','width','height'].map(key=>[key,Number(inputs[key].value)]));
     if(Object.values(rect).some(n=>!Number.isFinite(n))||rect.width<=0||rect.height<=0)throw Error('Comprueba la posición y el tamaño de la capa.');parameters.visual={...node.visual,rect};}
    if(inputs.opacity){const opacity=Number(inputs.opacity.value);if(!Number.isFinite(opacity)||opacity<0||opacity>1)throw Error('La opacidad debe estar entre 0 y 1.');parameters.visual.opacity=opacity;}
+   for(const {index,key,input} of keyframeControls){
+    const value=Number(input.value);
+    if(input.value.trim()===''||!Number.isFinite(value)||(key==='atFrame'&&(!Number.isInteger(value)||value<0))||(key==='scale'&&(value<=0||value>10))||(key==='opacity'&&(value<0||value>1)))throw Error('Comprueba los valores del fotograma.');
+    parameters.visual.keyframes[index][key]=value;
+   }
    for(const {index,select,currentEasing} of easingControls)if(select.value!==currentEasing)parameters.visual.keyframes[index].easing=select.value;
    if(inputs.text)parameters.text=inputs.text.value;if(inputs.gain)parameters.gain=Number(inputs.gain.value);
    if(inputs.sourceInFrame){const n=Number(inputs.sourceInFrame.value);if(!Number.isInteger(n)||n<0)throw Error('El inicio del recurso debe ser un fotograma válido.');parameters.sourceInFrame=n;}
