@@ -27,3 +27,15 @@ test('font staging binds family and weight to current project bytes',async()=>{
   writeFileSync(join(dir,file),'altered');assert.throws(()=>stageMasterDirectorFonts(c,{project,publicDirectory:dir}),/changed/);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
+
+test('original media staging rechecks source bytes and never replaces existing source',async()=>{
+ const {stageMasterDirectorSource}=await import('../src/master-director-remotion-stage.js');
+ const dir=mkdtempSync(join(tmpdir(),'master-source-'));
+ try{const bytes=Buffer.from('source fixture'),hash=createHash('sha256').update(bytes).digest('hex'),path=join(dir,'source');writeFileSync(path,bytes);
+  const project={sourcePath:path,boundHashes:{source:hash}},c={schema:'sues-remotion-layers/v1',source:{assetId:hash}};
+  assert.equal(stageMasterDirectorSource(c,{project,publicDirectory:dir}).status,'STAGED_NOT_RENDERED');
+  assert.deepEqual(readFileSync(join(dir,'master-source',hash)),bytes);
+  writeFileSync(path,'changed');assert.throws(()=>stageMasterDirectorSource(c,{project,publicDirectory:dir}),/changed/);
+  assert.deepEqual(readFileSync(join(dir,'master-source',hash)),bytes);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});

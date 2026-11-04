@@ -1,3 +1,8 @@
+import {sealMasterPreview,findMasterPreview,discardUnsealedMasterPreview,listMasterPreviews} from './master-director-preview-index.js';
+import {probeMasterDirectorSource} from './master-director-source-probe.js';
+import {prepareMasterDirectorRender} from './master-director-preflight.js';
+import {renderMasterDirectorPreview} from './master-director-preview-renderer.js';
+import {auditMasterDirectorMedia} from './master-director-technical-audit.js';
 import {createMasterDirectorContextProvider} from './master-director-context.js';
 import {MasterDirectorProjectStore} from './master-director-project-store.js';
 import {LivePreviews} from './live-preview.js';
@@ -47,7 +52,7 @@ async function body(req,maxBytes=65536){
  const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>maxBytes)throw new Error('Request too large');chunks.push(chunk);}
  const value=JSON.parse(Buffer.concat(chunks).toString());if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -200,10 +205,10 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers|master-layer-edit|master-operation-edit|master-versions))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
-    if(['master-draft','master-review','master-decision','master-layers','master-layer-edit','master-operation-edit','master-versions'].includes(action)){
+    if(['master-draft','master-review','master-decision','master-layers','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews'].includes(action)){
      const source=jobs.get(id);
      const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
@@ -223,6 +228,50 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      if(action==='master-review'&&req.method==='POST'){
       const b=await body(req,2048);if(Object.keys(b).some(k=>k!=='revision'))return json(res,400,{error:'Solicitud inválida.'});
       return json(res,200,await store.review(b.revision));
+     }
+     if(action==='master-render-preflight'&&req.method==='POST'){
+      const b=await body(req,2048);if(Object.keys(b).some(k=>!['revision','decisionId'].includes(k)))return json(res,400,{error:'Solicitud inválida.'});
+      const result=await prepareMasterDirectorRender({store,revision:b.revision,decisionId:b.decisionId,jobs,jobId:id,assets,probe:masterSourceProbe});
+      const {project,projectFingerprint,statusCode,...safe}=result;return json(res,statusCode??200,safe);
+     }
+     if(action==='master-preview'&&req.method==='POST'){
+      const b=await body(req,2048);if(Object.keys(b).some(k=>!['revision','decisionId','requestId'].includes(k))||typeof b.requestId!=='string'||! /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(b.requestId))return json(res,400,{error:'Solicitud inválida.'});
+      if(!masterPreviewConfig)return json(res,503,{error:'La previsualización del Director todavía no está configurada.'});
+      if(jobs.previewBusy||jobs.children.size||jobs.queued().length||jobs.publishing.size||previews.pending.size||adjustmentPreviews.running)
+       return json(res,409,{error:'Hay otra edición en proceso. Espera antes de previsualizar.'});
+      jobs.previewBusy=true;
+      try{
+       const ready=await prepareMasterDirectorRender({store,revision:b.revision,decisionId:b.decisionId,jobs,jobId:id,assets,probe:masterSourceProbe});
+       if(ready.status!=='READY_FOR_SOURCE_STAGING')return json(res,ready.statusCode??200,{status:ready.status,issues:ready.issues,canExecute:false});
+       const previewRoot=join(jobs.dir(id),'master-director','previews'),existing=findMasterPreview(previewRoot,{requestId:b.requestId});
+       if(existing){if(existing.seal.revision!==b.revision||existing.seal.decisionId!==b.decisionId||existing.seal.record.planFingerprint!==ready.composition.planFingerprint)
+        return json(res,409,{error:'La solicitud pertenece a otra revisión del plan.'});
+        return json(res,200,{status:'PREVIEW_READY_FOR_REVIEW',previewId:existing.seal.record.id,record:existing.seal.record,audit:existing.seal.audit,final:false,reused:true});}
+       const approvalCheck=async()=>{
+        const layers=await store.layers(b.revision,b.decisionId),current=jobs.get(id),catalog=externalCatalog(jobs.loadProfile(current.profileId),current.settings,assets.list());
+        return layers.status==='STRUCTURE_READY_NOT_RENDERED'&&layers.remotion?.status==='READY_FOR_REMOTION_STAGING'&&
+         layers.graph.planFingerprint===ready.composition.planFingerprint&&catalog.timelineFingerprint===ready.projectFingerprint&&catalog.sourceSha256===ready.composition.sourceSha256;
+       };
+       const result=await masterPreviewRenderer({composition:ready.composition,project:ready.project,assets,
+        workRoot:previewRoot,entryFile:masterPreviewConfig.entryFile,
+        remotionCli:masterPreviewConfig.remotionCli,browserExecutable:masterPreviewConfig.browserExecutable,approvalCheck});
+       if(result.status!=='PREVIEW_RENDERED_UNVERIFIED')return json(res,200,{status:result.status,issues:result.issues,canExecute:false});
+       const audit=await masterPreviewAuditor({sourcePath:ready.project.sourcePath,sourceSha256:ready.composition.sourceSha256,
+        outputPath:result.outputPath,expected:{width:270,height:480,duration:ready.composition.durationFrames/30,fps:30}});
+       if(audit.status!=='TECHNICAL_PASS_HUMAN_QA_PENDING'||audit.outputSha256!==result.record.outputSha256||!await approvalCheck()){
+        try{discardUnsealedMasterPreview(previewRoot,result.outputPath)}catch{}
+        return json(res,200,{status:'BLOCKED',issues:[{code:'PREVIEW_AUDIT_OR_APPROVAL_FAILED'}],canExecute:false});
+       }
+       const seal={schema:'sues-master-preview-seal/v1',requestId:b.requestId,revision:b.revision,decisionId:b.decisionId,record:result.record,audit};
+       try{sealMasterPreview(previewRoot,result.outputPath,seal)}catch(error){try{discardUnsealedMasterPreview(previewRoot,result.outputPath)}catch{}throw error;}
+       return json(res,200,{status:'PREVIEW_READY_FOR_REVIEW',previewId:result.record.id,record:result.record,audit,final:false});
+      }finally{jobs.previewBusy=false;jobs.drain();}
+     }
+     if(action==='master-previews'&&req.method==='GET')return json(res,200,{previews:listMasterPreviews(join(jobs.dir(id),'master-director','previews'))});
+     if(action==='master-preview-media'&&['GET','HEAD'].includes(req.method)){
+      const match=findMasterPreview(join(jobs.dir(id),'master-director','previews'),{previewId:url.searchParams.get('previewId')});
+      if(!match)return json(res,404,{error:'Previsualización no encontrada.'});
+      res.setHeader('X-Sues-Master-Preview','technical-not-final');return sourceStream(req,res,match.file,'video/mp4');
      }
      if(action==='master-operation-edit'&&req.method==='POST'){
       const b=await body(req,32768);if(Object.keys(b).some(k=>!['revision','operationId','patch'].includes(k)))return json(res,400,{error:'Solicitud inválida.'});

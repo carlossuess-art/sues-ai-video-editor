@@ -1,3 +1,10 @@
+## 04/11/2026 · MASTER DIRECTOR · PREVIEW EN ENTORNO AISLADO · MISIÓN INCOMPLETA
+
+- Servidor/UI de desarrollo integran revisión, versiones y preview Remotion privada con aprobación, validación de fuente CFR30/cortes, bloqueo de cambios, auditoría técnica, reproducción autenticada e idempotencia. No habilitado en producción: política y configuración real faltan; no es exportación final.
+- Prueba HTTP completa de 24 s sintéticos: render 720 frames+audio, auditoría de decodificación, Range e idempotencia PASS. Sobre copia normalizada de 158404 se verificó fuente de 65,1 s y se renderizó/auditó solo un segundo de prueba; no Reel creativo. Prueba técnica de 65,1 s en curso: no reclamarla hasta final.
+- 130/130 Node dirigidas PASS en copia productiva con parche selectivo; navegador desktop/móvil con fixtures PASS. Suite amplia anterior 525/529 con salvedades documentadas, falta repetir final. Detalle y siguientes pasos: docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md.
+- Sin despliegue, gastos API, publicación ni cambio de skill. Faltan evidencia de masters, máscaras dinámicas, compositor integral, recursos, backup portable, QA audiovisual doble y aprobación creativa.
+
 ## 04/11/2026 · MASTER DIRECTOR · UI Y PROTOTIPOS MULTICAPA · INCOMPLETO
 
 - Añadida revisión/decisión en UI de desarrollo, selección de versiones y edición reversible parcial de capas (posición, tamaño, tiempos, texto, opacidad, volumen y origen según corresponda). No se inicia render y la política real continúa bloqueada. Prueba Chromium PASS escritorio y móvil con fixtures, incluida recuperación de versión.

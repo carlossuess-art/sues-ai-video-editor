@@ -2,13 +2,16 @@ import {pathToFileURL} from 'node:url';
 if(!process.env.SUES_PLAYWRIGHT_MODULE||!process.env.SUES_CHROMIUM_PATH)throw Error('Set SUES_PLAYWRIGHT_MODULE and SUES_CHROMIUM_PATH');
 const {chromium}=await import(pathToFileURL(process.env.SUES_PLAYWRIGHT_MODULE).href);
 import assert from 'node:assert/strict';
-import {join} from 'node:path';import {rmSync} from 'node:fs';
+import {join} from 'node:path';import {rmSync,mkdirSync,writeFileSync,readFileSync} from 'node:fs';import {createHash,randomUUID} from 'node:crypto';
 import {fixture} from '../../tests/helpers/editor-fixture.js';import {createEditorServer} from '../../src/editor-server.js';
 const f=fixture(),master='b'.repeat(64),context={registry:{brandId:'sues',profileId:'DOPAMIN',projectId:'p1',approvedRuleVersion:'rules-v1',
  approvedRuleIds:['r1'],requiredRuleKeys:['brand.background'],approvedReferenceIds:[],masterHashes:{tapiz:master},
- lockedMastersByMode:{'brand-sues':[{id:'tapiz',sha256:master}]},rendererCapabilities:{remotion:['text']},licensedAssets:{},canvas:{width:1080,height:1920}},
+ lockedMastersByMode:{'brand-sues':[{id:'tapiz',sha256:master}]},rendererCapabilities:{remotion:['text']},licensedAssets:{},canvas:{width:1080,height:1920},verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}}},
  rulebook:[{id:'r1',key:'brand.background',scope:'global',authority:'explicit-user-approval',status:'approved',value:'anthracite',supersedes:[]}]};
-const app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,masterDirectorContext:async()=>context});let browser;
+let renders=0;
+const renderer=async({composition,workRoot,approvalCheck})=>{assert.equal(await approvalCheck(),true);const dir=join(workRoot,'master-preview-'+String(++renders).padStart(6,'0'));mkdirSync(dir,{recursive:true});const outputPath=join(dir,'preview.mp4');writeFileSync(outputPath,'fixture-preview');const outputSha256=createHash('sha256').update(readFileSync(outputPath)).digest('hex');return {status:'PREVIEW_RENDERED_UNVERIFIED',record:{id:randomUUID(),planFingerprint:composition.planFingerprint,sourceSha256:composition.sourceSha256,outputSha256,bytes:15,final:false},outputPath}};
+const auditor=async({outputPath})=>({status:'TECHNICAL_PASS_HUMAN_QA_PENDING',outputSha256:createHash('sha256').update(readFileSync(outputPath)).digest('hex')});
+const app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,masterDirectorContext:async()=>context,masterSourceProbe:async project=>({status:'SOURCE_CFR30_VERIFIED',sourceTiming:'cfr30-verified',sourceHasAudio:true,sourceDuration:24,width:1080,height:1920,sourceSha256:project.boundHashes.source}),masterPreviewConfig:{entryFile:'/tmp/a',remotionCli:'/tmp/b',browserExecutable:'/tmp/c'},masterPreviewRenderer:renderer,masterPreviewAuditor:auditor});let browser;
 try{
  const launch=await app.listen(),job=app.jobs.create('test'),base=launch.split('/#')[0];
  browser=await chromium.launch({executablePath:process.env.SUES_CHROMIUM_PATH,headless:true,args:['--no-sandbox']});
@@ -27,8 +30,17 @@ try{
   const originalRevision=await page.evaluate(()=>masterReview.revision);
   await page.evaluate(()=>document.querySelector('#master-approve').click());
   await page.waitForSelector('#master-layer-controls fieldset',{state:'attached',timeout:30000});
+  await page.evaluate(()=>document.querySelector('#master-preflight').click());
+  await page.waitForFunction(()=>document.querySelector('#master-preflight-result').textContent.includes('Preparación comprobada'),{timeout:30000});
+  await page.evaluate(()=>document.querySelector('#master-generate-preview').click());
+  await page.waitForFunction(()=>document.querySelector('#master-preview-status').textContent.includes('preparada'),{timeout:30000});
+  assert.match(await page.locator('#master-layer-controls video').getAttribute('src'),/master-preview-media/);
+  await page.evaluate(()=>document.querySelector('#master-preview-history').click());
+  await page.waitForFunction(()=>!document.querySelector('#master-preview-history-label').hidden,{timeout:30000});
+  await page.evaluate(()=>document.querySelector('#master-preview-history-open').click());
+  assert.match(await page.locator('#master-preview-history-player').getAttribute('src'),/master-preview-media/);
   const dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(dimensions.scroll<=dimensions.width,JSON.stringify(dimensions));
-  await page.evaluate(()=>{const inp=document.querySelectorAll('#master-layer-controls input');inp[0].value='170';inp[4].value='2.5';inp[5].value='4.5';inp[6].value='Texto editado';document.querySelector('#master-layer-controls button').click();});
+  await page.evaluate(()=>{const inp=document.querySelectorAll('#master-layer-controls input');inp[0].value='170';inp[4].value='2.5';inp[5].value='4.5';inp[6].value='Texto editado';document.querySelector('#master-layer-controls fieldset button').click();});
   await page.waitForFunction(()=>document.querySelector('#master-review-result').textContent.includes('nueva versión'),{timeout:30000});
   const edited=await page.evaluate(()=>JSON.parse(document.querySelector('#external-plan-text').value).operations[0]);
   assert.equal(edited.parameters.visual.rect.x,170);assert.equal(edited.start,2.5);assert.equal(edited.end,4.5);assert.equal(edited.parameters.text,'Texto editado');

@@ -8,7 +8,7 @@ import {Reference158623Demo} from './SemanticVisualBeat';
 
 export const RemotionRoot: React.FC = () => (
  <>
-  <Composition id="SUES-MASTER-TEXT-TEST" component={MasterDirectorText} durationInFrames={90} fps={30} width={1080} height={1920} defaultProps={{layers:[]}} />
+  <Composition id="SUES-MASTER-TEXT-TEST" component={MasterDirectorText} durationInFrames={90} fps={30} width={1080} height={1920} defaultProps={{layers:[]}} calculateMetadata={({props})=>({durationInFrames:props.durationFrames??90,fps:props.fps??30,width:props.canvasWidth??1080,height:props.canvasHeight??1920})} />
   <Composition
     id={plan.id}
     component={CtaVideo}

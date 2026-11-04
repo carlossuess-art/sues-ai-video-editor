@@ -60,3 +60,18 @@ export function stageMasterDirectorFonts(composition,{project,publicDirectory}={
  }}catch(e){for(const p of made)try{unlinkSync(p)}catch{}throw e;}
  return {status:'STAGED_NOT_RENDERED',fontIds:[...targets.keys()]};
 }
+
+// Original source is staged separately from library assets; the project object
+// must come from loadProject. Hash again before and after copying.
+export function stageMasterDirectorSource(composition,{project,publicDirectory}={}){
+ if(composition?.schema!=='sues-remotion-layers/v1'||!HASH.test(composition.source?.assetId??'')||
+    composition.source.assetId!==project?.boundHashes?.source||typeof project?.sourcePath!=='string'||
+    typeof publicDirectory!=='string'||!publicDirectory.startsWith('/'))throw Error('Invalid source staging context');
+ const id=composition.source.assetId,bytes=readFileSync(project.sourcePath);
+ if(bytes.length>256*1024*1024||createHash('sha256').update(bytes).digest('hex')!==id)throw Error('Source bytes changed or staging limit exceeded');
+ const root=join(publicDirectory,'master-source');mkdirSync(root,{recursive:true,mode:0o700});const path=join(root,id);
+ try{writeFileSync(path,bytes,{mode:0o600,flag:'wx'});}
+ catch(e){if(e.code!=='EEXIST'||createHash('sha256').update(readFileSync(path)).digest('hex')!==id)throw e;}
+ if(createHash('sha256').update(readFileSync(project.sourcePath)).digest('hex')!==id)throw Error('Source changed while staging');
+ return {status:'STAGED_NOT_RENDERED',sourceSha256:id};
+}
