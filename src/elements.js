@@ -1,4 +1,5 @@
 import {fitCaptionSize,typefaceTags} from './font-kits.js';
+import {VISUAL_GRAMMAR_158623} from './visual-grammar.js';
 import {validateSafePlacement,PORTRAIT_SAFE_ZONES} from './vision.js';
 
 export const ELEMENT_FORMATS=Object.freeze(['LIST','RANKING','COMPARE','REVEAL','Q&A','FLOW']);
@@ -60,24 +61,24 @@ export function prepareElements(value,plan,{enabled=true,profile}={}){
 
 export function drawElements(plan,event,safeText,assColor){
  for(const e of plan.elements??[]){
-  const p=plan.policy.captions,cx=510,accent=plan.policy.captions.accent,ms=e.entranceMs;
+  const p=plan.policy.captions,cx=510,accent=plan.policy.templateId==='SUES_DOPAMIN'?VISUAL_GRAMMAR_158623.palette.contrast.text:plan.policy.captions.accent,ms=e.entranceMs;
   const shape=(path,x,y,color,layer=-5)=>event(layer,e.start,e.end,'Outro',`{\\an7\\pos(${x},${y})\\p1\\bord0\\shad0\\1c${assColor(color)}&}${path}`);
   // Intentional scene replacement. This is not a simulated subject cutout.
   shape('m 0 0 l 1080 0 1080 1920 0 1920',0,0,plan.renderColors.dark,-9);
   for(let y=320;y<=1100;y+=80)shape('m 0 0 l 780 0 780 1 0 1',120,y,'#303038',-8);
   const label=(text,x,y,size,{color='#FFFFFF',role='keyword',at=e.start}={})=>event(-1,at,e.end,'Caption',`{${typefaceTags(p,role)}\\an5\\move(${x},${y+e.travelPx},${x},${y},0,${ms})\\fs${size}\\fscx100\\fscy100\\fsp0\\bord0\\shad0\\1c${assColor(color)}&\\fad(${Math.min(ms,100)},80)}${safeText(text)}`);
   const heading={LIST:'LAS CLAVES',RANKING:'CLASIFICACIÓN',COMPARE:'DOS PERSPECTIVAS',REVEAL:'DESCUBRE','Q&A':'PREGUNTA Y RESPUESTA',FLOW:'PASO A PASO'}[e.format];
-  label(heading,cx,300,64,{color:accent});
+  label(heading,cx,300,VISUAL_GRAMMAR_158623.type.connector.maxPx,{color:accent});
   if(e.format==='COMPARE'){
    shape('m 0 0 l 2 0 2 530 0 530',509,450,accent);
-   for(let col=0;col<2;col++)e.labels[col].forEach((line,i)=>label(line,col?715:305,650+(i-(e.labels[col].length-1)/2)*110,e.sizes[col]));
+   for(let col=0;col<2;col++)e.labels[col].forEach((line,i)=>label(line,col?715:305,650+(i-(e.labels[col].length-1)/2)*110,Math.min(e.sizes[col],VISUAL_GRAMMAR_158623.type.hero.maxPx)));
   }else if(e.format==='Q&A'){
-   for(let col=0;col<2;col++)e.labels[col].forEach((line,i)=>label(line,cx,(col?900:540)+(i-(e.labels[col].length-1)/2)*100,e.sizes[col],{color:col?accent:'#FFFFFF'}));
+   for(let col=0;col<2;col++)e.labels[col].forEach((line,i)=>label(line,cx,(col?900:540)+(i-(e.labels[col].length-1)/2)*100,Math.min(e.sizes[col],VISUAL_GRAMMAR_158623.type.hero.maxPx),{color:col?accent:'#FFFFFF'}));
    shape('m 0 0 l 680 0 680 3 0 3',170,720,accent);
   }else{
    const marker=e.format==='RANKING'?'#'+e.number:e.format==='FLOW'?'PASO '+e.number:String(e.number);
-   label(marker,cx,490,e.format==='FLOW'?96:160,{color:accent});
-   e.labels[0].forEach((line,i)=>label(line,cx,760+(i-(e.labels[0].length-1)/2)*110,e.sizes[0]));
+   label(marker,cx,490,e.format==='FLOW'?VISUAL_GRAMMAR_158623.type.hero.minPx:VISUAL_GRAMMAR_158623.type.hero.maxPx,{color:accent});
+   e.labels[0].forEach((line,i)=>label(line,cx,760+(i-(e.labels[0].length-1)/2)*110,Math.min(e.sizes[0],VISUAL_GRAMMAR_158623.type.hero.maxPx)));
    // A progress rail reveals the position without drawing ten lines of copy.
    shape('m 0 0 l 680 0 680 6 0 6',170,1040,'#474750');
    shape(`m 0 0 l ${Math.round(680*e.number/(e.format==='RANKING'?10:e.total))} 0 ${Math.round(680*e.number/(e.format==='RANKING'?10:e.total))} 6 0 6`,170,1040,accent);
