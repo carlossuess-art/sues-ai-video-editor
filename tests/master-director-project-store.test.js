@@ -145,7 +145,7 @@ test('render preflight requires a current approval and server-probed source; it 
 test('private preview requires approval, verifies output and is idempotent for the same request',async()=>{
  const f=fixture(),master='b'.repeat(64),font='e'.repeat(64);let renders=0,outputFile='',invalidateDuringRender=false;
  const policy={registry:{brandId:'sues',profileId:'DOPAMIN',projectId:'p1',approvedRuleVersion:'rules-v1',approvedRuleIds:['r1'],requiredRuleKeys:['brand.background'],approvedReferenceIds:[],masterHashes:{tapiz:master},lockedMastersByMode:{'brand-sues':[{id:'tapiz',sha256:master}]},rendererCapabilities:{remotion:['text']},licensedAssets:{},canvas:{width:1080,height:1920},verifiedFonts:{'Montserrat:700':{sha256:font}}},rulebook:[{id:'r1',key:'brand.background',scope:'global',authority:'explicit-user-approval',status:'approved',value:'anthracite',supersedes:[]}]};
- const renderer=async({composition,workRoot,approvalCheck})=>{assert.equal(await approvalCheck(),true);renders++;const dir=join(workRoot,'master-preview-'+String(renders).padStart(6,'0'));mkdirSync(dir,{recursive:true});outputFile=join(dir,'preview.mp4');writeFileSync(outputFile,'synthetic-preview');if(invalidateDuringRender)policy.registry.approvedReferenceIds.push('changed');const outputSha256=createHash('sha256').update('synthetic-preview').digest('hex');return {status:'PREVIEW_RENDERED_UNVERIFIED',record:{id:'11111111-1111-4111-8111-111111111111',planFingerprint:composition.planFingerprint,sourceSha256:composition.sourceSha256,outputSha256,bytes:17,final:false},outputPath:outputFile}};
+ const renderer=async({composition,workRoot,approvalCheck})=>{assert.equal(await approvalCheck(),true);await new Promise(resolve=>setTimeout(resolve,120));renders++;const dir=join(workRoot,'master-preview-'+String(renders).padStart(6,'0'));mkdirSync(dir,{recursive:true});outputFile=join(dir,'preview.mp4');writeFileSync(outputFile,'synthetic-preview');if(invalidateDuringRender)policy.registry.approvedReferenceIds.push('changed');const outputSha256=createHash('sha256').update('synthetic-preview').digest('hex');return {status:'PREVIEW_RENDERED_UNVERIFIED',record:{id:'11111111-1111-4111-8111-111111111111',planFingerprint:composition.planFingerprint,sourceSha256:composition.sourceSha256,outputSha256,bytes:17,final:false},outputPath:outputFile}};
  const auditor=async({outputPath})=>({status:'TECHNICAL_PASS_HUMAN_QA_PENDING',outputSha256:createHash('sha256').update(readFileSync(outputPath)).digest('hex')});
  const app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,masterDirectorContext:async()=>policy,masterSourceProbe:async project=>({status:'SOURCE_CFR30_VERIFIED',sourceTiming:'cfr30-verified',sourceHasAudio:true,sourceDuration:24,width:1080,height:1920,sourceSha256:project.boundHashes.source}),masterPreviewConfig:{entryFile:'/tmp/a',remotionCli:'/tmp/b',browserExecutable:'/tmp/c'},masterPreviewRenderer:renderer,masterPreviewAuditor:auditor});
  try{const launch=await app.listen(),url=launch.split('/#')[0],job=app.jobs.create('test');const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}}),headers={Cookie:session.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'};
@@ -154,15 +154,28 @@ test('private preview requires approval, verifies output and is idempotent for t
   const story={schema:'sues-master-story/v1',sourceSha256:c.sourceSha256,timeline:{fingerprint:c.timelineFingerprint,timeSpace:'edit-timeline',fps:30,duration:c.duration},visual:{mode:'brand-sues'},narrative:{centralMessage:'Una historia real',intendedExperience:'Recorrido visual',scenes:[{id:'intro',start:0,end:c.duration,purpose:'Explicar la historia'}],motifs:[]},resources:[],operations:[{id:'texto',sceneId:'intro',start:2,end:4,track:'graphics',effect:'text',renderer:'remotion',reason:'Reforzar el mensaje',parameters:{text:'Hola',visual},dependsOn:[],requiredQA:['rendered-frame','motion-playback','narrative-review']}]};
   const {revision}=await (await post('/master-draft',{story})).json(),review=await (await post('/master-review',{revision})).json(),decision=await (await post('/master-decision',{revision,fingerprint:review.fingerprint,mode:'approve'})).json(),requestId=randomUUID(),data={revision,decisionId:decision.decisionId,requestId};
   assert.equal((await post('/master-preview',{...data,sourcePath:'/tmp/fake'})).status,400);
-  const result=await (await post('/master-preview',data)).json();assert.equal(result.status,'PREVIEW_READY_FOR_REVIEW');assert.equal(result.final,false);assert.equal(renders,1);assert.equal(app.jobs.previewBusy,false);
-  assert.equal((await (await post('/master-preview',data)).json()).reused,true);assert.equal(renders,1);
+  const started=await post('/master-preview',data);assert.equal(started.status,202);assert.equal((await started.json()).status,'RUNNING');
+  assert.equal((await fetch(url+'/api/health',{headers})).status,200);
+  const wait=async id=>{for(let i=0;i<200;i++){const r=await (await fetch(root+'/master-preview-status?requestId='+id,{headers})).json();if(r.status!=='RUNNING')return r;await new Promise(resolve=>setTimeout(resolve,10));}throw Error('Preview timed out');};
+  const completed=await wait(requestId);assert.equal(completed.status,'READY');const result=completed.result;assert.equal(result.status,'PREVIEW_READY_FOR_REVIEW');assert.equal(result.final,false);assert.equal(renders,1);assert.equal(app.jobs.previewBusy,false);
+  assert.equal((await (await post('/master-preview',data)).json()).status,'READY');assert.equal(renders,1);
   const savedPreviews=await (await fetch(root+'/master-previews',{headers})).json();assert.equal(savedPreviews.previews.length,1);assert.equal(savedPreviews.previews[0].previewId,result.previewId);
-  const firstOutput=outputFile;invalidateDuringRender=true;
-  const invalidated=await (await post('/master-preview',{...data,requestId:randomUUID()})).json();
-  assert.equal(invalidated.status,'BLOCKED');assert.equal(invalidated.issues[0].code,'PREVIEW_AUDIT_OR_APPROVAL_FAILED');
+  const firstOutput=outputFile;invalidateDuringRender=true;const changedRequest=randomUUID();
+  assert.equal((await post('/master-preview',{...data,requestId:changedRequest})).status,202);
+  const invalidated=await wait(changedRequest);assert.equal(invalidated.status,'BLOCKED');assert.equal(invalidated.issues[0].code,'PREVIEW_AUDIT_OR_APPROVAL_FAILED');
   assert.equal(app.jobs.previewBusy,false);policy.registry.approvedReferenceIds.pop();invalidateDuringRender=false;
   const media=root+'/master-preview-media?previewId='+result.previewId;assert.equal((await fetch(media)).status,401);
   const range=await fetch(media,{headers:{...headers,Range:'bytes=0-3'}});assert.equal(range.status,206);assert.equal(await range.text(),'synt');
   writeFileSync(firstOutput,'different');assert.equal((await fetch(media,{headers})).status,400);
+ }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
+});
+
+test('server restart marks orphan preview interrupted and blocks unsafe duplicate work',async()=>{
+ const {MasterPreviewRequests}=await import('../src/master-director-preview-requests.js');
+ const f=fixture(),app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,masterPreviewConfig:{entryFile:'/tmp/a',remotionCli:'/tmp/b',browserExecutable:'/tmp/c'}});
+ try{const launch=await app.listen(),url=launch.split('/#')[0],job=app.jobs.create('test'),requests=new MasterPreviewRequests(app.jobs.dir(job.id)),requestId=randomUUID(),revision='a'.repeat(64),decisionId='b'.repeat(64);requests.create({requestId,revision,decisionId});
+  const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}}),headers={Cookie:session.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'},root=url+'/api/jobs/'+job.id;
+  const status=await (await fetch(root+'/master-preview-status?requestId='+requestId,{headers})).json();assert.equal(status.status,'INTERRUPTED');
+  const again=await fetch(root+'/master-preview',{method:'POST',headers,body:JSON.stringify({requestId:randomUUID(),revision,decisionId})});assert.equal(again.status,409);assert.equal(app.jobs.children.size,0);
  }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });

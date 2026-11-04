@@ -1,3 +1,4 @@
+import {MasterPreviewRequests} from './master-director-preview-requests.js';
 import {sealMasterPreview,findMasterPreview,discardUnsealedMasterPreview,listMasterPreviews} from './master-director-preview-index.js';
 import {probeMasterDirectorSource} from './master-director-source-probe.js';
 import {prepareMasterDirectorRender} from './master-director-preflight.js';
@@ -74,6 +75,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const livePreviews=new LivePreviews(join(directory,'live-previews'),jobs,{busy:()=>previews.pending.size>0||!!adjustmentPreviews.running});
  const analysis=new LocalAnalysis(intake);
  const masterContextProvider=masterDirectorContext??createMasterDirectorContextProvider(directory);
+ const masterPreviewRuns=new Map();
  const cloudRuns=new Set();
  const cloud=cloudDirector??new CloudDirector({credentialsFile:join(dirname(passwordFile),'cloud-director-keys.json')});
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
@@ -205,10 +207,10 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
-    if(['master-draft','master-review','master-decision','master-layers','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews'].includes(action)){
+    if(['master-draft','master-review','master-decision','master-layers','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status'].includes(action)){
      const source=jobs.get(id);
      const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
@@ -234,38 +236,64 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       const result=await prepareMasterDirectorRender({store,revision:b.revision,decisionId:b.decisionId,jobs,jobId:id,assets,probe:masterSourceProbe});
       const {project,projectFingerprint,statusCode,...safe}=result;return json(res,statusCode??200,safe);
      }
+     if(action==='master-preview-status'&&req.method==='GET'){
+      const requestId=url.searchParams.get('requestId'),requests=new MasterPreviewRequests(jobs.dir(id)),record=requests.get(requestId);
+      if(!record)return json(res,404,{error:'Previsualización no encontrada.'});
+      if(record.status==='RUNNING'&&!masterPreviewRuns.has(id+':'+requestId)){
+       const existing=findMasterPreview(join(jobs.dir(id),'master-director','previews'),{requestId});
+       if(existing){record.status='READY';record.result={status:'PREVIEW_READY_FOR_REVIEW',previewId:existing.seal.record.id,record:existing.seal.record,audit:existing.seal.audit,final:false,reused:true};}
+       else {record.status='INTERRUPTED';record.issues=[{code:'PREVIEW_INTERRUPTED_NEEDS_DIAGNOSIS'}];}
+       requests.save(record);
+      }
+      return json(res,200,record);
+     }
      if(action==='master-preview'&&req.method==='POST'){
       const b=await body(req,2048);if(Object.keys(b).some(k=>!['revision','decisionId','requestId'].includes(k))||typeof b.requestId!=='string'||! /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(b.requestId))return json(res,400,{error:'Solicitud inválida.'});
       if(!masterPreviewConfig)return json(res,503,{error:'La previsualización del Director todavía no está configurada.'});
+      const requests=new MasterPreviewRequests(jobs.dir(id)),old=requests.get(b.requestId),key=id+':'+b.requestId;
+      if(old){if(old.revision!==b.revision||old.decisionId!==b.decisionId)return json(res,409,{error:'La solicitud pertenece a otra revisión del plan.'});
+       if(old.status==='RUNNING'&&!masterPreviewRuns.has(key))return json(res,409,{error:'La previsualización anterior quedó interrumpida y necesita revisión.'});
+       return json(res,old.status==='RUNNING'?202:200,old);}
+      // Recover a completed sealed output after restart. If no seal exists,
+      // do not start a second worker before an operator diagnoses the orphan.
+      for(const stale of requests.records().filter(r=>r.status==='RUNNING'&&!masterPreviewRuns.has(id+':'+r.requestId))){
+       const sealed=findMasterPreview(join(jobs.dir(id),'master-director','previews'),{requestId:stale.requestId});
+       if(sealed){stale.status='READY';stale.result={status:'PREVIEW_READY_FOR_REVIEW',previewId:sealed.seal.record.id,record:sealed.seal.record,audit:sealed.seal.audit,final:false,reused:true};}
+       else {stale.status='INTERRUPTED';stale.issues=[{code:'PREVIEW_INTERRUPTED_NEEDS_DIAGNOSIS'}];}
+       requests.save(stale);
+      }
+      if(requests.hasInterrupted())return json(res,409,{error:'Hay una previsualización interrumpida que necesita revisión antes de continuar.'});
       if(jobs.previewBusy||jobs.children.size||jobs.queued().length||jobs.publishing.size||previews.pending.size||adjustmentPreviews.running)
        return json(res,409,{error:'Hay otra edición en proceso. Espera antes de previsualizar.'});
-      jobs.previewBusy=true;
-      try{
-       const ready=await prepareMasterDirectorRender({store,revision:b.revision,decisionId:b.decisionId,jobs,jobId:id,assets,probe:masterSourceProbe});
-       if(ready.status!=='READY_FOR_SOURCE_STAGING')return json(res,ready.statusCode??200,{status:ready.status,issues:ready.issues,canExecute:false});
-       const previewRoot=join(jobs.dir(id),'master-director','previews'),existing=findMasterPreview(previewRoot,{requestId:b.requestId});
-       if(existing){if(existing.seal.revision!==b.revision||existing.seal.decisionId!==b.decisionId||existing.seal.record.planFingerprint!==ready.composition.planFingerprint)
-        return json(res,409,{error:'La solicitud pertenece a otra revisión del plan.'});
-        return json(res,200,{status:'PREVIEW_READY_FOR_REVIEW',previewId:existing.seal.record.id,record:existing.seal.record,audit:existing.seal.audit,final:false,reused:true});}
-       const approvalCheck=async()=>{
-        const layers=await store.layers(b.revision,b.decisionId),current=jobs.get(id),catalog=externalCatalog(jobs.loadProfile(current.profileId),current.settings,assets.list());
-        return layers.status==='STRUCTURE_READY_NOT_RENDERED'&&layers.remotion?.status==='READY_FOR_REMOTION_STAGING'&&
-         layers.graph.planFingerprint===ready.composition.planFingerprint&&catalog.timelineFingerprint===ready.projectFingerprint&&catalog.sourceSha256===ready.composition.sourceSha256;
-       };
-       const result=await masterPreviewRenderer({composition:ready.composition,project:ready.project,assets,
-        workRoot:previewRoot,entryFile:masterPreviewConfig.entryFile,
-        remotionCli:masterPreviewConfig.remotionCli,browserExecutable:masterPreviewConfig.browserExecutable,approvalCheck});
-       if(result.status!=='PREVIEW_RENDERED_UNVERIFIED')return json(res,200,{status:result.status,issues:result.issues,canExecute:false});
-       const audit=await masterPreviewAuditor({sourcePath:ready.project.sourcePath,sourceSha256:ready.composition.sourceSha256,
-        outputPath:result.outputPath,expected:{width:270,height:480,duration:ready.composition.durationFrames/30,fps:30}});
-       if(audit.status!=='TECHNICAL_PASS_HUMAN_QA_PENDING'||audit.outputSha256!==result.record.outputSha256||!await approvalCheck()){
-        try{discardUnsealedMasterPreview(previewRoot,result.outputPath)}catch{}
-        return json(res,200,{status:'BLOCKED',issues:[{code:'PREVIEW_AUDIT_OR_APPROVAL_FAILED'}],canExecute:false});
-       }
-       const seal={schema:'sues-master-preview-seal/v1',requestId:b.requestId,revision:b.revision,decisionId:b.decisionId,record:result.record,audit};
-       try{sealMasterPreview(previewRoot,result.outputPath,seal)}catch(error){try{discardUnsealedMasterPreview(previewRoot,result.outputPath)}catch{}throw error;}
-       return json(res,200,{status:'PREVIEW_READY_FOR_REVIEW',previewId:result.record.id,record:result.record,audit,final:false});
-      }finally{jobs.previewBusy=false;jobs.drain();}
+      const record=requests.create({requestId:b.requestId,revision:b.revision,decisionId:b.decisionId});jobs.previewBusy=true;
+      const task=(async()=>{
+       let output=null,previewRoot=join(jobs.dir(id),'master-director','previews');
+       try{
+        const ready=await prepareMasterDirectorRender({store,revision:b.revision,decisionId:b.decisionId,jobs,jobId:id,assets,probe:masterSourceProbe});
+        if(ready.status!=='READY_FOR_SOURCE_STAGING'){record.status='BLOCKED';record.issues=ready.issues;requests.save(record);return;}
+        const approvalCheck=async()=>{
+         const layers=await store.layers(b.revision,b.decisionId),current=jobs.get(id),catalog=externalCatalog(jobs.loadProfile(current.profileId),current.settings,assets.list());
+         return layers.status==='STRUCTURE_READY_NOT_RENDERED'&&layers.remotion?.status==='READY_FOR_REMOTION_STAGING'&&
+          layers.graph.planFingerprint===ready.composition.planFingerprint&&catalog.timelineFingerprint===ready.projectFingerprint&&catalog.sourceSha256===ready.composition.sourceSha256;
+        };
+        const result=await masterPreviewRenderer({composition:ready.composition,project:ready.project,assets,workRoot:previewRoot,
+         entryFile:masterPreviewConfig.entryFile,remotionCli:masterPreviewConfig.remotionCli,browserExecutable:masterPreviewConfig.browserExecutable,approvalCheck});
+        if(result.status!=='PREVIEW_RENDERED_UNVERIFIED'){record.status='BLOCKED';record.issues=result.issues;requests.save(record);return;}
+        output=result.outputPath;
+        const audit=await masterPreviewAuditor({sourcePath:ready.project.sourcePath,sourceSha256:ready.composition.sourceSha256,
+         outputPath:output,expected:{width:270,height:480,duration:ready.composition.durationFrames/30,fps:30}});
+        if(audit.status!=='TECHNICAL_PASS_HUMAN_QA_PENDING'||audit.outputSha256!==result.record.outputSha256||!await approvalCheck()){
+         try{discardUnsealedMasterPreview(previewRoot,output)}catch{}output=null;
+         record.status='BLOCKED';record.issues=[{code:'PREVIEW_AUDIT_OR_APPROVAL_FAILED'}];requests.save(record);return;
+        }
+        const seal={schema:'sues-master-preview-seal/v1',requestId:b.requestId,revision:b.revision,decisionId:b.decisionId,record:result.record,audit};
+        sealMasterPreview(previewRoot,output,seal);output=null;
+        record.status='READY';record.result={status:'PREVIEW_READY_FOR_REVIEW',previewId:result.record.id,record:result.record,audit,final:false};requests.save(record);
+       }catch(error){
+        if(output)try{discardUnsealedMasterPreview(previewRoot,output)}catch{}
+        record.status='FAILED';record.issues=[{code:'PREVIEW_FAILED'}];try{requests.save(record)}catch{}
+       }finally{jobs.previewBusy=false;jobs.drain();masterPreviewRuns.delete(key);}
+      })();masterPreviewRuns.set(key,task);return json(res,202,{status:'RUNNING',requestId:b.requestId});
      }
      if(action==='master-previews'&&req.method==='GET')return json(res,200,{previews:listMasterPreviews(join(jobs.dir(id),'master-director','previews'))});
      if(action==='master-preview-media'&&['GET','HEAD'].includes(req.method)){
@@ -449,5 +477,5 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
   }catch(error){if(res.headersSent)return res.destroy();const safe=/not found|Unknown profile/i.test(error.message)?404:/busy|ready|changed|ha cambiado|render activo|Espera a que termine|transition|owned|Adjustments|queue full|closing/.test(error.message)?409:400;json(res,safe,{error:error.code?'No se pudo acceder al recurso local configurado':error.message.replaceAll(directory,'[local]')});}
  });
  server.requestTimeout=900000;server.headersTimeout=10000;
- return {jobs,server,token,async listen(){await new Promise((r,j)=>{server.once('error',j);server.listen(port,'127.0.0.1',r);});origin??=`http://127.0.0.1:${server.address().port}`;expectedHost=new URL(origin).host;return `${origin}/#${token}`;},async close(){jobs.closing=true;await livePreviews.close();await adjustmentPreviews.close();await previews.close();server.closeIdleConnections();await new Promise(r=>server.close(r));await jobs.close();}};
+ return {jobs,server,token,async listen(){await new Promise((r,j)=>{server.once('error',j);server.listen(port,'127.0.0.1',r);});origin??=`http://127.0.0.1:${server.address().port}`;expectedHost=new URL(origin).host;return `${origin}/#${token}`;},async close(){jobs.closing=true;await Promise.allSettled([...masterPreviewRuns.values()]);await livePreviews.close();await adjustmentPreviews.close();await previews.close();server.closeIdleConnections();await new Promise(r=>server.close(r));await jobs.close();}};
 }

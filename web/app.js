@@ -584,12 +584,23 @@ async function masterDecision(mode){
  generate.type='button';generate.id='master-generate-preview';generate.textContent='Generar previsualización privada';previewStatus.id='master-preview-status';previewStatus.setAttribute('role','status');player.controls=true;player.playsInline=true;player.hidden=true;player.style.maxWidth='100%';
  generate.onclick=()=>work(async()=>{
   if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
-  masterPreviewRequest??=crypto.randomUUID();previewStatus.textContent='Preparando la previsualización…';
-  const result=await api('jobs/'+state.jobId+'/master-preview','POST',{revision:state.revision,decisionId:state.decisionId,requestId:masterPreviewRequest});
-  if(result.status!=='PREVIEW_READY_FOR_REVIEW'){previewStatus.textContent='La previsualización necesita revisar el vídeo, los recursos o el plan.';return;}
-  if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)throw Error('La propuesta ha cambiado. Vuelve a revisarla.');
-  player.src='/api/jobs/'+state.jobId+'/master-preview-media?previewId='+encodeURIComponent(result.previewId);player.hidden=false;
-  previewStatus.textContent='Previsualización privada preparada. Revísala antes de decidir los siguientes ajustes.';
+  masterPreviewRequest??=crypto.randomUUID();const requestId=masterPreviewRequest;generate.disabled=true;
+  previewStatus.textContent='Preparando la previsualización. Puedes seguir trabajando o cerrar esta pantalla.';
+  let launched;try{launched=await api('jobs/'+state.jobId+'/master-preview','POST',{revision:state.revision,decisionId:state.decisionId,requestId});}
+  catch(e){generate.disabled=false;throw e;}
+  const watch=async initial=>{
+   if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)return;
+   try{
+    const progress=initial??await api('jobs/'+state.jobId+'/master-preview-status?requestId='+encodeURIComponent(requestId));
+    if(progress.status==='RUNNING'){setTimeout(()=>void watch(),2000);return;}
+    if(progress.status==='READY'&&progress.result?.status==='PREVIEW_READY_FOR_REVIEW'){
+     player.src='/api/jobs/'+state.jobId+'/master-preview-media?previewId='+encodeURIComponent(progress.result.previewId);player.hidden=false;
+     previewStatus.textContent='Previsualización privada preparada. Revísala antes de decidir los siguientes ajustes.';generate.disabled=false;return;
+    }
+    previewStatus.textContent=progress.status==='INTERRUPTED'?'La previsualización se interrumpió y necesita una comprobación antes de continuar.':'La previsualización necesita revisar el vídeo, los recursos o el plan.';generate.disabled=false;
+   }catch{previewStatus.textContent='Se ha interrumpido la conexión. Puedes volver a comprobar la previsualización.';generate.disabled=false;}
+  };
+  void watch(launched);
  });area.append(generate,previewStatus,player);
  for(const node of layers.graph.nodes.filter(n=>n.renderer==='remotion')){
   const original=state.story.operations.find(o=>o.id===node.id);if(!original)continue;
@@ -618,6 +629,7 @@ async function masterDecision(mode){
    $('external-plan-text').value=JSON.stringify(revised,null,2);resetMasterReview();$('master-review-result').textContent='Ajuste guardado en una nueva versión. Revisa el plan otra vez antes de aprobarlo.';
   });box.append(save);area.append(box);
  }
+ if(mode==='autonomous')setTimeout(()=>generate.click(),0);
 }
 $('master-approve').onclick=()=>work(()=>masterDecision('approve'));
 $('master-revise').onclick=()=>work(()=>masterDecision('review'));

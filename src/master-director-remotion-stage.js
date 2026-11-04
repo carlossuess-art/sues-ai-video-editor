@@ -1,6 +1,7 @@
 // Stage only authenticated, checksum-verified private stills into an isolated
 // Remotion public directory. Never follows user-supplied paths or URLs.
-import {mkdirSync,readFileSync,writeFileSync,unlinkSync} from 'node:fs';
+import {mkdirSync,readFileSync,writeFileSync,unlinkSync,copyFileSync,chmodSync,statSync,constants} from 'node:fs';
+import {fileSha256} from './local-pipeline.js';
 import {createHash} from 'node:crypto';
 import {join} from 'node:path';
 const HASH=/^[a-f0-9]{64}$/;
@@ -21,17 +22,17 @@ export function stageMasterDirectorImages(composition,{assets,publicDirectory}={
   if(expected.get(id)==='image'?a.kind!=='image':expected.get(id)==='video'?a.kind!=='video':!['audio','sfx'].includes(a.kind))throw Error('Asset kind unsupported');
   if(a.sha256!==id||m?.approvedForProduction!==true||m.license?.rightsStatus!=='verified'||
      m.license.commercialUseAllowed!==true||!m.license.proofRef||!m.testReportRef)throw Error('Image evidence unavailable');
-  const bytes=readFileSync(a.localFile);
-  totalBytes+=bytes.length;
-  if(bytes.length>40*1024*1024||totalBytes>256*1024*1024||createHash('sha256').update(bytes).digest('hex')!==id)throw Error('Media bytes changed or staging limit exceeded');
-  prepared.push({id,bytes});
+  const size=statSync(a.localFile).size;totalBytes+=size;
+  if(size>40*1024*1024||totalBytes>256*1024*1024||fileSha256(a.localFile)!==id)throw Error('Media bytes changed or staging limit exceeded');
+  prepared.push({id,source:a.localFile});
  }
  const root=join(publicDirectory,'master-assets');mkdirSync(root,{recursive:true,mode:0o700});
  const made=[];
  try{for(const a of prepared){
   const path=join(root,a.id);
-  try{writeFileSync(path,a.bytes,{mode:0o600,flag:'wx'});made.push(path);}
-  catch(e){if(e.code!=='EEXIST'||createHash('sha256').update(readFileSync(path)).digest('hex')!==a.id)throw e;}
+  try{copyFileSync(a.source,path,constants.COPYFILE_EXCL);made.push(path);chmodSync(path,0o600);}
+  catch(e){if(e.code!=='EEXIST'||fileSha256(path)!==a.id)throw e;}
+  if(fileSha256(path)!==a.id||fileSha256(a.source)!==a.id)throw Error('Media bytes changed during staging');
  }}catch(e){for(const p of made)try{unlinkSync(p)}catch{}throw e;}
  return {status:'STAGED_NOT_RENDERED',assetIds:ids};
 }
@@ -67,11 +68,11 @@ export function stageMasterDirectorSource(composition,{project,publicDirectory}=
  if(composition?.schema!=='sues-remotion-layers/v1'||!HASH.test(composition.source?.assetId??'')||
     composition.source.assetId!==project?.boundHashes?.source||typeof project?.sourcePath!=='string'||
     typeof publicDirectory!=='string'||!publicDirectory.startsWith('/'))throw Error('Invalid source staging context');
- const id=composition.source.assetId,bytes=readFileSync(project.sourcePath);
- if(bytes.length>256*1024*1024||createHash('sha256').update(bytes).digest('hex')!==id)throw Error('Source bytes changed or staging limit exceeded');
+ const id=composition.source.assetId,size=statSync(project.sourcePath).size;
+ if(size>256*1024*1024||fileSha256(project.sourcePath)!==id)throw Error('Source bytes changed or staging limit exceeded');
  const root=join(publicDirectory,'master-source');mkdirSync(root,{recursive:true,mode:0o700});const path=join(root,id);
- try{writeFileSync(path,bytes,{mode:0o600,flag:'wx'});}
- catch(e){if(e.code!=='EEXIST'||createHash('sha256').update(readFileSync(path)).digest('hex')!==id)throw e;}
- if(createHash('sha256').update(readFileSync(project.sourcePath)).digest('hex')!==id)throw Error('Source changed while staging');
+ try{copyFileSync(project.sourcePath,path,constants.COPYFILE_EXCL);chmodSync(path,0o600);}
+ catch(e){if(e.code!=='EEXIST'||fileSha256(path)!==id)throw e;}
+ if(fileSha256(path)!==id||fileSha256(project.sourcePath)!==id)throw Error('Source changed while staging');
  return {status:'STAGED_NOT_RENDERED',sourceSha256:id};
 }
