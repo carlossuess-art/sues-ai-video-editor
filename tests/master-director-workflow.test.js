@@ -112,5 +112,5 @@ test('the review offers both supervision and autonomous mode with a narrative ph
  assert.ok(view.choices.includes('autonomous'));
  assert.equal(view.narrativeTimeline[0].phase,'hook');
  assert.equal(view.narrativeTimeline[0].start,0);
- assert.ok(view.narrativeTimeline[1].operations.length>0);
+ assert.equal(view.narrativeTimeline[1].purpose,'Cambiar perspectiva');
 });
