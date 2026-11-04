@@ -1,4 +1,6 @@
 import {validateTranscript,mapWordsToTimeline} from './transcript.js';
+import {capSpeechPauses,MAX_SPEECH_PAUSE_SECONDS} from './speech-pause-cap.js';
+export {capSpeechPauses,MAX_SPEECH_PAUSE_SECONDS} from './speech-pause-cap.js';
 const norm=s=>String(s).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
 const round=n=>Math.round(n*1000)/1000;
 export function validateCuts(duration,cuts=[]){
@@ -24,9 +26,13 @@ export function locateSpokenPhrase(transcript,phrase,{padding=.08}={}){
  }
  return {matches,ambiguous:matches.length!==1,requiresConfirmation:true};
 }
-export function proposeSilenceCuts(transcript,{minimumPause=.55,retain=.5,includeEdges=false}={}){
+export function proposeSilenceCuts(transcript,{minimumPause=.7,retain=.7,includeEdges=false}={}){
  validateTranscript(transcript);
  if(!Number.isFinite(minimumPause)||minimumPause<.2||minimumPause>10||!Number.isFinite(retain)||retain<0||retain>2)throw Error('Umbrales inválidos');
+ if(!includeEdges&&retain===MAX_SPEECH_PAUSE_SECONDS&&minimumPause===MAX_SPEECH_PAUSE_SECONDS){
+  const result=capSpeechPauses(transcript,{limitSeconds:retain});
+  return {enabled:false,proposals:result.cuts,requiresConfirmation:true,policy:result.policy,warning:'Cortes entre palabras a máximo 0,7 s, según transcripción. Se aplican al vídeo y audio juntos al renderizar una nueva versión; conservar el original.'};
+ }
  const words=transcript.words,cuts=[];
  const add=(a,b)=>{if(b-a>minimumPause&&b-a>retain){const margin=retain/2;const start=Math.ceil((a+margin)*30)/30,end=Math.floor((b-margin)*30)/30;if(end-start>=.12)cuts.push({start,end});}};
  if(includeEdges)add(0,words[0].start);
@@ -67,7 +73,7 @@ export function normalizeSourceCuts(transcript,cuts,{preserveSpeech=true}={}){
 }
 export function proposedSourceReview(transcript){
  validateTranscript(transcript);
- const silences=proposeSilenceCuts(transcript,{minimumPause:.65,retain:.5}).proposals.map((r,i)=>({id:`sil-${i}`,type:'silence',start:r.start,end:r.end,reason:'Pausa larga · conservar aproximadamente 0,5 s',selected:false}));
+ const silences=proposeSilenceCuts(transcript,{minimumPause:.7,retain:.7}).proposals.map((r,i)=>({id:`sil-${i}`,type:'silence',start:r.start,end:r.end,reason:'Pausa entre frases · máximo 0,7 s',selected:false}));
  const fillers=new Set(['eh','em','mmm','hmm','este']);
  const spoken=[];
  for(const [i,w]of transcript.words.entries()){
@@ -106,5 +112,5 @@ export function proposedSourceReview(transcript){
    i+=best.len-1;
   }
  }
- return {sourceDuration:transcript.sourceDuration,retainSilenceSeconds:.5,silences,spoken:spoken.slice(0,50),requiresConfirmation:true,automaticDeletion:false};
+ return {sourceDuration:transcript.sourceDuration,retainSilenceSeconds:.7,silences,spoken:spoken.slice(0,50),requiresConfirmation:true,automaticDeletion:false};
 }
