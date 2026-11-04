@@ -11,18 +11,20 @@ function translate(o,plan,registry,catalog){
  const p=o.parameters??{},r=o.resourceId,asset=registry.licensedAssets?.[r];
  if(o.renderer!=='native')return {issue:err('ENGINE_ADAPTER_REQUIRED',o.renderer)};
  if(!obj(p))return {issue:err('PARAMETERS_MISSING')};
+ const caption=catalog.captions?.find(c=>c.id===p.captionId);
+ const exactCaption=caption&&near(o.start,caption.start)&&near(o.end,caption.end);
  if(r!==undefined&&(!asset||asset.sha256!==o.resourceSha256||!hash.test(o.resourceSha256??'')||
    asset.rightsVerified!==true||asset.commercialUseAllowed!==true))
   return {issue:err('RESOURCE_VERSION_UNVERIFIED',String(r))};
  let native;
  if(matches(o,'captions','caption-edit')&&keys(p,['captionId','text'],['captionId','text'])&&
-   catalog.captions?.some(c=>c.id===p.captionId)&&typeof p.text==='string'&&p.text.trim()&&p.text.length<=52)
+   exactCaption&&typeof p.text==='string'&&p.text.trim()&&p.text.length<=52)
   native={type:'caption',captionId:p.captionId,text:p.text};
  else if(matches(o,'captions','caption-hide')&&keys(p,['captionId','hidden'],['captionId','hidden'])&&
-   p.hidden===true&&catalog.captions?.some(c=>c.id===p.captionId))
+   p.hidden===true&&exactCaption)
   native={type:'caption-visibility',captionId:p.captionId,hidden:true,reason:o.reason};
  else if(matches(o,'captions','caption-emphasis')&&keys(p,['captionId','word','level','style','scale'],
-    ['captionId','word','level','style','scale'])&&catalog.captions?.some(c=>c.id===p.captionId)&&
+    ['captionId','word','level','style','scale'])&&exactCaption&&
     Number.isInteger(p.word)&&Number.isFinite(p.scale))
   native={type:'emphasis',...p};
  else if(matches(o,'camera','zoom-native')&&keys(p,['scale'],['scale'])&&
