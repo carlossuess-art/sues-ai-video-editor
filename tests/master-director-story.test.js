@@ -27,6 +27,7 @@ const sample=()=>({
 });
 const trusted=()=>({
  sourceSha256:source,timelineFingerprint:'edit-001',approvedRuleVersion:'rules-v1',
+ unresolvedRuleConflicts:[],
  masterHashes:{'sues-tapiz-antracita':master},
  lockedMastersByMode:{'brand-sues':[{id:'sues-tapiz-antracita',sha256:master}]},
  rendererCapabilities:{remotion:['subject-occlusion']},
@@ -104,4 +105,11 @@ test('B-roll, music and sound cannot be marked ready without an asset reference'
   const q=inspectMasterDirectorStory(s,trusted());
   assert.ok(q.issues.some(x=>x.code==='MEDIA_ASSET_REQUIRED'),track);
  }
+});
+
+test('a missing or unresolved central rule conflict prevents plan compilation',()=>{
+ const r=trusted();delete r.unresolvedRuleConflicts;
+ assert.ok(inspectMasterDirectorStory(sample(),r).issues.some(x=>x.code==='RULE_CONFLICT_AUDIT_MISSING'));
+ r.unresolvedRuleConflicts=['white-reference-replaces-brand-tapiz'];
+ assert.ok(inspectMasterDirectorStory(sample(),r).issues.some(x=>x.code==='UNRESOLVED_RULE_CONFLICTS'));
 });
