@@ -36,7 +36,7 @@ const ready=()=>{
 const manifest=p=>({fingerprint:masterDirectorFingerprint(p),operations:p.operations.map(o=>({
  id:o.id,renderer:o.renderer,effect:o.effect,start:o.start,end:o.end,outputSha256:output
 }))});
-const qaPass=p=>({fingerprint:masterDirectorFingerprint(p),completed:true,verifierId:'qa-sistema',
+const qaPass=(p,runId)=>({fingerprint:masterDirectorFingerprint(p),completed:true,verifierId:'qa-sistema',runId,
  evidence:p.operations.map(o=>({operationId:o.id,proofs:o.requiredQA.map(kind=>({kind,passed:true,artifactSha256:output}))}))});
 
 test('the brain awaits explicit approval even when the draft is valid',()=>{
@@ -89,18 +89,18 @@ test('missing dependencies and dependency cycles are rejected before rendering',
 
 test('revision changes invalidate plan approval and old QA proofs',()=>{
  const {p,r}=ready(),oldApproval=r.approvedPlanFingerprint;
- const originalPass=qaPass(p);
+ const originalPass=qaPass(p,'pass-1');
  p.operations[0].reason='Subtitular exactamente cada palabra nueva';
  assert.notEqual(masterDirectorFingerprint(p),oldApproval);
  assert.equal(reviewMasterDirectorPlan(p,r).status,'AWAITING_PLAN_APPROVAL');
  r.approvedPlanFingerprint=masterDirectorFingerprint(p);
- r.qaPasses=[originalPass,originalPass];
+ r.qaPasses=[originalPass,{...originalPass,runId:'pass-2'}];
  assert.ok(auditMasterDirectorExecution(p,r,manifest(p)).issues.some(x=>x.code==='TWO_INDEPENDENT_QA_PASSES_REQUIRED'));
 });
 
 test('two complete QA passes and matching manifest still require final creative acceptance',()=>{
  const {p,r}=ready(),m=manifest(p);
- r.qaPasses=[qaPass(p),qaPass(p)];
+ r.qaPasses=[qaPass(p,'pass-1'),qaPass(p,'pass-2')];
  assert.equal(auditMasterDirectorExecution(p,r,m).status,'AWAITING_CREATIVE_ACCEPTANCE');
  r.creativeAcceptedFingerprint=masterDirectorFingerprint(p);
  assert.equal(auditMasterDirectorExecution(p,r,m).status,'READY_FOR_RELEASE');
@@ -110,7 +110,18 @@ test('two complete QA passes and matching manifest still require final creative 
 
 test('a renderer declaration alone never proves its executed output',()=>{
  const {p,r}=ready();
- r.qaPasses=[qaPass(p),qaPass(p)];
+ r.qaPasses=[qaPass(p,'pass-1'),qaPass(p,'pass-2')];
  const m=manifest(p);m.operations[0].end=2.6;
  assert.ok(auditMasterDirectorExecution(p,r,m).issues.some(x=>x.code==='EXECUTED_OPERATION_MISMATCH'));
+});
+
+test('malformed QA evidence and duplicate audit IDs fail closed without exceptions',()=>{
+ const {p,r}=ready(),m=manifest(p);
+ r.qaPasses=[qaPass(p,'same-pass'),qaPass(p,'same-pass')];
+ assert.ok(auditMasterDirectorExecution(p,r,m).issues.some(x=>x.code==='TWO_INDEPENDENT_QA_PASSES_REQUIRED'));
+ r.qaPasses=[qaPass(p,'pass-1'),qaPass(p,'pass-2')];
+ r.qaPasses[1].evidence={unexpected:true};
+ assert.ok(auditMasterDirectorExecution(p,r,m).issues.some(x=>x.code==='QA_EVIDENCE_INCOMPLETE'));
+ p.operations.push(null);
+ assert.equal(reviewMasterDirectorPlan(p,r).status,'BLOCKED');
 });
