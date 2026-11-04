@@ -597,7 +597,14 @@ async function masterDecision(mode){
      player.src='/api/jobs/'+state.jobId+'/master-preview-media?previewId='+encodeURIComponent(progress.result.previewId);player.hidden=false;
      previewStatus.textContent='Previsualización privada preparada. Revísala antes de decidir los siguientes ajustes.';generate.disabled=false;return;
     }
-    previewStatus.textContent=progress.status==='INTERRUPTED'?'La previsualización se interrumpió y necesita una comprobación antes de continuar.':'La previsualización necesita revisar el vídeo, los recursos o el plan.';generate.disabled=false;
+    const codes=(progress.issues??[]).map(issue=>issue.code);
+    previewStatus.textContent=progress.status==='INTERRUPTED'?'La previsualización se interrumpió y necesita una comprobación antes de continuar.':
+     codes.includes('SOURCE_GEOMETRY_UNVERIFIED')?'No se ha podido comprobar la proporción o la orientación del vídeo. Conserva el original y revisa sus datos antes de continuar.':
+     'La previsualización necesita revisar el vídeo, los recursos o el plan.';
+    // A confirmed terminal failure is safe to retry using a fresh idempotency key.
+    // Keep the key for interrupted or uncertain requests to avoid duplicate renders.
+    if(['BLOCKED','FAILED'].includes(progress.status)&&masterPreviewRequest===requestId)masterPreviewRequest=null;
+    generate.disabled=false;
    }catch{previewStatus.textContent='Se ha interrumpido la conexión. Puedes volver a comprobar la previsualización.';generate.disabled=false;}
   };
   void watch(launched);
