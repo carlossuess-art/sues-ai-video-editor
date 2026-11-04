@@ -29,6 +29,14 @@ export function buildMasterDirectorReview(plan,registry={}){
    resourceId:o.resourceId??null
   }))
  }));
+ const arc=Array.isArray(plan.creativeContext?.arc)?plan.creativeContext.arc:[];
+ const narrativeTimeline=arc.map(beat=>({
+  beatId:beat.id,phase:beat.phase,start:beat.start,end:beat.end,
+  purpose:beat.purpose,
+  operations:plan.operations.filter(op=>op.start<beat.end&&op.end>beat.start).map(op=>({
+   id:op.id,effect:op.effect,track:op.track,start:op.start,end:op.end
+  }))
+ }));
  const grouped=new Map();
  for(const op of plan.operations){
   if(op.resourceId===undefined)continue;
@@ -49,8 +57,8 @@ export function buildMasterDirectorReview(plan,registry={}){
  return {status:'READY_FOR_CHOICE',fingerprint:preflight.fingerprint,
   centralMessage:plan.creativeContext?.centralMessage??'',
   intendedExperience:plan.creativeContext?.intendedExperience??'',
-  timeline,resources,
-  choices:['approve','review'],issueCount:0};
+  timeline,narrativeTimeline,resources,
+  choices:['approve','review','autonomous'],issueCount:0};
 }
 
 // The caller MUST load the choice and budgets from authenticated server-side
