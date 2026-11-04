@@ -100,3 +100,14 @@ test('two edits cannot silently cross the 200-op native import limit',()=>{
  const out=bridgeMasterDirectorToNative(p,registry(p),catalogue());
  assert.equal(out.status,'NEEDS_ENGINE_OR_RESOURCE_WORK');assert.equal(out.plan,null);
 });
+
+test('caption timing cannot drift from its measured subtitle',()=>{
+ const p=plan();p.operations=[{...p.operations[0],id:'captions-1',track:'captions',effect:'caption-edit',
+  resourceId:undefined,resourceSha256:undefined,start:3,end:6,
+  parameters:{captionId:'seg-001',text:'Mensaje corregido'}}];
+ const rejected=bridgeMasterDirectorToNative(p,registry(p),catalogue());
+ assert.equal(rejected.plan,null);
+ p.operations[0].start=2;p.operations[0].end=4;
+ const accepted=bridgeMasterDirectorToNative(p,registry(p),catalogue());
+ assert.equal(accepted.status,'READY_FOR_NATIVE_REVIEW');
+});
