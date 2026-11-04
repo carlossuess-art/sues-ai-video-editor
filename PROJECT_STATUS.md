@@ -1392,3 +1392,5 @@ La tabla técnica de Carlos queda codificada como `sues-visual-grammar-158623-v1
 - Actualización: el render limitado de 65,1 s no terminó por el máximo de 10 minutos; se aumentó el límite a 30 minutos sin desactivar el control de memoria y se inició una nueva prueba. 113/113 pruebas específicas de la copia y 2/2 de renderizador en el árbol PASS; regresión con exportación móvil real PASS, batería general aún en curso. Ninguna de estas pruebas valida un Reel creativo final.
 
 - Regresión aislada: 543/548. Dos fallos presentes en base productiva; Git ausente de imagen (PASS en host); preview bloqueada por contenedor menor que requisito de memoria (PASS en host); máscara FFmpeg PASS al repetir con 768 MiB tras fallar fixture con 384 MiB. Suite completa aún no limpia.
+
+- Prueba técnica aislada 158404 completada: 65,109 s, 1953 fotogramas a 30 fps, preview privada 270×480 con audio, SHA256 `84489cd837f55d1a147adbddfdedaf452148b6ef6bcb11d5fb36b6ee7306d3b9`. Auditoría técnica separada con decodificación completa PASS; Range e idempotencia PASS. Fuente es copia normalizada, plan y contexto simulados. Sin revisión artística, Reel terminado ni exportación final.
