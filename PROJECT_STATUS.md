@@ -1,3 +1,14 @@
+## 04/11/2026 · SUES MASTER DIRECTOR · AVANCE VERIFICADO · SIN DESPLIEGUE
+
+- **20 reglas creativas aprobadas verbalmente por Carlos**, capturadas en docs/SUES_MASTER_DIRECTOR_REGLAS_APROBADAS_20261104.md. El borrador anterior es histórico; no pedir reaprobarlo.
+- Continúa la rama feat/master-director-story-orchestration-20261104 / PR borrador #27. NO mezclar con main ni con producción.
+- Código nuevo/actualizado: master-director-gate, master-director-rulebook, master-director-story, master-director-narrative-arc, master-director-orchestration, master-director-workflow, master-director-native-bridge, master-director-native-review y master-director-layer-graph, con tests.
+- Comprobación real sobre una **copia aislada** del editor productivo: 96/96 pruebas Node PASS (director, importador externo y adaptador creativo).
+- Pruebas de exportación real con FFmpeg en contenedor temporal de la misma imagen de producción, red desactivada, CPU limitada: 12/12 PASS (máscaras, MP4, audio multicapa, cortes y exportación). No confundir con un vídeo completo ya dirigido por el nuevo cerebro.
+- Producción Docker actual: /app montado desde /opt/sues-video-setup/release-mobile-layers-20261030; este directorio NO tiene .git. No modificado.
+- **Todavía falta** integrar registro/autorizaciones reales de backend, motor Remotion con capas editables en UI, supervisor QA audiovisual independiente y dos auditorías completas de un vídeo generado mediante este cerebro. La skill continúa sin cambios y no se han consumido créditos API.
+- Handoff específico para Work: docs/SUES_MASTER_DIRECTOR_WORK_HANDOFF_20261104.md. Solo cuando corresponda, continuar en Work; no crear otro editor ni duplicar módulos.
+
 ## DESARROLLO · unificación de reglas y narrativa del cerebro · 04/11/2026
 - Rama: feat/master-director-story-orchestration-20261104; PR borrador #27 contra feat/master-director-gate-20261104.
 - Se implementaron: master-director-rulebook.js (ámbitos, aprobaciones verificadas, conflictos no resueltos), master-director-story.js (narrativa integral, metáforas distantes, recursos existentes/por generar, palabras/timings, pruebas obligatorias) y master-director-orchestration.js (puerta única de reglas → historia → gate con snapshot exacto para invalidar aprobaciones).
