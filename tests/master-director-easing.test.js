@@ -7,6 +7,6 @@ test('standard easing curves preserve endpoints and expected midpoint values',()
  assert.ok(Math.abs(masterEasing('ease-in',.5)-.3153568)<1e-6);
  assert.ok(Math.abs(masterEasing('ease-out',.5)-.6846432)<1e-6);
  assert.ok(Math.abs(masterEasing('ease-in-out',.5)-.5)<1e-6);
- assert.throws(()=>masterEasing('spring',.5),/Unsupported/);
+ for(const name of ['spring','toString','__proto__'])assert.throws(()=>masterEasing(name,.5),/Unsupported/);
  assert.throws(()=>masterEasing('linear',NaN),/Invalid/);
 });
