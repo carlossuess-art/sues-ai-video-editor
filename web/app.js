@@ -115,7 +115,7 @@ function display(job){
  if(ready){const url='/api/jobs/'+job.id+'/preview';playback.source($('video'),url);setDownloadResolution(job.id,summary?.styleId??'SUES_CALMA');if(previous!=='DONE')showPlayer('preview');}
  else{$('download').hidden=true;showPlayer('original');}
 }
-async function select(id,{keepPrompt=false}={}){if(!keepPrompt)setIntake('edit');const changed=current?.id!==id;if(changed){$('cloud-context-text').value='';$('cloud-context-text').hidden=true;$('cloud-context-summary').textContent='';}if(changed&&!keepPrompt){$('director-prompt').value='';$('director-response').replaceChildren();$('director-reset-label').hidden=true;}previewDirty=false;$('download').hidden=true;const job=await api('jobs/'+id);const upload=allUploads.find(u=>u.profileId===job.profileId);pendingUploadId=upload?.id??null;if(!keepPrompt||!$('director-prompt').value.trim())$('director-prompt').value=(job.instructions?.at(-1)?.kind==='external-plan'?'':job.instructions?.at(-1)?.text)??upload?.brief?.prompt??'';if(designProfile!==job.profileId)await loadDesign(job.profileId);for(const [field,key]of [['review-captions','captionsReviewed'],['review-framing','framingReviewed'],['review-audio','audioReviewed']])$(field).checked=job.editorialReview?.[key]??false;for(const [field,key]of [['review-major','majorChanges'],['review-minor','minorChanges']])$(field).value=job.editorialReview?.[key]??0;$('review-status').textContent=job.editorialReview?(job.editorialReview.pass?'Aprobación estética registrada para esta versión.':'Revisión guardada · quedan ajustes o comprobaciones.'):'Revisión pendiente para esta versión.';plan=await api('jobs/'+id+'/plan');$('style-id').value=job.settings.styleId??'SUES_CALMA';$('new-project-style').value=$('style-id').value;$('elements-format').value=job.settings.elements?.format??'';$('elements-help').hidden=!$('elements-format').value;$('zoom').value=Math.round(job.settings.zoomIntensity*100);$('zoom-value').textContent=$('zoom').value+' %';$('motions').checked=job.settings.motions;$('caption-words').value=String(job.settings.captionWords??3);$('sfx-enabled').checked=job.settings.sfxEnabled??false;$('voice-gain').value=Math.round((job.settings.voiceGain??1)*100);$('voice-value').textContent=$('voice-gain').value+' %';$('level-resources').checked=job.settings.levelResources??false;$('sfx-gain').value=Math.round((job.settings.sfxGain??.35)*100);$('sfx-value').textContent=$('sfx-gain').value+' %';$('music-enabled').checked=job.settings.musicEnabled??true;$('music-duck').checked=job.settings.duckMusic??true;$('music-gain').value=Math.round((job.settings.musicGain??plan.manifest.audioMix?.gain??.16)*100);$('music-value').textContent=$('music-gain').value+' %';$('music-status').textContent=plan.manifest.audioSourceAvailable?'Pista ambiental disponible en este material.':'Este material no tiene una pista musical preparada.';$('profile-images').checked=job.settings.profileImages??true;await refreshAssets();$('music-asset').value=job.settings.musicAssetId??'';$('image-events').replaceChildren();for(const e of job.settings.imageEvents??[])appendImageEvent(e);$('sfx-events').replaceChildren();for(const e of job.settings.sfxEvents??[])appendSfxEvent(e);$('captions').replaceChildren();$('caption-search').value='';$('caption-search-status').textContent='';
+async function select(id,{keepPrompt=false}={}){if(!keepPrompt)setIntake('edit');const changed=current?.id!==id;if(changed){resetMasterReview();$('master-versions-label').hidden=true;$('master-version-open').hidden=true;}if(changed){$('cloud-context-text').value='';$('cloud-context-text').hidden=true;$('cloud-context-summary').textContent='';}if(changed&&!keepPrompt){$('director-prompt').value='';$('director-response').replaceChildren();$('director-reset-label').hidden=true;}previewDirty=false;$('download').hidden=true;const job=await api('jobs/'+id);const upload=allUploads.find(u=>u.profileId===job.profileId);pendingUploadId=upload?.id??null;if(!keepPrompt||!$('director-prompt').value.trim())$('director-prompt').value=(job.instructions?.at(-1)?.kind==='external-plan'?'':job.instructions?.at(-1)?.text)??upload?.brief?.prompt??'';if(designProfile!==job.profileId)await loadDesign(job.profileId);for(const [field,key]of [['review-captions','captionsReviewed'],['review-framing','framingReviewed'],['review-audio','audioReviewed']])$(field).checked=job.editorialReview?.[key]??false;for(const [field,key]of [['review-major','majorChanges'],['review-minor','minorChanges']])$(field).value=job.editorialReview?.[key]??0;$('review-status').textContent=job.editorialReview?(job.editorialReview.pass?'Aprobación estética registrada para esta versión.':'Revisión guardada · quedan ajustes o comprobaciones.'):'Revisión pendiente para esta versión.';plan=await api('jobs/'+id+'/plan');$('style-id').value=job.settings.styleId??'SUES_CALMA';$('new-project-style').value=$('style-id').value;$('elements-format').value=job.settings.elements?.format??'';$('elements-help').hidden=!$('elements-format').value;$('zoom').value=Math.round(job.settings.zoomIntensity*100);$('zoom-value').textContent=$('zoom').value+' %';$('motions').checked=job.settings.motions;$('caption-words').value=String(job.settings.captionWords??3);$('sfx-enabled').checked=job.settings.sfxEnabled??false;$('voice-gain').value=Math.round((job.settings.voiceGain??1)*100);$('voice-value').textContent=$('voice-gain').value+' %';$('level-resources').checked=job.settings.levelResources??false;$('sfx-gain').value=Math.round((job.settings.sfxGain??.35)*100);$('sfx-value').textContent=$('sfx-gain').value+' %';$('music-enabled').checked=job.settings.musicEnabled??true;$('music-duck').checked=job.settings.duckMusic??true;$('music-gain').value=Math.round((job.settings.musicGain??plan.manifest.audioMix?.gain??.16)*100);$('music-value').textContent=$('music-gain').value+' %';$('music-status').textContent=plan.manifest.audioSourceAvailable?'Pista ambiental disponible en este material.':'Este material no tiene una pista musical preparada.';$('profile-images').checked=job.settings.profileImages??true;await refreshAssets();$('music-asset').value=job.settings.musicAssetId??'';$('image-events').replaceChildren();for(const e of job.settings.imageEvents??[])appendImageEvent(e);$('sfx-events').replaceChildren();for(const e of job.settings.sfxEvents??[])appendSfxEvent(e);$('captions').replaceChildren();$('caption-search').value='';$('caption-search-status').textContent='';
  window.dispatchEvent(new Event('sues:plan-updated'));
  $('external-plan-text').value=(await api('jobs/'+job.id+'/external-draft')).text;
  for(const c of plan.manifest.captions){const div=document.createElement('details');div.className='caption';const heading=document.createElement('summary');heading.textContent=c.start.toFixed(1)+'–'+c.end.toFixed(1)+' s · '+c.text;div.append(heading);const label=document.createElement('label');label.htmlFor='caption-'+c.id;label.textContent=c.start.toFixed(1)+'–'+c.end.toFixed(1)+' s';const field=document.createElement('textarea');field.id=label.htmlFor;field.dataset.id=c.id;field.value=c.text;field.maxLength=52;const highlight=document.createElement('button');highlight.type='button';highlight.dataset.highlight=c.id;const selected=job.settings.highlightCaptions?.includes(c.id)??false;highlight.setAttribute('aria-pressed',String(selected));highlight.textContent=selected?'Frase destacada ✓':'Destacar esta frase';highlight.onclick=()=>{const active=highlight.getAttribute('aria-pressed')==='true';if(!active&&$('captions').querySelectorAll('button[data-highlight][aria-pressed="true"]').length>=50){error(new Error('Puedes destacar hasta 50 frases. Quita una antes de elegir otra.'));return;}highlight.setAttribute('aria-pressed',String(!active));highlight.textContent=active?'Destacar esta frase':'Frase destacada ✓';markPreviewDirty();};div.append(label,field,keywordControls(c,job,field),highlight,graphicControls(c,job),motionControls(c,job),elementControls(c,job));$('captions').append(div);}$('caption-count').textContent='('+plan.manifest.captions.length+')';originalVideo('/api/jobs/'+job.id+'/source',job.title);display(job);if(job.state==='DONE')showPlayer('preview');$('save-status').textContent='Ajustes guardados';window.suesManualAdjust?.load(job);await reviewPlan(id);await list();if(changed||activeView!=='editor')showTool('director');syncDirector();void resumeCloudPlan(job.id).catch(error);history.replaceState(null,'','?project='+encodeURIComponent(id)+(intakePhase==='prompt'?'&step=prompt':''));}
@@ -502,6 +502,98 @@ async function resumeUpload(id){
 let externalReview=null,externalRequest=null;
 function invalidateExternal(){externalReview=null;externalRequest=null;$('external-execute').disabled=true;$('external-result').replaceChildren();}
 $('external-plan-text').oninput=invalidateExternal;
+// SUES Master Director: explicit approval and reversible per-layer layout edits.
+// A saved decision is not execution; the server enforces trust and costs.
+let masterReview=null;
+function resetMasterReview(){masterReview=null;$('master-review-actions').hidden=true;$('master-layer-controls').replaceChildren();$('master-review-result').replaceChildren();}
+function showMasterReview(result){
+ const target=$('master-review-result');target.replaceChildren();
+ if(result.status!=='READY_FOR_CHOICE'){
+  const p=document.createElement('p');p.textContent=result.status==='NEEDS_RESOURCES'?'Faltan recursos para esta propuesta.':'No se puede aprobar todavía. Revisa los elementos pendientes.';target.append(p);
+  for(const issue of result.issues??[]){const item=document.createElement('p');item.textContent=({'ASSET_EVIDENCE_MISSING':'Falta documentar la procedencia o los derechos del recurso','ASSET_UNAVAILABLE_OR_CHANGED':'Un recurso no está disponible o ha cambiado','TRUSTED_SERVER_CONTEXT_UNAVAILABLE':'El registro de confianza del director todavía no está preparado','PROJECT_VERSION_CHANGED':'El proyecto ha cambiado; prepara de nuevo el plan'})[issue.code]??'Hay un elemento del plan que necesita revisión.';if(issue.subject&&/^[a-f0-9]{64}$/.test(issue.subject))item.textContent+=' · '+issue.subject;target.append(item);}
+  for(const asset of result.assetRequests??[]){const item=document.createElement('p');item.textContent='Recurso pendiente: '+(asset.creationBrief??asset.id);target.append(item);}
+  $('master-review-actions').hidden=true;return;
+ }
+ const heading=document.createElement('p');heading.textContent=result.centralMessage||'Propuesta preparada para revisar.';target.append(heading);
+ const timeline=document.createElement('ol');
+ for(const beat of result.narrativeTimeline?.length?result.narrativeTimeline:result.timeline??[]){
+  const item=document.createElement('li');item.textContent=`${beat.start.toFixed(1)}–${beat.end.toFixed(1)} s · ${beat.phase??beat.title??'Escena'} · ${beat.purpose??beat.objective??''}`;timeline.append(item);
+ }target.append(timeline);
+ for(const a of result.resources??[]){const p=document.createElement('p');p.append(document.createTextNode(`${a.number}. ${a.title} · ${a.rightsVerified?'derechos registrados':'derechos pendientes'} `));if(a.previewUrl){const link=document.createElement('a');link.href=a.previewUrl;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Abrir recurso';p.append(link);}target.append(p);}
+ $('master-review-actions').hidden=false;
+}
+$('master-versions-button').onclick=()=>work(async()=>{
+ if(!current)throw Error('Abre un proyecto con vídeo preparado.');
+ const jobId=current.id,result=await api('jobs/'+jobId+'/master-versions');
+ if(current?.id!==jobId)return;
+ const select=$('master-versions-select');select.replaceChildren();
+ for(const version of result.versions){const option=document.createElement('option');option.value=version.revision;option.textContent=(version.title||'Plan guardado')+' · '+new Date(version.updatedAt).toLocaleString('es-ES');select.append(option);}
+ $('master-versions-label').hidden=!result.versions.length;$('master-version-open').hidden=!result.versions.length;
+ if(!result.versions.length)$('master-review-result').textContent='Todavía no hay versiones del plan guardadas.';
+});
+$('master-version-open').onclick=()=>work(async()=>{
+ if(!current||!$('master-versions-select').value)throw Error('Selecciona una versión del plan.');
+ const jobId=current.id,revision=$('master-versions-select').value,raw=$('external-plan-text').value.trim();
+ if(raw){let story;try{story=JSON.parse(raw);}catch{throw Error('Guarda el texto actual antes de abrir otra versión.');}
+  if(story?.schema!=='sues-master-story/v1')throw Error('Guarda el texto actual antes de abrir otra versión.');
+  await api('jobs/'+jobId+'/master-draft','POST',{story});
+ }
+ const result=await api('jobs/'+jobId+'/master-draft?revision='+encodeURIComponent(revision));if(current?.id!==jobId)return;
+ resetMasterReview();$('external-plan-text').value=JSON.stringify(result.story,null,2);$('master-review-result').textContent='Versión recuperada. Revísala antes de aprobarla.';
+});
+$('master-review-button').onclick=()=>work(async()=>{
+ if(!current)throw Error('Abre un proyecto con vídeo preparado.');
+ const jobId=current.id,raw=$('external-plan-text').value;let story;
+ try{story=JSON.parse(raw);}catch{throw Error('Pega una propuesta compatible antes de revisarla.');}
+ if(story?.schema!=='sues-master-story/v1')throw Error('Esta propuesta no corresponde al Master Director. Puedes usar la revisión habitual del Director IA.');
+ const draft=await api('jobs/'+jobId+'/master-draft','POST',{story});
+ const result=await api('jobs/'+jobId+'/master-review','POST',{revision:draft.revision});
+ if(current?.id!==jobId||$('external-plan-text').value!==raw)throw Error('El proyecto o la propuesta han cambiado. Vuelve a revisarlos.');
+ masterReview={jobId,raw,story,revision:draft.revision,fingerprint:result.fingerprint};showMasterReview(result);
+});
+async function masterDecision(mode){
+ if(!masterReview||current?.id!==masterReview.jobId||$('external-plan-text').value!==masterReview.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
+ const state=masterReview,result=await api('jobs/'+state.jobId+'/master-decision','POST',{revision:state.revision,fingerprint:state.fingerprint,mode});
+ if(result.status==='BLOCKED'){resetMasterReview();throw Error('El proyecto, los recursos o las reglas han cambiado. Revisa el plan de nuevo.');}
+ $('master-review-actions').hidden=true;
+ const p=document.createElement('p');p.textContent=mode==='review'?'Revisión solicitada. Ajusta la propuesta y vuelve a comprobarla.':'Decisión guardada para esta versión. La edición todavía no se ha iniciado.';$('master-review-result').append(p);
+ if(mode==='review')return;
+ const layers=await api('jobs/'+state.jobId+'/master-layers','POST',{revision:state.revision,decisionId:result.decisionId});
+ if(layers.status!=='STRUCTURE_READY_NOT_RENDERED'){const p=document.createElement('p');p.textContent='Hay capas o recursos pendientes antes de preparar la edición.';$('master-review-result').append(p);return;}
+ const area=$('master-layer-controls');area.replaceChildren();
+ for(const node of layers.graph.nodes.filter(n=>n.renderer==='remotion')){
+  const original=state.story.operations.find(o=>o.id===node.id);if(!original)continue;
+  const box=document.createElement('fieldset'),legend=document.createElement('legend');legend.textContent='Ajustar capa · '+node.id;box.append(legend);
+  const inputs={};
+  const numberField=(key,labelText,value,step='any')=>{const label=document.createElement('label'),input=document.createElement('input');input.type='number';input.step=step;input.value=String(value);label.textContent=labelText;label.append(input);box.append(label);inputs[key]=input;};
+  if(node.visual?.rect)for(const key of ['x','y','width','height'])numberField(key,({x:'Horizontal',y:'Vertical',width:'Anchura',height:'Altura'})[key],node.visual.rect[key]);
+  numberField('start','Inicio (segundos)',original.start);numberField('end','Final (segundos)',original.end);
+  if(typeof original.parameters?.text==='string'){const label=document.createElement('label'),input=document.createElement('input');label.textContent='Texto';input.value=original.parameters.text;label.append(input);box.append(label);inputs.text=input;}
+  if(node.visual)numberField('opacity','Opacidad (0–1)',node.visual.opacity,'.01');
+  if(typeof original.parameters?.gain==='number')numberField('gain','Volumen',original.parameters.gain,'.01');
+  if(Number.isInteger(original.parameters?.sourceInFrame))numberField('sourceInFrame','Inicio en el recurso (fotogramas)',original.parameters.sourceInFrame,'1');
+  const save=document.createElement('button');save.type='button';save.textContent='Guardar ajuste de esta capa';
+  save.onclick=()=>work(async()=>{
+   if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
+   const start=Number(inputs.start.value),end=Number(inputs.end.value),parameters=structuredClone(original.parameters);
+   if(!Number.isFinite(start)||!Number.isFinite(end)||start<0||end<=start)throw Error('Comprueba el inicio y el final de la capa.');
+   if(node.visual?.rect){const rect=Object.fromEntries(['x','y','width','height'].map(key=>[key,Number(inputs[key].value)]));
+    if(Object.values(rect).some(n=>!Number.isFinite(n))||rect.width<=0||rect.height<=0)throw Error('Comprueba la posición y el tamaño de la capa.');parameters.visual={...node.visual,rect};}
+   if(inputs.opacity){const opacity=Number(inputs.opacity.value);if(!Number.isFinite(opacity)||opacity<0||opacity>1)throw Error('La opacidad debe estar entre 0 y 1.');parameters.visual.opacity=opacity;}
+   if(inputs.text)parameters.text=inputs.text.value;if(inputs.gain)parameters.gain=Number(inputs.gain.value);
+   if(inputs.sourceInFrame){const n=Number(inputs.sourceInFrame.value);if(!Number.isInteger(n)||n<0)throw Error('El inicio del recurso debe ser un fotograma válido.');parameters.sourceInFrame=n;}
+   if(inputs.gain&&(!Number.isFinite(parameters.gain)||parameters.gain<0||parameters.gain>2))throw Error('Comprueba el volumen de la capa.');
+   await api('jobs/'+state.jobId+'/master-operation-edit','POST',{revision:state.revision,operationId:node.id,patch:{start,end,parameters}});
+   const revised=structuredClone(state.story),op=revised.operations.find(o=>o.id===node.id);op.start=start;op.end=end;op.parameters=parameters;
+   $('external-plan-text').value=JSON.stringify(revised,null,2);resetMasterReview();$('master-review-result').textContent='Ajuste guardado en una nueva versión. Revisa el plan otra vez antes de aprobarlo.';
+  });box.append(save);area.append(box);
+ }
+}
+$('master-approve').onclick=()=>work(()=>masterDecision('approve'));
+$('master-revise').onclick=()=>work(()=>masterDecision('review'));
+$('master-autonomous').onclick=()=>work(()=>masterDecision('autonomous'));
+$('external-plan-text').addEventListener('input',resetMasterReview);
+
 window.addEventListener('sues:plan-updated',()=>{invalidateExternal();$('external-catalog-text').hidden=true;$('external-copy').hidden=true;});
 $('external-catalog').onclick=()=>work(async()=>{if(!current)throw Error('Prepara primero el vídeo y su análisis.');const catalog=await api('jobs/'+current.id+'/external-catalog');$('external-catalog-text').value='Usa la transcripción, los recursos y las capacidades de este proyecto SUES para proponer una edición. Si faltan observaciones visuales, márcalas pendientes: no inventes fotogramas ni recursos. Entrega la propuesta creativa y exactamente un bloque JSON sues-edit-plan/v1 compatible con este catálogo y este vídeo. Declara las ideas no ejecutables con type: unsupported y description.\n\n'+JSON.stringify(catalog,null,2);$('external-catalog-text').hidden=false;$('external-copy').hidden=false;});
 $('external-copy').onclick=()=>work(async()=>{try{await navigator.clipboard.writeText($('external-catalog-text').value);$('external-result').textContent='Información copiada. Puedes pegarla en el Director elegido; no se ha enviado a ninguna IA.';}catch{$('external-catalog-text').focus();$('external-catalog-text').select();$('external-result').textContent='Selecciona y copia el texto de instrucciones.';}});

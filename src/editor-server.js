@@ -200,10 +200,10 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers|master-layer-edit))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers|master-layer-edit|master-operation-edit|master-versions))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
-    if(['master-draft','master-review','master-decision','master-layers','master-layer-edit'].includes(action)){
+    if(['master-draft','master-review','master-decision','master-layers','master-layer-edit','master-operation-edit','master-versions'].includes(action)){
      const source=jobs.get(id);
      const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
@@ -214,6 +214,8 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       if(!verified)return null;
       return {...verified,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration};
      });
+     if(action==='master-versions'&&req.method==='GET')return json(res,200,{versions:store.listDrafts()});
+     if(action==='master-draft'&&req.method==='GET')return json(res,200,{story:store.readDraft(url.searchParams.get('revision'))});
      if(action==='master-draft'&&req.method==='POST'){
       const b=await body(req,65536);if(Object.keys(b).some(k=>k!=='story'))return json(res,400,{error:'Solo se admite la historia creativa.'});
       return json(res,201,store.saveDraft(b.story));
@@ -221,6 +223,10 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      if(action==='master-review'&&req.method==='POST'){
       const b=await body(req,2048);if(Object.keys(b).some(k=>k!=='revision'))return json(res,400,{error:'Solicitud inválida.'});
       return json(res,200,await store.review(b.revision));
+     }
+     if(action==='master-operation-edit'&&req.method==='POST'){
+      const b=await body(req,32768);if(Object.keys(b).some(k=>!['revision','operationId','patch'].includes(k)))return json(res,400,{error:'Solicitud inválida.'});
+      return json(res,201,store.editOperation(b.revision,b.operationId,b.patch));
      }
      if(action==='master-layer-edit'&&req.method==='POST'){
       const b=await body(req,32768);if(Object.keys(b).some(k=>!['revision','operationId','visual'].includes(k)))return json(res,400,{error:'Solicitud inválida.'});

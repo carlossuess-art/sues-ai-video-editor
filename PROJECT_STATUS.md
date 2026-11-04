@@ -1,3 +1,9 @@
+## 04/11/2026 · MASTER DIRECTOR · UI Y PROTOTIPOS MULTICAPA · INCOMPLETO
+
+- Añadida revisión/decisión en UI de desarrollo, selección de versiones y edición reversible parcial de capas (posición, tamaño, tiempos, texto, opacidad, volumen y origen según corresponda). No se inicia render y la política real continúa bloqueada. Prueba Chromium PASS escritorio y móvil con fixtures, incluida recuperación de versión.
+- Prototipo Remotion añade vídeo silencioso con entrada exacta y compone vídeo+texto Montserrat+SFX: MP4 sintético de 30 fotogramas comprobado por fotogramas y RMS; no equivale a editar un Reel real ni a verificación de audio profesional. Máscaras estáticas probadas, dinámica aún pendiente.
+- 121/121 pruebas Node dirigidas PASS sobre copia productiva y parche selectivo; suite amplia anterior 525/529 con fallos y limitaciones documentadas. No hay deploy, publicación ni gastos API. Informe: docs/SUES_MASTER_DIRECTOR_WORK_UI_CAPAS_20261104.md.
+
 ## 04/11/2026 · MASTER DIRECTOR · CONTEXTO Y REMOTION EXPERIMENTAL · INCOMPLETO
 
 - Adaptador del servidor basado en 20 reglas literales, SHA y biblioteca; política real permanece bloqueada hasta documentar derechos de los tres tapices, que existen en biblioteca pero carecen de metadatos V2. Revisiones invalidadas cuando cambia evidencia; edición de parámetros crea otra versión inmutable. No hay aún UI editable ni backup TAR.

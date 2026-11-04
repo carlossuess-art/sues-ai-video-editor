@@ -27,12 +27,14 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
   }
   const text=node?.renderer==='remotion'&&['captions','graphics'].includes(node.track)&&node.effect==='text';
   const image=node?.renderer==='remotion'&&['broll','graphics'].includes(node.track)&&node.effect==='image-exact';
-  if(!text&&!image){fail(issues,node,'REMOTION_OPERATION_UNSUPPORTED');continue;}
-  if(!only(p,text?['text','visual']:['fit','visual'])||JSON.stringify(p.visual)!==JSON.stringify(v)||
+  const video=node?.renderer==='remotion'&&['broll','graphics'].includes(node.track)&&node.effect==='video-exact';
+  if(!text&&!image&&!video){fail(issues,node,'REMOTION_OPERATION_UNSUPPORTED');continue;}
+  if(!only(p,text?['text','visual']:video?['fit','visual','sourceInFrame','muted']:['fit','visual'])||JSON.stringify(p.visual)!==JSON.stringify(v)||
      !only(v,text?['rect','zIndex','opacity','typography','keyframes','mask']:['rect','zIndex','opacity','keyframes','mask'])||
      !only(v.rect,['x','y','width','height'])||
      (text&&(!only(v.typography,['family','sizePx','weight','color'])||typeof p.text!=='string'||!p.text.length||p.text.length>500))||
-     (image&&p.fit!=='fill')){fail(issues,node,'LAYER_PARAMETERS_UNSUPPORTED');continue;}
+     ((image||video)&&p.fit!=='fill')||
+     (video&&(!Number.isInteger(p.sourceInFrame)||p.sourceInFrame<0||p.muted!==true))){fail(issues,node,'LAYER_PARAMETERS_UNSUPPORTED');continue;}
   const font=text?verifiedFonts[v.typography.family+':'+v.typography.weight]:null;
   if(text&&(!font||!SHA.test(font.sha256??''))){fail(issues,node,'FONT_NOT_VERIFIED');continue;}
   const id=node.resource?.id,asset=verifiedAssets[id];
@@ -53,13 +55,17 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
     {fail(issues,node,'MASK_RESOURCE_UNVERIFIED');continue;}
    maskAssetId=proof.assetId;
   }
+  if(video&&(!SHA.test(id??'')||node.resource?.sha256!==id||asset?.sha256!==id||asset?.kind!=='video'||
+     asset?.rightsVerified!==true||asset?.commercialUseAllowed!==true||!Number.isFinite(asset.duration)||
+     (p.sourceInFrame+node.endFrame-node.startFrame)/graph.fps>asset.duration+0.000001))
+   {fail(issues,node,'VIDEO_RESOURCE_UNVERIFIED');continue;}
   if(!Array.isArray(v.keyframes)||v.keyframes.some(k=>!only(k,['atFrame','easing','x','y','opacity','scale','rotation'])||
       (k.easing??'linear')!=='linear')){fail(issues,node,'ANIMATION_UNSUPPORTED');continue;}
   if(!Number.isInteger(node.startFrame)||!Number.isInteger(node.endFrame)||node.startFrame<0||
      node.endFrame<=node.startFrame||node.endFrame>graph.durationFrames)
    {fail(issues,node,'TIMELINE_INVALID');continue;}
-  layers.push({id:node.id,kind:text?'text':'image',startFrame:node.startFrame,endFrame:node.endFrame,
-   ...(text?{text:p.text,fontAssetId:font.sha256}:{assetId:id}),...(maskAssetId?{maskAssetId}:{}),visual:structuredClone(v)});
+  layers.push({id:node.id,kind:text?'text':video?'video':'image',startFrame:node.startFrame,endFrame:node.endFrame,
+   ...(text?{text:p.text,fontAssetId:font.sha256}:video?{assetId:id,sourceInFrame:p.sourceInFrame,muted:true}:{assetId:id}),...(maskAssetId?{maskAssetId}:{}),visual:structuredClone(v)});
  }
  if(issues.length)return {status:'BLOCKED',issues,composition:null};
  return {status:'READY_FOR_REMOTION_STAGING',issues:[],composition:{schema:'sues-remotion-layers/v1',

@@ -39,3 +39,10 @@ test('audio clips preserve precise frame bounds, gain and verified source in-poi
  assert.deepEqual(r.composition.layers[0],{id:'music-1',kind:'audio',assetId:id,startFrame:10,endFrame:40,sourceInFrame:15,gain:.2});
  registry[id].duration=1;assert.equal(compileMasterDirectorRemotion(g,{verifiedAssets:registry}).status,'BLOCKED');
 });
+test('video clip requires exact in-point, a verified duration and explicit silent handling',()=>{
+ const g=graph(),id='9'.repeat(64);g.nodes[0]={id:'broll',renderer:'remotion',track:'broll',effect:'video-exact',startFrame:3,endFrame:33,resource:{id,sha256:id},visual:{rect:{x:0,y:0,width:1080,height:1920},zIndex:1,opacity:1,keyframes:[]}};
+ g.nodes[0].sourceParameters={fit:'fill',visual:structuredClone(g.nodes[0].visual),sourceInFrame:15,muted:true};
+ const registry={[id]:{sha256:id,kind:'video',duration:4,rightsVerified:true,commercialUseAllowed:true}};
+ const r=compileMasterDirectorRemotion(g,{verifiedAssets:registry});assert.equal(r.status,'READY_FOR_REMOTION_STAGING');assert.equal(r.composition.layers[0].sourceInFrame,15);assert.equal(r.composition.layers[0].muted,true);
+ g.nodes[0].sourceParameters.muted=false;assert.equal(compileMasterDirectorRemotion(g,{verifiedAssets:registry}).status,'BLOCKED');
+});

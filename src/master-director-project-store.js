@@ -2,7 +2,7 @@
 // The caller supplies current editor facts and server-owned policy; request bodies
 // cannot assert resources, rules, budget, or user approvals.
 import {createHash,randomBytes} from 'node:crypto';
-import {mkdirSync,readFileSync,writeFileSync} from 'node:fs';
+import {mkdirSync,readFileSync,writeFileSync,readdirSync,lstatSync,existsSync} from 'node:fs';
 import {join} from 'node:path';
 import {prepareMasterDirectorSession} from './master-director-orchestration.js';
 import {buildMasterDirectorReview} from './master-director-workflow.js';
@@ -35,6 +35,16 @@ export class MasterDirectorProjectStore{
   return {revision:immutable(join(this.root,'drafts'),story),rendered:false};
  }
  readDraft(revision){return load(join(this.root,'drafts'),revision);}
+ listDrafts(){
+  const root=join(this.root,'drafts');if(!existsSync(root))return [];
+  const names=readdirSync(root);if(names.length>1000)throw Error('Too many story revisions');
+  return names.filter(n=>/^[a-f0-9]{64}\.json$/.test(n)).map(n=>{
+   const path=join(root,n),st=lstatSync(path);if(!st.isFile()||st.isSymbolicLink())throw Error('Invalid story revision');
+   const revision=n.slice(0,64),story=load(root,revision);
+   return {revision,updatedAt:new Date(st.mtimeMs).toISOString(),title:story.narrative?.centralMessage??''};
+  }).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)||a.revision.localeCompare(b.revision));
+ }
+
  editVisual(revision,operationId,visual){
   if(typeof operationId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(operationId)||
      !obj(visual)||Object.keys(visual).some(k=>!['rect','zIndex','opacity','typography','keyframes','mask','stack'].includes(k)))
@@ -47,6 +57,19 @@ export class MasterDirectorProjectStore{
   return {...next,parentRevision:revision,requiresNewReview:true};
  }
 
+ editOperation(revision,operationId,patch){
+  if(typeof operationId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(operationId)||!obj(patch)||
+     !Object.keys(patch).length||Object.keys(patch).some(k=>!['start','end','parameters'].includes(k)))
+   throw Error('Invalid operation edit');
+  const story=this.readDraft(revision),matches=Array.isArray(story.operations)?story.operations.filter(o=>o?.id===operationId):[];
+  if(matches.length!==1||matches[0].renderer!=='remotion')throw Error('Editable operation not found');
+  const op=matches[0],start=Object.hasOwn(patch,'start')?patch.start:op.start,end=Object.hasOwn(patch,'end')?patch.end:op.end;
+  if(!Number.isFinite(start)||!Number.isFinite(end)||start<0||end<=start||!Number.isFinite(story.timeline?.duration)||end>story.timeline.duration)
+   throw Error('Invalid operation timing');
+  if(Object.hasOwn(patch,'parameters')&&(!obj(patch.parameters)||Buffer.byteLength(JSON.stringify(patch.parameters))>24000))throw Error('Invalid operation parameters');
+  op.start=start;op.end=end;if(Object.hasOwn(patch,'parameters'))op.parameters=structuredClone(patch.parameters);
+  const next=this.saveDraft(story);return {...next,parentRevision:revision,requiresNewReview:true};
+ }
  async prepare(revision){
   const story=this.readDraft(revision),context=await this.contextProvider(story);
   if(Array.isArray(context?.blockedIssues)&&context.blockedIssues.length)

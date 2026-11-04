@@ -92,3 +92,23 @@ test('visual edits create a reversible story version and never modify the origin
   assert.throws(()=>s.editVisual(a.revision,'layer-1',{rect:{},registry:{approved:true}}),/Invalid/);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
+
+test('timing and parameter edits create new versions without changing protected fields',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'sues-master-operation-'));
+ try{const s=new MasterDirectorProjectStore(dir,async()=>null),a=s.saveDraft({schema:'sues-master-story/v1',timeline:{duration:10},operations:[{id:'layer',sceneId:'s1',renderer:'remotion',effect:'text',start:1,end:3,parameters:{text:'original'}}]});
+  const b=s.editOperation(a.revision,'layer',{start:2,end:4,parameters:{text:'cambio'}});
+  assert.equal(s.readDraft(a.revision).operations[0].parameters.text,'original');
+  const op=s.readDraft(b.revision).operations[0];assert.equal(op.start,2);assert.equal(op.end,4);assert.equal(op.parameters.text,'cambio');assert.equal(op.effect,'text');
+  assert.throws(()=>s.editOperation(a.revision,'layer',{renderer:'native'}),/Invalid operation edit/);
+  assert.throws(()=>s.editOperation(a.revision,'layer',{start:9,end:11}),/timing/);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+test('version listing retains all immutable drafts without listing unrelated files',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'sues-master-list-'));
+ try{const s=new MasterDirectorProjectStore(dir,async()=>null);assert.deepEqual(s.listDrafts(),[]);
+  const a=s.saveDraft({schema:'sues-master-story/v1',narrative:{centralMessage:'Uno'}});
+  const b=s.saveDraft({schema:'sues-master-story/v1',narrative:{centralMessage:'Dos'}});
+  const list=s.listDrafts();assert.equal(list.length,2);assert.deepEqual(new Set(list.map(x=>x.revision)),new Set([a.revision,b.revision]));
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});

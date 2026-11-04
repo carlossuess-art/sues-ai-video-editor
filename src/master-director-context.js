@@ -74,7 +74,7 @@ export function createMasterDirectorContextProvider(directory){
    approvedRuleVersion:policy.version,approvedRuleIds:ids,requiredRuleKeys:keys,
    approvedReferenceIds:policy.approvedReferenceIds,masterHashes,
    lockedMastersByMode:{'brand-sues':masters,'reference-exact':masters},
-   rendererCapabilities:{native,remotion:['text','image-exact','audio-clip-exact']},licensedAssets,generatedAssets:{},wordAnchors,
+   rendererCapabilities:{native,remotion:['text','image-exact','video-exact','audio-clip-exact']},licensedAssets,generatedAssets:{},wordAnchors,
    frameEvidence:{},maskEvidence:{},canvas:{width:1080,height:1920},verifiedFonts
   }};
  };
