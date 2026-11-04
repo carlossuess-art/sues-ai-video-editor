@@ -8,7 +8,7 @@ const captions=JSON.parse(fs.readFileSync(new URL('../src/full-captions.json',im
 test('source retains master CTA and original voice',()=>{
  assert.match(source,/END_ORIGINAL = 1950/);
  assert.match(source,/CTA_FRAMES = 339/);
- assert.match(source,/SUES-158404/);
+ assert.match(fs.readFileSync(new URL('../src/FullRoot.tsx',import.meta.url),'utf8'),/SUES-158404-FULL-DRAFT/);
  assert.match(source,/<OffthreadVideo src=\{base\} volume=\{1\}/);
  assert.match(source,/<OffthreadVideo src=\{cta\} volume=\{1\}/);
 });
