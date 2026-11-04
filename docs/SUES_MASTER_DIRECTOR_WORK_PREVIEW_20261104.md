@@ -57,3 +57,9 @@ Con plan, transcripción y política de fixture simulados (NO son análisis del 
 ## Recuperación de errores de preview
 
 Se corrigió el reintento tras estado terminal BLOCKED o FAILED: se usa un nuevo identificador, pues el anterior conserva su resultado idempotente. Cuando la solicitud es INTERRUPTED o existe incertidumbre de conexión, se conserva el identificador para no duplicar renders. La interfaz informa de la geometría no verificada sin asumir SAR. Smoke Chromium escritorio y móvil: fallo de geometría simulado → reintento → preview lista, revisión y recuperación de versión PASS. Sin despliegue.
+
+## Prueba con un bruto de Drive · 05/11/2026
+
+Grabación de práctica de tercero de 30,2 s: Whisper local generó 113 palabras con tiempos, sin validación auditiva humana. Se elaboró un plan preliminar basado en la transcripción y se ejecutó en entorno aislado con política y evidencia visual simuladas. Dos previews privadas, 906 fotogramas a 270×480 con audio, auditoría técnica independiente, decodificación completa, Range e idempotencia PASS. Primera revisión de muestras detectó texto próximo a la cabeza y se corrigió en V2; 15 muestras cada 2 s de V2 sin texto sobre rostro observado, no revisión exhaustiva; texto puede cruzar manos. La comparación numérica de audio V1 arroja correlación 0,999968, no escucha crítica. Sigue sin cumplir la calidad DOPAMIN: faltan recursos con derechos, música/SFX, captions completos y revisión. Derechos de protagonista y recursos no verificados: solo uso privado, sin publicación. La fuente, transcripción, planes y versiones se conservan en directorio privado en el VPS; nunca subirlos al repo público.
+
+La prueba no demuestra funcionamiento del proveedor real de contexto ni implementación de las 20 reglas; no reemplazar producción con la rama completa. No se ha desplegado.

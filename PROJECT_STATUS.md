@@ -1406,3 +1406,5 @@ La tabla técnica de Carlos queda codificada como `sues-visual-grammar-158623-v1
 - Reel 158541 recibido: archivo ya editado 13,2 s. El original carece de SAR y se bloqueó con seguridad. Una copia privada con SAR 1:1 asumido, sin recodificación y con todos los fotogramas decodificados idénticos, permitió prueba técnica autenticada Remotion: 396 frames, audio y decode completo, Range e idempotencia PASS. Plan y transcripción simulados; sin revisión creativa ni Reel completo. Ver `docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md`. Sin despliegue, publicación ni coste.
 
 - Master Director aislado: corregido reintento de preview tras BLOCKED/FAILED conservando idempotencia en conexiones inciertas; geometría no verificada se explica en UI. Browser desktop/mobile PASS con servicio simulado. Sin despliegue.
+
+- Master Director: bruto de práctica de Drive, 30,2 s; análisis local y plan preliminar aplicado en aislamiento, dos previews técnicas PASS, corrección de ubicación de texto y QA visual parcial. Política simulada, derechos de tercero, acabado cinematográfico y auditoría completos pendientes; sin despliegue ni publicación.
