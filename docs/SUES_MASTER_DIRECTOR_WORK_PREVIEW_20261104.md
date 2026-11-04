@@ -33,3 +33,9 @@ La petición ahora devuelve control inmediatamente y la interfaz consulta el est
 ## Regresión adicional con dependencias montadas
 
 548 pruebas: 543 PASS, 5 fallos. Dos se reproducen en la base productiva sin el parche (cola de fragmentos y límite de biblioteca). El test Git falla en la imagen sin Git, y pasa en host. La prueba de preview falla con el límite de contenedor 384 MiB frente al mínimo de 512 MiB, y pasa en host. La composición real con máscara FFmpeg falló al crear el fixture en 384 MiB y pasó al repetir exactamente esa prueba en contenedor aislado de 768 MiB (1/1). La suite completa no se puede declarar 548/548. La prueba extendida 158404 pasó técnicamente; sin conclusión creativa ni de exportación final Master Director.
+
+## Curvas de animación · continuación
+
+El adaptador admite ahora `linear`, `ease-in`, `ease-out` y `ease-in-out` con curvas cubic-bezier CSS estándar, aplicadas al tramo que termina en cada keyframe, por propiedad; se conservan posiciones, tiempos y parámetros originales. `spring` sigue bloqueado: no existe un contrato reproducible de masa, rigidez y amortiguación. Pruebas unitarias de extremos y valores intermedios, rechazo de spring y preservación del plan: 8/8 PASS; TypeScript PASS. Un fotograma Remotion sintético a mitad del tramo mostró posiciones distintas conforme a la curva (x 90–94 lineal y x 62–66 ease-in a escala 0,25). No es prueba artística ni de un Reel real. Sin despliegue.
+
+Regresión específica posterior en copia aislada del editor: 114/114 PASS.

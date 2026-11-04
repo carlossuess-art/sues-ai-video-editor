@@ -1,12 +1,13 @@
 import React, {useEffect,useState} from 'react';
+import {masterEasing} from './masterEasing.js';
 import {AbsoluteFill,Img,Audio,OffthreadVideo,Sequence,staticFile,useCurrentFrame,delayRender,continueRender,cancelRender} from 'remotion';
-type Keyframe={atFrame:number;easing?:'linear';x?:number;y?:number;opacity?:number;scale?:number;rotation?:number};
+type Keyframe={atFrame:number;easing?:'linear'|'ease-in'|'ease-out'|'ease-in-out';x?:number;y?:number;opacity?:number;scale?:number;rotation?:number};
 type Layer={id:string;kind?:'text'|'image'|'audio'|'video';sourceInFrame?:number;gain?:number;assetId?:string;maskAssetId?:string;fontAssetId?:string;startFrame:number;endFrame:number;text?:string;visual:{rect:{x:number;y:number;width:number;height:number};zIndex:number;opacity:number;typography?:{family:string;sizePx:number;weight:number;color:string};keyframes:Keyframe[]}};
 export type MasterTextProps={layers:Layer[];durationFrames?:number;canvasWidth?:number;canvasHeight?:number;fps?:number;source?:{assetId:string;fit:'fill';audio:true;spans:Array<{sourceInFrame:number;startFrame:number;endFrame:number}>}};
 function valueAt(keys:Keyframe[],frame:number,key:'x'|'y'|'opacity'|'scale'|'rotation',fallback:number){
  const values=keys.filter(k=>k[key]!==undefined);if(!values.length)return fallback;
  if(frame<=values[0].atFrame)return values[0][key]!;
- for(let i=1;i<values.length;i++)if(frame<=values[i].atFrame){const a=values[i-1],b=values[i],t=(frame-a.atFrame)/(b.atFrame-a.atFrame);return a[key]!+(b[key]!-a[key]!)*t;}
+ for(let i=1;i<values.length;i++)if(frame<=values[i].atFrame){const a=values[i-1],b=values[i],t=(frame-a.atFrame)/(b.atFrame-a.atFrame);return a[key]!+(b[key]!-a[key]!)*masterEasing(b.easing??'linear',t);}
  return values[values.length-1][key]!;
 }
 export const MasterDirectorText:React.FC<MasterTextProps>=({layers,source})=>{

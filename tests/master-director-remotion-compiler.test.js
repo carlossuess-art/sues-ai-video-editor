@@ -7,7 +7,7 @@ test('preserves spatial and temporal attributes for supported text',()=>{
  assert.equal(r.status,'READY_FOR_REMOTION_STAGING');assert.equal(r.composition.layers[0].startFrame,3);
  assert.deepEqual(r.composition.layers[0].visual,g.nodes[0].visual);assert.equal(r.composition.layers[0].text,'Hola');
 });
-test('refuses masks, unsupported effects, unverified fonts and nonlinear easing rather than flattening them',()=>{
+test('refuses masks, unsupported effects, unverified fonts and spring easing rather than flattening them',()=>{
  for(const mutate of [g=>g.nodes[0].visual.mask={proofId:'test'},g=>g.nodes[0].effect='subject-occlusion',g=>g.nodes[0].visual.typography.family='missing',g=>g.nodes[0].visual.keyframes[0].easing='spring',g=>g.nodes[0].sourceParameters.shadow=true]){
   const g=graph();g.nodes[0].sourceParameters.visual=structuredClone(g.nodes[0].visual);mutate(g);const r=compileMasterDirectorRemotion(g,{verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}}});
   assert.equal(r.status,'BLOCKED');assert.equal(r.composition,null);assert.ok(r.issues.length);
@@ -45,4 +45,12 @@ test('video clip requires exact in-point, a verified duration and explicit silen
  const registry={[id]:{sha256:id,kind:'video',duration:4,rightsVerified:true,commercialUseAllowed:true}};
  const r=compileMasterDirectorRemotion(g,{verifiedAssets:registry});assert.equal(r.status,'READY_FOR_REMOTION_STAGING');assert.equal(r.composition.layers[0].sourceInFrame,15);assert.equal(r.composition.layers[0].muted,true);
  g.nodes[0].sourceParameters.muted=false;assert.equal(compileMasterDirectorRemotion(g,{verifiedAssets:registry}).status,'BLOCKED');
+});
+
+test('preserves explicitly supported easing curves in approved layers',()=>{
+ for(const easing of ['linear','ease-in','ease-out','ease-in-out']){
+  const g=graph();g.nodes[0].visual.keyframes[1].easing=easing;g.nodes[0].sourceParameters.visual=structuredClone(g.nodes[0].visual);
+  const r=compileMasterDirectorRemotion(g,{verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}}});
+  assert.equal(r.status,'READY_FOR_REMOTION_STAGING');assert.equal(r.composition.layers[0].visual.keyframes[1].easing,easing);
+ }
 });

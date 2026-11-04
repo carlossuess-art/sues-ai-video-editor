@@ -1,4 +1,4 @@
-// Strict adapter: positioned text and still images with linear keyframes only.
+// Strict adapter: positioned visual layers with explicit supported keyframe curves.
 // Unknown operations/parameters are rejected, never replaced or flattened.
 const plain=x=>x&&typeof x==='object'&&!Array.isArray(x);
 const only=(o,keys)=>plain(o)&&Object.keys(o).every(k=>keys.includes(k));
@@ -60,7 +60,7 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
      (p.sourceInFrame+node.endFrame-node.startFrame)/graph.fps>asset.duration+0.000001))
    {fail(issues,node,'VIDEO_RESOURCE_UNVERIFIED');continue;}
   if(!Array.isArray(v.keyframes)||v.keyframes.some(k=>!only(k,['atFrame','easing','x','y','opacity','scale','rotation'])||
-      (k.easing??'linear')!=='linear')){fail(issues,node,'ANIMATION_UNSUPPORTED');continue;}
+      !['linear','ease-in','ease-out','ease-in-out'].includes(k.easing??'linear'))){fail(issues,node,'ANIMATION_UNSUPPORTED');continue;}
   if(!Number.isInteger(node.startFrame)||!Number.isInteger(node.endFrame)||node.startFrame<0||
      node.endFrame<=node.startFrame||node.endFrame>graph.durationFrames)
    {fail(issues,node,'TIMELINE_INVALID');continue;}
