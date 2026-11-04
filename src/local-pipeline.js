@@ -10,6 +10,7 @@ import {prepareVoiceEffects} from './voice-effects.js';
 import {prepareSubjectLayers} from './subject-layers.js';
 import {prepareElements} from './elements.js';
 import {visualProfile} from './style-variants.js';
+import {visualGrammarForProfile} from './visual-grammar.js';
 import {prepareDepthText} from './depth-text.js';
 import {finishFadeFor} from './graphic-timing.js';
 import {prepareSoundEffects} from './sound-effects.js';
@@ -156,6 +157,7 @@ export function prepareProject(project,settings={}){
  const projection=montageMap(plan.duration,options.montageCuts,options.montageSplits);
  options.montageCuts=projection.cuts;options.montageSplits=projection.splits;
  if(projection.cuts.length||projection.splits.length){plan.postEdit=projection;plan.outputDuration=projection.duration;}
+ plan.visualGrammar=visualGrammarForProfile(options.styleId);
  plan.templateRecipe=recipe;plan.editionCounts=editionCounts(plan);
  if(plan.soundEffects.events.length||plan.customSfx.events.length){plan.pending=plan.pending.filter(p=>p!=='music-and-sfx');plan.pending.push('sound-design-human-review');}
  const director={...automatic,...(manual.length||chosenMotions.length?{selection:'offline-lexical-baseline-with-user-review-v1'}:{}),decisions,audit:{...automatic.audit,rejections,acceptedEvents:decisions.length,manualHighlights:manual.length,manualMotions:chosenMotions.length}};
