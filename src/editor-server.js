@@ -1,3 +1,4 @@
+import {MasterDirectorProjectStore} from './master-director-project-store.js';
 import {LivePreviews} from './live-preview.js';
 import {timelineFrames} from './timeline-frames.js';
 import {AdjustmentPreviews} from './adjustment-previews.js';
@@ -45,7 +46,7 @@ async function body(req,maxBytes=65536){
  const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>maxBytes)throw new Error('Request too large');chunks.push(chunk);}
  const value=JSON.parse(Buffer.concat(chunks).toString());if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -197,9 +198,38 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
+    if(['master-draft','master-review','master-decision','master-layers'].includes(action)){
+     const source=jobs.get(id);
+     const store=new MasterDirectorProjectStore(jobs.dir(id),async()=>{
+      // Provider is injected only by trusted server startup, never request JSON.
+      if(typeof masterDirectorContext!=='function')return null;
+      const current=jobs.get(id),project=jobs.loadProfile(current.profileId);
+      const catalog=externalCatalog(project,current.settings,assets.list());
+      const verified=await masterDirectorContext({jobId:id,project,job:current,assets,catalog});
+      if(!verified)return null;
+      return {...verified,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration};
+     });
+     if(action==='master-draft'&&req.method==='POST'){
+      const b=await body(req,65536);if(Object.keys(b).some(k=>k!=='story'))return json(res,400,{error:'Solo se admite la historia creativa.'});
+      return json(res,201,store.saveDraft(b.story));
+     }
+     if(action==='master-review'&&req.method==='POST'){
+      const b=await body(req,2048);if(Object.keys(b).some(k=>k!=='revision'))return json(res,400,{error:'Solicitud inválida.'});
+      return json(res,200,await store.review(b.revision));
+     }
+     if(action==='master-layers'&&req.method==='POST'){
+      const b=await body(req,2048);if(Object.keys(b).some(k=>!['revision','decisionId'].includes(k)))return json(res,400,{error:'Solicitud inválida.'});
+      return json(res,200,await store.layers(b.revision,b.decisionId));
+     }
+     if(action==='master-decision'&&req.method==='POST'){
+      const b=await body(req,2048);if(Object.keys(b).some(k=>!['revision','fingerprint','mode'].includes(k)))return json(res,400,{error:'Solicitud inválida.'});
+      return json(res,200,await store.decide(b.revision,b.fingerprint,b.mode));
+     }
+     return json(res,405,{error:'Método no permitido.'});
+    }
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
     if(!action&&req.method==='PATCH')return json(res,200,jobs.adjust(id,(await body(req)).settings));
     if(action==='external-draft'&&['GET','POST'].includes(req.method)){

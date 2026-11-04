@@ -1,4 +1,5 @@
 import React from 'react';
+import {MasterDirectorText} from './MasterDirectorText';
 import {Composition} from 'remotion';
 import plan from './plan.json';
 import {CtaVideo, type CtaAssets} from './CtaVideo';
@@ -7,6 +8,7 @@ import {Reference158623Demo} from './SemanticVisualBeat';
 
 export const RemotionRoot: React.FC = () => (
  <>
+  <Composition id="SUES-MASTER-TEXT-TEST" component={MasterDirectorText} durationInFrames={90} fps={30} width={1080} height={1920} defaultProps={{layers:[]}} />
   <Composition
     id={plan.id}
     component={CtaVideo}

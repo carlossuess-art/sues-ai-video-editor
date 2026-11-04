@@ -1,3 +1,10 @@
+## 04/11/2026 · MASTER DIRECTOR · INTEGRACIÓN PARCIAL DE BACKEND Y PRUEBA REMOTION · SIN DESPLIEGUE
+
+- Nuevas rutas autenticadas de borrador, revisión, decisión y grafo de capas; revisiones inmutables y bloqueo ante cambios. Sin proveedor real de confianza quedan bloqueadas; el ejemplo positivo de tests es sintético. Aún no hay ejecución/render ni UI editable.
+- Adaptador experimental Remotion limitado a texto posicionado y keyframes lineales; rechaza máscaras y efectos no soportados. TypeScript PASS y un fotograma sintético renderizado e inspeccionado por píxeles; no demuestra edición de un Reel ni sonido.
+- 107/107 pruebas dirigidas Node PASS en copia aislada del código productivo con parche selectivo. La rama y el servidor productivo difieren; no copiar el servidor entero. No deploy, gasto o publicación.
+- Limitaciones, resultados y continuación exacta: docs/SUES_MASTER_DIRECTOR_WORK_AVANCE_BACKEND_20261104.md. Siguen pendientes registro confiable real, UI, capas editables, motor integral, QA audiovisual y regresión completa.
+
 ## 04/11/2026 · SUES MASTER DIRECTOR · AVANCE VERIFICADO · SIN DESPLIEGUE
 
 - **20 reglas creativas aprobadas verbalmente por Carlos**, capturadas en docs/SUES_MASTER_DIRECTOR_REGLAS_APROBADAS_20261104.md. El borrador anterior es histórico; no pedir reaprobarlo.
