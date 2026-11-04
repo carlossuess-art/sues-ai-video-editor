@@ -1400,3 +1400,5 @@ La tabla técnica de Carlos queda codificada como `sues-visual-grammar-158623-v1
 - UI aislada Master Director: selección de curva por fotograma, guardada en versión nueva con revisión requerida. Smoke Chromium escritorio/móvil PASS con backend de prueba; no desplegado.
 
 - UI aislada Master Director ampliada para editar valores existentes de keyframes con versionado. Prueba de navegador escritorio/móvil PASS con fixture simulado; sin despliegue.
+
+- Prueba aislada autenticada de preview sintética con animación ease-in-out: 24 s con render Remotion real, audio, auditoría técnica independiente, Range e idempotencia PASS. No equivale a calidad creativa aprobada.
