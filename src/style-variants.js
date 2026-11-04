@@ -1,3 +1,4 @@
+import {visualGrammarForProfile} from './visual-grammar.js';
 export const STYLE_VARIANTS=Object.freeze({
  SUES_DOPAMIN:{name:'DOPAMIN',status:'experimental',pacing:'fast',captions:{fontSize:112,maxDuration:1.8,entranceMs:140,fadeMs:40,characterEntrance:{staggerMs:18,settleMs:100}},camera:{baseZoom:1.04,maxZoom:1.22,targetZoom:1.12}},
  SUES_CALMA:{name:'CALMA',status:'functional',pacing:'slow',captions:{fontSize:112,maxDuration:2.4,entranceMs:180,fadeMs:60,characterEntrance:{staggerMs:24,settleMs:130}},camera:{baseZoom:1.04,maxZoom:1.18,targetZoom:1.08}},
@@ -15,6 +16,6 @@ export function applyStyleVariant(template,id){
 // Relative editorial budgets, not measured event counts from the reference.
 // Manual choices and speech cues are never dropped to meet a density target.
 export function visualProfile(id){
- if(id==='SUES_DOPAMIN')return {id:'DOPAMIN',reference:'deckeanu-keanu-primary',supplementalReference:'dopamin-diegonxt-20261022',intensity:1,frequency:1,zoomGap:1,secondsPerZoom:7.5,maxZoomEvents:6};
- return {id:id==='SUES_CALMA'?'CALMA':id.replace('SUES_',''),reference:'deckeanu-keanu-primary',intensity:.5,frequency:.5,zoomGap:2,secondsPerZoom:15,maxZoomEvents:3};
+ if(id==='SUES_DOPAMIN')return {id:'DOPAMIN',reference:'deckeanu-keanu-primary',supplementalReference:'dopamin-diegonxt-20261022',intensity:1,frequency:1,zoomGap:1,secondsPerZoom:7.5,maxZoomEvents:6,visualGrammar:visualGrammarForProfile(id)};
+ return {id:id==='SUES_CALMA'?'CALMA':id.replace('SUES_',''),reference:'deckeanu-keanu-primary',intensity:.5,frequency:.5,zoomGap:2,secondsPerZoom:15,maxZoomEvents:3,visualGrammar:visualGrammarForProfile(id)};
 }
