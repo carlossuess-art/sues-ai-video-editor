@@ -1,3 +1,5 @@
+> **HISTÓRICO — PROPUESTA ANTERIOR A LA APROBACIÓN.** Carlos aprobó las 20 reglas corregidas en conversación el 04/11/2026. Fuente vigente: docs/SUES_MASTER_DIRECTOR_REGLAS_APROBADAS_20261104.md. No volver a tratar este borrador como pendiente.
+
 # REGLAS MAESTRAS DEL CEREBRO · BORRADOR PARA APROBACIÓN DE CARLOS
 4 de noviembre de 2026. Este documento propone reglas en lenguaje natural. NO debe darse por aprobado ni desplegado automáticamente.
 
