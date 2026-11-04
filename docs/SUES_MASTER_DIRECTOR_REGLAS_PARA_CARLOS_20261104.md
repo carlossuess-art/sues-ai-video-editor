@@ -50,7 +50,7 @@ El cerebro que coordina todo recibe una intención audiovisual completa, selecci
 Cada regla tendrá un identificador, versión, ámbito, excepción permitida, prueba automatizada y responsable del resultado. La skill creativa se adaptará DESPUÉS de estabilizar el contrato del cerebro, para producir planes completos que ese cerebro pueda recibir.
 
 ## Estado comprobado
-La primera barrera master-director-gate.js y el nuevo puente narrativo master-director-story.js disponen de 23 pruebas Node 22/23 PASS combinadas en un directorio temporal aislado del VPS. Esto prueba lógica de entrada y relaciones, no calidad final de vídeos. Ningún cambio de la rama está desplegado ni se ha alterado la skill.
+La primera barrera master-director-gate.js y el nuevo puente narrativo master-director-story.js disponen de 24 pruebas Node 24/24 PASS combinadas en un directorio temporal aislado del VPS. Esto prueba lógica de entrada y relaciones, no calidad final de vídeos. Ningún cambio de la rama está desplegado ni se ha alterado la skill.
 
 ## Pendiente de aprobación
 Este texto es una propuesta de reglas. Las decisiones concretas de estilo, excepciones y prioridades las validará Carlos en lenguaje natural antes de convertirlas en políticas definitivas. El código en rama sigue siendo experimental mientras tanto.
