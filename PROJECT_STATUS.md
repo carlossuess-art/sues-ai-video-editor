@@ -2,7 +2,7 @@
 - Rama aislada: feat/master-director-story-orchestration-20261104; PR borrador #27 contra feat/master-director-gate-20261104.
 - Código nuevo: src/master-director-story.js; traduce historia global, metáforas entre escenas y recursos verificados a sues-master-director/v1; propone creación si falta un recurso ideal, sin generar ni degradar.
 - Contrato en lenguaje natural: docs/SUES_MASTER_DIRECTOR_REGLAS_PARA_CARLOS_20261104.md (20 reglas; PENDIENTE APROBACIÓN).
-- QA comprobada: 23/23 Node.js 22 en copia temporal aislada (9 gate + 14 narrativa). NO es suite de la aplicación ni auditoría audiovisual; no conectado al renderer ni editor web. Sin merge, deploy, cambio de skill, consumo API ni alteración de originales.
+- QA comprobada: 24/24 Node.js 22 en copia temporal aislada (9 gate + 14 narrativa). NO es suite de la aplicación ni auditoría audiovisual; no conectado al renderer ni editor web. Sin merge, deploy, cambio de skill, consumo API ni alteración de originales.
 - Siguiente: aprobación de reglas maestras; adaptador seguro al formato del editor y Remotion, capacidades verificadas por motor, supervisor autenticado, QA de vídeo real y doble auditoría limpia. Solo después adaptar skill.
 
 ## Publicado · correcciones de auditoría · 29/10/2026
