@@ -98,6 +98,9 @@ export function inspectMasterDirectorStory(story,registry={}){
      !o.requiredQA.every(k=>QA.includes(k))||
      !(REQUIRED[o.track]??[]).every(k=>o.requiredQA.includes(k)))
    issue(issues,'QA_INSUFFICIENT',o.id);
+  // A media or audio operation can never pass as executable without a real asset.
+  if(['broll','music','sfx'].includes(o.track)&&o.resourceRef===undefined)
+   issue(issues,'MEDIA_ASSET_REQUIRED',o.id);
   if(o.resourceRef!==undefined&&!byResource.has(o.resourceRef))
    issue(issues,'UNKNOWN_RESOURCE',o.id);
   if(o.motifId!==undefined&&!byMotif.has(o.motifId))
