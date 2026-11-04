@@ -97,3 +97,11 @@ test('resource references cannot be fabricated by the skill',()=>{
  const s=sample();s.operations[0].resourceRef='not-in-inventory';
  assert.ok(inspectMasterDirectorStory(s,trusted()).issues.some(x=>x.code==='UNKNOWN_RESOURCE'));
 });
+
+test('B-roll, music and sound cannot be marked ready without an asset reference',()=>{
+ for(const track of ['broll','music','sfx']){
+  const s=sample();delete s.operations[0].resourceRef;s.operations[0].track=track;
+  const q=inspectMasterDirectorStory(s,trusted());
+  assert.ok(q.issues.some(x=>x.code==='MEDIA_ASSET_REQUIRED'),track);
+ }
+});
