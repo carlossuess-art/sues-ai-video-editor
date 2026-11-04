@@ -36,6 +36,10 @@ export function inspectMasterDirectorStory(story,registry={}){
     !SHA.test(m?.sha256??'')||registry.masterHashes?.[m.id]!==m.sha256))
   issue(issues,'MASTERS_NOT_VERIFIED');
  if(!id(registry.approvedRuleVersion))issue(issues,'RULE_VERSION_NOT_VERIFIED');
+ if(!Array.isArray(registry.unresolvedRuleConflicts))
+  issue(issues,'RULE_CONFLICT_AUDIT_MISSING');
+ else if(registry.unresolvedRuleConflicts.length)
+  issue(issues,'UNRESOLVED_RULE_CONFLICTS');
  const n=story.narrative??{};
  if(!phrase(n.centralMessage)||!phrase(n.intendedExperience))issue(issues,'NARRATIVE_INTENT_MISSING');
  const scenes=Array.isArray(n.scenes)?n.scenes:[],byScene=new Map();let cursor=0;
