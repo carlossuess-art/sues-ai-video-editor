@@ -15,8 +15,11 @@ export function auditMasterDirectorArc(narrative,registry={},timeline={}){
  if(registry.arcPolicy!=='reel-v1')
   return {status:'NOT_APPLICABLE',issues:[],arc:[]};
  const arc=narrative?.arc;
- if(!Array.isArray(arc)||arc.length<6||arc.length>8){
+ if(!Array.isArray(arc)){
   issue(issues,'REEL_ARC_MISSING');return {status:'SCRIPT_REVIEW_REQUIRED',issues,arc:[]};
+ }
+ if(arc.length<6||arc.length>8){
+  issue(issues,'REEL_ARC_SEQUENCE_INVALID');return {status:'SCRIPT_REVIEW_REQUIRED',issues,arc};
  }
  const sequence=arc.map(b=>b?.phase);
  const expected=sequence.includes('second-fall')?REEL_ARC_WITH_SECOND_FALL:REEL_ARC_MINIMUM;
