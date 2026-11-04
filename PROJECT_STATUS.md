@@ -1402,3 +1402,5 @@ La tabla técnica de Carlos queda codificada como `sues-visual-grammar-158623-v1
 - UI aislada Master Director ampliada para editar valores existentes de keyframes con versionado. Prueba de navegador escritorio/móvil PASS con fixture simulado; sin despliegue.
 
 - Prueba aislada autenticada de preview sintética con animación ease-in-out: 24 s con render Remotion real, audio, auditoría técnica independiente, Range e idempotencia PASS. No equivale a calidad creativa aprobada.
+
+- Reel 158541 recibido: archivo ya editado 13,2 s. El original carece de SAR y se bloqueó con seguridad. Una copia privada con SAR 1:1 asumido, sin recodificación y con todos los fotogramas decodificados idénticos, permitió prueba técnica autenticada Remotion: 396 frames, audio y decode completo, Range e idempotencia PASS. Plan y transcripción simulados; sin revisión creativa ni Reel completo. Ver `docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md`. Sin despliegue, publicación ni coste.
