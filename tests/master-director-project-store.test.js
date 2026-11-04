@@ -66,6 +66,9 @@ test('authenticated review and explicit approval use server evidence and expire 
   assert.equal(layers.status,'STRUCTURE_READY_NOT_RENDERED');assert.equal(layers.graph.nodes[0].id,'o1');
   assert.equal(layers.graph.editableInWebEditor,false);assert.equal(layers.canExecute,false);
   assert.equal(layers.remotion.status,'BLOCKED');assert.equal(layers.remotion.composition,null);
+  policy.registry.approvedReferenceIds.push('changed-reference');
+  assert.equal((await (await post('/master-layers',{revision,decisionId:decision.decisionId})).json()).status,'BLOCKED');
+  policy.registry.approvedReferenceIds.pop();
   const update=await fetch(root,{method:'PATCH',headers,body:JSON.stringify({settings:{zoomIntensity:0}})});assert.equal(update.status,200);
   assert.equal((await (await post('/master-review',{revision})).json()).issues[0].code,'PROJECT_VERSION_CHANGED');
   assert.equal((await (await post('/master-decision',{revision,fingerprint:review.fingerprint,mode:'approve'})).json()).status,'BLOCKED');
@@ -74,4 +77,18 @@ test('authenticated review and explicit approval use server evidence and expire 
   const stale=(await (await post('/master-draft',{story:altered})).json()).revision;
   assert.equal((await (await post('/master-review',{revision:stale})).json()).issues[0].code,'PROJECT_VERSION_CHANGED');
  }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
+});
+
+test('visual edits create a reversible story version and never modify the original',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'sues-master-edit-'));
+ try{const s=new MasterDirectorProjectStore(dir,async()=>null);
+  const original={schema:'sues-master-story/v1',operations:[{id:'layer-1',renderer:'remotion',parameters:{text:'Hola',visual:{rect:{x:1,y:2,width:20,height:30},opacity:1}}}]};
+  const a=s.saveDraft(original),updated={rect:{x:22,y:2,width:20,height:30},opacity:.8};
+  const b=s.editVisual(a.revision,'layer-1',updated);
+  assert.notEqual(a.revision,b.revision);assert.equal(b.requiresNewReview,true);
+  assert.equal(s.readDraft(a.revision).operations[0].parameters.visual.rect.x,1);
+  assert.equal(s.readDraft(b.revision).operations[0].parameters.visual.rect.x,22);
+  assert.throws(()=>s.editVisual(a.revision,'unknown',updated),/not found/);
+  assert.throws(()=>s.editVisual(a.revision,'layer-1',{rect:{},registry:{approved:true}}),/Invalid/);
+ }finally{rmSync(dir,{recursive:true,force:true});}
 });

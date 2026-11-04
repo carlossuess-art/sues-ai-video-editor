@@ -1,3 +1,4 @@
+import {createMasterDirectorContextProvider} from './master-director-context.js';
 import {MasterDirectorProjectStore} from './master-director-project-store.js';
 import {LivePreviews} from './live-preview.js';
 import {timelineFrames} from './timeline-frames.js';
@@ -67,6 +68,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const adjustmentPreviews=new AdjustmentPreviews(join(directory,'adjustment-previews'),jobs,{playbackBusy:()=>previews.pending.size>0});
  const livePreviews=new LivePreviews(join(directory,'live-previews'),jobs,{busy:()=>previews.pending.size>0||!!adjustmentPreviews.running});
  const analysis=new LocalAnalysis(intake);
+ const masterContextProvider=masterDirectorContext??createMasterDirectorContextProvider(directory);
  const cloudRuns=new Set();
  const cloud=cloudDirector??new CloudDirector({credentialsFile:join(dirname(passwordFile),'cloud-director-keys.json')});
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
@@ -198,17 +200,17 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers|master-layer-edit))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
-    if(['master-draft','master-review','master-decision','master-layers'].includes(action)){
+    if(['master-draft','master-review','master-decision','master-layers','master-layer-edit'].includes(action)){
      const source=jobs.get(id);
-     const store=new MasterDirectorProjectStore(jobs.dir(id),async()=>{
+     const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
-      if(typeof masterDirectorContext!=='function')return null;
+      if(typeof masterContextProvider!=='function')return null;
       const current=jobs.get(id),project=jobs.loadProfile(current.profileId);
       const catalog=externalCatalog(project,current.settings,assets.list());
-      const verified=await masterDirectorContext({jobId:id,project,job:current,assets,catalog});
+      const verified=await masterContextProvider({jobId:id,project,job:current,assets,catalog,story});
       if(!verified)return null;
       return {...verified,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration};
      });
@@ -219,6 +221,10 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      if(action==='master-review'&&req.method==='POST'){
       const b=await body(req,2048);if(Object.keys(b).some(k=>k!=='revision'))return json(res,400,{error:'Solicitud inválida.'});
       return json(res,200,await store.review(b.revision));
+     }
+     if(action==='master-layer-edit'&&req.method==='POST'){
+      const b=await body(req,32768);if(Object.keys(b).some(k=>!['revision','operationId','visual'].includes(k)))return json(res,400,{error:'Solicitud inválida.'});
+      return json(res,201,store.editVisual(b.revision,b.operationId,b.visual));
      }
      if(action==='master-layers'&&req.method==='POST'){
       const b=await body(req,2048);if(Object.keys(b).some(k=>!['revision','decisionId'].includes(k)))return json(res,400,{error:'Solicitud inválida.'});

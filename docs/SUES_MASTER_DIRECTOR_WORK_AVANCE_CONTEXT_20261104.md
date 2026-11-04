@@ -1,0 +1,26 @@
+# SUES MASTER DIRECTOR · contexto, capas y Remotion experimental · 04/11/2026
+
+Continuación del commit d4cb381. La implementación continúa SIN terminar y SIN despliegue.
+
+## Trabajo añadido
+
+- `master-director-context.js`: adaptador conectado al servidor en desarrollo. Lee una política exclusiva del servidor, valida permisos del fichero, conserva los 20 textos literales cotejados byte a byte con el documento aprobado, deriva el vídeo y timeline del catálogo real, consulta SHA y metadatos de los recursos mediante `MediaLibrary`, y proyecta palabras completas mediante los tramos reales del montaje. La política no puede provenir de una petición del navegador. Las evidencias de máscaras/frame siguen vacías hasta integrar fuentes revisadas. Una política incompleta o recursos no verificados bloquean la propuesta.
+- `master-director-policy-builder.js`: construye la política en memoria únicamente si se dispone de los 20 apartados vigentes y tres tapices distintos con hash y derechos documentados. Esta construcción **no significa que los veinte comportamientos estén ya implementados**. No se ha instalado ninguna política en producción ni en un servidor activo.
+- El fingerprint del plan incluye un hash canónico de la evidencia del servidor. Si cambia la política, recursos o proyecto, la decisión previa deja de valer. `master-layer-edit` crea otra versión sin sobrescribir el original; la nueva versión necesita revisión y aprobación. No existe todavía UI de edición de estas capas ni recuperación TAR.
+- Compilador Remotion restringido a texto, imágenes estáticas y clips de música/SFX con entrada, salida, volumen y punto de origen por fotograma. Permite únicamente máscara alfa estática, explícita y ligada al SHA/fotogramas de una fuente revisada; no es tracking ni rotoscopia automática. Solo keyframes lineales. Rechaza cualquier operación, parámetros o fuente que no pueda representar exactamente.
+- Preparación aislada de imágenes/audio/fuentes comprueba SHA, licencia y tipo y limita el tamaño; las fuentes son las cargadas en el proyecto, validadas por familia/peso/hash, cargadas de forma explícita en Remotion y sin síntesis tipográfica. Las pruebas de derechos de medios y máscaras usaron dobles sintéticos; **no** se han convertido declaraciones en licencias verificadas.
+
+## Recursos reales localizados
+
+Los tres tapices aprobados están instalados en la biblioteca con IDs ff9c419c62a2187967029b48a602dabb06cbfd30e0d9a7573334dd0d6e929f21, 96733f935696ba3ca805af5aa49f4f9c41a8767a7b80db81a17d006ff8c4cf7d y 1b0ad44ab27d9081f161a4185d5e0a5fa05d275f02b4a0562542313e080bf9d8. Son los originales referenciados en experiments/remotion-cta/docs/ADN_REFERENCIAS_VISUALES_20261103.md, con ficha antigua `rights=owned`, pero los tres carecen de metadatos V2 de licencia/pruebas; por ello la política real no se ha habilitado y no se ha alterado producción. Hay que conectar la procedencia y evidencia documental sin fingir verificación ni cambiar el original.
+
+## Pruebas
+
+- 118/118 pruebas dirigidas Node PASS en copia aislada del editor productivo con integración selectiva (última ronda anterior al ajuste de mensajes de diagnóstico; nuevas pruebas específicas PASS). Prueba de 20 reglas y del proveedor con fixtures; revocación cuando cambia el contexto; versiones reversibles y rechazos de contenido no soportado.
+- En Remotion se renderizó un fotograma con Montserrat Bold real preparado por hash, dos fotogramas de texto con desplazamiento de 90 px comprobado por píxeles, un fotograma del tapiz real (metadatos de prueba simulados), un MP4 de 30 fotogramas y una máscara estática sintética con alfa 255 a la izquierda y 0 a la derecha. La prueba no demuestra una máscara de cuerpo real ni un Reel completo.
+- Render MP4 sintético con audio: RMS 0 antes, 0,05176 durante, 0 después de la ventana planeada. No es revisión de mezcla ni escucha crítica.
+- En copia aislada productiva: prueba amplia intermedia 529 casos, 525 PASS / 4 FAIL. Uno fue porque faltaba el documento aprobado en la copia de QA (corregido y prueba específica posterior PASS), otro porque la imagen Docker carece de `git` (prueba separada host 2/2 PASS), y los otros dos se reprodujeron también sin estos cambios en la copia base: tests antiguos esperan rechazo durante preview y límite de 4 vídeos; código productivo actual encola durante preview y usa límite de 15. No declarar regresión completa limpia. Se necesita actualizar los tests con la semántica productiva y volver a ejecutar.
+
+## Pendiente vinculante
+
+Proveedores reales de política y pruebas de derechos de masters, evidencia temporal de máscaras, revisiones desde la interfaz, versiones y capas visualmente editables, backup/recuperación, composición y render integral Remotion+nativo, edición de 158404, audio multicapa real, supervisión independiente con dos auditorías audiovisuales limpias y aprobación de Carlos. Implementar soporte adicional sin borrar parámetros ni simular efectos. No afirmar que el prototipo o MP4 esté editable en UI. No fusionar el servidor de esta rama entero sobre producción: aplicar y probar los cambios selectivos sobre la versión realmente activa. Sin gasto API ni publicación; el despliegue requiere autorización.

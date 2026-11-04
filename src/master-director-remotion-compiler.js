@@ -1,34 +1,68 @@
-// Strict first Remotion adapter: explicit positioned text only. Anything else is
-// reported, never silently discarded or substituted. No media paths from clients.
+// Strict adapter: positioned text and still images with linear keyframes only.
+// Unknown operations/parameters are rejected, never replaced or flattened.
 const plain=x=>x&&typeof x==='object'&&!Array.isArray(x);
 const only=(o,keys)=>plain(o)&&Object.keys(o).every(k=>keys.includes(k));
 const fail=(issues,node,code)=>issues.push({operationId:node?.id??'graph',code});
-export function compileMasterDirectorRemotion(graph,{verifiedFontFamilies=[]}={}){
+const SHA=/^[a-f0-9]{64}$/;
+export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAssets={},verifiedMasks={}}={}){
  const issues=[],layers=[];
  if(graph?.schema!=='sues-layer-graph/v1'||!Array.isArray(graph.nodes)||!graph.canvas||
     !Number.isInteger(graph.durationFrames)||graph.durationFrames<1||graph.fps!==30)
   return {status:'BLOCKED',issues:[{operationId:'graph',code:'INVALID_LAYER_GRAPH'}],composition:null};
  for(const node of graph.nodes){
   const v=node?.visual,p=node?.sourceParameters;
-  if(node.renderer!=='remotion'||!['captions','graphics'].includes(node.track)||node.effect!=='text')
-   {fail(issues,node,'REMOTION_OPERATION_UNSUPPORTED');continue;}
-  if(!only(p,['text','visual'])||JSON.stringify(p.visual)!==JSON.stringify(v)||typeof p.text!=='string'||!p.text.length||p.text.length>500||
-     !only(v,['rect','zIndex','opacity','typography','keyframes'])||
-     !only(v.rect,['x','y','width','height'])||!only(v.typography,['family','sizePx','weight','color']))
-   {fail(issues,node,'TEXT_PARAMETERS_UNSUPPORTED');continue;}
-  if(!verifiedFontFamilies.includes(v.typography.family))
-   {fail(issues,node,'FONT_NOT_VERIFIED');continue;}
+  const audio=node?.renderer==='remotion'&&['music','sfx'].includes(node.track)&&node.effect==='audio-clip-exact';
+  if(audio){
+   const id=node.resource?.id,a=verifiedAssets[id];
+   if(!only(p,['gain','sourceInFrame'])||!Number.isFinite(p.gain)||p.gain<0||p.gain>2||
+      !Number.isInteger(p.sourceInFrame)||p.sourceInFrame<0||!Number.isInteger(node.startFrame)||
+      !Number.isInteger(node.endFrame)||node.startFrame<0||node.endFrame<=node.startFrame||node.endFrame>graph.durationFrames||
+      !SHA.test(id??'')||node.resource?.sha256!==id||a?.sha256!==id||!['audio','sfx'].includes(a.kind)||
+      a.rightsVerified!==true||a.commercialUseAllowed!==true||!Number.isFinite(a.duration)||
+      (p.sourceInFrame+node.endFrame-node.startFrame)/graph.fps>a.duration+0.000001){
+    fail(issues,node,'AUDIO_PARAMETERS_OR_RESOURCE_UNVERIFIED');continue;
+   }
+   layers.push({id:node.id,kind:'audio',assetId:id,startFrame:node.startFrame,endFrame:node.endFrame,
+    sourceInFrame:p.sourceInFrame,gain:p.gain});continue;
+  }
+  const text=node?.renderer==='remotion'&&['captions','graphics'].includes(node.track)&&node.effect==='text';
+  const image=node?.renderer==='remotion'&&['broll','graphics'].includes(node.track)&&node.effect==='image-exact';
+  if(!text&&!image){fail(issues,node,'REMOTION_OPERATION_UNSUPPORTED');continue;}
+  if(!only(p,text?['text','visual']:['fit','visual'])||JSON.stringify(p.visual)!==JSON.stringify(v)||
+     !only(v,text?['rect','zIndex','opacity','typography','keyframes','mask']:['rect','zIndex','opacity','keyframes','mask'])||
+     !only(v.rect,['x','y','width','height'])||
+     (text&&(!only(v.typography,['family','sizePx','weight','color'])||typeof p.text!=='string'||!p.text.length||p.text.length>500))||
+     (image&&p.fit!=='fill')){fail(issues,node,'LAYER_PARAMETERS_UNSUPPORTED');continue;}
+  const font=text?verifiedFonts[v.typography.family+':'+v.typography.weight]:null;
+  if(text&&(!font||!SHA.test(font.sha256??''))){fail(issues,node,'FONT_NOT_VERIFIED');continue;}
+  const id=node.resource?.id,asset=verifiedAssets[id];
+  if(image&&(!SHA.test(id??'')||node.resource?.sha256!==id||asset?.sha256!==id||asset?.kind!=='image'||
+     asset?.rightsVerified!==true||asset?.commercialUseAllowed!==true))
+   {fail(issues,node,'IMAGE_RESOURCE_UNVERIFIED');continue;}
+  let maskAssetId=null;
+  if(v.mask!==undefined){
+   const m=v.mask,proof=verifiedMasks[m?.proofId];
+   if(!only(m,['proofId','mode'])||m.mode!=='alpha-keep'||proof?.verified!==true||
+      proof.sourceSha256!==graph.sourceSha256||!SHA.test(proof.assetId??'')||
+      !Number.isFinite(proof.start)||!Number.isFinite(proof.end)||
+      proof.start>node.startFrame/graph.fps||proof.end<node.endFrame/graph.fps){
+    fail(issues,node,'MASK_EVIDENCE_UNVERIFIED');continue;
+   }
+   const a=verifiedAssets[proof.assetId];
+   if(a?.sha256!==proof.assetId||a?.kind!=='image'||a?.rightsVerified!==true||a?.commercialUseAllowed!==true)
+    {fail(issues,node,'MASK_RESOURCE_UNVERIFIED');continue;}
+   maskAssetId=proof.assetId;
+  }
   if(!Array.isArray(v.keyframes)||v.keyframes.some(k=>!only(k,['atFrame','easing','x','y','opacity','scale','rotation'])||
-      (k.easing??'linear')!=='linear'))
-   {fail(issues,node,'ANIMATION_UNSUPPORTED');continue;}
-  // Must be built by the layer graph validator; still check the basic bounds.
+      (k.easing??'linear')!=='linear')){fail(issues,node,'ANIMATION_UNSUPPORTED');continue;}
   if(!Number.isInteger(node.startFrame)||!Number.isInteger(node.endFrame)||node.startFrame<0||
      node.endFrame<=node.startFrame||node.endFrame>graph.durationFrames)
    {fail(issues,node,'TIMELINE_INVALID');continue;}
-  layers.push({id:node.id,startFrame:node.startFrame,endFrame:node.endFrame,text:p.text,visual:structuredClone(v)});
+  layers.push({id:node.id,kind:text?'text':'image',startFrame:node.startFrame,endFrame:node.endFrame,
+   ...(text?{text:p.text,fontAssetId:font.sha256}:{assetId:id}),...(maskAssetId?{maskAssetId}:{}),visual:structuredClone(v)});
  }
  if(issues.length)return {status:'BLOCKED',issues,composition:null};
- return {status:'READY_FOR_REMOTION_RENDER',issues:[],composition:{schema:'sues-remotion-text/v1',
+ return {status:'READY_FOR_REMOTION_STAGING',issues:[],composition:{schema:'sues-remotion-layers/v1',
   planFingerprint:graph.planFingerprint,sourceSha256:graph.sourceSha256,canvas:graph.canvas,
   fps:graph.fps,durationFrames:graph.durationFrames,layers}};
 }

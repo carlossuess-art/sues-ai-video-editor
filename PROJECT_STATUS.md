@@ -1,3 +1,10 @@
+## 04/11/2026 · MASTER DIRECTOR · CONTEXTO Y REMOTION EXPERIMENTAL · INCOMPLETO
+
+- Adaptador del servidor basado en 20 reglas literales, SHA y biblioteca; política real permanece bloqueada hasta documentar derechos de los tres tapices, que existen en biblioteca pero carecen de metadatos V2. Revisiones invalidadas cuando cambia evidencia; edición de parámetros crea otra versión inmutable. No hay aún UI editable ni backup TAR.
+- Remotion experimental: texto con fuente real por hash, imagen estática, máscara alfa estática y audio con tiempos/ganancia; reproduce prototipos aislados, rechaza lo no soportado. Sin integración de vídeo completo, máscara dinámica, mezcla completa o QA creativo de 158404.
+- Prueba amplia intermedia 525/529: dos fallos reproducidos en base productiva por expectativas antiguas de tests, uno falta de git en contenedor (host PASS), otro documento no copiado en QA (corregido); no declarar regresión limpia. Detalles: docs/SUES_MASTER_DIRECTOR_WORK_AVANCE_CONTEXT_20261104.md.
+- Sin producción, deploy, publicaciones, gastos de API ni cambio de skill. Misión no terminada; mantener restricciones originales.
+
 ## 04/11/2026 · MASTER DIRECTOR · INTEGRACIÓN PARCIAL DE BACKEND Y PRUEBA REMOTION · SIN DESPLIEGUE
 
 - Nuevas rutas autenticadas de borrador, revisión, decisión y grafo de capas; revisiones inmutables y bloqueo ante cambios. Sin proveedor real de confianza quedan bloqueadas; el ejemplo positivo de tests es sintético. Aún no hay ejecución/render ni UI editable.

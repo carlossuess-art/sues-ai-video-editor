@@ -2,7 +2,7 @@
 // The caller supplies current editor facts and server-owned policy; request bodies
 // cannot assert resources, rules, budget, or user approvals.
 import {createHash,randomBytes} from 'node:crypto';
-import {mkdirSync,readFileSync,writeFileSync,existsSync} from 'node:fs';
+import {mkdirSync,readFileSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {prepareMasterDirectorSession} from './master-director-orchestration.js';
 import {buildMasterDirectorReview} from './master-director-workflow.js';
@@ -11,6 +11,10 @@ import {compileMasterDirectorRemotion} from './master-director-remotion-compiler
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const HASH=/^[a-f0-9]{64}$/;
 const obj=x=>x&&typeof x==='object'&&!Array.isArray(x);
+// Canonical hash over server-owned evidence: any substantive change invalidates
+// the earlier decision. Sorting prevents false invalidation from key order.
+const canonical=x=>Array.isArray(x)?x.map(canonical):obj(x)?Object.fromEntries(Object.keys(x).sort().map(k=>[k,canonical(x[k])])):x;
+
 const filename=(root,hash)=>{if(!HASH.test(hash??''))throw Error('Invalid revision');return join(root,hash+'.json');};
 function immutable(root,value){
  mkdirSync(root,{recursive:true,mode:0o700});
@@ -31,8 +35,22 @@ export class MasterDirectorProjectStore{
   return {revision:immutable(join(this.root,'drafts'),story),rendered:false};
  }
  readDraft(revision){return load(join(this.root,'drafts'),revision);}
+ editVisual(revision,operationId,visual){
+  if(typeof operationId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(operationId)||
+     !obj(visual)||Object.keys(visual).some(k=>!['rect','zIndex','opacity','typography','keyframes','mask','stack'].includes(k)))
+   throw Error('Invalid visual edit');
+  const story=this.readDraft(revision),matches=Array.isArray(story.operations)?story.operations.filter(o=>o?.id===operationId):[];
+  if(matches.length!==1||matches[0].renderer!=='remotion'||!obj(matches[0].parameters)||!obj(matches[0].parameters.visual))
+   throw Error('Editable visual operation not found');
+  matches[0].parameters.visual=structuredClone(visual);
+  const next=this.saveDraft(story);
+  return {...next,parentRevision:revision,requiresNewReview:true};
+ }
+
  async prepare(revision){
-  const story=this.readDraft(revision),context=await this.contextProvider();
+  const story=this.readDraft(revision),context=await this.contextProvider(story);
+  if(Array.isArray(context?.blockedIssues)&&context.blockedIssues.length)
+   return {response:{status:'BLOCKED',revision,issues:context.blockedIssues,canExecute:false}};
   if(!context||!obj(context.registry)||!Array.isArray(context.rulebook))
    return {response:{status:'BLOCKED',revision,issues:[{code:'TRUSTED_SERVER_CONTEXT_UNAVAILABLE'}],canExecute:false}};
   if(story.sourceSha256!==context.sourceSha256||story.timeline?.fingerprint!==context.timelineFingerprint||
@@ -42,6 +60,7 @@ export class MasterDirectorProjectStore{
   delete registry.approvedPlanFingerprint;delete registry.planChoice;delete registry.qaPasses;
   const result=prepareMasterDirectorSession({story,registry,rulebook:context.rulebook});
   if(!result.plan)return {response:{...result,revision,canExecute:false}};
+  result.plan.trustedContextFingerprint=sha(JSON.stringify(canonical({registry,rulebook:context.rulebook})));
   const view=buildMasterDirectorReview(result.plan,registry);
   return {response:{...view,revision,canExecute:false,projectFingerprint:context.timelineFingerprint},plan:result.plan,registry};
  }
@@ -55,7 +74,7 @@ export class MasterDirectorProjectStore{
   const result=buildMasterDirectorLayerGraph(prepared.plan,registry);
   if(!result.graph)return {...result,revision,canExecute:false};
   const graphRevision=immutable(join(this.root,'layer-graphs'),result.graph);
-  const remotion=compileMasterDirectorRemotion(result.graph,{verifiedFontFamilies:registry.verifiedFontFamilies??[]});
+  const remotion=compileMasterDirectorRemotion(result.graph,{verifiedFonts:registry.verifiedFonts??{},verifiedAssets:registry.licensedAssets??{},verifiedMasks:registry.maskEvidence??{}});
   return {...result,revision,graphRevision,remotion,canExecute:false};
  }
  async decide(revision,fingerprint,mode){
