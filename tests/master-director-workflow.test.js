@@ -100,3 +100,17 @@ test('without independent QA a playable file is not declared final',()=>{
  const x=assessMasterDirectorDelivery(p,r,verified,{kind:'none',failedOperationIds:[]});
  assert.equal(x.status,'FINAL_FILE_REVIEW');assert.equal(x.mayPublish,false);
 });
+
+test('the review offers both supervision and autonomous mode with a narrative phase timeline',()=>{
+ const p=plan(),r=registry(p);
+ p.creativeContext.arc=[
+  {id:'beat-hook',phase:'hook',start:0,end:3,purpose:'Interrumpir el scroll'},
+  {id:'beat-change',phase:'transformation',start:3,end:6,purpose:'Cambiar perspectiva'}
+ ];
+ const view=buildMasterDirectorReview(p,r);
+ assert.equal(view.status,'READY_FOR_CHOICE');
+ assert.ok(view.choices.includes('autonomous'));
+ assert.equal(view.narrativeTimeline[0].phase,'hook');
+ assert.equal(view.narrativeTimeline[0].start,0);
+ assert.ok(view.narrativeTimeline[1].operations.length>0);
+});
