@@ -1,0 +1,2140 @@
+{
+  "contract": "sues-visual-grammar-158623-v1",
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "totalFrames": 2230,
+  "source": "verified transcript retimed to 0.7-second pauses",
+  "wordsCount": 168,
+  "beatCount": 78,
+  "heroCount": 32,
+  "scenes": [
+    {
+      "start": 0,
+      "end": 7.7,
+      "mode": "speaker",
+      "topic": "hook"
+    },
+    {
+      "start": 7.7,
+      "end": 12.55,
+      "mode": "board",
+      "topic": "rules"
+    },
+    {
+      "start": 12.55,
+      "end": 33.4,
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "start": 33.4,
+      "end": 41.25,
+      "mode": "board",
+      "topic": "choice"
+    },
+    {
+      "start": 41.25,
+      "end": 46.0,
+      "mode": "speaker",
+      "topic": "awakening"
+    },
+    {
+      "start": 46.0,
+      "end": 54.15,
+      "mode": "darkBoard",
+      "topic": "identity"
+    },
+    {
+      "start": 54.15,
+      "end": 63.333333,
+      "mode": "speaker",
+      "topic": "self-betrayal"
+    },
+    {
+      "start": 63.333333,
+      "end": 74.333333,
+      "mode": "cta",
+      "topic": "follow"
+    }
+  ],
+  "beats": [
+    {
+      "id": 0,
+      "start": 0.3,
+      "end": 1.235,
+      "words": [
+        {
+          "index": 0,
+          "text": "Hay",
+          "start": 0.3,
+          "end": 0.82,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 1,
+          "text": "una",
+          "start": 0.82,
+          "end": 0.94,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 2,
+          "text": "forma",
+          "start": 0.94,
+          "end": 1.2,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "hook"
+    },
+    {
+      "id": 1,
+      "start": 1.2,
+      "end": 1.895,
+      "words": [
+        {
+          "index": 3,
+          "text": "de",
+          "start": 1.2,
+          "end": 1.4,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 4,
+          "text": "perderte",
+          "start": 1.4,
+          "end": 1.86,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "hook"
+    },
+    {
+      "id": 2,
+      "start": 1.86,
+      "end": 2.315,
+      "words": [
+        {
+          "index": 5,
+          "text": "a",
+          "start": 1.86,
+          "end": 1.92,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 6,
+          "text": "ti",
+          "start": 1.92,
+          "end": 2.02,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 7,
+          "text": "mismo",
+          "start": 2.02,
+          "end": 2.28,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "hook"
+    },
+    {
+      "id": 3,
+      "start": 2.28,
+      "end": 3.015,
+      "words": [
+        {
+          "index": 8,
+          "text": "sin",
+          "start": 2.28,
+          "end": 2.48,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 9,
+          "text": "darte",
+          "start": 2.48,
+          "end": 2.78,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 10,
+          "text": "ni",
+          "start": 2.78,
+          "end": 2.98,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "hook"
+    },
+    {
+      "id": 4,
+      "start": 2.98,
+      "end": 3.38,
+      "words": [
+        {
+          "index": 11,
+          "text": "cuenta,",
+          "start": 2.98,
+          "end": 3.24,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "hook"
+    },
+    {
+      "id": 5,
+      "start": 3.44,
+      "end": 3.735,
+      "words": [
+        {
+          "index": 12,
+          "text": "pero",
+          "start": 3.44,
+          "end": 3.56,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 13,
+          "text": "es",
+          "start": 3.56,
+          "end": 3.64,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 14,
+          "text": "que",
+          "start": 3.64,
+          "end": 3.7,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "hook"
+    },
+    {
+      "id": 6,
+      "start": 3.7,
+      "end": 4.275,
+      "words": [
+        {
+          "index": 15,
+          "text": "lo",
+          "start": 3.7,
+          "end": 3.8,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 16,
+          "text": "peor",
+          "start": 3.8,
+          "end": 4.24,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "hook"
+    },
+    {
+      "id": 7,
+      "start": 4.24,
+      "end": 4.935,
+      "words": [
+        {
+          "index": 17,
+          "text": "es",
+          "start": 4.24,
+          "end": 4.38,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 18,
+          "text": "que",
+          "start": 4.38,
+          "end": 4.54,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 19,
+          "text": "los",
+          "start": 4.54,
+          "end": 4.9,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "hook"
+    },
+    {
+      "id": 8,
+      "start": 4.9,
+      "end": 6.075,
+      "words": [
+        {
+          "index": 20,
+          "text": "demás",
+          "start": 4.9,
+          "end": 5.2,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 21,
+          "text": "pueden",
+          "start": 5.2,
+          "end": 6.04,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "hook"
+    },
+    {
+      "id": 9,
+      "start": 6.04,
+      "end": 6.715,
+      "words": [
+        {
+          "index": 22,
+          "text": "aplaudirte",
+          "start": 6.04,
+          "end": 6.68,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "hook"
+    },
+    {
+      "id": 10,
+      "start": 6.68,
+      "end": 7.46,
+      "words": [
+        {
+          "index": 23,
+          "text": "por",
+          "start": 6.68,
+          "end": 7.06,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 24,
+          "text": "eso.",
+          "start": 7.06,
+          "end": 7.32,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "hook"
+    },
+    {
+      "id": 11,
+      "start": 7.74,
+      "end": 8.575,
+      "words": [
+        {
+          "index": 25,
+          "text": "De",
+          "start": 7.74,
+          "end": 7.96,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 26,
+          "text": "pequeño",
+          "start": 7.96,
+          "end": 8.2,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 27,
+          "text": "aprendes",
+          "start": 8.2,
+          "end": 8.54,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "board",
+      "topic": "rules"
+    },
+    {
+      "id": 12,
+      "start": 8.54,
+      "end": 8.975,
+      "words": [
+        {
+          "index": 28,
+          "text": "a",
+          "start": 8.54,
+          "end": 8.62,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 29,
+          "text": "portarte",
+          "start": 8.62,
+          "end": 8.94,
+          "role": "hero",
+          "tone": "connector"
+        }
+      ],
+      "mode": "board",
+      "topic": "rules"
+    },
+    {
+      "id": 13,
+      "start": 8.94,
+      "end": 9.535,
+      "words": [
+        {
+          "index": 30,
+          "text": "bien,",
+          "start": 8.94,
+          "end": 9.2,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 31,
+          "text": "a",
+          "start": 9.4,
+          "end": 9.42,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 32,
+          "text": "no",
+          "start": 9.42,
+          "end": 9.5,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "board",
+      "topic": "rules"
+    },
+    {
+      "id": 14,
+      "start": 9.5,
+      "end": 10.08,
+      "words": [
+        {
+          "index": 33,
+          "text": "molestar,",
+          "start": 9.5,
+          "end": 9.94,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "board",
+      "topic": "rules"
+    },
+    {
+      "id": 15,
+      "start": 10.44,
+      "end": 11.215,
+      "words": [
+        {
+          "index": 34,
+          "text": "hacer",
+          "start": 10.44,
+          "end": 10.62,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 35,
+          "text": "incluso",
+          "start": 10.62,
+          "end": 10.94,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 36,
+          "text": "lo",
+          "start": 10.94,
+          "end": 11.18,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "board",
+      "topic": "rules"
+    },
+    {
+      "id": 16,
+      "start": 11.18,
+      "end": 11.715,
+      "words": [
+        {
+          "index": 37,
+          "text": "que",
+          "start": 11.18,
+          "end": 11.36,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 38,
+          "text": "se",
+          "start": 11.36,
+          "end": 11.68,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "board",
+      "topic": "rules"
+    },
+    {
+      "id": 17,
+      "start": 11.68,
+      "end": 12.075,
+      "words": [
+        {
+          "index": 39,
+          "text": "espera",
+          "start": 11.68,
+          "end": 12.04,
+          "role": "hero",
+          "tone": "connector"
+        }
+      ],
+      "mode": "board",
+      "topic": "rules"
+    },
+    {
+      "id": 18,
+      "start": 12.04,
+      "end": 12.46,
+      "words": [
+        {
+          "index": 40,
+          "text": "de",
+          "start": 12.04,
+          "end": 12.2,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 41,
+          "text": "ti.",
+          "start": 12.2,
+          "end": 12.32,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "board",
+      "topic": "rules"
+    },
+    {
+      "id": 19,
+      "start": 12.84,
+      "end": 13.64,
+      "words": [
+        {
+          "index": 42,
+          "text": "Y",
+          "start": 12.84,
+          "end": 13.16,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 43,
+          "text": "funciona,",
+          "start": 13.16,
+          "end": 13.5,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 20,
+      "start": 13.88,
+      "end": 15.195,
+      "words": [
+        {
+          "index": 44,
+          "text": "aceptan",
+          "start": 13.88,
+          "end": 14.36,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 45,
+          "text": "incluso",
+          "start": 14.36,
+          "end": 14.98,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 46,
+          "text": "a",
+          "start": 14.98,
+          "end": 15.16,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 21,
+      "start": 15.16,
+      "end": 15.915,
+      "words": [
+        {
+          "index": 47,
+          "text": "veces",
+          "start": 15.16,
+          "end": 15.34,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 48,
+          "text": "hasta",
+          "start": 15.34,
+          "end": 15.72,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 49,
+          "text": "te",
+          "start": 15.72,
+          "end": 15.88,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 22,
+      "start": 15.88,
+      "end": 16.5,
+      "words": [
+        {
+          "index": 50,
+          "text": "felicitan.",
+          "start": 15.88,
+          "end": 16.36,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 23,
+      "start": 16.86,
+      "end": 17.395,
+      "words": [
+        {
+          "index": 51,
+          "text": "Hasta",
+          "start": 16.86,
+          "end": 17.04,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 52,
+          "text": "que",
+          "start": 17.04,
+          "end": 17.22,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 53,
+          "text": "un día",
+          "start": 17.22,
+          "end": 17.36,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 24,
+      "start": 17.36,
+      "end": 18.435,
+      "words": [
+        {
+          "index": 54,
+          "text": "quieres",
+          "start": 17.36,
+          "end": 17.66,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 55,
+          "text": "decir",
+          "start": 17.66,
+          "end": 18.24,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 56,
+          "text": "que",
+          "start": 18.24,
+          "end": 18.4,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 25,
+      "start": 18.4,
+      "end": 18.68,
+      "words": [
+        {
+          "index": 57,
+          "text": "no,",
+          "start": 18.4,
+          "end": 18.54,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 26,
+      "start": 19.233333,
+      "end": 19.688333,
+      "words": [
+        {
+          "index": 58,
+          "text": "y",
+          "start": 19.233333,
+          "end": 19.353333,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 59,
+          "text": "te",
+          "start": 19.353333,
+          "end": 19.453333,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 60,
+          "text": "sientes",
+          "start": 19.453333,
+          "end": 19.653333,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 27,
+      "start": 19.653333,
+      "end": 20.173333,
+      "words": [
+        {
+          "index": 61,
+          "text": "culpable.",
+          "start": 19.653333,
+          "end": 20.033333,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 28,
+      "start": 20.713333,
+      "end": 21.668333,
+      "words": [
+        {
+          "index": 62,
+          "text": "Entonces",
+          "start": 20.713333,
+          "end": 21.093333,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 63,
+          "text": "intentas",
+          "start": 21.093333,
+          "end": 21.633333,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 29,
+      "start": 21.633333,
+      "end": 22.153333,
+      "words": [
+        {
+          "index": 64,
+          "text": "cambiar,",
+          "start": 21.633333,
+          "end": 22.013333,
+          "role": "hero",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 30,
+      "start": 22.313333,
+      "end": 23.053333,
+      "words": [
+        {
+          "index": 65,
+          "text": "poner",
+          "start": 22.313333,
+          "end": 22.473333,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 66,
+          "text": "límites,",
+          "start": 22.473333,
+          "end": 22.913333,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 31,
+      "start": 23.586666,
+      "end": 24.861666,
+      "words": [
+        {
+          "index": 67,
+          "text": "ser",
+          "start": 23.586666,
+          "end": 24.026666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 68,
+          "text": "tu",
+          "start": 24.026666,
+          "end": 24.826666,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 32,
+      "start": 24.826666,
+      "end": 25.246666,
+      "words": [
+        {
+          "index": 69,
+          "text": "mismo,",
+          "start": 24.826666,
+          "end": 25.106666,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 33,
+      "start": 25.793333,
+      "end": 26.548333,
+      "words": [
+        {
+          "index": 70,
+          "text": "pero",
+          "start": 25.793333,
+          "end": 26.133333,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 71,
+          "text": "aparece",
+          "start": 26.133333,
+          "end": 26.333333,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 72,
+          "text": "el",
+          "start": 26.333333,
+          "end": 26.513333,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 34,
+      "start": 26.513333,
+      "end": 26.833333,
+      "words": [
+        {
+          "index": 73,
+          "text": "miedo,",
+          "start": 26.513333,
+          "end": 26.693333,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 35,
+      "start": 27.313333,
+      "end": 27.868333,
+      "words": [
+        {
+          "index": 74,
+          "text": "y",
+          "start": 27.313333,
+          "end": 27.533333,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 75,
+          "text": "sin",
+          "start": 27.533333,
+          "end": 27.653333,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 76,
+          "text": "dejar",
+          "start": 27.653333,
+          "end": 27.833333,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 36,
+      "start": 27.833333,
+      "end": 28.388333,
+      "words": [
+        {
+          "index": 77,
+          "text": "de",
+          "start": 27.833333,
+          "end": 27.993333,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 78,
+          "text": "quererme.",
+          "start": 27.993333,
+          "end": 28.353333,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 37,
+      "start": 28.353333,
+      "end": 30.281666,
+      "words": [
+        {
+          "index": 79,
+          "text": "si",
+          "start": 28.353333,
+          "end": 29.393333,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 80,
+          "text": "dejan",
+          "start": 30.066666,
+          "end": 30.246666,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 38,
+      "start": 30.246666,
+      "end": 30.761666,
+      "words": [
+        {
+          "index": 81,
+          "text": "de",
+          "start": 30.246666,
+          "end": 30.366666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 82,
+          "text": "quererme",
+          "start": 30.366666,
+          "end": 30.726666,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 39,
+      "start": 30.726666,
+      "end": 31.421666,
+      "words": [
+        {
+          "index": 83,
+          "text": "cuando",
+          "start": 30.726666,
+          "end": 30.926666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 84,
+          "text": "deje",
+          "start": 30.926666,
+          "end": 31.286666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 85,
+          "text": "de",
+          "start": 31.286666,
+          "end": 31.386666,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 40,
+      "start": 31.386666,
+      "end": 32.161666,
+      "words": [
+        {
+          "index": 86,
+          "text": "complacerlos",
+          "start": 31.386666,
+          "end": 32.126666,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 41,
+      "start": 32.126666,
+      "end": 32.761666,
+      "words": [
+        {
+          "index": 87,
+          "text": "y",
+          "start": 32.126666,
+          "end": 32.426666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 88,
+          "text": "ahí",
+          "start": 32.426666,
+          "end": 32.526666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 89,
+          "text": "está",
+          "start": 32.526666,
+          "end": 32.726666,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 42,
+      "start": 32.726666,
+      "end": 33.461666,
+      "words": [
+        {
+          "index": 90,
+          "text": "la",
+          "start": 32.726666,
+          "end": 32.826666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 91,
+          "text": "verdadera",
+          "start": 32.826666,
+          "end": 33.166666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 92,
+          "text": "pregunta",
+          "start": 33.166666,
+          "end": 33.426666,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "validation-fear"
+    },
+    {
+      "id": 43,
+      "start": 33.426666,
+      "end": 34.861666,
+      "words": [
+        {
+          "index": 93,
+          "text": "¿cuántas",
+          "start": 33.426666,
+          "end": 33.966666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 94,
+          "text": "decisiones",
+          "start": 33.966666,
+          "end": 34.826666,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "board",
+      "topic": "choice"
+    },
+    {
+      "id": 44,
+      "start": 34.826666,
+      "end": 36.181666,
+      "words": [
+        {
+          "index": 95,
+          "text": "de",
+          "start": 34.826666,
+          "end": 35.746666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 96,
+          "text": "tu",
+          "start": 35.746666,
+          "end": 35.886666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 97,
+          "text": "vida",
+          "start": 35.886666,
+          "end": 36.146666,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "board",
+      "topic": "choice"
+    },
+    {
+      "id": 45,
+      "start": 36.146666,
+      "end": 38.501666,
+      "words": [
+        {
+          "index": 98,
+          "text": "has",
+          "start": 36.146666,
+          "end": 36.706666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 99,
+          "text": "tomado",
+          "start": 36.706666,
+          "end": 37.126666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 100,
+          "text": "por",
+          "start": 37.126666,
+          "end": 38.466666,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "board",
+      "topic": "choice"
+    },
+    {
+      "id": 46,
+      "start": 38.466666,
+      "end": 38.721666,
+      "words": [
+        {
+          "index": 101,
+          "text": "amor",
+          "start": 38.466666,
+          "end": 38.686666,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "board",
+      "topic": "choice"
+    },
+    {
+      "id": 47,
+      "start": 38.686666,
+      "end": 40.081666,
+      "words": [
+        {
+          "index": 102,
+          "text": "y",
+          "start": 38.686666,
+          "end": 39.486666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 103,
+          "text": "cuántas",
+          "start": 39.486666,
+          "end": 39.866666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 104,
+          "text": "por",
+          "start": 39.866666,
+          "end": 40.046666,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "board",
+      "topic": "choice"
+    },
+    {
+      "id": 48,
+      "start": 40.046666,
+      "end": 40.361666,
+      "words": [
+        {
+          "index": 105,
+          "text": "miedo",
+          "start": 40.046666,
+          "end": 40.326666,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "board",
+      "topic": "choice"
+    },
+    {
+      "id": 49,
+      "start": 40.326666,
+      "end": 41.006666,
+      "words": [
+        {
+          "index": 106,
+          "text": "a",
+          "start": 40.326666,
+          "end": 40.406666,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 107,
+          "text": "perderlo?",
+          "start": 40.406666,
+          "end": 40.866666,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "board",
+      "topic": "choice"
+    },
+    {
+      "id": 50,
+      "start": 41.553332,
+      "end": 42.968332,
+      "words": [
+        {
+          "index": 108,
+          "text": "Porque",
+          "start": 41.553332,
+          "end": 41.793332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 109,
+          "text": "despertar",
+          "start": 41.793332,
+          "end": 42.933332,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "awakening"
+    },
+    {
+      "id": 51,
+      "start": 42.933332,
+      "end": 43.608332,
+      "words": [
+        {
+          "index": 110,
+          "text": "no",
+          "start": 42.933332,
+          "end": 43.253332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 111,
+          "text": "significa",
+          "start": 43.253332,
+          "end": 43.573332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "awakening"
+    },
+    {
+      "id": 52,
+      "start": 43.573332,
+      "end": 44.508332,
+      "words": [
+        {
+          "index": 112,
+          "text": "convertirte",
+          "start": 43.573332,
+          "end": 44.473332,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "awakening"
+    },
+    {
+      "id": 53,
+      "start": 44.473332,
+      "end": 45.733332,
+      "words": [
+        {
+          "index": 113,
+          "text": "en",
+          "start": 44.473332,
+          "end": 44.773332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 114,
+          "text": "alguien",
+          "start": 44.773332,
+          "end": 44.953332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 115,
+          "text": "diferente,",
+          "start": 44.953332,
+          "end": 45.593332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "awakening"
+    },
+    {
+      "id": 54,
+      "start": 46.033332,
+      "end": 46.988332,
+      "words": [
+        {
+          "index": 116,
+          "text": "significa",
+          "start": 46.033332,
+          "end": 46.293332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 117,
+          "text": "empezar",
+          "start": 46.293332,
+          "end": 46.813332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 118,
+          "text": "a",
+          "start": 46.813332,
+          "end": 46.953332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "darkBoard",
+      "topic": "identity"
+    },
+    {
+      "id": 55,
+      "start": 46.953332,
+      "end": 48.428332,
+      "words": [
+        {
+          "index": 119,
+          "text": "reconocer",
+          "start": 46.953332,
+          "end": 48.393332,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "darkBoard",
+      "topic": "identity"
+    },
+    {
+      "id": 56,
+      "start": 48.393332,
+      "end": 49.648332,
+      "words": [
+        {
+          "index": 120,
+          "text": "¿qué",
+          "start": 48.393332,
+          "end": 48.753332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 121,
+          "text": "partes",
+          "start": 48.753332,
+          "end": 49.133332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 122,
+          "text": "de",
+          "start": 49.133332,
+          "end": 49.613332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "darkBoard",
+      "topic": "identity"
+    },
+    {
+      "id": 57,
+      "start": 49.613332,
+      "end": 50.768332,
+      "words": [
+        {
+          "index": 123,
+          "text": "ti",
+          "start": 49.613332,
+          "end": 49.813332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 124,
+          "text": "has",
+          "start": 49.813332,
+          "end": 50.293332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 125,
+          "text": "ido",
+          "start": 50.293332,
+          "end": 50.733332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "darkBoard",
+      "topic": "identity"
+    },
+    {
+      "id": 58,
+      "start": 50.733332,
+      "end": 51.688332,
+      "words": [
+        {
+          "index": 126,
+          "text": "abandonando",
+          "start": 50.733332,
+          "end": 51.653332,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "darkBoard",
+      "topic": "identity"
+    },
+    {
+      "id": 59,
+      "start": 51.653332,
+      "end": 53.668332,
+      "words": [
+        {
+          "index": 127,
+          "text": "para",
+          "start": 51.653332,
+          "end": 53.353332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 128,
+          "text": "poder",
+          "start": 53.353332,
+          "end": 53.633332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "darkBoard",
+      "topic": "identity"
+    },
+    {
+      "id": 60,
+      "start": 53.633332,
+      "end": 54.088332,
+      "words": [
+        {
+          "index": 129,
+          "text": "encajar?",
+          "start": 53.633332,
+          "end": 54.053332,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "darkBoard",
+      "topic": "identity"
+    },
+    {
+      "id": 61,
+      "start": 54.053332,
+      "end": 55.108332,
+      "words": [
+        {
+          "index": 130,
+          "text": "y",
+          "start": 54.053332,
+          "end": 54.613332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 131,
+          "text": "quizás",
+          "start": 54.613332,
+          "end": 54.893332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 132,
+          "text": "el",
+          "start": 54.893332,
+          "end": 55.073332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "darkBoard",
+      "topic": "identity"
+    },
+    {
+      "id": 62,
+      "start": 55.073332,
+      "end": 56.088332,
+      "words": [
+        {
+          "index": 133,
+          "text": "primer",
+          "start": 55.073332,
+          "end": 55.273332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 134,
+          "text": "paso",
+          "start": 55.273332,
+          "end": 55.573332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 135,
+          "text": "para",
+          "start": 55.573332,
+          "end": 56.053332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "self-betrayal"
+    },
+    {
+      "id": 63,
+      "start": 56.053332,
+      "end": 56.468332,
+      "words": [
+        {
+          "index": 136,
+          "text": "cambiar",
+          "start": 56.053332,
+          "end": 56.433332,
+          "role": "hero",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "self-betrayal"
+    },
+    {
+      "id": 64,
+      "start": 56.433332,
+      "end": 57.688332,
+      "words": [
+        {
+          "index": 137,
+          "text": "no",
+          "start": 56.433332,
+          "end": 56.893332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 138,
+          "text": "sea",
+          "start": 56.893332,
+          "end": 57.173332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 139,
+          "text": "cambiar",
+          "start": 57.173332,
+          "end": 57.653332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "self-betrayal"
+    },
+    {
+      "id": 65,
+      "start": 57.653332,
+      "end": 58.288332,
+      "words": [
+        {
+          "index": 140,
+          "text": "tu",
+          "start": 57.653332,
+          "end": 57.873332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 141,
+          "text": "vida",
+          "start": 57.873332,
+          "end": 58.033332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 142,
+          "text": "sino",
+          "start": 58.033332,
+          "end": 58.253332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "self-betrayal"
+    },
+    {
+      "id": 66,
+      "start": 58.253332,
+      "end": 59.088332,
+      "words": [
+        {
+          "index": 143,
+          "text": "dejar",
+          "start": 58.253332,
+          "end": 58.553332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 144,
+          "text": "de",
+          "start": 58.553332,
+          "end": 59.053332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "self-betrayal"
+    },
+    {
+      "id": 67,
+      "start": 59.053332,
+      "end": 59.708332,
+      "words": [
+        {
+          "index": 145,
+          "text": "traicionarte",
+          "start": 59.053332,
+          "end": 59.673332,
+          "role": "hero",
+          "tone": "contrast"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "self-betrayal"
+    },
+    {
+      "id": 68,
+      "start": 59.673332,
+      "end": 61.768332,
+      "words": [
+        {
+          "index": 146,
+          "text": "en",
+          "start": 59.673332,
+          "end": 60.413332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 147,
+          "text": "las",
+          "start": 60.413332,
+          "end": 60.653332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 148,
+          "text": "pequeñas",
+          "start": 60.653332,
+          "end": 61.733332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "self-betrayal"
+    },
+    {
+      "id": 69,
+      "start": 61.733332,
+      "end": 62.468332,
+      "words": [
+        {
+          "index": 149,
+          "text": "decisiones",
+          "start": 61.733332,
+          "end": 62.433332,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "self-betrayal"
+    },
+    {
+      "id": 70,
+      "start": 62.433332,
+      "end": 63.153332,
+      "words": [
+        {
+          "index": 150,
+          "text": "de",
+          "start": 62.433332,
+          "end": 62.613332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 151,
+          "text": "cada",
+          "start": 62.613332,
+          "end": 62.773332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 152,
+          "text": "día.",
+          "start": 62.773332,
+          "end": 63.013332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "speaker",
+      "topic": "self-betrayal"
+    },
+    {
+      "id": 71,
+      "start": 63.393332,
+      "end": 63.973332,
+      "words": [
+        {
+          "index": 153,
+          "text": "Soy",
+          "start": 63.393332,
+          "end": 63.493332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 154,
+          "text": "Carlos,",
+          "start": 63.493332,
+          "end": 63.833332,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "cta",
+      "topic": "follow"
+    },
+    {
+      "id": 72,
+      "start": 64.513332,
+      "end": 65.788332,
+      "words": [
+        {
+          "index": 155,
+          "text": "facilitador",
+          "start": 64.513332,
+          "end": 65.253332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 156,
+          "text": "de",
+          "start": 65.253332,
+          "end": 65.413332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 157,
+          "text": "procesos",
+          "start": 65.413332,
+          "end": 65.753332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "cta",
+      "topic": "follow"
+    },
+    {
+      "id": 73,
+      "start": 65.753332,
+      "end": 66.428332,
+      "words": [
+        {
+          "index": 158,
+          "text": "de",
+          "start": 65.753332,
+          "end": 65.893332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 159,
+          "text": "transformación",
+          "start": 65.893332,
+          "end": 66.393332,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "cta",
+      "topic": "follow"
+    },
+    {
+      "id": 74,
+      "start": 66.393332,
+      "end": 67.113332,
+      "words": [
+        {
+          "index": 160,
+          "text": "profunda.",
+          "start": 66.393332,
+          "end": 66.973332,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "cta",
+      "topic": "follow"
+    },
+    {
+      "id": 75,
+      "start": 67.613332,
+      "end": 68.568332,
+      "words": [
+        {
+          "index": 161,
+          "text": "Si",
+          "start": 67.613332,
+          "end": 67.813332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 162,
+          "text": "quieres",
+          "start": 67.813332,
+          "end": 68.053332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 163,
+          "text": "aprender",
+          "start": 68.053332,
+          "end": 68.533332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "cta",
+      "topic": "follow"
+    },
+    {
+      "id": 76,
+      "start": 68.533332,
+      "end": 69.493332,
+      "words": [
+        {
+          "index": 164,
+          "text": "alguna",
+          "start": 68.533332,
+          "end": 68.813332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 165,
+          "text": "cosita",
+          "start": 68.813332,
+          "end": 69.133332,
+          "role": "connector",
+          "tone": "connector"
+        },
+        {
+          "index": 166,
+          "text": "más,",
+          "start": 69.133332,
+          "end": 69.353332,
+          "role": "connector",
+          "tone": "connector"
+        }
+      ],
+      "mode": "cta",
+      "topic": "follow"
+    },
+    {
+      "id": 77,
+      "start": 69.813332,
+      "end": 70.153332,
+      "words": [
+        {
+          "index": 167,
+          "text": "sígueme.",
+          "start": 69.813332,
+          "end": 70.013332,
+          "role": "hero",
+          "tone": "fortune"
+        }
+      ],
+      "mode": "cta",
+      "topic": "follow"
+    }
+  ],
+  "rules": {
+    "connectorFontPx": 64,
+    "heroFontPx": 108,
+    "minHeroFontPx": 98,
+    "maxHeroFontPx": 115,
+    "connectorColor": "#FFFFFF",
+    "positive": "#26F7FD",
+    "tension": "#FFD000",
+    "blackBoard": "#1E1E1E",
+    "whiteOutlinePx": 6,
+    "speakerX": 540,
+    "boardX": 540,
+    "positions": {
+      "speaker": [
+        1240,
+        1375
+      ],
+      "board": [
+        650,
+        790
+      ],
+      "cta": [
+        810,
+        960
+      ]
+    },
+    "maxWordsPerLine": 3,
+    "maxPauseSeconds": 0.7,
+    "heroCentered": true,
+    "autoHighlights": false
+  }
+}
