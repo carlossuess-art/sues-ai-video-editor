@@ -1,6 +1,7 @@
 import {existsSync,readFileSync,writeFileSync,renameSync} from 'node:fs';
 import {join} from 'node:path';
 import {randomUUID} from 'node:crypto';
+import {visualGrammarForProfile} from './visual-grammar.js';
 export function saveDirectorJSON(file,value){const temporary=file+'.'+randomUUID()+'.tmp';writeFileSync(temporary,JSON.stringify(value),{mode:0o600,flag:'wx'});renameSync(temporary,file);}
 export function directorAssets(library,directory){
  const semantics=new Map(library.semanticCatalog().assets.map(a=>[a.id,a.metadata]));
@@ -13,7 +14,7 @@ export function directorAssets(library,directory){
 }
 
 export function completeDirectorCatalog(catalog,settings){
- const next={...catalog,assets:catalog.assets.filter(a=>a.kind!=='audio'||Number.isFinite(a.duration)&&a.duration>=catalog.duration)};
+ const next={...catalog,visualGrammar:visualGrammarForProfile(settings.styleId??'SUES_CALMA'),assets:catalog.assets.filter(a=>a.kind!=='audio'||Number.isFinite(a.duration)&&a.duration>=catalog.duration)};
  const keys=['montageCuts','montageSplits','sourceCuts','hiddenVisualEventIds','hiddenCaptionIds','captionOverrides','captionTimingOverrides','captionTransforms','styleId','captionWords','voiceGain','voiceNormalization','sfxGain','sfxEnabled','levelResources','musicAssetId','musicGain','musicEnabled','duckMusic','zoomIntensity','motions','graphicCards','transitions','videoEvents','overlayEvents','sfxEvents'];
  next.currentSettings=Object.fromEntries(keys.filter(k=>settings[k]!==undefined).map(k=>[k,structuredClone(settings[k])]));
  return next;
