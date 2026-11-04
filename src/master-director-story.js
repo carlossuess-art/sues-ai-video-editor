@@ -1,3 +1,4 @@
+import {auditMasterDirectorArc} from './master-director-narrative-arc.js';
 // SUES MASTER DIRECTOR: bounded story contract, not a renderer or an asset generator.
 export const STORY_SCHEMA='sues-master-story/v1';
 export const TRACKS=['camera','subject','broll','graphics','captions','music','sfx','voice','transition'];
@@ -42,6 +43,8 @@ export function inspectMasterDirectorStory(story,registry={}){
   issue(issues,'UNRESOLVED_RULE_CONFLICTS');
  const n=story.narrative??{};
  if(!phrase(n.centralMessage)||!phrase(n.intendedExperience))issue(issues,'NARRATIVE_INTENT_MISSING');
+ const arcReview=auditMasterDirectorArc(n,registry,t);
+ for(const a of arcReview.issues)issue(issues,a.code,a.beat);
  const scenes=Array.isArray(n.scenes)?n.scenes:[],byScene=new Map();let cursor=0;
  if(!scenes.length||scenes.length>300)issue(issues,'SCENES_MISSING');
  for(const s of scenes){
@@ -148,7 +151,7 @@ export function compileMasterDirectorStory(story,registry={}){
    unresolvedConflicts:[],lockedMasters:r.lockedMasters.map(m=>({id:m.id,sha256:m.sha256}))},
   creativeContext:{visualMode:story.visual.mode,referenceId:story.visual.referenceId??null,
    centralMessage:story.narrative.centralMessage,intendedExperience:story.narrative.intendedExperience,
-   motifs:story.narrative.motifs??[]},
+   motifs:story.narrative.motifs??[],arc:story.narrative.arc??[]},
   scenes:story.narrative.scenes.map(s=>({...s})),
   operations:story.operations.map(o=>({
    id:o.id,sceneId:o.sceneId,start:o.start,end:o.end,renderer:o.renderer,effect:o.effect,
