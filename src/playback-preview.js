@@ -8,7 +8,7 @@ const signature=p=>{const s=statSync(p);return [s.dev,s.ino,s.size,s.mtimeMs].jo
 async function hash(p){const h=createHash('sha256');for await(const c of createReadStream(p))h.update(c);return h.digest('hex');}
 async function probe(p){return JSON.parse((await run('ffprobe',['-v','error','-show_streams','-show_format','-of','json',p],{timeout:30000,maxBuffer:1048576})).stdout);}
 export class PlaybackPreviews{
- constructor(directory,{canBuild=()=>true}={}){this.canBuild=canBuild;this.directory=directory;mkdirSync(directory,{recursive:true,mode:0o700});this.pending=new Map();this.tail=Promise.resolve();this.controllers=new Set();this.closing=false;}
+ constructor(directory,{canBuild=()=>true}={}){this.canBuild=canBuild;this.directory=directory;mkdirSync(directory,{recursive:true,mode:0o700});this.pending=new Map();this.tail=Promise.resolve();this.controllers=new Set();this.validated=new Map();this.closing=false;}
  ensure(id,source,{quality='preview'}={}){
   if(!['preview','720'].includes(quality))return Promise.reject(Error('Unknown export quality'));
   if(!/^[a-f0-9-]{36}$/.test(id))return Promise.reject(Error('Unknown preview'));
@@ -20,7 +20,7 @@ export class PlaybackPreviews{
  async build(id,source,quality){
   if(this.closing)throw Error('Preview closing');
   const before=signature(source),target=join(this.directory,id+(quality==='720'?'-720p':'')+'.mp4'),record=target+'.json';
-  try{const cached=JSON.parse(readFileSync(record,'utf8'));if((cached.quality===quality||quality==='preview'&&!cached.quality)&&cached.sourceSignature===before&&statSync(target).size===cached.bytes&&await hash(target)===cached.sha256)return target;}catch{}
+  try{const cached=JSON.parse(readFileSync(record,'utf8'));if((cached.quality===quality||quality==='preview'&&!cached.quality)&&cached.sourceSignature===before&&statSync(target).size===cached.bytes){const signatureNow=signature(target);if(this.validated.get(target)===signatureNow)return target;if(await hash(target)===cached.sha256){this.validated.set(target,signatureNow);return target;}}}catch{}
   if(!this.canBuild())throw Error('Hay otro render activo. La vista previa guardada se conserva.');
   const original=await probe(source),duration=Number(original.format.duration),sourceSha=await hash(source);
   const temp=join(this.directory,'.'+id+'-'+randomUUID()+'.mp4'),controller=new AbortController();this.controllers.add(controller);
@@ -31,7 +31,7 @@ export class PlaybackPreviews{
    await run('ffmpeg',['-v','error','-xerror','-threads','1','-i',temp,'-f','null','-'],{timeout:180000,maxBuffer:1048576,signal:controller.signal});
    if(signature(source)!==before||await hash(source)!==sourceSha)throw Error('Source changed during preview');
    const metadata={version:2,quality,sourceSignature:before,sourceSha256:sourceSha,sha256:await hash(temp),bytes:statSync(temp).size,duration:Number(output.format.duration),width:v.width,height:v.height,exportUnchanged:true};
-   renameSync(temp,target);writeFileSync(record,JSON.stringify(metadata),{mode:0o600});return target;
+   renameSync(temp,target);writeFileSync(record,JSON.stringify(metadata),{mode:0o600});this.validated.set(target,signature(target));return target;
   }finally{this.controllers.delete(controller);if(existsSync(temp))unlinkSync(temp);}
  }
  async close(){this.closing=true;for(const c of this.controllers)c.abort();await this.tail;}
