@@ -611,6 +611,17 @@ async function masterDecision(mode){
   numberField('start','Inicio (segundos)',original.start);numberField('end','Final (segundos)',original.end);
   if(typeof original.parameters?.text==='string'){const label=document.createElement('label'),input=document.createElement('input');label.textContent='Texto';input.value=original.parameters.text;label.append(input);box.append(label);inputs.text=input;}
   if(node.visual)numberField('opacity','Opacidad (0–1)',node.visual.opacity,'.01');
+  const easingControls=[];
+  for(const [index,keyframe] of (node.visual?.keyframes??[]).entries()){
+   if(index===0)continue;
+   const label=document.createElement('label'),select=document.createElement('select');
+   label.textContent='Curva hasta el fotograma '+keyframe.atFrame;select.dataset.masterEasing=String(index);
+   const currentEasing=keyframe.easing??'linear';
+   const choices=[['linear','Lineal'],['ease-in','Entrada suave'],['ease-out','Salida suave'],['ease-in-out','Entrada y salida suaves']];
+   if(!choices.some(([value])=>value===currentEasing))choices.push([currentEasing,'Actual (sin compatibilidad verificada)']);
+   for(const [value,title] of choices){const option=document.createElement('option');option.value=value;option.textContent=title;select.append(option);}
+   select.value=currentEasing;label.append(select);box.append(label);easingControls.push({index,select,currentEasing});
+  }
   if(typeof original.parameters?.gain==='number')numberField('gain','Volumen',original.parameters.gain,'.01');
   if(Number.isInteger(original.parameters?.sourceInFrame))numberField('sourceInFrame','Inicio en el recurso (fotogramas)',original.parameters.sourceInFrame,'1');
   const save=document.createElement('button');save.type='button';save.textContent='Guardar ajuste de esta capa';
@@ -621,6 +632,7 @@ async function masterDecision(mode){
    if(node.visual?.rect){const rect=Object.fromEntries(['x','y','width','height'].map(key=>[key,Number(inputs[key].value)]));
     if(Object.values(rect).some(n=>!Number.isFinite(n))||rect.width<=0||rect.height<=0)throw Error('Comprueba la posición y el tamaño de la capa.');parameters.visual={...node.visual,rect};}
    if(inputs.opacity){const opacity=Number(inputs.opacity.value);if(!Number.isFinite(opacity)||opacity<0||opacity>1)throw Error('La opacidad debe estar entre 0 y 1.');parameters.visual.opacity=opacity;}
+   for(const {index,select,currentEasing} of easingControls)if(select.value!==currentEasing)parameters.visual.keyframes[index].easing=select.value;
    if(inputs.text)parameters.text=inputs.text.value;if(inputs.gain)parameters.gain=Number(inputs.gain.value);
    if(inputs.sourceInFrame){const n=Number(inputs.sourceInFrame.value);if(!Number.isInteger(n)||n<0)throw Error('El inicio del recurso debe ser un fotograma válido.');parameters.sourceInFrame=n;}
    if(inputs.gain&&(!Number.isFinite(parameters.gain)||parameters.gain<0||parameters.gain>2))throw Error('Comprueba el volumen de la capa.');

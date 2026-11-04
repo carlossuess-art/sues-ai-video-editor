@@ -1396,3 +1396,5 @@ La tabla técnica de Carlos queda codificada como `sues-visual-grammar-158623-v1
 - Prueba técnica aislada 158404 completada: 65,109 s, 1953 fotogramas a 30 fps, preview privada 270×480 con audio, SHA256 `84489cd837f55d1a147adbddfdedaf452148b6ef6bcb11d5fb36b6ee7306d3b9`. Auditoría técnica separada con decodificación completa PASS; Range e idempotencia PASS. Fuente es copia normalizada, plan y contexto simulados. Sin revisión artística, Reel terminado ni exportación final.
 
 - Master Director en rama aislada: curvas de animación `linear`, `ease-in`, `ease-out`, `ease-in-out` implementadas y preservadas con cubic-bezier estándar; `spring` sigue bloqueado. 8/8 pruebas dirigidas, TypeScript y fotograma sintético Remotion PASS. No implica aceptación audiovisual ni despliegue. Detalle en `docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md`.
+
+- UI aislada Master Director: selección de curva por fotograma, guardada en versión nueva con revisión requerida. Smoke Chromium escritorio/móvil PASS con backend de prueba; no desplegado.
