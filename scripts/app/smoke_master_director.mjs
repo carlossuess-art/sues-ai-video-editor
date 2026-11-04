@@ -46,6 +46,12 @@ try{
   await page.waitForFunction(()=>document.querySelector('#master-review-result').textContent.includes('nueva versión'),{timeout:30000});
   const edited=await page.evaluate(()=>JSON.parse(document.querySelector('#external-plan-text').value).operations[0]);
   assert.equal(edited.parameters.visual.rect.x,170);assert.equal(edited.start,2.5);assert.equal(edited.end,4.5);assert.equal(edited.parameters.text,'Texto editado');assert.equal(edited.parameters.visual.keyframes[1].easing,'ease-in');assert.equal(edited.parameters.visual.keyframes[1].x,125);
+  await page.evaluate(()=>document.querySelector('#master-review-button').click());
+  await page.waitForFunction(()=>!document.querySelector('#master-review-actions').hidden,{timeout:30000});
+  await page.evaluate(()=>document.querySelector('#master-approve').click());
+  await page.waitForSelector('#master-layer-controls [data-master-easing=\"1\"]',{state:'attached',timeout:30000});
+  assert.equal(await page.locator('[data-master-easing=\"1\"]').inputValue(),'ease-in');
+  assert.equal(await page.locator('[data-master-keyframe=\"1:x\"]').inputValue(),'125');
   await page.evaluate(()=>document.querySelector('#master-versions-button').click());
   await page.waitForFunction(()=>!document.querySelector('#master-versions-label').hidden,{timeout:30000});
   await page.evaluate(id=>{document.querySelector('#master-versions-select').value=id;document.querySelector('#master-version-open').click();},originalRevision);
