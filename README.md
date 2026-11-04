@@ -181,3 +181,6 @@ La plantilla provisional ya dispone de cámara, cortes, captions, outro y compos
 
 Dossier Keanu aplicado: texto progresivo, entrada por caracteres e imágenes con máscara suave.
 Detalle, límites y continuidad: [guía de aplicación](docs/SUES_KEANU_DOSSIER_APPLICATION.md).
+
+## Contrato visual común · referencia 158623
+La tabla tipográfica y dinámica aprobada por Carlos es contrato de programación: `src/visual-grammar.js` (ID `sues-visual-grammar-158623-v1`). Deben consultarlo Remotion (`experiments/remotion-cta/src/SemanticVisualBeat.tsx`), el Director IA (`src/director-context.js`), el editor (`src/local-pipeline.js`, `src/elements.js`, `src/style-variants.js`) y la skill privada SUES AI Film Director v1.4.2. **No sustituir la tabla aprobada por aproximaciones cromáticas ni animaciones periódicas.** Ver [reglas, pruebas y límites](docs/GRAMATICA_VISUAL_COMPARTIDA_158623_20261104.md). En la rama se han registrado reglas y una composición de demostración, pero el motor nuevo **no está desplegado** en producción y faltan las pruebas integrales; conservar la versión productiva y sus funciones adicionales.
