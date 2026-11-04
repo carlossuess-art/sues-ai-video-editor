@@ -29,7 +29,7 @@ function boundedRun(executable,args,options,memoryCheck){
   const child=execFile(executable,args,options,(error,stdout,stderr)=>{
    clearInterval(timer);if(forceTimer)clearTimeout(forceTimer);
    if(low){const e=new Error('Preview stopped for memory headroom');e.code='PREVIEW_MEMORY_LIMIT';return rejectRun(e);}
-   if(error)return rejectRun(error);resolveRun({stdout,stderr});
+   if(error){if(error.killed){error.code='PREVIEW_RENDER_TIMEOUT';}return rejectRun(error);}resolveRun({stdout,stderr});
   });
   const timer=setInterval(()=>{if(!low&&!memoryCheck()){low=true;child.kill('SIGTERM');forceTimer=setTimeout(()=>child.kill('SIGKILL'),5000);}},1000);
  });
@@ -57,7 +57,7 @@ export async function renderMasterDirectorPreview({composition,project,assets,wo
    '--frames=0-'+(composition.durationFrames-1),'--props='+props,'--public-dir='+pub,'--scale=0.25',
    '--concurrency=1','--offthreadvideo-cache-size-in-bytes=67108864','--offthreadvideo-video-threads=1',
    '--media-cache-size-in-bytes=67108864','--disable-shared-memory-capture','--codec=h264','--browser-executable='+browserExecutable];
-  const options={cwd:resolve(entryFile,'../..'),timeout:600000,maxBuffer:2*1024*1024,env:{...process.env,NODE_OPTIONS:'--max-old-space-size=384'}};
+  const options={cwd:resolve(entryFile,'../..'),timeout:1800000,maxBuffer:2*1024*1024,env:{...process.env,NODE_OPTIONS:'--max-old-space-size=384'}};
   if(runner)await runner(process.execPath,args,options);else await boundedRun(process.execPath,args,options,memoryCheck);
   if(!await approvalCheck()||fileSha256(project.sourcePath)!==composition.sourceSha256)
    return {status:'BLOCKED',issues:[{code:'APPROVAL_OR_SOURCE_CHANGED_DURING_RENDER'}]};
@@ -69,6 +69,6 @@ export async function renderMasterDirectorPreview({composition,project,assets,wo
   rmSync(pub,{recursive:true,force:true});rmSync(props,{force:true});
   writeFileSync(join(dir,'preview.json'),JSON.stringify(record)+'\n',{mode:0o600,flag:'wx'});keep=true;
   return {status:'PREVIEW_RENDERED_UNVERIFIED',issues:[],record,outputPath:output};
- }catch(error){return {status:'BLOCKED',issues:[{code:error?.code==='PREVIEW_MEMORY_LIMIT'?'PREVIEW_MEMORY_LIMIT':'PREVIEW_RENDER_FAILED'}]};}
+ }catch(error){return {status:'BLOCKED',issues:[{code:['PREVIEW_MEMORY_LIMIT','PREVIEW_RENDER_TIMEOUT'].includes(error?.code)?error.code:'PREVIEW_RENDER_FAILED'}]};}
  finally{if(!keep)rmSync(dir,{recursive:true,force:true});}
 }
