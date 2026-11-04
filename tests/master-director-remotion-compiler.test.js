@@ -54,3 +54,9 @@ test('preserves explicitly supported easing curves in approved layers',()=>{
   assert.equal(r.status,'READY_FOR_REMOTION_STAGING');assert.equal(r.composition.layers[0].visual.keyframes[1].easing,easing);
  }
 });
+
+test('blocks spring even when graph and source parameters agree',()=>{
+ const g=graph();g.nodes[0].visual.keyframes[1].easing='spring';g.nodes[0].sourceParameters.visual=structuredClone(g.nodes[0].visual);
+ const r=compileMasterDirectorRemotion(g,{verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}}});
+ assert.equal(r.status,'BLOCKED');assert.equal(r.composition,null);assert.ok(r.issues.some(i=>i.code==='ANIMATION_UNSUPPORTED'));
+});
