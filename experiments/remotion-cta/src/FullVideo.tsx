@@ -5,8 +5,8 @@ import captions from './full-captions.json';
 /**
  * SUES · 158404 private editorial review.
  * Original audio 00:00-01:05 intact; B-roll sources are MUTED.
- * Published candidates limited to 3 separately traceable Pexels B-roll clips.
- * Remaining scenes use original motion compositions and the authorized Carlos footage.
+ * Uses only credited Pexels B-roll R1, R3 and R4 plus proprietary motion compositions.
+ * Pexels attribution and use restrictions must still be checked before publication.
  */
 export const FPS = 30;
 export const END_ORIGINAL = 1950; // 65 s
@@ -31,15 +31,19 @@ const Tapiz:React.FC<{kind:number}>=({kind})=>{
 const SourceCutout:React.FC<{sourceStart:number;scale?:number;right?:number;top?:number}>=({sourceStart,scale=1,right=0,top=0})=>{
  const f=useCurrentFrame(),absolute=Math.round(sourceStart*FPS)+f;
  const path=staticFile('full/matte/mask_'+String(absolute).padStart(4,'0')+'.png');
- return <OffthreadVideo src={video('source')} muted startFrom={Math.round(sourceStart*FPS)} style={{
-   position:'absolute',width:`${scale*100}%`,height:`${scale*100}%`,right,top,
-   objectFit:'cover',WebkitMaskImage:`url("${path}")`,maskImage:`url("${path}")`,
-   WebkitMaskSize:'100% 100%',maskSize:'100% 100%',
-   filter:'drop-shadow(0 10px 26px rgba(0,0,0,.45))'
- }}/>;
+ // Nested masks intersect: the existing per-frame subject matte is preserved;
+ // its formerly straight bottom edge is feathered before compositing over tapiz.
+ const feather='radial-gradient(ellipse 57% 39% at 55% 42%, #000 36%, rgba(0,0,0,.88) 57%, rgba(0,0,0,.38) 78%, transparent 100%)';
+ return <div style={{position:'absolute',width:`${scale*100}%`,height:`${scale*100}%`,right,top,
+   WebkitMaskImage:feather,maskImage:feather,filter:'drop-shadow(0 10px 26px rgba(0,0,0,.45))'}}>
+  <OffthreadVideo src={video('source-cfr30')} muted startFrom={Math.round(sourceStart*FPS)} style={{
+    width:'100%',height:'100%',objectFit:'cover',WebkitMaskImage:`url("${path}")`,maskImage:`url("${path}")`,
+    WebkitMaskSize:'100% 100%',maskSize:'100% 100%'
+  }}/>
+ </div>;
 };
 const SourceSoft:React.FC<{sourceStart:number;scale?:number;right?:number;top?:number}>=({sourceStart,scale=1,right=0,top=0})=>{
- return <OffthreadVideo src={video('source')} muted startFrom={Math.round(sourceStart*FPS)} style={{
+ return <OffthreadVideo src={video('source-cfr30')} muted startFrom={Math.round(sourceStart*FPS)} style={{
   position:'absolute',width:`${scale*100}%`,height:`${scale*100}%`,right,top,objectFit:'cover',
   WebkitMaskImage:'radial-gradient(ellipse 56% 47% at 58% 52%, #000 35%, rgba(0,0,0,.93) 62%, transparent 100%)',
   maskImage:'radial-gradient(ellipse 56% 47% at 58% 52%, #000 35%, rgba(0,0,0,.93) 62%, transparent 100%)'
@@ -143,23 +147,25 @@ const FinalScene:React.FC=()=>{
 };
 
 
-// Licensed footage replaces social-media B-roll in all public-safe scenes.
-// The speaker is moved to the right, and the left quarter holds explanatory graphics.
+// Only the three editorially traceable Pexels clips remain. Rejected social media
+// footage is replaced by original explanatory compositions based on Carlos' camera image.
+// All elements are within x 54..1026 of the 1080px safe composition.
 const RejectionScene:React.FC=()=>{
- const f=useCurrentFrame(),p=1+Math.sin(f*.22)*.026;
+ const f=useCurrentFrame();
+ const k=pop(f,12), pulse=1+Math.sin(f*.22)*.026;
  return <AbsoluteFill style={{background:DEEP}}>
-  <Tapiz kind={3}/>
-  <div style={{position:'absolute',inset:0,background:'linear-gradient(90deg,#06090ACF,#06090A55 52%,transparent)'}}/>
-  <SourceSoft sourceStart={26.7} scale={.81} right={-100} top={190}/>
-  <div style={{position:'absolute',top:260,left:55,width:460,color:IVORY,fontFamily:SERIF,fontStyle:'italic',fontSize:52}}>Cuando aparece...</div>
-  <div style={{position:'absolute',top:385,left:55,width:505,color:GOLD,fontFamily:SANS,fontSize:88,fontWeight:800,letterSpacing:-2.5,lineHeight:1.04,opacity:enter(f,5,9)}}>EL MIEDO</div>
-  <svg style={{position:'absolute',left:66,top:600,opacity:enter(f,14,7),transform:'scale('+p+')'}} width="420" height="340" viewBox="0 0 420 340">
-   <path d="M119 120 C90 52 12 79 24 155 C36 220 122 272 208 300" fill="none" stroke="#EDC18B" strokeWidth="9" strokeLinecap="round"/>
-   <path d="M300 120 C331 52 408 79 397 155 C390 204 340 238 298 265" fill="none" stroke="#EDC18B" strokeWidth="9" strokeLinecap="round"/>
-   <path d="M210 64 L165 155 L226 168 L192 270" fill="none" stroke="#F6E2C4" strokeWidth="12" strokeLinejoin="round" strokeLinecap="round"/>
-   <path d="M250 285 L310 270" stroke="#E8B57C" strokeWidth="6" strokeLinecap="round"/>
-  </svg>
-  <div style={{position:'absolute',left:60,top:1020,width:430,color:IVORY,fontFamily:SANS,fontWeight:700,fontSize:44,opacity:enter(f,36,8)}}>¿Y si dejo de gustarles?</div>
+   <Tapiz kind={3}/>
+   <div style={{position:'absolute',inset:0,background:'linear-gradient(90deg,#06090ACF,#06090A55 52%,transparent)'}}/>
+   <SourceSoft sourceStart={26.7} scale={.81} right={-100} top={190}/>
+   <div style={{position:'absolute',top:260,left:55,width:460,color:IVORY,fontFamily:SERIF,fontStyle:'italic',fontSize:52}}>Cuando aparece...</div>
+   <div style={{position:'absolute',top:385,left:55,width:505,color:GOLD,fontFamily:SANS,fontSize:88,fontWeight:800,letterSpacing:-2.5,lineHeight:1.04,opacity:enter(f,5,9)}}>EL MIEDO</div>
+   <svg style={{position:'absolute',left:66,top:600,opacity:enter(f,14,7),transform:'scale('+pulse+')'}} width="420" height="340" viewBox="0 0 420 340">
+     <path d="M 119 120 C 90 52 12 79 24 155 C 36 220 122 272 208 300" fill="none" stroke="#EDC18B" strokeWidth="9" strokeLinecap="round"/>
+     <path d="M 300 120 C 331 52 408 79 397 155 C 390 204 340 238 298 265" fill="none" stroke="#EDC18B" strokeWidth="9" strokeLinecap="round"/>
+     <path d="M 210 64 L 165 155 L 226 168 L 192 270" fill="none" stroke="#F6E2C4" strokeWidth="12" strokeLinejoin="round" strokeLinecap="round"/>
+     <path d="M 250 285 L 310 270" stroke="#E8B57C" strokeWidth="6" strokeLinecap="round"/>
+   </svg>
+   <div style={{position:'absolute',left:60,top:1020,width:430,color:IVORY,fontFamily:SANS,fontWeight:700,fontSize:44,opacity:enter(f,36,8)}}>¿Y si dejo de gustarles?</div>
  </AbsoluteFill>;
 };
 const RecognitionScene:React.FC=()=>{
@@ -172,25 +178,25 @@ const RecognitionScene:React.FC=()=>{
   <div style={{position:'absolute',left:52,top:425,width:570,fontFamily:SANS,fontSize:74,fontWeight:800,letterSpacing:-2.5,color:GOLD,lineHeight:1.05,transform:'scale('+pop(f,12)+')',transformOrigin:'left center'}}>RECONOCER</div>
   <svg style={{position:'absolute',left:60,top:660,opacity:enter(f,24,9)}} width="450" height="340" viewBox="0 0 450 340">
    <rect x="48" y="22" width="304" height="280" rx="145" fill="none" stroke="#EED1A8" strokeWidth="9"/>
-   <path d="M210 76 C168 90 151 131 166 173 C180 208 232 227 228 272" stroke="#E9B576" strokeWidth="12" fill="none" strokeLinecap="round"/>
-   <path d="M234 76 C290 86 306 130 290 177 C273 218 232 229 235 272" stroke="#A88764" strokeWidth="10" fill="none" strokeDasharray="13 13" strokeLinecap="round"/>
+   <path d="M 210 76 C 168 90 151 131 166 173 C 180 208 232 227 228 272" stroke="#E9B576" strokeWidth="12" fill="none" strokeLinecap="round"/>
+   <path d="M 234 76 C 290 86 306 130 290 177 C 273 218 232 229 235 272" stroke="#A88764" strokeWidth="10" fill="none" strokeDasharray="13 13" strokeLinecap="round"/>
   </svg>
  </AbsoluteFill>;
 };
 const FitScene:React.FC=()=>{
- const f=useCurrentFrame();
+ const f=useCurrentFrame(), k=pop(f,12);
  return <AbsoluteFill style={{background:DEEP}}>
-  <Tapiz kind={1}/>
-  <div style={{position:'absolute',inset:0,background:'linear-gradient(90deg,#060809E8 0%,#07090B44 62%,transparent)'}}/>
-  <SourceSoft sourceStart={53.1} scale={.79} right={-100} top={235}/>
-  <div style={{position:'absolute',left:54,top:380,width:490,color:IVORY,fontFamily:SERIF,fontStyle:'italic',fontSize:48,opacity:enter(f,2,7)}}>¿Para qué?</div>
-  <div style={{position:'absolute',left:53,top:477,width:530,color:GOLD,fontFamily:SANS,fontSize:89,fontWeight:800,opacity:enter(f,12,7),lineHeight:1}}>ENCAJAR</div>
-  <svg style={{position:'absolute',top:655,left:60,opacity:enter(f,17,8)}} viewBox="0 0 460 330" width="430" height="300">
-   <path d="M40 70 H140 C126 118 185 150 205 102 C209 90 204 78 198 70 H316 V280 H207 C218 230 160 211 141 254 C138 262 138 271 142 280 H40 Z" fill="none" stroke="#F3D5A7" strokeWidth="10" strokeLinejoin="round"/>
-   <path d="M356 100 C386 86 422 114 407 149 C399 168 383 176 365 176 V247 H296 V200" stroke="#D4A46B" strokeWidth="10" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="12 12"/>
-   <path d="M347 113 L356 102 L367 118" fill="none" stroke="#F8E8CF" strokeWidth="8" strokeLinecap="round"/>
-  </svg>
-  <div style={{position:'absolute',left:58,top:1100,width:460,color:IVORY,fontFamily:SANS,fontSize:40,fontWeight:700,opacity:enter(f,35,8)}}>No necesitas dejar de ser tú.</div>
+   <Tapiz kind={1}/>
+   <div style={{position:'absolute',inset:0,background:'linear-gradient(90deg,#060809E8 0%,#07090B44 62%,transparent)'}}/>
+   <SourceSoft sourceStart={53.1} scale={.79} right={-100} top={235}/>
+   <div style={{position:'absolute',left:54,top:380,width:490,color:IVORY,fontFamily:SERIF,fontStyle:'italic',fontSize:48,opacity:enter(f,2,7)}}>¿Para qué?</div>
+   <div style={{position:'absolute',left:53,top:477,width:530,color:GOLD,fontFamily:SANS,fontSize:89,fontWeight:800,opacity:enter(f,12,7),lineHeight:1}}>ENCAJAR</div>
+   <svg style={{position:'absolute',top:655,left:60,opacity:enter(f,17,8)}} viewBox="0 0 460 330" width="430" height="300">
+    <path d="M40 70 H140 C126 118 185 150 205 102 C209 90 204 78 198 70 H316 V280 H207 C218 230 160 211 141 254 C138 262 138 271 142 280 H40 Z" fill="none" stroke="#F3D5A7" strokeWidth="10" strokeLinejoin="round"/>
+    <path d="M 356 100 C 386 86 422 114 407 149 C 399 168 383 176 365 176 V247 H296 V200" stroke="#D4A46B" strokeWidth="10" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="12 12"/>
+    <path d="M 347 113 L 356 102 L 367 118" fill="none" stroke="#F8E8CF" strokeWidth="8" strokeLinecap="round"/>
+   </svg>
+   <div style={{position:'absolute',left:58,top:1100,width:460,color:IVORY,fontFamily:SANS,fontSize:40,fontWeight:700,opacity:enter(f,35,8)}}>No necesitas dejar de ser tú.</div>
  </AbsoluteFill>;
 };
 
@@ -215,7 +221,7 @@ const Extra:React.FC=()=>{
 const AudioAccent:React.FC<{start:number;file:string;volume:number}>=({start,file,volume})=><Sequence from={Math.round(start*FPS)} durationInFrames={30}><Audio src={staticFile('full/'+file)} volume={volume}/></Sequence>;
 export const FullVideo:React.FC=()=>{
  const frame=useCurrentFrame(),t=frame/FPS;
- const base=staticFile('full/source.mp4'),cta=staticFile('full/cta.mp4'), bed=staticFile('full/ambient.wav');
+ const base=staticFile('full/source-cfr30.mp4'),cta=staticFile('full/cta.mp4'), bed=staticFile('full/ambient.wav');
  const fonts=[staticFile('fonts/Montserrat-Bold.ttf'),staticFile('fonts/Montserrat-ExtraBold.ttf'),staticFile('fonts/PlayfairDisplay-Italic.ttf')];
  const fontStyles=`@font-face{font-family:SuesMontserrat;src:url("${fonts[0]}");font-weight:700}@font-face{font-family:SuesMontserrat;src:url("${fonts[1]}");font-weight:800}@font-face{font-family:SuesPlayfair;src:url("${fonts[2]}");font-style:italic;font-weight:100 900}`;
  return <AbsoluteFill style={{background:DEEP,overflow:'hidden'}}>
