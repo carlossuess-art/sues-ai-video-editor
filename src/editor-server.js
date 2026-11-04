@@ -69,6 +69,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const cloudRuns=new Set();
  const cloud=cloudDirector??new CloudDirector({credentialsFile:join(dirname(passwordFile),'cloud-director-keys.json')});
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
+ const sourcePreviewId=sha=>{if(!/^[a-f0-9]{64}$/.test(sha))throw Error('Unknown source identifier');const hex=sha.slice(0,32);return [hex.slice(0,8),hex.slice(8,12),hex.slice(12,16),hex.slice(16,20),hex.slice(20,32)].join('-');};
  const sourceStream=(req,res,file,contentType)=>{
   const size=statSync(file).size;let range;try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
   const fd=openSync(file,'r'),head=Buffer.alloc(12);try{readSync(fd,head,0,12,0);}finally{closeSync(fd);}
@@ -176,7 +177,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     const profileSource=/^\/api\/profiles\/([^/]+)\/source$/.exec(path);
     if(profileSource&&['GET','HEAD'].includes(req.method)){const id=decodeURIComponent(profileSource[1]);if(!Object.hasOwn(profiles,id))throw new Error('Unknown profile');return sourceStream(req,res,jobs.loadProfile(id).sourcePath);}
     const jobSource=/^\/api\/jobs\/([a-f0-9-]+)\/source$/.exec(path);
-    if(jobSource&&['GET','HEAD'].includes(req.method)){const job=jobs.get(jobSource[1]),project=jobs.loadProfile(job.profileId);if(project.inputs.source.sha256!==jobs.plan(job.id).manifest.source.sha256)throw new Error('Source changed; prepare the montage again');return sourceStream(req,res,project.sourcePath);}
+    if(jobSource&&['GET','HEAD'].includes(req.method)){const job=jobs.get(jobSource[1]),project=jobs.loadProfile(job.profileId);if(project.inputs.source.sha256!==jobs.plan(job.id).manifest.source.sha256)throw new Error('Source changed; prepare the montage again');if(url.searchParams.get('preview')==='1'){const proxy=await previews.ensure(sourcePreviewId(project.inputs.source.sha256),project.sourcePath);res.setHeader('X-Sues-Playback','light-proxy');return sourceStream(req,res,proxy);}return sourceStream(req,res,project.sourcePath);}
     const localAnalysisMatch=/^\/api\/uploads\/([a-f0-9]{64})\/transcribe$/.exec(path);
     if(localAnalysisMatch&&req.method==='POST')return json(res,202,analysis.request(localAnalysisMatch[1]));
     if(localAnalysisMatch&&req.method==='GET')return json(res,200,analysis.status(localAnalysisMatch[1]));
