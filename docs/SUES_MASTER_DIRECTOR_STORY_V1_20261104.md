@@ -33,6 +33,6 @@ El módulo src/master-director-story.js no renderiza, ni mide calidad audiovisua
 
 ## Pruebas y limitaciones
 
-Se han escrito 13 pruebas en tests/master-director-story.test.js para metáforas, solicitudes de creación, permisos, SHA, referencias, palabras, capacidades, audio y dependencias. Los smoke tests lógicos del módulo pasaron antes de subirlo, pero falta ejecución Node 22 de la suite completa y QA con vídeos reales sobre el checkout aislado. No atribuir pruebas de render, despliegue ni aceptación creativa.
+Se han escrito 15 pruebas en tests/master-director-story.test.js para metáforas, solicitudes de creación, permisos, SHA, referencias, palabras, capacidades, audio y dependencias. Los smoke tests lógicos del módulo pasaron antes de subirlo, pero falta ejecución Node 22 de la suite completa y QA con vídeos reales sobre el checkout aislado. No atribuir pruebas de render, despliegue ni aceptación creativa.
 
 **Próximo hito:** definir y validar en lenguaje natural las reglas maestras, probar con un caso integral (miedo/cadenas → liberación), conectarlo al editor existente sin perder componentes productivos; después adaptar la skill al contrato definitivo.
