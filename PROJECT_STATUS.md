@@ -1,3 +1,10 @@
+## DESARROLLO · unificación de reglas y narrativa del cerebro · 04/11/2026
+- Rama: feat/master-director-story-orchestration-20261104; PR borrador #27 contra feat/master-director-gate-20261104.
+- Se implementaron: master-director-rulebook.js (ámbitos, aprobaciones verificadas, conflictos no resueltos), master-director-story.js (narrativa integral, metáforas distantes, recursos existentes/por generar, palabras/timings, pruebas obligatorias) y master-director-orchestration.js (puerta única de reglas → historia → gate con snapshot exacto para invalidar aprobaciones).
+- QA real de lógica: Node.js v22.23.3, 40/40 PASS; tests combinados del gate y los 3 módulos nuevos en /tmp/sues-master-director-story-qa-20261104. No se han ejecutado suite completa de la app ni pruebas audiovisuales reales.
+- No hay merge, deploy, cambios de skill, consumo API, render nuevo ni modificación de proyectos. Las 20 reglas en lenguaje natural esperan aprobación de Carlos.
+- Siguiente: verificar árbol efectivo de producción, crear adaptadores por capacidad y backend autenticado, comprobar resultado MP4/preview/capas/audio con 2 QA integrales, obtener aprobación creativa y solo entonces adaptar la skill.
+
 ## EN DESARROLLO · cerebro coordinador narrativo · 04/11/2026
 - Rama aislada: feat/master-director-story-orchestration-20261104; PR borrador #27 contra feat/master-director-gate-20261104.
 - Código nuevo: src/master-director-story.js; traduce historia global, metáforas entre escenas y recursos verificados a sues-master-director/v1; propone creación si falta un recurso ideal, sin generar ni degradar.
