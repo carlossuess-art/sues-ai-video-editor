@@ -76,7 +76,7 @@ export function reviewMasterDirectorPlan(plan,registry={}){
        op.start<scene.start-1e-6||op.end>scene.end+1e-6)
       issue(issues,'OPERATION_OUTSIDE_SCENE',op?.id??'unknown');
     if(!validId(op?.effect)||!validId(op?.renderer)||
-       !Array.isArray(registry.rendererCapabilities?.[op.renderer])||
+       !Array.isArray(registry.rendererCapabilities?.[op?.renderer])||
        !registry.rendererCapabilities[op.renderer].includes(op.effect))
       issue(issues,'RENDERER_CAPABILITY_UNVERIFIED',op?.id??'unknown');
     if(typeof op?.reason!=='string'||op.reason.trim().length<5)
@@ -87,7 +87,7 @@ export function reviewMasterDirectorPlan(plan,registry={}){
        !op.requiredQA.every(k=>MASTER_QA_KINDS.includes(k)))
       issue(issues,'QA_REQUIREMENTS_MISSING',op?.id??'unknown');
     if(op?.resourceId!==undefined){
-      const asset=registry.licensedAssets?.[op.resourceId];
+      const asset=registry.licensedAssets?.[op?.resourceId];
       if(!validId(op.resourceId)||!asset||asset.rightsVerified!==true||
          asset.commercialUseAllowed!==true||!SHA.test(asset.sha256??''))
         issue(issues,'ASSET_RIGHTS_UNVERIFIED',op?.id??'unknown');
@@ -119,7 +119,7 @@ export function auditMasterDirectorExecution(plan,registry={},execution={}){
      execution.operations.length!==ops.length)
     issue(issues,'EXECUTION_MANIFEST_MISMATCH');
   else{
-    const actual=new Map(execution.operations.map(o=>[o.id,o]));
+    const actual=new Map(execution.operations.map(o=>[o?.id,o]));
     if(actual.size!==ops.length)issue(issues,'EXECUTION_MANIFEST_MISMATCH');
     for(const op of ops){
       const result=actual.get(op.id);
@@ -134,10 +134,11 @@ export function auditMasterDirectorExecution(plan,registry={},execution={}){
   const passes=registry.qaPasses;
   if(!Array.isArray(passes)||passes.length!==2||
      !passes.every(p=>p?.fingerprint===fingerprint&&p?.completed===true&&
-       validId(p?.verifierId)&&registry.trustedVerifierIds?.includes(p.verifierId)))
+       validId(p?.verifierId)&&registry.trustedVerifierIds?.includes(p.verifierId)&&validId(p?.runId))||
+     (Array.isArray(passes)&&passes.length===2&&passes[0]?.runId===passes[1]?.runId))
     issue(issues,'TWO_INDEPENDENT_QA_PASSES_REQUIRED');
   else for(let i=0;i<2;i++){
-    const evidence=new Map((passes[i].evidence??[]).map(e=>[e.operationId,e]));
+    const evidence=new Map((Array.isArray(passes[i].evidence)?passes[i].evidence:[]).filter(obj).map(e=>[e.operationId,e]));
     if(!Array.isArray(passes[i].evidence)||evidence.size!==ops.length)
       issue(issues,'QA_EVIDENCE_INCOMPLETE','pass-'+(i+1));
     for(const op of ops){
