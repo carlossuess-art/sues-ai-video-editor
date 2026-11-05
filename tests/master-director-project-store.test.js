@@ -190,3 +190,50 @@ test('server restart marks orphan preview interrupted and blocks unsafe duplicat
   const again=await fetch(root+'/master-preview',{method:'POST',headers,body:JSON.stringify({requestId:randomUUID(),revision,decisionId})});assert.equal(again.status,409);assert.equal(app.jobs.children.size,0);
  }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });
+
+test('authenticated mixed plan reports both engine components and blocks an incomplete preview',async()=>{
+ const f=fixture(),master='b'.repeat(64),font='e'.repeat(64);
+ const policy={registry:{brandId:'sues',profileId:'DOPAMIN',projectId:'p1',approvedRuleVersion:'rules-v1',
+  approvedRuleIds:['r1'],requiredRuleKeys:['brand.background'],approvedReferenceIds:[],
+  masterHashes:{tapiz:master},lockedMastersByMode:{'brand-sues':[{id:'tapiz',sha256:master}]},
+  rendererCapabilities:{native:['transition-native'],remotion:['text']},licensedAssets:{},
+  canvas:{width:1080,height:1920},verifiedFonts:{'Montserrat:700':{sha256:font}}},
+  rulebook:[{id:'r1',key:'brand.background',scope:'global',authority:'explicit-user-approval',status:'approved',value:'anthracite',supersedes:[]}]};
+ let probes=0;
+ const app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,masterDirectorContext:async()=>policy,
+  masterSourceProbe:async()=>{probes++;throw Error('MIXED_PREVIEW_SHOULD_NEVER_PROBE');}});
+ try{
+  const launch=await app.listen(),url=launch.split('/#')[0],job=app.jobs.create('test');
+  const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
+  const headers={Cookie:session.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'};
+  const root=url+'/api/jobs/'+job.id;
+  const post=async(path,body)=>{const r=await fetch(root+path,{method:'POST',headers,body:JSON.stringify(body)});return r.json();};
+  const c=await (await fetch(root+'/external-catalog',{headers})).json();
+  const visual={rect:{x:100,y:300,width:500,height:300},zIndex:3,opacity:1,
+   typography:{family:'Montserrat',sizePx:80,weight:700,color:'#ffffff'},keyframes:[]};
+  const story={schema:'sues-master-story/v1',sourceSha256:c.sourceSha256,
+   timeline:{fingerprint:c.timelineFingerprint,timeSpace:'edit-timeline',fps:30,duration:c.duration},
+   visual:{mode:'brand-sues'},narrative:{centralMessage:'Una historia verificable',intendedExperience:'Ritmo narrativo',
+    scenes:[{id:'intro',start:0,end:c.duration,purpose:'Transformación'}],motifs:[]},resources:[],
+   operations:[
+    {id:'n1',sceneId:'intro',start:2,end:2.4,track:'transition',effect:'transition-native',renderer:'native',
+     reason:'Transición validada',parameters:{kind:'warm'},dependsOn:[],requiredQA:['rendered-frame','motion-playback']},
+    {id:'r1',sceneId:'intro',start:3,end:4,track:'graphics',effect:'text',renderer:'remotion',
+     reason:'Título contrastado',parameters:{text:'LIBERTAD',visual},dependsOn:['n1'],
+     requiredQA:['rendered-frame','motion-playback','narrative-review']}
+   ]};
+  const {revision}=await post('/master-draft',{story});
+  const review=await post('/master-review',{revision});assert.equal(review.status,'READY_FOR_CHOICE',JSON.stringify(review));
+  const decision=await post('/master-decision',{revision,fingerprint:review.fingerprint,mode:'approve'});
+  const layers=await post('/master-layers',{revision,decisionId:decision.decisionId});
+  assert.equal(layers.status,'STRUCTURE_READY_NOT_RENDERED',JSON.stringify(layers.issues));
+  assert.equal(layers.graph.nodes.length,2);
+  assert.equal(layers.hybrid.status,'MIXED_COMPONENTS_STAGED_NOT_RENDERABLE',JSON.stringify(layers.hybrid));
+  assert.deepEqual(layers.hybrid.nativeOperationIds,['n1']);assert.deepEqual(layers.hybrid.remotionOperationIds,['r1']);
+  assert.equal(layers.hybrid.remotionComponent.layers.length,1);assert.equal(layers.hybrid.canRender,false);
+  assert.equal(layers.remotion.status,'BLOCKED');assert.equal(layers.canExecute,false);
+  const denied=await post('/master-render-preflight',{revision,decisionId:decision.decisionId});
+  assert.equal(denied.status,'BLOCKED');assert.equal(denied.canExecute,false);
+  assert.equal(probes,0);assert.equal(app.jobs.children.size,0);
+ }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
+});
