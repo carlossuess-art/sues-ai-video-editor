@@ -14,10 +14,10 @@ test('supervision stores samples bound to plan and exact output, never declares 
  try{
   const media=Buffer.from('preview'),previewPath=join(dir,'video.mp4');writeFileSync(previewPath,media);
   const runner=async(_exe,args)=>{const out=args.at(-1);if(out.endsWith('audio.wav'))writeFileSync(out,'wav');
-   else for(let i=1;i<=3;i++)writeFileSync(out.replace('%04d',String(i).padStart(4,'0')),'png-'+i);};
+   else for(let i=1;i<=Number(args[args.indexOf('-frames:v')+1]);i++)writeFileSync(out.replace('%04d',String(i).padStart(4,'0')),'png-'+i);};
   const root=join(dir,'evidence'),g=graph(),result=await prepareMasterSupervisorEvidence({graph:g,previewPath,root,outputSha256:sha(media),approvalCheck:async()=>true,runner});
   assert.equal(result.status,'SAMPLES_REQUIRE_REVIEW');assert.equal(result.final,false);
-  assert.deepEqual(result.report.samples.map(x=>x.frame),[2,6,10]);assert.ok(result.report.limitations.includes('not-qa-pass'));
+  assert.deepEqual(result.report.samples.map(x=>x.frame),[0,2,6,10,29]);assert.ok(result.report.limitations.includes('not-qa-pass'));
   const request={root,inspectionId:result.inspectionId,file:'frame-0001.png',planFingerprint:g.planFingerprint,outputSha256:sha(media)};
   assert.equal(openMasterSupervisorEvidence(request).mime,'image/png');
   assert.throws(()=>openMasterSupervisorEvidence({...request,outputSha256:'b'.repeat(64)}),/another output/);
@@ -37,7 +37,7 @@ test('actual FFmpeg extracts source-bound evidence from a synthetic video',{skip
    '-f','lavfi','-i','sine=frequency=440:sample_rate=16000:duration=1','-c:v','libx264','-threads','1','-pix_fmt','yuv420p','-c:a','aac','-shortest',previewPath]);
   const {readFileSync}=await import('node:fs'),digest=sha(readFileSync(previewPath)),g=graph();
   const result=await prepareMasterSupervisorEvidence({graph:g,previewPath,root:join(dir,'evidence'),outputSha256:digest,approvalCheck:async()=>true});
-  assert.equal(result.status,'SAMPLES_REQUIRE_REVIEW',JSON.stringify(result.issues));assert.equal(result.report.samples.length,3);assert.equal(result.report.files.length,4);
+  assert.equal(result.status,'SAMPLES_REQUIRE_REVIEW',JSON.stringify(result.issues));assert.equal(result.report.samples.length,5);assert.equal(result.report.files.length,6);
   assert.equal(openMasterSupervisorEvidence({root:join(dir,'evidence'),inspectionId:result.inspectionId,file:'audio.wav',planFingerprint:g.planFingerprint,outputSha256:digest}).mime,'audio/wav');
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
