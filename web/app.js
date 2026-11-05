@@ -749,10 +749,11 @@ async function masterDecision(mode){
     numberField('fontWeight','Peso de fuente',typography.weight,'1');
    }
   }
-  const keyframeControls=[];
+  const keyframeControls=[],removedKeyframes=[];
   for(const [index,keyframe] of (node.visual?.keyframes??[]).entries()){
    const group=document.createElement('fieldset'),heading=document.createElement('legend');
    heading.textContent='Fotograma '+keyframe.atFrame;group.append(heading);
+   const removeLabel=document.createElement('label'),remove=document.createElement('input');remove.type='checkbox';removeLabel.append(remove,document.createTextNode(' Eliminar este fotograma'));group.append(removeLabel);removedKeyframes.push({index,remove});
    for(const key of ['atFrame','x','y','scale','rotation','opacity']){
     if(keyframe[key]===undefined)continue;
     const label=document.createElement('label'),input=document.createElement('input');
@@ -761,6 +762,16 @@ async function masterDecision(mode){
     label.append(input);group.append(label);keyframeControls.push({index,key,input});
    }
    box.append(group);
+  }
+  let newKeyframe=null;
+  if(node.visual){
+   const group=document.createElement('fieldset'),legend=document.createElement('legend');legend.textContent='Añadir fotograma';group.append(legend);
+   const frame=document.createElement('input'),value=document.createElement('input'),property=document.createElement('select'),curve=document.createElement('select');
+   frame.type='number';frame.min='0';frame.step='1';value.type='number';value.step='any';
+   for(const [id,title] of [['x','Desplazamiento horizontal'],['y','Desplazamiento vertical'],['opacity','Opacidad'],['scale','Escala'],['rotation','Rotación']]){const option=document.createElement('option');option.value=id;option.textContent=title;property.append(option);}
+   for(const [id,title] of [['linear','Lineal'],['ease-in','Entrada suave'],['ease-out','Salida suave'],['ease-in-out','Entrada y salida suaves']]){const option=document.createElement('option');option.value=id;option.textContent=title;curve.append(option);}
+   for(const [title,input] of [['Fotograma relativo (vacío para no añadir)',frame],['Propiedad',property],['Valor',value],['Curva de entrada',curve]]){const label=document.createElement('label');label.textContent=title;label.append(input);group.append(label);}
+   box.append(group);newKeyframe={frame,value,property,curve};
   }
   const easingControls=[];
   for(const [index,keyframe] of (node.visual?.keyframes??[]).entries()){
@@ -796,6 +807,19 @@ async function masterDecision(mode){
     parameters.visual.keyframes[index][key]=value;
    }
    for(const {index,select,currentEasing} of easingControls)if(select.value!==currentEasing)parameters.visual.keyframes[index].easing=select.value;
+   if(node.visual){
+    parameters.visual.keyframes=parameters.visual.keyframes.filter((_,index)=>!removedKeyframes.find(x=>x.index===index)?.remove.checked);
+    const keys=parameters.visual.keyframes,maxFrame=Math.round((end-start)*30);
+    if(keys.some((key,index)=>key.atFrame>maxFrame||(index>0&&key.atFrame<=keys[index-1].atFrame)))throw Error('Los fotogramas deben estar ordenados y dentro de la duración de la capa.');
+    if(newKeyframe.frame.value.trim()!==''){
+     const atFrame=Number(newKeyframe.frame.value),value=Number(newKeyframe.value.value),property=newKeyframe.property.value;
+     if(newKeyframe.value.value.trim()===''||!Number.isInteger(atFrame)||atFrame<0||atFrame>maxFrame||!Number.isFinite(value)||
+       (property==='opacity'&&(value<0||value>1))||(property==='scale'&&(value<=0||value>10))||keys.some(key=>key.atFrame===atFrame)||keys.length>=120)
+      throw Error('Comprueba el nuevo fotograma y su valor; no puede repetir otro ni superar el límite de la capa.');
+     const entry={atFrame,easing:newKeyframe.curve.value,[property]:value};let index=keys.findIndex(key=>key.atFrame>atFrame);
+     if(index<0)index=keys.length;keys.splice(index,0,entry);
+    }
+   }
    if(inputs.text)parameters.text=inputs.text.value;if(inputs.gain)parameters.gain=Number(inputs.gain.value);
    if(inputs.sourceInFrame){const n=Number(inputs.sourceInFrame.value);if(!Number.isInteger(n)||n<0)throw Error('El inicio del recurso debe ser un fotograma válido.');parameters.sourceInFrame=n;}
    if(inputs.gain&&(!Number.isFinite(parameters.gain)||parameters.gain<0||parameters.gain>2))throw Error('Comprueba el volumen de la capa.');
