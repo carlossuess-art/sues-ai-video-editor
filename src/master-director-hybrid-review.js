@@ -7,7 +7,8 @@ const VISUAL=new Set(['camera','subject','broll','graphics','captions','transiti
 const AUDIO=new Set(['voice','music','sfx']);
 const HASH=/^[a-f0-9]{64}$/;
 const validId=x=>typeof x==='string'&&/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(x);
-const overlaps=(a,b)=>a.startFrame<b.endFrame&&b.startFrame<a.endFrame;
+// Compare original seconds: rounding a native boundary can hide a real overlap.
+const overlaps=(a,b)=>a.startTime<b.endTime&&b.startTime<a.endTime;
 const failure=(code,operationId='graph')=>({code,operationId});
 
 export function reviewMasterDirectorHybridGraph(graph, evidence={}){
@@ -25,6 +26,9 @@ export function reviewMasterDirectorHybridGraph(graph, evidence={}){
   if(!Number.isInteger(n?.startFrame)||!Number.isInteger(n?.endFrame)||
      n.startFrame<0||n.endFrame<=n.startFrame||n.endFrame>graph.durationFrames)
    issues.push(failure('HYBRID_FRAMES_INVALID',n?.id));
+  if(!Number.isFinite(n?.startTime)||!Number.isFinite(n?.endTime)||n.startTime<0||n.endTime<=n.startTime||
+     Math.round(n.startTime*graph.fps)!==n.startFrame||Math.round(n.endTime*graph.fps)!==n.endFrame)
+   issues.push(failure('HYBRID_EXACT_TIMING_MISSING',n?.id));
   if(!Array.isArray(n?.dependencies)||n.dependencies.some(dep=>!validId(dep)))
    issues.push(failure('HYBRID_DEPENDENCIES_INVALID',n?.id));
  }
