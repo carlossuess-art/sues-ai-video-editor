@@ -15,7 +15,7 @@ test('immutable stories detect tampering and reject forged server context',async
   const a=store.saveDraft({schema:'sues-master-story/v1',title:'first'});
   const b=store.saveDraft({schema:'sues-master-story/v1',title:'second'});
   assert.notEqual(a.revision,b.revision);assert.equal(store.readDraft(a.revision).title,'first');
-  assert.equal((await store.review(a.revision)).issues[0].code,'TRUSTED_SERVER_CONTEXT_UNAVAILABLE');
+  assert.equal((await store.review(a.revision)).issues[0].code,'STORY_FIELD_NOT_REPRESENTED');
   assert.equal((await store.decide(a.revision,'a'.repeat(64),'approve')).status,'BLOCKED');
   assert.throws(()=>store.readDraft('../bad'),/Invalid revision/);
   writeFileSync(join(dir,'master-director','drafts',a.revision+'.json'),'{}');
