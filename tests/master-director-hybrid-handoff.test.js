@@ -57,3 +57,9 @@ test('unverified audio cross-engine mixing cannot be labelled preview ready',()=
  const h=hybrid();h.crossEngineOverlaps=[{nativeId:'music',remotionId:'sfx',classification:'audio-mix'}];
  assert.equal(prepareMasterHybridNativeHandoff({hybrid:h,nativeChild:nativeChild(),mediaAudit:mediaAudit()}).issues[0].code,'HYBRID_AUDIO_MIX_NOT_VERIFIED');
 });
+
+test('handoff blocks visual ordering that the native-first render cannot represent',()=>{
+ const h=hybrid();h.crossEngineOverlaps=[{nativeId:'transition',remotionId:'title',classification:'visual-order-unresolved'}];
+ const out=prepareMasterHybridNativeHandoff({hybrid:h,nativeChild:nativeChild(),mediaAudit:mediaAudit()});
+ assert.equal(out.status,'BLOCKED');assert.ok(out.issues.some(x=>x.code==='HYBRID_VISUAL_ORDER_UNVERIFIED'));
+});
