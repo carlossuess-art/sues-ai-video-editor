@@ -118,3 +118,18 @@ test('trusted native staging preserves full-plan approval and reconstructs exact
   assert.equal(prepareMasterHybridNativeStage(params).status,'BLOCKED');
  }finally{rmSync(x.f.dir,{recursive:true,force:true})}
 });
+
+test('native transition overlapping a Remotion title is rejected before hybrid execution',()=>{
+ const x=prepare();try{
+  x.registry.rendererCapabilities.remotion=['text'];x.registry.canvas={width:1080,height:1920};
+  x.registry.verifiedFonts={'Montserrat:700':{sha256:'e'.repeat(64)}};
+  const visual={rect:{x:100,y:200,width:600,height:180},opacity:1,zIndex:5,
+   typography:{family:'Montserrat',sizePx:70,weight:700,color:'#ffffff'},keyframes:[]};
+  x.plan.operations.push({id:'title',sceneId:'video',renderer:'remotion',track:'graphics',effect:'text',start:3.2,end:4,
+   reason:'Texto significativo',parameters:{text:'SIGUIENTE PASO',visual},dependsOn:['flash'],requiredQA:['rendered-frame','motion-playback']});
+  x.registry.approvedPlanFingerprint=masterDirectorFingerprint(x.plan);
+  const out=reviewMasterDirectorNative({...x,assets:[],commandPlanner:planInstructions});
+  assert.equal(out.status,'BLOCKED');assert.ok(out.issues.some(i=>i.code==='HYBRID_VISUAL_ORDER_UNVERIFIED'));
+  assert.equal(out.nativePlan,null);
+ }finally{rmSync(x.f.dir,{recursive:true,force:true})}
+});
