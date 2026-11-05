@@ -42,6 +42,7 @@ test('approved-rule registry, review and decisions bind to provider fixture evid
   const story={schema:'sues-master-story/v1',sourceSha256:source,timeline:{fingerprint:fp,timeSpace:'edit-timeline',fps:30,duration:10},visual:{mode:'brand-sues'},
    narrative:{centralMessage:'Una historia real',intendedExperience:'Recorrido visual',scenes:[{id:'intro',start:0,end:10,purpose:'Explicar la historia'}],motifs:[],arc:[{id:'observado',phase:'development',start:0,end:10,purpose:'Explicar la historia',evidence:[{kind:'transcript-word',wordId:'word-0-span-0'}]}]},resources:[],
    operations:[{id:'warm',sceneId:'intro',start:2,end:2.4,track:'transition',effect:'transition-native',renderer:'native',reason:'Cambio en el mensaje',parameters:{kind:'warm'},dependsOn:[],requiredQA:['rendered-frame','motion-playback']}]};
+  const undocumented=structuredClone(story);delete undocumented.narrative.arc;const blocked=await store.review(store.saveDraft(undocumented).revision);assert.ok(blocked.issues.some(i=>i.code==='REEL_ARC_MISSING'));
   const {revision}=store.saveDraft(story),review=await store.review(revision);assert.equal(review.status,'READY_FOR_CHOICE');assert.ok(review.phasesNotDocumented.includes('moral'));assert.ok(!review.phasesNotDocumented.includes('development'));
   const decision=await store.decide(revision,review.fingerprint,'approve');assert.equal(decision.status,'DECISION_RECORDED');
   assert.equal((await store.layers(revision,decision.decisionId)).status,'STRUCTURE_READY_NOT_RENDERED');
