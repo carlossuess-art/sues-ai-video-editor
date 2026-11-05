@@ -83,3 +83,7 @@ Esto verifica tres puntos de entrada una vez al arrancar, no las dependencias tr
 La configuración privada opcional exige ruta absoluta normalizada y comprueba propietarios y permisos de cada directorio padre, rechazando enlaces simbólicos y directorios modificables sin sticky bit. La verificación sigue siendo de arranque: no certifica dependencias transitivas ni garantiza inmutabilidad posterior. Tests de configuración y 122 pruebas Master Director en la rama PASS.
 
 La prueba integral aislada con configuración privada generó 24 segundos sintéticos a 270×480 con audio, render real Remotion, API autenticada, auditoría técnica de decodificación, Range e idempotencia PASS. Calidad visual, máscaras, escucha, sincronía semántica y aceptación creativa no verificadas. Ningún despliegue.
+
+## 05/11 · Política confiable y perfiles
+
+El proveedor comprueba el propietario del fichero de política y la seguridad de toda su ruta; ubicaciones inseguras, enlaces y propietarios ajenos se rechazan. Los estilos no mapeados explícitamente se bloquean en lugar de tratarse silenciosamente como CALMA. ELEMENTS y otros estilos existentes siguen pendientes de integración explícita. 122 pruebas específicas PASS. No implica validar derechos reales ni eliminar carreras de archivos; no desplegado.

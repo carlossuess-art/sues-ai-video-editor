@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,writeFileSync,chmodSync,rmSync,readFileSync} from 'node:fs';
+import {mkdtempSync,writeFileSync,chmodSync,chownSync,symlinkSync,rmSync,readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {createMasterDirectorContextProvider} from '../src/master-director-context.js';
@@ -19,6 +19,11 @@ test('server context checks exact rules, policy file, asset evidence and edit ti
   assert.equal(v.registry.arcPolicy,'reel-observed-v2');assert.equal(v.registry.masterHashes['sues-tapiz-1'],ids[0]);assert.equal(v.registry.licensedAssets[ids[0]].rightsVerified,true);
   assert.equal(v.registry.wordAnchors['word-0-span-0'].time,.2);assert.equal(v.registry.wordAnchors['word-2-span-1'].time,2.5);
   assert.equal(v.registry.wordAnchors['word-1-span-0'],undefined);assert.deepEqual(v.registry.maskEvidence,{});
+  chmodSync(dir,0o777);assert.equal(await provider(request()),null);chmodSync(dir,0o700);
+  if(typeof process.getuid==='function'&&process.getuid()===0){chownSync(path,65534,65534);assert.equal(await provider(request()),null);chownSync(path,0,0);}
+  const alias=join(tmpdir(),'sues-policy-link-'+process.pid);symlinkSync(dir,alias);try{assert.equal(await createMasterDirectorContextProvider(alias)(request()),null);}finally{rmSync(alias,{force:true});}
+  const other=request();other.job.settings.styleId='SUES_IMPACTO';assert.equal((await provider(other)).blockedIssues[0].code,'MASTER_PROFILE_NOT_SUPPORTED');
+  const calm=request();delete calm.job.settings.styleId;assert.equal((await provider(calm)).registry.profileId,'CALMA');
   const input=request();input.assets={...assets,metadata:()=>null};assert.equal((await provider(input)).blockedIssues[0].code,'ASSET_EVIDENCE_MISSING');
   const corrupt=policy();corrupt.rulebook[0].value='different';writeFileSync(path,JSON.stringify(corrupt));assert.equal(await provider(request()),null);
   writeFileSync(path,JSON.stringify(policy()));chmodSync(path,0o666);assert.equal(await provider(request()),null);

@@ -1416,3 +1416,5 @@ La tabla técnica de Carlos queda codificada como `sues-visual-grammar-158623-v1
 - Master Director: arranque normal admite configuración de preview opt-in con rutas y SHA de tres puntos de entrada validados antes de iniciar; por defecto desactivado. 2 tests de configuración/arranque HTTP y 117 pruebas específicas PASS. No protege dependencias transitivas ni sustituye política real/rollback; no configurado ni desplegado en producción.
 
 - Master Director: configuración privada de preview rechaza rutas no normalizadas, directorios padres inseguros o enlaces simbólicos; 122/122 pruebas Master Director en rama PASS. No protege dependencias transitivas ni elimina carreras de archivos; aún requiere runtime inmutable y validación de producción. Sin despliegue.
+
+- Seguridad y perfiles: política del cerebro rechaza ficheros de otro propietario, rutas o directorios inseguros; estilos ajenos a CALMA y DOPAMIN se bloquean en vez de convertirse silenciosamente a CALMA. 122 pruebas específicas PASS. ELEMENTS aún no integrado como perfil; producción intacta.

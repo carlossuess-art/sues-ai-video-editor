@@ -1,7 +1,7 @@
 // Trusted, read-only adapter from the editor's current files to Master Director.
 // The policy is provisioned offline by the administrator, never by an HTTP request.
 import {readFileSync,lstatSync} from 'node:fs';
-import {join} from 'node:path';
+import {dirname,isAbsolute,join,parse,resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import {extractApprovedRules} from './master-director-policy-builder.js';
 const SHA=/^[a-f0-9]{64}$/;
@@ -17,9 +17,20 @@ export function createMasterDirectorContextProvider(directory){
  return async({jobId,job,project,assets,catalog,story})=>{
   let policy;
   try{
+   // Both the file and its parent chain must be controlled by the service or root.
+   // A writable non-sticky parent permits a trusted file to be replaced.
+   if(!isAbsolute(policyPath)||resolve(policyPath)!==policyPath)return null;
+   const uid=typeof process.getuid==='function'?process.getuid():null;
+   for(let dir=dirname(policyPath);;dir=dirname(dir)){
+    const parent=lstatSync(dir);
+    if(!parent.isDirectory()||parent.isSymbolicLink()||
+       (uid!==null&&parent.uid!==0&&parent.uid!==uid)||
+       ((parent.mode&0o022)!==0&&(parent.mode&0o1000)===0))return null;
+    if(dir===parse(dir).root)break;
+   }
    const st=lstatSync(policyPath);
-   // Root / same-service managed file, never group/world writable or a symlink.
-   if(!st.isFile()||st.isSymbolicLink()||st.size>256000||(st.mode&0o022)!==0)return null;
+   if(!st.isFile()||st.isSymbolicLink()||st.size>256000||(st.mode&0o022)!==0||
+      (uid!==null&&st.uid!==0&&st.uid!==uid))return null;
    policy=JSON.parse(readFileSync(policyPath,'utf8'));
   }catch{return null;}
   const ids=policy?.approvedRuleIds,keys=policy?.requiredRuleKeys,rules=policy?.rulebook;
@@ -35,6 +46,10 @@ export function createMasterDirectorContextProvider(directory){
    if(policy.approvedRuleSourceSha256!==sha(source)||JSON.stringify(rules)!==JSON.stringify(canonical)||
       JSON.stringify(ids)!==JSON.stringify(canonical.map(r=>r.id))||JSON.stringify(keys)!==JSON.stringify(canonical.map(r=>r.key)))return null;
   }catch{return null;}
+  // Do not silently reinterpret other editor styles as CALMA.
+  const style=job.settings?.styleId??'SUES_CALMA';
+  const profileId=style==='SUES_CALMA'?'CALMA':style==='SUES_DOPAMIN'?'DOPAMIN':null;
+  if(!profileId)return {blockedIssues:[{code:'MASTER_PROFILE_NOT_SUPPORTED',subject:String(style)}]};
   const licensedAssets={},masters=[],masterHashes={};
   const wanted=new Set([...policy.masters.map(m=>m?.assetId),...(Array.isArray(story?.resources)?story.resources:[]).filter(r=>r?.source==='library').map(r=>r.assetId)]);
   for(const id of wanted){
@@ -70,7 +85,7 @@ export function createMasterDirectorContextProvider(directory){
    const digest=project?.fontHashes?.[file];if(SHA.test(digest??''))verifiedFonts[family+':'+weight]={sha256:digest,file};
   }
   return {rulebook:policy.rulebook,registry:{
-   brandId:'sues',profileId:job.settings?.styleId==='SUES_DOPAMIN'?'DOPAMIN':'CALMA',projectId:jobId,
+   brandId:'sues',profileId,projectId:jobId,
    approvedRuleVersion:policy.version,approvedRuleIds:ids,requiredRuleKeys:keys,
    approvedReferenceIds:policy.approvedReferenceIds,masterHashes,
    lockedMastersByMode:{'brand-sues':masters,'reference-exact':masters},
