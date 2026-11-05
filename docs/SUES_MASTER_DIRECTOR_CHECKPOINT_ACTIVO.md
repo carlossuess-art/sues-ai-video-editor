@@ -2,6 +2,12 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## ÚLTIMA REGRESIÓN Y ENTORNO · 05/11/2026
+
+- Tras conectar supervisor y candidaturas de máscaras, suite `node --test tests/master-director-*.test.js`: 163 PASS, 0 FAIL, 5 SKIP de 168 en host. Las cinco pruebas omitidas dependen de FFmpeg o del runtime Python: se han ejecutado por separado en los cortes documentados, 2 pruebas nativas, 1 extracción de evidencia y 2 pruebas de máscaras reales/sintéticas, sin trasladar esos resultados como si se hubieran ejecutado en la suite de host.
+- Configuración local de máscaras con hashes comprobada en staging; sin activación en producción. Para recuperar espacio se eliminó únicamente la copia temporal de `node_modules` de la checkout aislada; quedan 4,2 GB disponibles en el VPS al cierre. El runtime de prueba Python permanece en `/tmp/sues-mask-runtime-20261105`, es temporal y no es una instalación productiva.
+- Siguiente acción: completar el ciclo de revisión/verificación y registro de máscaras, integrar un proveedor de planificación gratuito real y un supervisor audiovisual que interprete imagen y sonido; después validar el flujo completo con los recursos y derechos reales. Mantener el bloqueo de aceptación completa cuando solo hay muestras o candidatos.
+
 ## GENERACIÓN LOCAL DE MÁSCARAS CANDIDATAS · 05/11/2026
 
 - Integrados, solo en rama, un generador local de alpha por fotograma y una ruta autenticada de candidaturas para capas Remotion aprobadas: fuente y mapa temporal verificados, hasta 120 frames, 1080×1920, con proveedor local opt-in y hashes de ejecutable, script y modelo. La interfaz permite solicitar y abrir candidaturas; **no se aplican ni aprueban automáticamente**, ni se incorporan a la política. Detalle, límites y configuración: `docs/SUES_MASTER_MASK_CANDIDATES_20261105.md`.
