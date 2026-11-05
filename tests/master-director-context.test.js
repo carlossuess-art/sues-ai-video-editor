@@ -54,3 +54,19 @@ test('approved-rule registry, review and decisions bind to provider fixture evid
   input.assets={...assets,metadata:()=>null};assert.equal((await store.layers(revision,decision.decisionId)).status,'BLOCKED');
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
+
+
+test('trusted dynamic mask evidence is scoped to source and edited timeline',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'sues-master-mask-policy-')),path=join(dir,'master-director-policy.json');
+ try{
+  const p=policy(),source='f'.repeat(64),frames=['d','e'].map(x=>x.repeat(64));
+  p.maskEvidence=[{id:'mask-1',verified:true,sourceSha256:source,timelineFingerprint:'edit-1',evidenceRef:'review-1',start:0,end:2/30,startFrame:0,endFrame:2,fps:30,coordinateSpace:'layer',frameAssetIds:frames}];
+  writeFileSync(path,JSON.stringify(p),{mode:0o600});
+  const input=request();input.catalog.sourceSha256=source;input.catalog.timelineFingerprint='edit-1';input.story.operations=[{parameters:{visual:{mask:{proofId:'mask-1',mode:'alpha-keep'}}}}];
+  const provider=createMasterDirectorContextProvider(dir),valid=await provider(input);
+  assert.deepEqual(valid.registry.maskEvidence['mask-1'].frameAssetIds,frames);assert.equal(valid.registry.licensedAssets[frames[0]].rightsVerified,true);
+  input.catalog.timelineFingerprint='edit-2';assert.equal((await provider(input)).blockedIssues[0].code,'MASK_POLICY_EVIDENCE_INVALID');
+  input.catalog.timelineFingerprint='edit-1';p.maskEvidence[0].frameAssetIds=frames.slice(0,1);writeFileSync(path,JSON.stringify(p));
+  assert.equal((await provider(input)).blockedIssues[0].code,'MASK_POLICY_EVIDENCE_INVALID');
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
