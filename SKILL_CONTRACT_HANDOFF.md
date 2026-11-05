@@ -125,3 +125,9 @@ El arco, cuando la política del servidor lo exige, contiene hasta ocho elemento
 ## Cambios de integración posteriores
 
 En rama: se ha retirado el límite de caracteres del cuadro para evitar que el navegador trunque silenciosamente un pegado; el guardado maestro sigue bloqueando más de 60.000 bytes serializados. El grafo conserva el ancla de voz de cada operación y bloquea límites Remotion no alineados al fotograma. Código pendiente de pruebas; no implica render ni despliegue. El esquema sigue en `sues-master-story/v1`; no se añaden efectos ni se cambia el contrato de las operaciones nativas.
+
+## Integración posterior · dos entradas y trazabilidad
+
+La rama prepara una entrada para un proveedor de generación inyectado desde el servidor, declarado gratuito y con coste máximo cero; no hay proveedor configurado por defecto. Debe producir JSON puro `sues-master-story/v1` y pasa por el mismo almacén, revisión y aprobación que el plan pegado. Las candidaturas del catálogo no acreditan derechos: el servidor las verifica de nuevo. La generación no ejecuta ni aprueba el plan y se bloquea si cambia el proyecto durante la solicitud. No representa un generador operativo ni una nueva arquitectura.
+
+La API de borradores rechaza UTF-8 inválido y claves JSON duplicadas. La revisión bloquea tipos no válidos en colecciones opcionales y comprueba también el puente nativo antes de la aprobación. Un manifiesto inmutable vincula el borrador aprobado con sus operaciones y nodos de grafo; representa **intención y trazabilidad, no ejecución ni calidad**. Estas conexiones se han incorporado sin tests ni renders por indicación de Carlos; quedan pendientes de validación e integración integral. El contrato y sus límites de efectos no cambian por esta actualización.
