@@ -151,7 +151,8 @@ export function compileMasterDirectorStory(story,registry={}){
    unresolvedConflicts:[],lockedMasters:r.lockedMasters.map(m=>({id:m.id,sha256:m.sha256}))},
   creativeContext:{visualMode:story.visual.mode,referenceId:story.visual.referenceId??null,
    centralMessage:story.narrative.centralMessage,intendedExperience:story.narrative.intendedExperience,
-   motifs:story.narrative.motifs??[],arc:story.narrative.arc??[]},
+   motifs:story.narrative.motifs??[],arc:story.narrative.arc??[],
+   ...(registry.arcPolicy==='reel-observed-v2'?{phasesNotDocumented:auditMasterDirectorArc(story.narrative,registry,story.timeline).unobservedPhases}: {})},
   scenes:story.narrative.scenes.map(s=>({...s})),
   operations:story.operations.map(o=>({
    id:o.id,sceneId:o.sceneId,start:o.start,end:o.end,renderer:o.renderer,effect:o.effect,

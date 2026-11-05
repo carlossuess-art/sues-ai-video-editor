@@ -73,3 +73,16 @@ test('a reel with only technically correct scenes still fails without a verified
  assert.equal(inspectMasterDirectorStory(s,r).status,'READY_FOR_PLAN_REVIEW',
   JSON.stringify(inspectMasterDirectorStory(s,r).issues));
 });
+
+test('observed arc records missing phases without inventing them',()=>{
+ const r={...registry(),arcPolicy:'reel-observed-v2'};const a=arc().filter(x=>['hook','development','transformation','cta'].includes(x.phase));
+ a[1].end=32;a[2].start=32;a[2].end=55;a[3].start=55;
+ const result=review(a,r);assert.equal(result.status,'VALIDATED_ARC',JSON.stringify(result.issues));
+ assert.deepEqual(result.unobservedPhases,['emotional-fall','moral']);
+});
+test('observed arc still requires grounded evidence and ordered phases',()=>{
+ const r={...registry(),arcPolicy:'reel-observed-v2'};const a=arc();a[2].evidence=[{kind:'transcript-word',wordId:'not-real'}];
+ assert.ok(review(a,r).issues.some(i=>i.code==='REEL_BEAT_EVIDENCE_UNVERIFIED'));
+ a[2].phase='cta';assert.ok(review(a,r).issues.some(i=>i.code==='REEL_ARC_SEQUENCE_INVALID'));
+ assert.equal(auditMasterDirectorArc({},r,timeline).status,'SCRIPT_REVIEW_REQUIRED');
+});

@@ -1408,3 +1408,5 @@ La tabla técnica de Carlos queda codificada como `sues-visual-grammar-158623-v1
 - Master Director aislado: corregido reintento de preview tras BLOCKED/FAILED conservando idempotencia en conexiones inciertas; geometría no verificada se explica en UI. Browser desktop/mobile PASS con servicio simulado. Sin despliegue.
 
 - Master Director: bruto de práctica de Drive, 30,2 s; análisis local y plan preliminar aplicado en aislamiento, dos previews técnicas PASS, corrección de ubicación de texto y QA visual parcial. Política simulada, derechos de tercero, acabado cinematográfico y auditoría completos pendientes; sin despliegue ni publicación.
+
+- Master Director rama aislada: validación narrativa basada en fases documentadas, evidencia requerida, aviso de fases sin documentar y sin inventar moraleja/caída. Mantiene compatibilidad del modo estricto y exige nueva revisión cuando cambie contexto. 27 pruebas dirigidas, 116 específicas y Chromium escritorio/móvil PASS con fixtures. No acredita comprensión audiovisual integral ni despliegue.

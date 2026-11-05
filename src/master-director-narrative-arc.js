@@ -12,18 +12,22 @@ const issue=(list,code,beat='arc')=>list.push({code,beat});
 const near=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<.000001;
 export function auditMasterDirectorArc(narrative,registry={},timeline={}){
  const issues=[];
- if(registry.arcPolicy!=='reel-v1')
+ if(!['reel-v1','reel-observed-v2'].includes(registry.arcPolicy))
   return {status:'NOT_APPLICABLE',issues:[],arc:[]};
+ const observedOnly=registry.arcPolicy==='reel-observed-v2';
  const arc=narrative?.arc;
  if(!Array.isArray(arc)){
   issue(issues,'REEL_ARC_MISSING');return {status:'SCRIPT_REVIEW_REQUIRED',issues,arc:[]};
  }
- if(arc.length<6||arc.length>8){
+ if(arc.length<(observedOnly?1:6)||arc.length>8){
   issue(issues,'REEL_ARC_SEQUENCE_INVALID');return {status:'SCRIPT_REVIEW_REQUIRED',issues,arc};
  }
  const sequence=arc.map(b=>b?.phase);
  const expected=sequence.includes('second-fall')?REEL_ARC_WITH_SECOND_FALL:REEL_ARC_MINIMUM;
- if(JSON.stringify(sequence)!==JSON.stringify(expected))
+ if(observedOnly){
+  const allowed=REEL_ARC_WITH_SECOND_FALL;let previous=-1;
+  for(const phase of sequence){const position=allowed.indexOf(phase);if(position<=previous){issue(issues,'REEL_ARC_SEQUENCE_INVALID');break;}previous=position;}
+ }else if(JSON.stringify(sequence)!==JSON.stringify(expected))
   issue(issues,'REEL_ARC_SEQUENCE_INVALID');
  let cursor=0;
  const seen=new Set();
@@ -58,5 +62,6 @@ export function auditMasterDirectorArc(narrative,registry={},timeline={}){
  if(arc[0]?.phase==='hook'&&arc[0].start!==0)issue(issues,'HOOK_MUST_START_VIDEO');
  if(arc.at(-1)?.phase==='cta'&&arc.at(-1).end<timeline.duration-.000001)
   issue(issues,'CTA_MUST_END_VIDEO');
- return {status:issues.length?'SCRIPT_REVIEW_REQUIRED':'VALIDATED_ARC',issues,arc};
+ const unobservedPhases=observedOnly?REEL_ARC_MINIMUM.filter(phase=>!sequence.includes(phase)):[];
+ return {status:issues.length?'SCRIPT_REVIEW_REQUIRED':'VALIDATED_ARC',issues,arc,...(observedOnly?{unobservedPhases}: {})};
 }

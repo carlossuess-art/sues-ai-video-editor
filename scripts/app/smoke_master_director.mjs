@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {join} from 'node:path';import {rmSync,mkdirSync,writeFileSync,readFileSync} from 'node:fs';import {createHash,randomUUID} from 'node:crypto';
 import {fixture} from '../../tests/helpers/editor-fixture.js';import {createEditorServer} from '../../src/editor-server.js';
 const f=fixture(),master='b'.repeat(64),context={registry:{brandId:'sues',profileId:'DOPAMIN',projectId:'p1',approvedRuleVersion:'rules-v1',
- approvedRuleIds:['r1'],requiredRuleKeys:['brand.background'],approvedReferenceIds:[],masterHashes:{tapiz:master},
+ approvedRuleIds:['r1'],requiredRuleKeys:['brand.background'],approvedReferenceIds:[],arcPolicy:'reel-observed-v2',wordAnchors:{'test-word':{time:1,text:'Hola'}},masterHashes:{tapiz:master},
  lockedMastersByMode:{'brand-sues':[{id:'tapiz',sha256:master}]},rendererCapabilities:{remotion:['text']},licensedAssets:{},canvas:{width:1080,height:1920},verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}}},
  rulebook:[{id:'r1',key:'brand.background',scope:'global',authority:'explicit-user-approval',status:'approved',value:'anthracite',supersedes:[]}]};
 let renders=0,probeBlocked=false;
@@ -22,11 +22,11 @@ try{
   const cat=await (await fetch(base+'/api/jobs/'+job.id+'/external-catalog',{headers:{Cookie:'sues_session='+app.token}})).json();
   const visual={rect:{x:100,y:300,width:500,height:300},zIndex:1,opacity:1,typography:{family:'Montserrat',sizePx:80,weight:700,color:'#ffffff'},keyframes:[{atFrame:0,x:0},{atFrame:30,x:100,easing:'linear'}]};
   const story={schema:'sues-master-story/v1',sourceSha256:cat.sourceSha256,timeline:{fingerprint:cat.timelineFingerprint,timeSpace:'edit-timeline',fps:30,duration:cat.duration},visual:{mode:'brand-sues'},
-   narrative:{centralMessage:'Una historia real',intendedExperience:'Recorrido visual',scenes:[{id:'intro',start:0,end:cat.duration,purpose:'Explicar la historia'}],motifs:[]},resources:[],
+   narrative:{centralMessage:'Una historia real',intendedExperience:'Recorrido visual',scenes:[{id:'intro',start:0,end:cat.duration,purpose:'Explicar la historia'}],motifs:[],arc:[{id:'momento',phase:'development',start:0,end:cat.duration,purpose:'Explicar la historia',evidence:[{kind:'transcript-word',wordId:'test-word'}]}]},resources:[],
    operations:[{id:'texto',sceneId:'intro',start:2,end:4,track:'graphics',effect:'text',renderer:'remotion',reason:'Reforzar el mensaje',parameters:{text:'Hola',visual},dependsOn:[],requiredQA:['rendered-frame','motion-playback','narrative-review']}]};
   await page.evaluate(value=>{const t=document.querySelector('#external-plan-text');t.value=JSON.stringify(value);t.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#master-review-button').click();},story);
   await page.waitForFunction(()=>!document.querySelector('#master-review-actions').hidden,{timeout:30000});
-  assert.match(await page.locator('#master-review-result').textContent(),/Una historia real/);
+  assert.match(await page.locator('#master-review-result').textContent(),/Una historia real/);assert.match(await page.locator('#master-review-result').textContent(),/Fases no documentadas en el plan/);
   const originalRevision=await page.evaluate(()=>masterReview.revision);
   await page.evaluate(()=>document.querySelector('#master-approve').click());
   await page.waitForSelector('#master-layer-controls fieldset',{state:'attached',timeout:30000});

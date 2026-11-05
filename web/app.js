@@ -515,6 +515,10 @@ function showMasterReview(result){
   $('master-review-actions').hidden=true;return;
  }
  const heading=document.createElement('p');heading.textContent=result.centralMessage||'Propuesta preparada para revisar.';target.append(heading);
+ if(result.phasesNotDocumented?.length){
+  const names={'hook':'gancho','development':'desarrollo','emotional-fall':'caída emocional','transformation':'transformación','moral':'moraleja','cta':'llamada a la acción'};
+  const note=document.createElement('p');note.textContent='Fases no documentadas en el plan: '+result.phasesNotDocumented.map(x=>names[x]??x).join(', ')+'. No se han añadido automáticamente.';target.append(note);
+ }
  const timeline=document.createElement('ol');
  for(const beat of result.narrativeTimeline?.length?result.narrativeTimeline:result.timeline??[]){
   const item=document.createElement('li');item.textContent=`${beat.start.toFixed(1)}–${beat.end.toFixed(1)} s · ${beat.phase??beat.title??'Escena'} · ${beat.purpose??beat.objective??''}`;timeline.append(item);

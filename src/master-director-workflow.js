@@ -58,6 +58,7 @@ export function buildMasterDirectorReview(plan,registry={}){
   centralMessage:plan.creativeContext?.centralMessage??'',
   intendedExperience:plan.creativeContext?.intendedExperience??'',
   timeline,narrativeTimeline,resources,
+  phasesNotDocumented:Array.isArray(plan.creativeContext?.phasesNotDocumented)?plan.creativeContext.phasesNotDocumented:[],
   choices:['approve','review','autonomous'],issueCount:0};
 }
 

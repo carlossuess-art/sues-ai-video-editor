@@ -16,7 +16,7 @@ test('server context checks exact rules, policy file, asset evidence and edit ti
  const dir=mkdtempSync(join(tmpdir(),'sues-master-policy-')),path=join(dir,'master-director-policy.json');
  try{const provider=createMasterDirectorContextProvider(dir);assert.equal(await provider(request()),null);
   writeFileSync(path,JSON.stringify(policy()),{mode:0o600});const v=await provider(request());
-  assert.equal(v.registry.masterHashes['sues-tapiz-1'],ids[0]);assert.equal(v.registry.licensedAssets[ids[0]].rightsVerified,true);
+  assert.equal(v.registry.arcPolicy,'reel-observed-v2');assert.equal(v.registry.masterHashes['sues-tapiz-1'],ids[0]);assert.equal(v.registry.licensedAssets[ids[0]].rightsVerified,true);
   assert.equal(v.registry.wordAnchors['word-0-span-0'].time,.2);assert.equal(v.registry.wordAnchors['word-2-span-1'].time,2.5);
   assert.equal(v.registry.wordAnchors['word-1-span-0'],undefined);assert.deepEqual(v.registry.maskEvidence,{});
   const input=request();input.assets={...assets,metadata:()=>null};assert.equal((await provider(input)).blockedIssues[0].code,'ASSET_EVIDENCE_MISSING');
@@ -40,9 +40,9 @@ test('approved-rule registry, review and decisions bind to provider fixture evid
    const context=await provide({...input,story});return context&&{...context,sourceSha256:source,timelineFingerprint:fp,duration:10};
   });
   const story={schema:'sues-master-story/v1',sourceSha256:source,timeline:{fingerprint:fp,timeSpace:'edit-timeline',fps:30,duration:10},visual:{mode:'brand-sues'},
-   narrative:{centralMessage:'Una historia real',intendedExperience:'Recorrido visual',scenes:[{id:'intro',start:0,end:10,purpose:'Explicar la historia'}],motifs:[]},resources:[],
+   narrative:{centralMessage:'Una historia real',intendedExperience:'Recorrido visual',scenes:[{id:'intro',start:0,end:10,purpose:'Explicar la historia'}],motifs:[],arc:[{id:'observado',phase:'development',start:0,end:10,purpose:'Explicar la historia',evidence:[{kind:'transcript-word',wordId:'word-0-span-0'}]}]},resources:[],
    operations:[{id:'warm',sceneId:'intro',start:2,end:2.4,track:'transition',effect:'transition-native',renderer:'native',reason:'Cambio en el mensaje',parameters:{kind:'warm'},dependsOn:[],requiredQA:['rendered-frame','motion-playback']}]};
-  const {revision}=store.saveDraft(story),review=await store.review(revision);assert.equal(review.status,'READY_FOR_CHOICE');
+  const {revision}=store.saveDraft(story),review=await store.review(revision);assert.equal(review.status,'READY_FOR_CHOICE');assert.ok(review.phasesNotDocumented.includes('moral'));assert.ok(!review.phasesNotDocumented.includes('development'));
   const decision=await store.decide(revision,review.fingerprint,'approve');assert.equal(decision.status,'DECISION_RECORDED');
   assert.equal((await store.layers(revision,decision.decisionId)).status,'STRUCTURE_READY_NOT_RENDERED');
   input.assets={...assets,metadata:()=>null};assert.equal((await store.layers(revision,decision.decisionId)).status,'BLOCKED');
