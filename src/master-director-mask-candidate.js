@@ -7,7 +7,7 @@ import {join,isAbsolute,basename} from 'node:path';
 import {fileSha256} from './local-pipeline.js';
 const run=promisify(execFile),HASH=/^[a-f0-9]{64}$/,ID=/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/;
 const blocked=code=>({status:'BLOCKED',issues:[{code}],verified:false});
-export async function prepareMasterMaskCandidate({graph,composition,project,operationId,mode,root,pythonPath,scriptPath,approvalCheck,runner=run}={}){
+export async function prepareMasterMaskCandidate({graph,composition,project,operationId,mode,root,pythonPath,pythonSha256,scriptPath,scriptSha256,modelSha256,approvalCheck,runner=run}={}){
  const node=Array.isArray(graph?.nodes)?graph.nodes.find(n=>n.id===operationId):null,rect=node?.visual?.rect;
  const source=composition?.source,canvas=composition?.canvas,sourcePath=project?.sourcePath;
  if(graph?.schema!=='sues-layer-graph/v1'||!HASH.test(graph.sourceSha256??'')||!HASH.test(graph.planFingerprint??'')||
@@ -22,7 +22,8 @@ export async function prepareMasterMaskCandidate({graph,composition,project,oper
     composition.sourceSha256!==graph.sourceSha256||project?.boundHashes?.source!==graph.sourceSha256||
     source?.assetId!==graph.sourceSha256||!Array.isArray(source.spans)||!['keep-subject','keep-background'].includes(mode)||
     typeof sourcePath!=='string'||!isAbsolute(sourcePath)||typeof root!=='string'||!isAbsolute(root)||
-    typeof pythonPath!=='string'||!isAbsolute(pythonPath)||typeof scriptPath!=='string'||!isAbsolute(scriptPath)||
+    typeof pythonPath!=='string'||!isAbsolute(pythonPath)||!HASH.test(pythonSha256??'')||
+    typeof scriptPath!=='string'||!isAbsolute(scriptPath)||!HASH.test(scriptSha256??'')||!HASH.test(modelSha256??'')||
     typeof approvalCheck!=='function'||typeof runner!=='function')return blocked('MASK_CANDIDATE_INPUT_UNSUPPORTED');
  const sourceFrames=[];
  for(let frame=node.startFrame;frame<node.endFrame;frame++){
@@ -38,7 +39,8 @@ export async function prepareMasterMaskCandidate({graph,composition,project,oper
  }
  let dir=null;
  try{
-  if(!await approvalCheck()||fileSha256(sourcePath)!==graph.sourceSha256)return blocked('MASK_CANDIDATE_SOURCE_CHANGED');
+  if(!await approvalCheck()||fileSha256(sourcePath)!==graph.sourceSha256||fileSha256(pythonPath)!==pythonSha256||fileSha256(scriptPath)!==scriptSha256)
+   return blocked('MASK_CANDIDATE_SOURCE_OR_RUNTIME_CHANGED');
   mkdirSync(root,{recursive:true,mode:0o700});dir=mkdtempSync(join(root,'candidate-'));
   const input=join(dir,'input'),output=join(dir,'masks');mkdirSync(input,{mode:0o700});
   const select=groups.map(g=>'between(n\\,'+g.start+'\\,'+g.end+')').join('+');
@@ -60,7 +62,7 @@ export async function prepareMasterMaskCandidate({graph,composition,project,oper
      report.sourceSha256Claim!==graph.sourceSha256||report.timelineFingerprintClaim!==graph.timelineFingerprint||
      report.mode!==mode||report.fps!==30||report.coordinateSpace!=='layer'||
      JSON.stringify(report.rect)!==JSON.stringify([rect.x,rect.y,rect.width,rect.height])||
-     typeof report.model!=='string'||!HASH.test(report.modelSha256??'')||!Array.isArray(report.frames)||report.frames.length!==sourceFrames.length)
+     typeof report.model!=='string'||report.modelSha256!==modelSha256||!Array.isArray(report.frames)||report.frames.length!==sourceFrames.length)
    throw Error('Candidate report does not match request');
   for(let i=0;i<report.frames.length;i++){
    const frame=report.frames[i],name='mask-'+String(i).padStart(6,'0')+'.png',path=join(output,name),asset=lstatSync(path);
@@ -68,7 +70,7 @@ export async function prepareMasterMaskCandidate({graph,composition,project,oper
       frame.inputSha256!==fileSha256(join(input,files[i]))||frame.sha256!==fileSha256(path))throw Error('Candidate integrity failed');
   }
   const expectedOutputs=['candidate.json',...report.frames.map(frame=>frame.file)].sort();
-  if(JSON.stringify(readdirSync(output).sort())!==JSON.stringify(expectedOutputs)||fileSha256(sourcePath)!==graph.sourceSha256||!await approvalCheck())throw Error('Candidate contents, source or approval changed');
+  if(JSON.stringify(readdirSync(output).sort())!==JSON.stringify(expectedOutputs)||fileSha256(sourcePath)!==graph.sourceSha256||fileSha256(pythonPath)!==pythonSha256||fileSha256(scriptPath)!==scriptSha256||!await approvalCheck())throw Error('Candidate contents, runtime, source or approval changed');
   rmSync(input,{recursive:true,force:true});
   const manifest={schema:'sues-master-mask-candidate/v1',status:'CANDIDATE_NOT_VERIFIED',verified:false,
    planFingerprint:graph.planFingerprint,sourceSha256:graph.sourceSha256,timelineFingerprint:graph.timelineFingerprint,
