@@ -2,6 +2,15 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## HITO REEL REAL 158404 · V5B 720p COMPLETO · 05/11/2026
+
+- **Nueva evidencia audiovisual: vídeo completo de revisión obtenido** con secuencias antracita y texto corregido. **NO es final publicable**. Duración **74,333 s / 2230 frames / 30 fps / 720×1280**, H.264 + AAC; SHA-256 `0a0312f50882dc747a0ce2f47b6cbb73f026803428d5a6c88eb825c40c6285e3`. Auditoría FFmpeg completa PASS, bitstream de audio AAC idéntico a V4B (SHA `b107b3d62d99eee103e343691e220f0c1a580612a631a68b76ffec736a26b3de`).
+- **Ruta durable comprobada en VPS**, fuera de producción y de `/tmp`: `/opt/sues-video-setup/editor-backups/reel-158404-v5b-20261105/SUES_158404_V5B_ANTRACITA_PREVIEW720_20261105.mp4`, con `manifest.json` y fotogramas QA; `/tmp/sues-158404-v5-20261105` es solo candidata temporal. V4B original intacta.
+- **Código editable por escenas en la RAMA DE REEL (no confundir con rama Master Director):** [EDICIÓN V5B, evidencias y próximos pasos](https://github.com/carlossuess-art/sues-ai-video-editor/blob/feat/remotion-cta-poc-20261103/experiments/remotion-cta/docs/EDICION_158404_V5B_20261105.md). Ramas con distinto propósito; se mantiene un único escritor por vez.
+- **Bloqueo de memoria real resuelto para este preview específico**: renderizar solo escenas gráficas con Remotion sin volver a decodificar vídeo completo (146+236 fotogramas, Docker sin red a 1500 MiB); FFmpeg concat exacto dentro de 1200 MiB; subtítulos con contraste y tercer recuadro sin desbordes. No equivale a solucionar todas las cargas de Remotion ni a habilitar una renderización 1080 de toda la obra.
+- **Pendiente:** habilitar acceso de revisión **privado** al V5B sin alterar el editor productivo; que Carlos lo vea y dé comentarios; acreditar derechos de los clips B-roll y música; preparar salida genuina 1080×1920 y QA creativo completo. No publicar, no hacer `deploy`, no afirmar aceptación artística ni `approvedForProduction`. **Progreso global del SOFTWARE sin cambio de estimación**: 55 % ±10, pese a este avance concreto de Reel.
+- **Próxima acción en el Reel:** proporcionar vista privada de V5B y recoger feedback antes de decidir montaje final. **Próxima acción del software:** seguir integrando los workers de capas editables y QA real según las reglas y la siguiente fase, sin reconstruir ya esta V5B por rutina.
+
 ## Prioridad de lectura y autoridad
 
 1. Requisitos maestros: `docs/SUES_MASTER_DIRECTOR_REGLAS_APROBADAS_20261104.md` (20 reglas aprobadas, prevalece sobre borradores).
