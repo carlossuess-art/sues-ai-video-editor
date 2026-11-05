@@ -2,6 +2,12 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## EVIDENCIA PARA SUPERVISIÓN · 05/11/2026
+
+- Integrado un preparador independiente de muestras sobre previsualizaciones selladas y aprobadas: extrae con FFmpeg entrada, mitad y salida de cada operación, además de un WAV de escucha, y vincula cada archivo a su SHA, al plan y al SHA del vídeo. Límite: hasta 180 fotogramas únicos y 120 s. Acceso autenticado; al cambiar autorización o archivo se rechaza. La extracción comparte el control de capacidad del editor. Commits `56dc4bb9f15c50d100051380e0761ba61f1e981b`, `5f1d0c3016cdf78b73503590741e976005e04369`, `723a0a6ae9dcd12def6e8efb754a9e5b4e949eee`, `3f05053bf6d54eff913f2d31a5f2c1591924cb8b`, `85617385356b706f8b91cd7275e8fd3047aabbd3`, `248f3b74ed2f6b9c85549fad429cff9b0245f057`.
+- Pruebas: extracción real en vídeo sintético y verificación de integridad 2/2 PASS con FFmpeg en contenedor; regresión dirigida 14 PASS, 1 SKIP en host; navegador 1440/390 con extracción simulada y acceso autenticado PASS. Tests `51462a523f95248a4d19fcd2800a61c10af3ba8a`, `efdafc2d1293db2b0b3494c2c864e16d29b435ca`, `9ff730ff818e991493edee72c7a870942295c751`, `6a12c50317b8d0b425d12d96cea296ac82991f0e`.
+- **No equivale a supervisor audiovisual autónomo completo:** son muestras, no análisis de todos los fotogramas, ni escucha ni revisión semántica; no genera pasadas QA aprobadas. Siguen pendientes el verificador independiente capaz de interpretar imagen/voz, auditar movimiento y mezcla, y producir dos pasadas completas sobre el resultado. Sin despliegue ni Reel nuevo.
+
 ## INTEGRIDAD DE QA · 05/11/2026
 
 - La puerta de calidad exige que las dos pasadas y la aceptación creativa se refieran al SHA exacto del archivo entregado, además del fingerprint del plan. Colecciones de pruebas malformadas o duplicadas producen bloqueo. Commits `acc562fda3f7eefefe4764da8c876424103598d5`, `60905dffeddfdb4d45e420ea483df66c03a25755`; cobertura nueva `e77efa275fe92fc3b79eeab8c90585bf416fda16`, `a6391901dd0e8b0c8790e2794eddd155facfbb61`: 24/24 pruebas dirigidas PASS.
