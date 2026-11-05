@@ -611,6 +611,18 @@ $('master-download-plan').onclick=()=>work(async()=>{
  const link=document.createElement('a');link.href=url;link.download='sues-master-story.json';
  document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
+$('master-generate').onclick=()=>work(async()=>{
+ if(!current)throw Error('Abre un proyecto con vídeo preparado.');
+ if($('external-plan-text').value.trim())throw Error('Descarga o guarda y vacía el plan actual antes de generar otro.');
+ const jobId=current.id,brief=$('master-generation-brief').value;
+ const status=await api('jobs/'+jobId+'/master-generate');
+ if(current?.id!==jobId)throw Error('El proyecto ha cambiado.');
+ if(!status.available)throw Error('La generación de planes maestros todavía no está configurada con un proveedor gratuito.');
+ const result=await api('jobs/'+jobId+'/master-generate','POST',{brief});
+ if(current?.id!==jobId||$('external-plan-text').value.trim())throw Error('El proyecto o el plan han cambiado. La propuesta generada se ha guardado en versiones.');
+ const raw=JSON.stringify(result.story,null,2);$('external-plan-text').value=raw;
+ masterNativeRequest=null;masterPreviewRequest=null;masterReview={jobId,raw,story:result.story,revision:result.revision,fingerprint:result.review.fingerprint};showMasterReview(result.review);
+});
 $('master-review-button').onclick=()=>work(async()=>{
  if(!current)throw Error('Abre un proyecto con vídeo preparado.');
  const jobId=current.id,raw=$('external-plan-text').value,story=inspectMasterInput(raw);
