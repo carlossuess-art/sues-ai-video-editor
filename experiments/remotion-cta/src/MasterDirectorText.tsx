@@ -36,7 +36,16 @@ export const MasterDirectorText:React.FC<MasterTextProps>=({layers,source})=>{
   if(l.visual.glow){const glow=l.visual.glow;style.filter=`drop-shadow(0px 0px ${glow.radiusPx}px ${glow.color})`;}
   const maskId=l.maskFrameAssetIds?l.maskFrameAssetIds[f]:l.maskAssetId;
   if(l.maskFrameAssetIds&&!maskId)throw new Error('Dynamic mask frame missing');
-  if(maskId){const mask=`url("${staticFile(`master-assets/${maskId}`)}")`;style.maskImage=mask;style.maskMode='alpha';style.maskSize='100% 100%';style.maskRepeat='no-repeat';}
+  const combined=!!maskId&&!!(l.visual.dropShadow||l.visual.glow);
+  const maskStyle:React.CSSProperties={};
+  if(maskId){const mask=`url("${staticFile(`master-assets/${maskId}`)}")`,target=combined?maskStyle:style;target.maskImage=mask;target.maskMode='alpha';target.maskSize='100% 100%';target.maskRepeat='no-repeat';}
+  if(combined){
+   const inner:React.CSSProperties={...maskStyle,width:'100%',height:'100%'};
+   if(l.kind==='video'&&l.assetId)return <div key={l.id} style={style}><Sequence from={l.startFrame} durationInFrames={l.endFrame-l.startFrame}><OffthreadVideo src={staticFile(`master-assets/${l.assetId}`)} startFrom={l.sourceInFrame??0} muted style={{...inner,objectFit:'fill'}}/></Sequence></div>;
+   if(l.kind==='image'&&l.assetId)return <div key={l.id} style={style}><Img src={staticFile(`master-assets/${l.assetId}`)} style={{...inner,objectFit:'fill'}}/></div>;
+   if(!typography)return null;
+   return <div key={l.id} style={style}><div style={{...inner,fontFamily:l.fontAssetId?'sues-'+l.fontAssetId:typography.family,fontSize:typography.sizePx,fontWeight:typography.weight,fontSynthesis:'none',color:typography.color,whiteSpace:'pre-wrap'}}>{l.text}</div></div>;
+  }
   if(l.kind==='video'&&l.assetId)return <Sequence key={l.id} from={l.startFrame} durationInFrames={l.endFrame-l.startFrame}><OffthreadVideo src={staticFile(`master-assets/${l.assetId}`)} startFrom={l.sourceInFrame??0} muted style={{...style,objectFit:'fill'}}/></Sequence>;
   if(l.kind==='image'&&l.assetId)return <Img key={l.id} src={staticFile(`master-assets/${l.assetId}`)} style={{...style,objectFit:'fill'}}/>;
   if(!typography)return null;
