@@ -48,7 +48,7 @@ try{
   await page.evaluate(()=>document.querySelector('[data-master-supervisor] button').click());
   await page.waitForFunction(()=>document.querySelector('[data-master-supervisor] [role=status]')?.textContent.includes('Muestras preparadas'),{timeout:30000});
   const evidenceHref=await page.locator('[data-master-supervisor] a').first().getAttribute('href');
-  const evidence=await page.request.get(base+evidenceHref);assert.equal(evidence.status(),200);assert.match(evidence.headers()['content-type'],/audio\\/wav/);
+  const evidence=await page.request.get(base+evidenceHref);assert.equal(evidence.status(),200);assert.ok(evidence.headers()['content-type'].startsWith('audio/wav'));
   await page.evaluate(()=>document.querySelector('#master-preview-history').click());
   await page.waitForFunction(()=>!document.querySelector('#master-preview-history-label').hidden,{timeout:30000});
   await page.evaluate(()=>document.querySelector('#master-preview-history-open').click());
