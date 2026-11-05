@@ -8,12 +8,13 @@ const HASH=/^[a-f0-9]{64}$/;
 export function stageMasterDirectorImages(composition,{assets,publicDirectory}={}){
  if(composition?.schema!=='sues-remotion-layers/v1'||!Array.isArray(composition.layers)||
     typeof publicDirectory!=='string'||!publicDirectory.startsWith('/'))throw Error('Invalid staging context');
- const ids=[...new Set(composition.layers.flatMap(l=>[...(['image','audio','video'].includes(l.kind)?[l.assetId]:[]),...(l.maskAssetId?[l.maskAssetId]:[])]))];
+ const ids=[...new Set(composition.layers.flatMap(l=>[...(['image','audio','video'].includes(l.kind)?[l.assetId]:[]),...(l.maskAssetId?[l.maskAssetId]:[]),...(Array.isArray(l.maskFrameAssetIds)?l.maskFrameAssetIds:[])]))];
  if(ids.length>1500||ids.some(x=>!HASH.test(x??'')))throw Error('Invalid media asset');
  const expected=new Map();for(const l of composition.layers){
   for(const [id,kind] of [[l.kind==='image'?l.assetId:null,'image'],[l.kind==='audio'?l.assetId:null,'audio'],[l.kind==='video'?l.assetId:null,'video'],[l.maskAssetId,'image']])if(id){
    if(expected.has(id)&&expected.get(id)!==kind)throw Error('Conflicting media type');expected.set(id,kind);
   }
+  for(const id of l.maskFrameAssetIds??[]){if(expected.has(id)&&expected.get(id)!=='image')throw Error('Conflicting media type');expected.set(id,'image');}
  }
  const prepared=[];let totalBytes=0;
  // First verify every source before writing any copy.
