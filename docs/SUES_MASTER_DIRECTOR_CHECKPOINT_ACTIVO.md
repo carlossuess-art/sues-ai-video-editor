@@ -2,6 +2,11 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## MÁSCARAS DINÁMICAS · 05/11/2026
+
+- En rama se han añadido compilación, preparación y composición de secuencias alpha de hasta 120 imágenes por operación, una por fotograma, vinculadas a una prueba de confianza de la fuente y línea temporal. El registro de pruebas solo puede proceder de la política del servidor; cada imagen se comprueba por SHA y derechos al preparar recursos. El JSON de la skill no cambia: referencia `proofId` y modo `alpha-keep`. El compositor espera la carga de imágenes y bloquea la ausencia de un fotograma. Commits `b20b3ed1491fccf50f5321cc47b7af0be5bcfe79`, `d7144162ffd745485c69c887afd810a0ac872cfe`, `66af3cc5823a89a8909861006081b489d3126bc2`, `7089c65af2b98af4f318320780f8d51ab48cb168`, `cf6d80b8f86ff7e5661c114a3ed2d24b2da7f6bd`.
+- El montaje mixto bloquea las máscaras hasta acreditar la fuente derivada (`482f0a08daa5beda29d885f6d344cc7e504583a8`, `ca71b3906080f37d3deb4f9d044c8b2a63c6d915`). No se ha configurado ni ejecutado una generación de máscaras; no existe prueba real de silueta ni seguimiento. Límite 120 fotogramas por operación. Sin tests, renders ni despliegue por decisión de Carlos. La corrección audiovisual y seguridad siguen sin validar.
+
 ## EDICIÓN DE CAPAS · 05/11/2026
 
 - En la interfaz de rama se añaden controles para modificar orden de capa y tipografía, añadir y eliminar fotogramas de animación y seleccionar otro recurso declarado en el plan. El guardado crea una nueva revisión que exige volver a revisar; la validación normal sigue bloqueando fuentes, tiempos y recursos incompatibles. Commits `8c6edff7d31efdb7b8bf4ae720360948843ac469`, `6b01664142c76f416df8a86ee54235f30e5abf32`, `65319f09fe45db3976ebd39e045fa1f6df2ae5f1`, `cccc45de0370c5cc7b4923bd9728eb82eb71af0a`.
