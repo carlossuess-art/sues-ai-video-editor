@@ -2,6 +2,13 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## IMPORTACIÓN DE ARCHIVO MAESTRO · 05/11/2026
+
+- Añadidos controles de importación y descarga JSON en el editor de rama. Archivo y pegado comparten inspección de schema y tamaño y la misma revisión, aprobación y ejecución existente. El archivo UTF-8 se mantiene íntegro en el cuadro; un proyecto cambiado durante la lectura bloquea la importación.
+- Se rechazan propiedades JSON duplicadas en la entrada de interfaz para evitar que JSON.parse descarte instrucciones anteriores silenciosamente. La API existente sigue recibiendo objetos; esta protección no cubre clientes API externos.
+- Commits `401c7ebb121119a47137869745322a181eea8344`, `fbd0bcd4733d72174f2bd3ba62235563010d5aff`, `cccebb8ad5bdbfb8a8af81add91792157b292a8b`. Sin ampliación de schema ni efectos; skill 1.5.2 sin cambios.
+- Sin tests ni renders por indicación de Carlos; código no validado ni desplegado. Integración global aún pendiente; no declarar cierre, ejecución completa ni importación universal sin pérdida.
+
 ## INTEGRIDAD DE RECURSOS · 05/11/2026
 
 - El gate exige que el SHA del recurso de cada operación coincida con el activo verificado por el servidor, además de derechos; un cambio de versión bloquea el plan. Commit `980b796c77125c57a6fb520565813a365d8a38d9`.
