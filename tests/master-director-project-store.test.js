@@ -63,6 +63,17 @@ test('authenticated review and explicit approval use server evidence and expire 
   const review=await (await post('/master-review',{revision})).json();assert.equal(review.status,'READY_FOR_CHOICE');assert.equal(review.canExecute,false);
   const decision=await (await post('/master-decision',{revision,fingerprint:review.fingerprint,mode:'approve'})).json();
   assert.equal(decision.status,'DECISION_RECORDED');assert.equal(decision.canExecute,false);
+  assert.equal((await fetch(root+'/master-native-review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision,decisionId:decision.decisionId})})).status,401);
+  assert.equal((await post('/master-native-review',{revision,decisionId:decision.decisionId,registry:{approved:true}})).status,400);
+  const native=await (await post('/master-native-review',{revision,decisionId:decision.decisionId})).json();
+  assert.equal(native.status,'READY_FOR_EDITOR_PREVIEW',JSON.stringify(native));
+  app.jobs.autoStart=false;
+  const requestId=randomUUID(),payload={revision,decisionId:decision.decisionId,reviewId:native.preview.reviewId,requestId};
+  assert.equal((await post('/master-native-apply',{...payload,reviewId:'0'.repeat(64)})).status,409);
+  const applied=await post('/master-native-apply',payload);assert.equal(applied.status,202);const version=await applied.json();
+  assert.notEqual(version.id,job.id);assert.equal(app.jobs.get(version.id).parentId,job.id);assert.equal(app.jobs.get(job.id).state,'PREVIEW_READY');
+  const retry=await post('/master-native-apply',payload);assert.equal(retry.status,200);assert.equal((await retry.json()).id,version.id);
+  assert.equal((await post('/master-native-apply',{...payload,decisionId:'a'.repeat(64)})).status,400);
   const layers=await (await post('/master-layers',{revision,decisionId:decision.decisionId})).json();
   assert.equal(layers.status,'STRUCTURE_READY_NOT_RENDERED');assert.equal(layers.graph.nodes[0].id,'o1');
   assert.equal(layers.graph.editableInWebEditor,false);assert.equal(layers.canExecute,false);

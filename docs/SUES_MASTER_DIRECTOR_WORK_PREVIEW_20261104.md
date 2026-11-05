@@ -97,3 +97,11 @@ Regresión en copia productiva: dos pruebas antiguas se adaptaron solo en stagin
 ## 05/11 · Integridad de live preview y regresión
 
 En contenedor, 1419/2000 modificaciones rápidas mantuvieron idénticas marcas de tiempo; el caché anterior podía omitir una comprobación de hash. Se ha sustituido por SHA en cada solicitud; 30 manipulaciones seguidas y 4 pruebas live PASS. Una muestra local calculó 5 hashes de 40 MiB en 312 ms en total: no es una prueba de carga ni acredita fluidez para archivos grandes. La batería inicial 550/552 dejó un fallo Git por ausencia del ejecutable en el contenedor (la prueba concreta pasó en el host) y el fallo de integridad corregido; batería completa posterior en curso. Sin despliegue.
+
+## 05/11 · Importador nativo conectado al backend
+
+`master-native-review` y `master-native-apply` exigen decisión autenticada vigente y vuelven a verificar plan, proyecto, recursos y revisión nativa. La aplicación crea un hijo editable y lo encola con clave de idempotencia; conserva el padre. Solo traduce operaciones nativas exactas: planes mixtos o sin equivalencia se bloquean y no se aplanan ni sustituyen. Modo supervisado presenta acción para crear la versión; autónomo inicia la preparación de plan exclusivamente nativo después de aprobación.
+
+Test aislado con política simulada: fuente sintética 12 s, FFmpeg real, MP4 con voz/audio, decode completo, versión hija y reintento idempotente PASS. Navegador Chromium 1440 supervisado y 390 autónomo PASS con fixtures y clics DOM; no acredita visibilidad ni experiencia táctil completa. Batería de rama 125 PASS + una prueba de FFmpeg omitida por ausencia en host, ejecutada aparte PASS en contenedor.
+
+Regresión anterior a estos cambios sobre copia de producción: 554/554 casos ejecutados PASS; test Git ausente del contenedor ejecutado aparte PASS en host. Se actualizaron dos tests solo en staging para reflejar la cola y límite vigente. Falta repetir regresión de integración final, QA audiovisual, rendimiento de hash, derechos y migración/rollback. Sin producción ni publicación.

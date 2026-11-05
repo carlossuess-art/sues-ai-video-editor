@@ -88,13 +88,18 @@ export class MasterDirectorProjectStore{
   return {response:{...view,revision,canExecute:false,projectFingerprint:context.timelineFingerprint},plan:result.plan,registry};
  }
  async review(revision){return (await this.prepare(revision)).response;}
- async layers(revision,decisionId){
+ async approved(revision,decisionId){
   const receipt=load(join(this.root,'decisions'),decisionId),prepared=await this.prepare(revision),view=prepared.response;
   if(receipt.revision!==revision||!['approve','autonomous'].includes(receipt.mode)||
      view.status!=='READY_FOR_CHOICE'||receipt.fingerprint!==view.fingerprint||receipt.projectFingerprint!==view.projectFingerprint)
-   return {status:'BLOCKED',issues:[{code:'APPROVAL_OR_PROJECT_CHANGED'}],graph:null};
-  const registry={...prepared.registry,approvedPlanFingerprint:view.fingerprint};
-  const result=buildMasterDirectorLayerGraph(prepared.plan,registry);
+   return null;
+  return {plan:prepared.plan,registry:{...prepared.registry,approvedPlanFingerprint:view.fingerprint},view,mode:receipt.mode};
+ }
+ async layers(revision,decisionId){
+  const approved=await this.approved(revision,decisionId);
+  if(!approved)return {status:'BLOCKED',issues:[{code:'APPROVAL_OR_PROJECT_CHANGED'}],graph:null};
+  const {plan,registry}=approved;
+  const result=buildMasterDirectorLayerGraph(plan,registry);
   if(!result.graph)return {...result,revision,canExecute:false};
   const graphRevision=immutable(join(this.root,'layer-graphs'),result.graph);
   const remotion=compileMasterDirectorRemotion(result.graph,{verifiedFonts:registry.verifiedFonts??{},verifiedAssets:registry.licensedAssets??{},verifiedMasks:registry.maskEvidence??{}});

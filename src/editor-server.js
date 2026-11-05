@@ -1,3 +1,4 @@
+import {reviewMasterDirectorNative} from './master-director-native-review.js';
 import {MasterPreviewRequests} from './master-director-preview-requests.js';
 import {sealMasterPreview,findMasterPreview,discardUnsealedMasterPreview,listMasterPreviews} from './master-director-preview-index.js';
 import {probeMasterDirectorSource} from './master-director-source-probe.js';
@@ -207,10 +208,10 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
-    if(['master-draft','master-review','master-decision','master-layers','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status'].includes(action)){
+    if(['master-draft','master-review','master-decision','master-layers','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply'].includes(action)){
      const source=jobs.get(id);
      const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
@@ -221,6 +222,25 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       if(!verified)return null;
       return {...verified,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration};
      });
+     if(['master-native-review','master-native-apply'].includes(action)&&req.method==='POST'){
+      const b=await body(req,2048),allowed=action==='master-native-review'?['revision','decisionId']:['revision','decisionId','reviewId','requestId'];
+      if(Object.keys(b).some(k=>!allowed.includes(k)))return json(res,400,{error:'Solicitud inválida.'});
+      if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))return json(res,409,{error:'Espera a que termine la edición actual.'});
+      const approved=await store.approved(b.revision,b.decisionId);
+      if(!approved)return json(res,409,{status:'BLOCKED',issues:[{code:'APPROVAL_OR_PROJECT_CHANGED'}]});
+      const current=jobs.get(id),project=jobs.loadProfile(current.profileId),available=assets.list();
+      const catalog=externalCatalog(project,current.settings,available);
+      const reviewed=reviewMasterDirectorNative({plan:approved.plan,registry:approved.registry,catalog,project,settings:current.settings,assets:available,commandPlanner:planInstructions});
+      if(action==='master-native-review')return json(res,200,reviewed);
+      if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId)||typeof b.reviewId!=='string'||!/^[a-f0-9]{64}$/.test(b.reviewId))return json(res,400,{error:'Identificador de petición o revisión inválido.'});
+      const existing=[...jobs.jobs.values()].find(j=>j.parentId===id&&j.requestId===b.requestId);
+      if(existing){const last=existing.instructions?.at(-1);if(last?.kind!=='master-native'||last.revision!==b.revision||last.decisionId!==b.decisionId||last.reviewId!==b.reviewId)return json(res,409,{error:'Petición reutilizada con otro plan.'});return json(res,200,existing.state==='PREVIEW_READY'?jobs.render(existing.id):jobs.view(existing));}
+      if(reviewed.status!=='READY_FOR_EDITOR_PREVIEW'||reviewed.preview?.reviewId!==b.reviewId)return json(res,409,{error:'El plan no está listo o ha cambiado. Revisa de nuevo.',issues:reviewed.issues??[]});
+      const proposal=reviewExternalPlan(JSON.stringify(reviewed.nativePlan),{project,settings:current.settings,assets:available,commandPlanner:planInstructions});
+      if(!proposal.canApply||proposal.reviewId!==b.reviewId)return json(res,409,{error:'El montaje ha cambiado. Revisa de nuevo.'});
+      const next=jobs.create(current.profileId,proposal.changes,{parentId:id,requestId:b.requestId,instruction:{kind:'master-native',revision:b.revision,decisionId:b.decisionId,reviewId:b.reviewId,actions:proposal.actions,at:new Date().toISOString()}});
+      return json(res,202,jobs.render(next.id));
+     }
      if(action==='master-versions'&&req.method==='GET')return json(res,200,{versions:store.listDrafts()});
      if(action==='master-draft'&&req.method==='GET')return json(res,200,{story:store.readDraft(url.searchParams.get('revision'))});
      if(action==='master-draft'&&req.method==='POST'){

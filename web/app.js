@@ -504,8 +504,8 @@ function invalidateExternal(){externalReview=null;externalRequest=null;$('extern
 $('external-plan-text').oninput=invalidateExternal;
 // SUES Master Director: explicit approval and reversible per-layer layout edits.
 // A saved decision is not execution; the server enforces trust and costs.
-let masterReview=null,masterPreviewRequest=null;
-function resetMasterReview(){masterReview=null;masterPreviewRequest=null;$('master-review-actions').hidden=true;$('master-layer-controls').replaceChildren();$('master-review-result').replaceChildren();}
+let masterReview=null,masterPreviewRequest=null,masterNativeRequest=null;
+function resetMasterReview(){masterReview=null;masterPreviewRequest=null;masterNativeRequest=null;$('master-review-actions').hidden=true;$('master-layer-controls').replaceChildren();$('master-review-result').replaceChildren();}
 function showMasterReview(result){
  const target=$('master-review-result');target.replaceChildren();
  if(result.status!=='READY_FOR_CHOICE'){
@@ -576,6 +576,25 @@ async function masterDecision(mode){
  const layers=await api('jobs/'+state.jobId+'/master-layers','POST',{revision:state.revision,decisionId:result.decisionId});
  if(layers.status!=='STRUCTURE_READY_NOT_RENDERED'){const p=document.createElement('p');p.textContent='Hay capas o recursos pendientes antes de preparar la edición.';$('master-review-result').append(p);return;}
  const area=$('master-layer-controls');area.replaceChildren();
+ if(layers.graph.nodes.every(node=>node.renderer==='native')){
+  const nativeButton=document.createElement('button'),nativeStatus=document.createElement('p');
+  nativeButton.type='button';nativeButton.textContent='Crear versión editable';nativeStatus.setAttribute('role','status');
+  const prepareNative=async()=>{
+   if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
+   nativeButton.disabled=true;
+   try{
+    nativeStatus.textContent='Comprobando el plan con el editor…';
+    const review=await api('jobs/'+state.jobId+'/master-native-review','POST',{revision:state.revision,decisionId:state.decisionId});
+    if(review.status!=='READY_FOR_EDITOR_PREVIEW'){nativeStatus.textContent='El editor necesita revisar alguna operación antes de crear la versión.';return;}
+    masterNativeRequest??=crypto.randomUUID();
+    const version=await api('jobs/'+state.jobId+'/master-native-apply','POST',{revision:state.revision,decisionId:state.decisionId,reviewId:review.preview.reviewId,requestId:masterNativeRequest});
+    nativeStatus.textContent='Versión editable creada y enviada a la cola. Se conserva la versión anterior.';
+    await select(version.id);
+   }finally{nativeButton.disabled=false;}
+  };
+  nativeButton.onclick=()=>work(prepareNative);area.append(nativeButton,nativeStatus);
+  if(mode==='autonomous')setTimeout(()=>void work(prepareNative),0);
+ }
  const checkButton=document.createElement('button'),checkStatus=document.createElement('p');
  checkButton.type='button';checkButton.id='master-preflight';checkButton.textContent='Comprobar preparación del vídeo';checkStatus.id='master-preflight-result';checkStatus.setAttribute('role','status');
  checkButton.onclick=()=>work(async()=>{
