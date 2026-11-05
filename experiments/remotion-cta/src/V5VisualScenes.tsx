@@ -28,7 +28,7 @@ const RulesBoard:React.FC<{t:number}>=({t})=>{
    <div style={{position:'absolute',top:995+i*180,left:82,width:920,height:155,border:'2px solid #D5A46D66',borderRadius:23,
      background:'linear-gradient(105deg,rgba(28,42,53,.98),rgba(16,28,38,.96))',boxShadow:'0 16px 32px #00000055',transform:`translateY(${(1-opacity)*24}px)`,opacity}}/>
    <IconCircle kind={c.icon} left={126} top={997+i*180} visible={opacity}/>
-   <div style={{position:'absolute',top:1040+i*180,left:330,width:625,fontSize:59,letterSpacing:-1.6,fontWeight:900,fontFamily:FONT,color:'#F2ECE4',opacity,
+   <div style={{position:'absolute',top:1040+i*180,left:330,width:625,fontSize:i===2?48:59,letterSpacing:i===2?-1.8:-1.6,fontWeight:900,fontFamily:FONT,color:'#F2ECE4',opacity,
    transform:`translateX(${(1-opacity)*30}px)`}}>{c.text}</div>
   </React.Fragment>;
  })}
