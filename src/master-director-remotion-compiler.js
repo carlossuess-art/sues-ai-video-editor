@@ -6,6 +6,7 @@ const fail=(issues,node,code)=>issues.push({operationId:node?.id??'graph',code})
 const SHA=/^[a-f0-9]{64}$/;
 const validShadow=s=>only(s,['color','offsetX','offsetY','blurPx'])&&/^#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?$/.test(s.color??'')&&
  Number.isFinite(s.offsetX)&&Math.abs(s.offsetX)<=500&&Number.isFinite(s.offsetY)&&Math.abs(s.offsetY)<=500&&Number.isFinite(s.blurPx)&&s.blurPx>=0&&s.blurPx<=200;
+const validGlow=g=>only(g,['color','radiusPx'])&&/^#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?$/.test(g.color??'')&&Number.isFinite(g.radiusPx)&&g.radiusPx>0&&g.radiusPx<=200;
 export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAssets={},verifiedMasks={}}={}){
  const issues=[],layers=[];
  if(graph?.schema!=='sues-layer-graph/v1'||!Array.isArray(graph.nodes)||!graph.canvas||
@@ -32,8 +33,9 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
   const video=node?.renderer==='remotion'&&['broll','graphics'].includes(node.track)&&node.effect==='video-exact';
   if(!text&&!image&&!video){fail(issues,node,'REMOTION_OPERATION_UNSUPPORTED');continue;}
   if(!only(p,text?['text','visual']:video?['fit','visual','sourceInFrame','muted']:['fit','visual'])||JSON.stringify(p.visual)!==JSON.stringify(v)||
-     !only(v,text?['rect','zIndex','opacity','typography','keyframes','mask','dropShadow']:['rect','zIndex','opacity','keyframes','mask','dropShadow'])||
-     (v.dropShadow!==undefined&&(!validShadow(v.dropShadow)||v.mask!==undefined))||
+     !only(v,text?['rect','zIndex','opacity','typography','keyframes','mask','dropShadow','glow']:['rect','zIndex','opacity','keyframes','mask','dropShadow','glow'])||
+     (v.dropShadow!==undefined&&(!validShadow(v.dropShadow)||v.mask!==undefined||v.glow!==undefined))||
+     (v.glow!==undefined&&(!validGlow(v.glow)||v.mask!==undefined))||
      !only(v.rect,['x','y','width','height'])||
      (text&&(!only(v.typography,['family','sizePx','weight','color'])||typeof p.text!=='string'||!p.text.length||p.text.length>500))||
      ((image||video)&&p.fit!=='fill')||
