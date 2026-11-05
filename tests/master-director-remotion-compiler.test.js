@@ -73,3 +73,17 @@ test('dynamic alpha mask requires one verified asset per frame and exact source 
  delete proof.assetId;proof.sourceSha256='0'.repeat(64);assert.equal(compileMasterDirectorRemotion(g,options).status,'BLOCKED');
  proof.sourceSha256=g.sourceSha256;options.verifiedAssets[ids[1]].rightsVerified=false;assert.equal(compileMasterDirectorRemotion(g,options).status,'BLOCKED');
 });
+
+
+test('static drop shadows preserve exact values and reject unsupported combinations',()=>{
+ const options={verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}}},g=graph();
+ g.nodes[0].visual.dropShadow={color:'#ff8800aa',offsetX:12,offsetY:-8,blurPx:20};
+ g.nodes[0].sourceParameters.visual=structuredClone(g.nodes[0].visual);
+ const result=compileMasterDirectorRemotion(g,options);assert.equal(result.status,'READY_FOR_REMOTION_STAGING');assert.deepEqual(result.composition.layers[0].visual.dropShadow,g.nodes[0].visual.dropShadow);
+ for(const invalid of [{...g.nodes[0].visual.dropShadow,blurPx:-1},{...g.nodes[0].visual.dropShadow,color:'red'},{...g.nodes[0].visual.dropShadow,offsetX:501},{...g.nodes[0].visual.dropShadow,spread:2}]){
+  const candidate=structuredClone(g);candidate.nodes[0].visual.dropShadow=invalid;candidate.nodes[0].sourceParameters.visual=structuredClone(candidate.nodes[0].visual);
+  assert.equal(compileMasterDirectorRemotion(candidate,options).status,'BLOCKED');
+ }
+ const masked=structuredClone(g);masked.nodes[0].visual.mask={proofId:'proof',mode:'alpha-keep'};masked.nodes[0].sourceParameters.visual=structuredClone(masked.nodes[0].visual);
+ assert.equal(compileMasterDirectorRemotion(masked,options).status,'BLOCKED');
+});
