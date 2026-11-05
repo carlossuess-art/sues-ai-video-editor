@@ -15,7 +15,16 @@ const supervisorRunner=async(_executable,args)=>{
  const target=args.at(-1);if(target.endsWith('audio.wav'))writeFileSync(target,'audio-fixture');
  else{const count=Number(args[args.indexOf('-frames:v')+1]);for(let i=1;i<=count;i++)writeFileSync(target.replace('%04d',String(i).padStart(4,'0')),'frame-fixture-'+i);}
 };
-const app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,masterSupervisorRunner:supervisorRunner,masterDirectorContext:async()=>context,masterSourceProbe:async project=>probeBlocked?({status:'BLOCKED',issues:[{code:'SOURCE_GEOMETRY_UNVERIFIED'}]}):({status:'SOURCE_CFR30_VERIFIED',sourceTiming:'cfr30-verified',sourceHasAudio:true,sourceDuration:24,width:1080,height:1920,sourceSha256:project.boundHashes.source}),masterPreviewConfig:{entryFile:'/tmp/a',remotionCli:'/tmp/b',browserExecutable:'/tmp/c'},masterPreviewRenderer:renderer,masterPreviewAuditor:auditor});let browser;
+const maskRunner=async(executable,args)=>{
+ if(executable==='ffmpeg'){const target=args.at(-1),count=Number(args[args.indexOf('-frames:v')+1]);for(let i=0;i<count;i++)writeFileSync(target.replace('%06d',String(i).padStart(6,'0')),'input-'+i);return;}
+ const value=name=>args[args.indexOf(name)+1],input=value('--input-dir'),output=value('--output-dir'),start=Number(value('--start-frame'));
+ const rectIndex=args.indexOf('--rect'),rect=args.slice(rectIndex+1,rectIndex+5).map(Number);mkdirSync(output,{recursive:true});
+ const count=readFileSync(join(input,'frame-000000.png')).length?60:0,frames=[];
+ for(let i=0;i<count;i++){const suffix=String(i).padStart(6,'0'),name='mask-'+suffix+'.png',bytes=Buffer.from('mask-'+i);writeFileSync(join(output,name),bytes);
+  frames.push({editFrame:start+i,file:name,sha256:createHash('sha256').update(bytes).digest('hex'),inputSha256:createHash('sha256').update(readFileSync(join(input,'frame-'+suffix+'.png'))).digest('hex')});}
+ writeFileSync(join(output,'candidate.json'),JSON.stringify({schema:'sues-mask-candidate/v1',status:'CANDIDATE_NOT_VERIFIED',sourceSha256Claim:value('--source-sha256'),timelineFingerprintClaim:value('--timeline-fingerprint'),mode:value('--mode'),fps:30,coordinateSpace:'layer',rect,model:'fixture',modelSha256:'c'.repeat(64),frames}));
+};
+const app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,masterSupervisorRunner:supervisorRunner,masterMaskConfig:{verifiedLocal:true,pythonPath:'/local/python',scriptPath:'/local/script'},masterMaskRunner:maskRunner,masterDirectorContext:async()=>context,masterSourceProbe:async project=>probeBlocked?({status:'BLOCKED',issues:[{code:'SOURCE_GEOMETRY_UNVERIFIED'}]}):({status:'SOURCE_CFR30_VERIFIED',sourceTiming:'cfr30-verified',sourceHasAudio:true,sourceDuration:24,width:1080,height:1920,sourceSha256:project.boundHashes.source}),masterPreviewConfig:{entryFile:'/tmp/a',remotionCli:'/tmp/b',browserExecutable:'/tmp/c'},masterPreviewRenderer:renderer,masterPreviewAuditor:auditor});let browser;
 try{
  const launch=await app.listen(),job=app.jobs.create('test'),base=launch.split('/#')[0];
  browser=await chromium.launch({executablePath:process.env.SUES_CHROMIUM_PATH,headless:true,args:['--no-sandbox']});
@@ -34,6 +43,10 @@ try{
   const originalRevision=await page.evaluate(()=>masterReview.revision);
   await page.evaluate(()=>document.querySelector('#master-approve').click());
   await page.waitForSelector('#master-layer-controls fieldset',{state:'attached',timeout:30000});
+  await page.evaluate(()=>{const group=[...document.querySelectorAll('#master-layer-controls fieldset')].find(x=>x.querySelector('legend')?.textContent==='Generar máscara candidata');group.querySelector('button').click();});
+  await page.waitForFunction(()=>[...document.querySelectorAll('#master-layer-controls [role=status]')].some(x=>x.textContent.includes('Máscara candidata preparada')),{timeout:30000});
+  const maskHref=await page.locator('#master-layer-controls a[href*="master-mask-frame"]').first().getAttribute('href');
+  const mask=await page.request.get(base+maskHref);assert.equal(mask.status(),200);assert.ok(mask.headers()['content-type'].startsWith('image/png'));
   await page.evaluate(()=>document.querySelector('#master-preflight').click());
   await page.waitForFunction(()=>document.querySelector('#master-preflight-result').textContent.includes('Preparación comprobada'),{timeout:30000});
   probeBlocked=true;
