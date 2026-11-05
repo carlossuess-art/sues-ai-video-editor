@@ -557,7 +557,25 @@ $('master-version-open').onclick=()=>work(async()=>{
 });
 // File intake feeds the same review, decision and execution path as pasted JSON.
 function inspectMasterInput(raw){
- let story;try{story=JSON.parse(raw);}catch{throw Error('El archivo no contiene un JSON válido.');}
+ let story;try{story=JSON.parse(raw);}catch{throw Error('El plan no contiene un JSON válido.');}
+ // Reject duplicate properties rather than silently discarding instructions.
+ const stack=[];
+ for(let i=0;i<raw.length;i++){
+  const ch=raw[i];
+  if(ch==='{')stack.push(new Set());
+  else if(ch==='[')stack.push(null);
+  else if(ch==='}'||ch===']')stack.pop();
+  else if(ch==='"'){
+   const start=i;i++;
+   while(i<raw.length){if(raw.charCodeAt(i)===92){i+=2;continue;}if(raw[i]==='"')break;i++;}
+   let next=i+1;while(next<raw.length&&/\s/.test(raw[next]))next++;
+   if(raw[next]===':'){
+    const key=JSON.parse(raw.slice(start,i+1)),keys=stack.at(-1);
+    if(keys?.has(key))throw Error('El plan contiene una propiedad repetida. Corrígela para conservar todas las instrucciones.');
+    keys?.add(key);
+   }
+  }
+ }
  if(story?.schema!=='sues-master-story/v1')throw Error('El archivo debe contener un plan sues-master-story/v1.');
  if(new TextEncoder().encode(JSON.stringify(story)).length>60000)
   throw Error('El plan maestro supera los 60.000 bytes. No se ha recortado.');
@@ -584,10 +602,7 @@ $('master-download-plan').onclick=()=>work(async()=>{
 });
 $('master-review-button').onclick=()=>work(async()=>{
  if(!current)throw Error('Abre un proyecto con vídeo preparado.');
- const jobId=current.id,raw=$('external-plan-text').value;let story;
- try{story=JSON.parse(raw);}catch{throw Error('Pega una propuesta compatible antes de revisarla.');}
- if(story?.schema!=='sues-master-story/v1')throw Error('Esta propuesta no corresponde al Master Director. Puedes usar la revisión habitual del Director IA.');
- if(new TextEncoder().encode(JSON.stringify(story)).length>60000)throw Error('El plan maestro supera los 60.000 bytes. No lo recortes: necesita una ampliación del límite.');
+ const jobId=current.id,raw=$('external-plan-text').value,story=inspectMasterInput(raw);
  const draft=await api('jobs/'+jobId+'/master-draft','POST',{story});
  const result=await api('jobs/'+jobId+'/master-review','POST',{revision:draft.revision});
  if(current?.id!==jobId||$('external-plan-text').value!==raw)throw Error('El proyecto o la propuesta han cambiado. Vuelve a revisarlos.');
