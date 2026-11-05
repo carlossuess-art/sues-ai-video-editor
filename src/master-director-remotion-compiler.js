@@ -51,9 +51,9 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
    }
    // Dynamic masks are trusted proof records, not a user-supplied list of paths.
    // One verified image per output frame; no interpolation or repeated frame fallback.
-   if(Array.isArray(proof.frameAssetIds)){
+   if(Object.hasOwn(proof,'frameAssetIds')){
     const count=node.endFrame-node.startFrame;
-    if(proof.coordinateSpace!=='layer'||proof.fps!==graph.fps||proof.startFrame!==node.startFrame||
+    if(!Array.isArray(proof.frameAssetIds)||proof.assetId!==undefined||proof.coordinateSpace!=='layer'||proof.fps!==graph.fps||proof.startFrame!==node.startFrame||
        proof.endFrame!==node.endFrame||!Number.isInteger(count)||count<1||count>120||proof.frameAssetIds.length!==count||
        proof.frameAssetIds.some(id=>!SHA.test(id??'')||verifiedAssets[id]?.sha256!==id||
         verifiedAssets[id]?.kind!=='image'||verifiedAssets[id]?.rightsVerified!==true||verifiedAssets[id]?.commercialUseAllowed!==true)){
