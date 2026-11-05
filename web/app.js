@@ -784,6 +784,11 @@ async function masterDecision(mode){
    for(const [value,title] of choices){const option=document.createElement('option');option.value=value;option.textContent=title;select.append(option);}
    select.value=currentEasing;label.append(select);box.append(label);easingControls.push({index,select,currentEasing});
   }
+  if(original.resourceRef!==undefined&&Array.isArray(state.story.resources)){
+   const label=document.createElement('label'),select=document.createElement('select');label.textContent='Recurso de esta capa';
+   for(const resource of state.story.resources){const option=document.createElement('option');option.value=resource.id;option.textContent=resource.id+(resource.kind?' · '+resource.kind:'');select.append(option);}
+   select.value=original.resourceRef;label.append(select);box.append(label);inputs.resourceRef=select;
+  }
   if(typeof original.parameters?.gain==='number')numberField('gain','Volumen',original.parameters.gain,'.01');
   if(Number.isInteger(original.parameters?.sourceInFrame))numberField('sourceInFrame','Inicio en el recurso (fotogramas)',original.parameters.sourceInFrame,'1');
   const save=document.createElement('button');save.type='button';save.textContent='Guardar ajuste de esta capa';
@@ -823,8 +828,9 @@ async function masterDecision(mode){
    if(inputs.text)parameters.text=inputs.text.value;if(inputs.gain)parameters.gain=Number(inputs.gain.value);
    if(inputs.sourceInFrame){const n=Number(inputs.sourceInFrame.value);if(!Number.isInteger(n)||n<0)throw Error('El inicio del recurso debe ser un fotograma válido.');parameters.sourceInFrame=n;}
    if(inputs.gain&&(!Number.isFinite(parameters.gain)||parameters.gain<0||parameters.gain>2))throw Error('Comprueba el volumen de la capa.');
-   await api('jobs/'+state.jobId+'/master-operation-edit','POST',{revision:state.revision,operationId:node.id,patch:{start,end,parameters}});
-   const revised=structuredClone(state.story),op=revised.operations.find(o=>o.id===node.id);op.start=start;op.end=end;op.parameters=parameters;
+   const patch={start,end,parameters};if(inputs.resourceRef&&inputs.resourceRef.value!==original.resourceRef)patch.resourceRef=inputs.resourceRef.value;
+   await api('jobs/'+state.jobId+'/master-operation-edit','POST',{revision:state.revision,operationId:node.id,patch});
+   const revised=structuredClone(state.story),op=revised.operations.find(o=>o.id===node.id);op.start=start;op.end=end;op.parameters=parameters;if(patch.resourceRef!==undefined)op.resourceRef=patch.resourceRef;
    $('external-plan-text').value=JSON.stringify(revised,null,2);resetMasterReview();$('master-review-result').textContent='Ajuste guardado en una nueva versión. Revisa el plan otra vez antes de aprobarlo.';
   });box.append(save);area.append(box);
  }
