@@ -85,6 +85,15 @@ try{
   await page.waitForSelector('#master-layer-controls [data-master-easing=\"1\"]',{state:'attached',timeout:30000});
   assert.equal(await page.locator('[data-master-easing=\"1\"]').inputValue(),'ease-in');
   assert.equal(await page.locator('[data-master-keyframe=\"1:x\"]').inputValue(),'125');
+  await page.evaluate(()=>{const labels=[...document.querySelectorAll('#master-layer-controls label')];
+   labels.find(x=>x.textContent.includes('Activar sombra')).querySelector('input').checked=false;
+   labels.find(x=>x.textContent.includes('Activar resplandor')).querySelector('input').checked=true;
+   labels.find(x=>x.textContent.startsWith('Color del resplandor')).querySelector('input').value='#33AAFFFF';
+   labels.find(x=>x.textContent.startsWith('Radio del resplandor')).querySelector('input').value='20';document.querySelector('[data-master-save]').click();});
+  await page.waitForFunction(()=>document.querySelector('#master-review-result').textContent.includes('nueva versión'),{timeout:30000});
+  const glow=await page.evaluate(()=>JSON.parse(document.querySelector('#external-plan-text').value).operations[0].parameters.visual);
+  assert.equal(glow.dropShadow,undefined);assert.deepEqual(glow.glow,{color:'#33AAFFFF',radiusPx:20});
+  await page.evaluate(()=>document.querySelector('#master-review-button').click());await page.waitForFunction(()=>!document.querySelector('#master-review-actions').hidden,{timeout:30000});
   await page.evaluate(()=>document.querySelector('#master-versions-button').click());
   await page.waitForFunction(()=>!document.querySelector('#master-versions-label').hidden,{timeout:30000});
   await page.evaluate(id=>{document.querySelector('#master-versions-select').value=id;document.querySelector('#master-version-open').click();},originalRevision);
