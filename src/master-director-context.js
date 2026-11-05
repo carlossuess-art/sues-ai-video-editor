@@ -65,8 +65,8 @@ export function createMasterDirectorContextProvider(directory){
       proof.timelineFingerprint!==catalog.timelineFingerprint||typeof proof.evidenceRef!=='string'||!proof.evidenceRef.trim()||
       !Number.isFinite(proof.start)||!Number.isFinite(proof.end)||proof.start<0||proof.end<=proof.start)
     return {blockedIssues:[{code:'MASK_POLICY_EVIDENCE_INVALID',subject:id}]};
-   if(Array.isArray(proof.frameAssetIds)){
-    if(proof.coordinateSpace!=='layer'||proof.fps!==30||!Number.isInteger(proof.startFrame)||!Number.isInteger(proof.endFrame)||
+   if(Object.hasOwn(proof,'frameAssetIds')){
+    if(!Array.isArray(proof.frameAssetIds)||proof.assetId!==undefined||proof.coordinateSpace!=='layer'||proof.fps!==30||!Number.isInteger(proof.startFrame)||!Number.isInteger(proof.endFrame)||
        proof.startFrame<0||proof.endFrame<=proof.startFrame||proof.endFrame-proof.startFrame>120||
        proof.frameAssetIds.length!==proof.endFrame-proof.startFrame||!proof.frameAssetIds.every(x=>SHA.test(x??''))||
        Math.abs(proof.start-proof.startFrame/30)>1e-6||Math.abs(proof.end-proof.endFrame/30)>1e-6)
