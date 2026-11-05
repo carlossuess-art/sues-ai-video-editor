@@ -8,7 +8,7 @@ const SHA=/^[a-f0-9]{64}$/;
 const ID=/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/;
 const native=['caption-edit','caption-hide','caption-emphasis','zoom-native','broll-fullframe',
  'sfx-one-shot','music-full-video','transition-native','card-grid-native','motion-catalog-native',
- 'overlay-native-default','image-native-auto','voice-preset-native','voice-level-native',
+ 'overlay-native-default','image-native-auto','elements-native','voice-preset-native','voice-level-native',
  'audio-levels-native','mastering-native'];
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const safeId=x=>typeof x==='string'&&ID.test(x);

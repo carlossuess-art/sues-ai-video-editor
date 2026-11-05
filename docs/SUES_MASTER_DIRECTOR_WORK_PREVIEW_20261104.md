@@ -105,3 +105,9 @@ En contenedor, 1419/2000 modificaciones rápidas mantuvieron idénticas marcas d
 Test aislado con política simulada: fuente sintética 12 s, FFmpeg real, MP4 con voz/audio, decode completo, versión hija y reintento idempotente PASS. Navegador Chromium 1440 supervisado y 390 autónomo PASS con fixtures y clics DOM; no acredita visibilidad ni experiencia táctil completa. Batería de rama 125 PASS + una prueba de FFmpeg omitida por ausencia en host, ejecutada aparte PASS en contenedor.
 
 Regresión anterior a estos cambios sobre copia de producción: 554/554 casos ejecutados PASS; test Git ausente del contenedor ejecutado aparte PASS en host. Se actualizaron dos tests solo en staging para reflejar la cola y límite vigente. Falta repetir regresión de integración final, QA audiovisual, rendimiento de hash, derechos y migración/rollback. Sin producción ni publicación.
+
+## 05/11 · ELEMENTS mediante editor nativo
+
+Se ha conectado `elements-native` a la revisión y aplicación del editor: LIST, RANKING, COMPARE, Q&A, REVEAL y FLOW se trasladan con texto explícito, referencias a captions reales y tiempos comprobados. Se exige declarar cobertura del presentador y sustitución de los ELEMENTS existentes; el editor valida el montaje completo y rechaza colisiones. Se conserva la versión padre. ELEMENTS es formato combinable con CALMA/DOPAMIN, no una conversión silenciosa de estilos.
+
+Pruebas: 21 dirigidas PASS, LIST ejecutado como versión hija con FFmpeg real, audio y decodificación completa PASS; 127 pruebas del cerebro PASS en host con el render omitido y superado aparte en contenedor. Las tarjetas son el motor nativo existente, no acreditan motion graphics artísticos complejos ni editabilidad Remotion; auditoría visual pendiente. Regresión completa integrada en curso.

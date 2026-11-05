@@ -73,3 +73,17 @@ test('an invalid payload cannot acquire a synthetic fallback',()=>{
   assert.equal(out.nativePlan,null);
  }finally{rmSync(x.f.dir,{recursive:true,force:true})}
 });
+
+
+test('native structured list is validated by the real editor without replacing prior settings',()=>{
+ const x=prepare();try{
+  const c=x.catalog.captions.find(c=>c.start>0&&c.end-c.start>=1&&c.end<x.catalog.duration-3);assert.ok(c);
+  x.plan.operations=[{id:'list',sceneId:'video',renderer:'native',effect:'elements-native',track:'graphics',start:c.start,end:c.end,reason:'Estructurar las ideas expresadas',dependsOn:[],requiredQA:['rendered-frame','motion-playback','narrative-review'],parameters:{format:'LIST',items:[{captionId:c.id,label:'Una idea real'}],coversPresenter:true,replace:false}}];
+  x.registry.rendererCapabilities.native.push('elements-native');x.registry.approvedPlanFingerprint=masterDirectorFingerprint(x.plan);
+  const out=reviewMasterDirectorNative({...x,assets:[],commandPlanner:planInstructions});assert.equal(out.status,'READY_FOR_EDITOR_PREVIEW',JSON.stringify(out));
+  assert.equal(out.nativePlan.operations[0].format,'LIST');assert.equal(x.settings.elements,undefined);
+  x.settings.elements={format:'LIST',items:[{captionId:c.id,label:'Anterior'}]};
+  x.catalog=externalCatalog(x.project,x.settings);x.plan.timeline.fingerprint=x.catalog.timelineFingerprint;x.registry.timelineFingerprint=x.catalog.timelineFingerprint;x.registry.approvedPlanFingerprint=masterDirectorFingerprint(x.plan);
+  const blocked=reviewMasterDirectorNative({...x,assets:[],commandPlanner:planInstructions});assert.equal(blocked.status,'NATIVE_PREVIEW_REJECTED');assert.match(JSON.stringify(blocked.issues),/sustitución explícita/);
+ }finally{rmSync(x.f.dir,{recursive:true,force:true})}
+});

@@ -1,6 +1,7 @@
 // Conservative native bridge: only operations represented exactly by sues-edit-plan/v1.
 // Does not render, generate, publish or silently approximate a creative effect.
 import {reviewMasterDirectorPlan} from './master-director-gate.js';
+import {validateElements} from './elements.js';
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const hash=/^[a-f0-9]{64}$/;
 const near=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<.000001;
@@ -47,6 +48,17 @@ function translate(o,plan,registry,catalog){
    (p.replace===undefined||typeof p.replace==='boolean'))
   native={type:'transition',resourceId:p.kind,start:o.start,duration:.4,
     ...(p.replace!==undefined?{replace:p.replace}:{})};
+ else if(matches(o,'graphics','elements-native')&&keys(p,['format','items','coversPresenter','replace'],['format','items','coversPresenter','replace'])&&p.coversPresenter===true&&typeof p.replace==='boolean'){
+  try{
+   validateElements({format:p.format,items:p.items});
+   const bounds=p.items.map(item=>{
+    const first=catalog.captions?.find(c=>c.id===item.captionId),last=catalog.captions?.find(c=>c.id===(item.endCaptionId??item.captionId));
+    if(!first||!last||last.start<first.start)throw Error('caption unavailable');return {start:first.start,end:last.end};
+   });
+   if(near(o.start,Math.min(...bounds.map(x=>x.start)))&&near(o.end,Math.max(...bounds.map(x=>x.end))))
+    native={type:'elements',format:p.format,items:structuredClone(p.items),replace:p.replace};
+  }catch{} // An invalid or unbound format must not become an approximate graphic.
+ }
  else if(matches(o,'graphics','card-grid-native')&&
    keys(p,['captionId','endCaptionId','heading','bodyLines','coversPresenter'],
     ['captionId','heading','bodyLines','coversPresenter'])&&p.coversPresenter===true&&

@@ -111,3 +111,14 @@ test('caption timing cannot drift from its measured subtitle',()=>{
  const accepted=bridgeMasterDirectorToNative(p,registry(p),catalogue());
  assert.equal(accepted.status,'READY_FOR_NATIVE_REVIEW');
 });
+
+
+test('structured formats preserve explicit copy, timing and presenter replacement intent',()=>{
+ for(const [format,item] of [['LIST',{captionId:'seg-001',label:'Una idea'}],['RANKING',{captionId:'seg-001',label:'Una idea',number:2}],['COMPARE',{captionId:'seg-001',label:'Primera',secondary:'Segunda'}],['Q&A',{captionId:'seg-001',label:'Pregunta',secondary:'Respuesta'}],['REVEAL',{captionId:'seg-001',label:'Descubrir'}],['FLOW',{captionId:'seg-001',label:'Primer paso'}]]){
+  const p=plan();p.operations=[{...p.operations[0],track:'graphics',effect:'elements-native',resourceId:undefined,resourceSha256:undefined,start:2,end:4,parameters:{format,items:[item],coversPresenter:true,replace:false}}];
+  const r=registry(p);r.rendererCapabilities.native.push('elements-native');
+  const out=bridgeMasterDirectorToNative(p,r,catalogue());assert.equal(out.status,'READY_FOR_NATIVE_REVIEW',format+JSON.stringify(out.issues));
+  assert.deepEqual(out.plan.operations[0],{type:'elements',format,items:[item],replace:false});
+  p.operations[0].end=4.1;assert.equal(bridgeMasterDirectorToNative(p,registry(p),catalogue()).plan,null);
+ }
+});
