@@ -838,7 +838,7 @@ async function masterDecision(mode){
     }finally{maskButton.disabled=false;}
    });maskGroup.append(maskMode,maskButton,maskStatus,maskResults);box.append(maskGroup);
   }
-  const save=document.createElement('button');save.type='button';save.textContent='Guardar ajuste de esta capa';
+  const save=document.createElement('button');save.type='button';save.dataset.masterSave='true';save.textContent='Guardar ajuste de esta capa';
   save.onclick=()=>work(async()=>{
    if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
    const start=Number(inputs.start.value),end=Number(inputs.end.value),parameters=structuredClone(original.parameters);
