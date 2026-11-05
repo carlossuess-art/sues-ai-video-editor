@@ -736,7 +736,19 @@ async function masterDecision(mode){
   if(node.visual?.rect)for(const key of ['x','y','width','height'])numberField(key,({x:'Horizontal',y:'Vertical',width:'Anchura',height:'Altura'})[key],node.visual.rect[key]);
   numberField('start','Inicio (segundos)',original.start);numberField('end','Final (segundos)',original.end);
   if(typeof original.parameters?.text==='string'){const label=document.createElement('label'),input=document.createElement('input');label.textContent='Texto';input.value=original.parameters.text;label.append(input);box.append(label);inputs.text=input;}
-  if(node.visual)numberField('opacity','Opacidad (0–1)',node.visual.opacity,'.01');
+  if(node.visual){
+   numberField('opacity','Opacidad (0–1)',node.visual.opacity,'.01');
+   numberField('zIndex','Orden de capa (0–500)',node.visual.zIndex,'1');
+   if(node.visual.typography){
+    const typography=node.visual.typography;
+    for(const [key,labelText] of [['fontFamily','Familia de la fuente'],['fontColor','Color (#RRGGBB o #RRGGBBAA)']]){
+     const label=document.createElement('label'),input=document.createElement('input');label.textContent=labelText;
+     input.value=key==='fontFamily'?typography.family:typography.color;label.append(input);box.append(label);inputs[key]=input;
+    }
+    numberField('fontSize','Tamaño de fuente (px)',typography.sizePx);
+    numberField('fontWeight','Peso de fuente',typography.weight,'1');
+   }
+  }
   const keyframeControls=[];
   for(const [index,keyframe] of (node.visual?.keyframes??[]).entries()){
    const group=document.createElement('fieldset'),heading=document.createElement('legend');
@@ -771,6 +783,13 @@ async function masterDecision(mode){
    if(node.visual?.rect){const rect=Object.fromEntries(['x','y','width','height'].map(key=>[key,Number(inputs[key].value)]));
     if(Object.values(rect).some(n=>!Number.isFinite(n))||rect.width<=0||rect.height<=0)throw Error('Comprueba la posición y el tamaño de la capa.');parameters.visual={...node.visual,rect};}
    if(inputs.opacity){const opacity=Number(inputs.opacity.value);if(!Number.isFinite(opacity)||opacity<0||opacity>1)throw Error('La opacidad debe estar entre 0 y 1.');parameters.visual.opacity=opacity;}
+   if(inputs.zIndex){const z=Number(inputs.zIndex.value);if(inputs.zIndex.value.trim()===''||!Number.isInteger(z)||z<0||z>500)throw Error('El orden de capa debe ser un número entero entre 0 y 500.');parameters.visual.zIndex=z;}
+   if(inputs.fontFamily){
+    const family=inputs.fontFamily.value.trim(),color=inputs.fontColor.value.trim(),sizePx=Number(inputs.fontSize.value),weight=Number(inputs.fontWeight.value);
+    if(!family||!/^#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?$/.test(color)||!Number.isFinite(sizePx)||sizePx<=0||sizePx>500||!Number.isFinite(weight)||weight<100||weight>1000)
+     throw Error('Comprueba la fuente, el color, el tamaño y el peso.');
+    parameters.visual.typography={...parameters.visual.typography,family,color,sizePx,weight};
+   }
    for(const {index,key,input} of keyframeControls){
     const value=Number(input.value);
     if(input.value.trim()===''||!Number.isFinite(value)||(key==='atFrame'&&(!Number.isInteger(value)||value<0))||(key==='scale'&&(value<=0||value>10))||(key==='opacity'&&(value<0||value>1)))throw Error('Comprueba los valores del fotograma.');
