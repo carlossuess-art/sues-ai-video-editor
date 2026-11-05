@@ -2,6 +2,13 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## SOMBRA ESTÁTICA Y SINCRONIZACIÓN DE SKILL · 05/11/2026
+
+- Añadido `visual.dropShadow` opcional en el compilador y compositor Remotion: color hexadecimal, desplazamiento y desenfoque acotados, sin combinación con máscara. El editor permite modificarlo de forma reversible. El contrato detalla semántica y límites. Commits `d1dde2c0096cc887cab2c0566c2a21c50dfd3784`, `285aa69dbd2dcbd020e1a366b4d875557bdf5037`, `e9cf5652afc48825b25990d1fb94c9cb455dbbf2`, `27447eeb93bc8550d488e03e7bf03ecda24fd221`, `01513131f5a0c85651b0a1ce38a42bc74b37eecc`.
+- Validación aislada: 23/23 pruebas de compilación/almacén, TypeScript PASS, navegador 1440/390 PASS, y un fotograma sintético Remotion: objeto rojo, sombra azul desplazada y exterior transparente verificados por píxeles. Solo se probó visualmente sombra sin desenfoque, no todos los acabados ni una edición real. No desplegado.
+- Skill privada SUES AI Film Director actualizada de 1.5.2 a **1.5.3**, release `pluginrel_6aed0abff2d08191b8a63d6bb66a36a2`, con inventario y archivos releídos: documenta el campo opcional sin máscara, mantiene bloqueos y aclara que Carlos autorizó pruebas técnicas. No implica activación en producción.
+- Siguen pendientes glow independiente, materiales, máscaras más sombra, aplicaciones verificadas de máscaras, planificación gratuita real y supervisor audiovisual autónomo. No afirmar cierre integral.
+
 ## RECURSOS Y COBERTURA DE SUPERVISIÓN · 05/11/2026
 
 - El contexto confiable puede resolver un recurso solicitado para generar si una política del servidor ya acredita proyecto, fuente, montaje, hash del brief, tipo, SHA, bytes y derechos; ante una discrepancia se bloquea. Imagen, vídeo, música y SFX; la generación o licencia no se inventa. Probado hasta revisión y compilación con datos simulados. Commits `2f579fd34e2b9f6165038de5b217dfe9f4cada74`, `769d54e3ac9b8ca2a5ecdf62ec5a7567bb193505`, `bf7d7e04bf4f06bbe8e7bb9aa90e31b8985dad54`, `88fd45a0630a6e44bb1501f6d22b364f1e02d09a`.
