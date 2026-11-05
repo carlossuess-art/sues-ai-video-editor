@@ -11,7 +11,7 @@ const plan=()=>({
  creativeContext:{centralMessage:'Vencer el miedo',intendedExperience:'Liberación'},
  scenes:[{id:'hook',start:0,end:3,phase:'hook',purpose:'Plantear el problema'},
          {id:'release',start:3,end:6,phase:'transformation',purpose:'Resolver el conflicto'}],
- operations:[{id:'broll01',sceneId:'hook',renderer:'native',effect:'broll',track:'broll',start:.1,end:2.9,reason:'Mostrar el miedo como cadena',resourceId:'asset01',dependsOn:[],requiredQA:['rendered-frame','motion-playback','narrative-review']}]
+ operations:[{id:'broll01',sceneId:'hook',renderer:'native',effect:'broll',track:'broll',start:.1,end:2.9,reason:'Mostrar el miedo como cadena',resourceId:'asset01',resourceSha256:asset,parameters:{},dependsOn:[],requiredQA:['rendered-frame','motion-playback','narrative-review']}]
 });
 const registry=(p)=>({
  sourceSha256:source,timelineFingerprint:'edit-01',approvedRuleVersion:'approved-rules-v1',
