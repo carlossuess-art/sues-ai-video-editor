@@ -58,7 +58,7 @@ try{
    const labels=[...document.querySelectorAll('#master-layer-controls label')];labels.find(x=>x.textContent.startsWith('Orden de capa')).querySelector('input').value='2';labels.find(x=>x.textContent.startsWith('Tamaño de fuente')).querySelector('input').value='90';
    const groups=[...document.querySelectorAll('#master-layer-controls fieldset')],remove=groups.find(x=>x.querySelector('legend')?.textContent==='Fotograma 0');remove.querySelector('input[type=checkbox]').checked=true;
    const add=groups.find(x=>x.querySelector('legend')?.textContent==='Añadir fotograma');add.querySelectorAll('input')[0].value='15';add.querySelectorAll('input')[1].value='0.5';add.querySelectorAll('select')[0].value='opacity';
-   document.querySelector('#master-layer-controls fieldset button').click();});
+   document.querySelector('[data-master-save]').click();});
   await page.waitForFunction(()=>document.querySelector('#master-review-result').textContent.includes('nueva versión'),{timeout:30000});
   const edited=await page.evaluate(()=>JSON.parse(document.querySelector('#external-plan-text').value).operations[0]);
   assert.equal(edited.parameters.visual.rect.x,170);assert.equal(edited.start,2.5);assert.equal(edited.end,4.5);assert.equal(edited.parameters.text,'Texto editado');assert.equal(edited.parameters.visual.keyframes[1].easing,'ease-in');assert.equal(edited.parameters.visual.keyframes[1].x,125);assert.equal(edited.parameters.visual.zIndex,2);assert.equal(edited.parameters.visual.typography.sizePx,90);assert.deepEqual(edited.parameters.visual.keyframes[0],{atFrame:15,easing:'linear',opacity:0.5});
