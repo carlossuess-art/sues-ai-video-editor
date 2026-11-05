@@ -38,7 +38,7 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
      (v.glow!==undefined&&!validGlow(v.glow))||
      !only(v.rect,['x','y','width','height'])||
      (text&&(!only(v.typography,['family','sizePx','weight','color'])||typeof p.text!=='string'||!p.text.length||p.text.length>500))||
-     ((image||video)&&p.fit!=='fill')||
+     ((image||video)&&!['fill','contain','cover'].includes(p.fit))||
      (video&&(!Number.isInteger(p.sourceInFrame)||p.sourceInFrame<0||p.muted!==true))){fail(issues,node,'LAYER_PARAMETERS_UNSUPPORTED');continue;}
   const font=text?verifiedFonts[v.typography.family+':'+v.typography.weight]:null;
   if(text&&(!font||!SHA.test(font.sha256??''))){fail(issues,node,'FONT_NOT_VERIFIED');continue;}
@@ -82,7 +82,7 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
      node.endFrame<=node.startFrame||node.endFrame>graph.durationFrames)
    {fail(issues,node,'TIMELINE_INVALID');continue;}
   layers.push({id:node.id,kind:text?'text':video?'video':'image',startFrame:node.startFrame,endFrame:node.endFrame,
-   ...(text?{text:p.text,fontAssetId:font.sha256}:video?{assetId:id,sourceInFrame:p.sourceInFrame,muted:true}:{assetId:id}),...(maskAssetId?{maskAssetId}:{}),...(maskFrameAssetIds?{maskFrameAssetIds}:{}),visual:structuredClone(v)});
+   ...(text?{text:p.text,fontAssetId:font.sha256}:video?{assetId:id,sourceInFrame:p.sourceInFrame,muted:true,fit:p.fit}:{assetId:id,fit:p.fit}),...(maskAssetId?{maskAssetId}:{}),...(maskFrameAssetIds?{maskFrameAssetIds}:{}),visual:structuredClone(v)});
  }
  if(issues.length)return {status:'BLOCKED',issues,composition:null};
  return {status:'READY_FOR_REMOTION_STAGING',issues:[],composition:{schema:'sues-remotion-layers/v1',
