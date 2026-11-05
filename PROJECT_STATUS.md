@@ -1,3 +1,7 @@
+## 06/11/2026 · Plan externo: fidelidad del montaje mixto
+
+El grafo conserva tiempos originales y el motor mixto detecta solapamientos antes del redondeo. Se bloquean combinaciones con orden visual nativo/Remotion no implementado en vez de alterar el efecto. Regresión dirigida 174 aprobadas y 5 omitidas; una omitida pasó aparte con FFmpeg sobre material sintético. La composición completa, supervisor, exportación y prueba de Reel real siguen pendientes. Véase [checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Sin despliegue.
+
 ## 06/11/2026 · Generador local opcional de borradores maestros
 
 En rama existe un adaptador para Qwen3/llama.cpp local conectado al mismo flujo de revisión; está desactivado por defecto y no despliega ni aprueba planes. Una prueba sintética con modelo real produjo JSON; una prueba HTTP guardó un borrador que la revisión bloqueó. Los límites, evidencia y trabajo pendiente constan en [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md) y [manual](docs/SUES_MASTER_LOCAL_GENERATOR_20261106.md).
