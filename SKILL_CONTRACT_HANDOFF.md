@@ -24,7 +24,7 @@ Raíz obligatoria: `schema`, `sourceSha256`, `timeline`, `visual`, `narrative`, 
 
 ## 3. Espacios, fotogramas y geometría
 
-Segundos en `edit-timeline`: montaje vigente, no reloj del archivo original. Intervalos de capas [entrada, salida); el grafo convierte `startFrame=round(start*30)`, `endFrame=round(end*30)`; salida exclusiva, duración = diferencia de frames. Indicar tiempos como múltiplos de 1/30 para evitar redondeos. Un cambio de cortes invalida fingerprint, aprobación y anclajes; remapear con mapa verificado antes de proseguir. Los frames de origen de un recurso son independientes de los frames de salida.
+Segundos en `edit-timeline`: montaje vigente, no reloj del archivo original. Intervalos de capas [entrada, salida); el grafo convierte `startFrame=round(start*30)`, `endFrame=round(end*30)`; salida exclusiva, duración = diferencia de frames. Las operaciones Remotion deben fijar sus tiempos como múltiplos de 1/30: el grafo bloquea desalineaciones superiores a 0,000001 s para evitar redondeos silenciosos. Cambio de rama pendiente de validación. Un cambio de cortes invalida fingerprint, aprobación y anclajes; remapear con mapa verificado antes de proseguir. Los frames de origen de un recurso son independientes de los frames de salida.
 
 Geometría Remotion: `parameters.visual.rect:{x,y,width,height}`, píxeles del lienzo verificado del proyecto, origen superior izquierdo; anchura y altura positivas y rectángulo contenido en el lienzo. `zIndex` entero 0–500 (mayor delante), `opacity` 0–1. Capas simultáneas de la misma escena no comparten zIndex. La geometría nativa puede ser automática: no prometer posición editable exacta por ello.
 
@@ -121,3 +121,7 @@ Lienzo supuesto 1080×1920; no introducirlo como hecho si el proyecto no lo acre
 | 20 | Revisión/autonomía parciales; dos entradas por un mismo flujo, segunda entrada aún pendiente. |
 
 El arco, cuando la política del servidor lo exige, contiene hasta ocho elementos con `id,phase,start,end,purpose,evidence`; la evidencia usa referencias verificadas `transcript-word`/`wordId` o `audited-frame`/`frameId`. Las fases admitidas son `hook,development,emotional-fall,transformation,second-fall,second-transformation,moral,cta`, en ese orden; la política observada permite omitir fases sin evidencia. Las escenas y el arco deben cubrir la duración según el validador.\n\nFuentes: `src/external-edit-plan.js`, `master-director-story.js`, `master-director-orchestration.js`, `master-director-gate.js`, `master-director-layer-graph.js`, `master-director-remotion-compiler.js`, `master-director-workflow.js` y reglas aprobadas. No se ejecutaron pruebas ni renders en esta fase.
+
+## Cambios de integración posteriores
+
+En rama: se ha retirado el límite de caracteres del cuadro para evitar que el navegador trunque silenciosamente un pegado; el guardado maestro sigue bloqueando más de 60.000 bytes serializados. El grafo conserva el ancla de voz de cada operación y bloquea límites Remotion no alineados al fotograma. Código pendiente de pruebas; no implica render ni despliegue. El esquema sigue en `sues-master-story/v1`; no se añaden efectos ni se cambia el contrato de las operaciones nativas.
