@@ -27,7 +27,7 @@ export function buildMasterDirectorReview(plan,registry={}){
    id:o.id,start:o.start,end:o.end,track:o.track??'unspecified',
    effect:o.effect,renderer:o.renderer,reason:o.reason,
    resourceId:o.resourceId??null,resourceRef:o.creativeResourceRef??null,
-   parameters:structuredClone(o.parameters),dependsOn:[...o.dependsOn],
+   parameters:structuredClone(o.parameters),dependsOn:[...(o.dependsOn??[])],
    requiredQA:[...o.requiredQA],motifId:o.motifId??null,
    speechAnchor:o.speechAnchor?structuredClone(o.speechAnchor):null
   }))
