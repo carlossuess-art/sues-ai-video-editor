@@ -2,6 +2,13 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## INTEGRACIÓN PEGAR PLAN Y SKILL · 05/11/2026
+
+- Sin cambio de schema: `sues-master-story/v1`. Skill 1.5.1 → **1.5.2**, release `pluginrel_6aecd552b0088191a6da812025a9d3a1`; publicación y lectura confirmadas. Se documenta que los límites de operaciones Remotion deben coincidir con fotogramas, con tolerancia de 0,000001 s. No se incorporan efectos nuevos.
+- `web/index.html` elimina límite que truncaba pegados; la revisión mantiene máximo de 60.000 bytes serializados. `src/master-director-layer-graph.js` bloquea desalineación temporal Remotion y conserva `speechAnchor`. `src/master-director-project-store.js` vincula aprobación a la revisión inmutable completa e inspecciona correspondencia de campos de operaciones compiladas; `web/app.js` explica bloqueos de traducción. Commits `858d38dbad6ac41af157d7afad8ac3d4ec9047ff`, `a9ed62c7893a3cd161ef96fef68169c0a38c3b38`, `a78e2dd4ec642b0053f7171b31ee3cf942c26b96`, `06d5243b7bb909a42896afc84dc9ac715c79e1cd`.
+- El análisis de traducción no acredita equivalencia visual/audio ni cubre todas las propiedades entre compiladores y motores. Pendientes: preservación integral, soporte de acabados y máscaras reales, recursos, editor reversible, supervisor independiente y generación IA común. Aprobaciones anteriores pueden requerir nueva revisión por el cambio de fingerprint.
+- Carlos ha aplazado explícitamente tests y renders hasta completar integración: cambios no validados, sin despliegue, gastos o Reels. Validar seguridad, regresiones e integración antes de usar en producción.
+
 ## SINCRONIZACIÓN SKILL + PEGAR PLAN · 05/11/2026
 
 - Contrato anterior y actual: `sues-master-story/v1`, sin extensión ni nuevos efectos declarados. Documento `SKILL_CONTRACT_HANDOFF.md`; no garantiza pérdida cero de parámetros anidados.
