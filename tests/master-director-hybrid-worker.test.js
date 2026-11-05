@@ -9,6 +9,7 @@ import {createEditorServer} from '../src/editor-server.js';
 import {MasterDirectorProjectStore} from '../src/master-director-project-store.js';
 import {externalCatalog} from '../src/external-edit-plan.js';
 import {planInstructions} from '../src/instruction-director.js';
+import {reviewMasterDirectorNative} from '../src/master-director-native-review.js';
 import {prepareTrustedHybridWork,startTrustedHybridNativeJob,verifyTrustedHybridNativeChild} from '../src/master-director-hybrid-worker.js';
 const master='b'.repeat(64),font='e'.repeat(64);
 const policy=()=>({registry:{brandId:'sues',profileId:'DOPAMIN',projectId:'p1',
@@ -24,7 +25,7 @@ const make=async()=>{
  const job=app.jobs.create('test',{musicEnabled:false,sfxEnabled:false});
  const project=app.jobs.loadProfile(job.profileId),c=externalCatalog(project,job.settings,[]);
  const store=new MasterDirectorProjectStore(app.jobs.dir(job.id),async()=>({...p,sourceSha256:c.sourceSha256,
-  timelineFingerprint:c.timelineFingerprint,duration:c.duration}));
+  timelineFingerprint:c.timelineFingerprint,duration:c.duration,nativePreflight:(plan,registry)=>reviewMasterDirectorNative({plan,registry,catalog:c,project,settings:job.settings,assets:[],commandPlanner:planInstructions})}));
  const visual={rect:{x:100,y:300,width:500,height:300},zIndex:3,opacity:1,
   typography:{family:'Montserrat',sizePx:80,weight:700,color:'#ffffff'},keyframes:[]};
  const story={schema:'sues-master-story/v1',sourceSha256:c.sourceSha256,
@@ -101,7 +102,7 @@ test('REAL native child output: authenticated full-plan lineage produces verifie
   const parent=app.jobs.create('test',{musicEnabled:false,sfxEnabled:false,profileImages:false});
   const project=app.jobs.loadProfile(parent.profileId),catalog=externalCatalog(project,parent.settings,[]);
   const store=new MasterDirectorProjectStore(app.jobs.dir(parent.id),async()=>({...p,
-   sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration}));
+   sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration,nativePreflight:(plan,registry)=>reviewMasterDirectorNative({plan,registry,catalog,project,settings:parent.settings,assets:[],commandPlanner:planInstructions})}));
   const visual={rect:{x:100,y:300,width:500,height:300},zIndex:4,opacity:1,
    typography:{family:'Montserrat',sizePx:80,weight:700,color:'#ffffff'},keyframes:[]};
   const story={schema:'sues-master-story/v1',sourceSha256:catalog.sourceSha256,
