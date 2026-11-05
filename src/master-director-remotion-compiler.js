@@ -34,8 +34,8 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
   if(!text&&!image&&!video){fail(issues,node,'REMOTION_OPERATION_UNSUPPORTED');continue;}
   if(!only(p,text?['text','visual']:video?['fit','visual','sourceInFrame','muted']:['fit','visual'])||JSON.stringify(p.visual)!==JSON.stringify(v)||
      !only(v,text?['rect','zIndex','opacity','typography','keyframes','mask','dropShadow','glow']:['rect','zIndex','opacity','keyframes','mask','dropShadow','glow'])||
-     (v.dropShadow!==undefined&&(!validShadow(v.dropShadow)||v.mask!==undefined||v.glow!==undefined))||
-     (v.glow!==undefined&&(!validGlow(v.glow)||v.mask!==undefined))||
+     (v.dropShadow!==undefined&&(!validShadow(v.dropShadow)||v.glow!==undefined))||
+     (v.glow!==undefined&&!validGlow(v.glow))||
      !only(v.rect,['x','y','width','height'])||
      (text&&(!only(v.typography,['family','sizePx','weight','color'])||typeof p.text!=='string'||!p.text.length||p.text.length>500))||
      ((image||video)&&p.fit!=='fill')||
