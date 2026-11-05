@@ -2,6 +2,11 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## INTEGRIDAD DE RECURSOS · 05/11/2026
+
+- El gate exige que el SHA del recurso de cada operación coincida con el activo verificado por el servidor, además de derechos; un cambio de versión bloquea el plan. Commit `980b796c77125c57a6fb520565813a365d8a38d9`.
+- Sin pruebas ni renders por instrucción de Carlos; sin despliegue. Debe comprobarse compatibilidad de planes existentes y supervisión cuando llegue la fase de validación. No acredita importación integral, máscaras, efectos, mezcla ni cierre de proyecto.
+
 ## CAPACIDADES ANTES DE APROBAR · 05/11/2026
 
 - En rama se inspecciona la estructura del grafo y se compilan de forma lógica las operaciones Remotion antes de mostrar una propuesta como aprobable; los identificadores y códigos de los bloqueos se presentan en pantalla. La huella temporal usada para inspección no registra una aprobación ni ejecuta un trabajo.
