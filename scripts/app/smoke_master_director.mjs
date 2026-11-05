@@ -2,7 +2,7 @@ import {pathToFileURL} from 'node:url';
 if(!process.env.SUES_PLAYWRIGHT_MODULE||!process.env.SUES_CHROMIUM_PATH)throw Error('Set SUES_PLAYWRIGHT_MODULE and SUES_CHROMIUM_PATH');
 const {chromium}=await import(pathToFileURL(process.env.SUES_PLAYWRIGHT_MODULE).href);
 import assert from 'node:assert/strict';
-import {join} from 'node:path';import {rmSync,mkdirSync,writeFileSync,readFileSync} from 'node:fs';import {createHash,randomUUID} from 'node:crypto';
+import {join} from 'node:path';import {rmSync,mkdirSync,writeFileSync,readFileSync,readdirSync} from 'node:fs';import {createHash,randomUUID} from 'node:crypto';
 import {fixture} from '../../tests/helpers/editor-fixture.js';import {createEditorServer} from '../../src/editor-server.js';
 const f=fixture(),master='b'.repeat(64),context={registry:{brandId:'sues',profileId:'DOPAMIN',projectId:'p1',approvedRuleVersion:'rules-v1',
  approvedRuleIds:['r1'],requiredRuleKeys:['brand.background'],approvedReferenceIds:[],arcPolicy:'reel-observed-v2',wordAnchors:{'test-word':{time:1,text:'Hola'}},masterHashes:{tapiz:master},
@@ -19,7 +19,7 @@ const maskRunner=async(executable,args)=>{
  if(executable==='ffmpeg'){const target=args.at(-1),count=Number(args[args.indexOf('-frames:v')+1]);for(let i=0;i<count;i++)writeFileSync(target.replace('%06d',String(i).padStart(6,'0')),'input-'+i);return;}
  const value=name=>args[args.indexOf(name)+1],input=value('--input-dir'),output=value('--output-dir'),start=Number(value('--start-frame'));
  const rectIndex=args.indexOf('--rect'),rect=args.slice(rectIndex+1,rectIndex+5).map(Number);mkdirSync(output,{recursive:true});
- const count=readFileSync(join(input,'frame-000000.png')).length?60:0,frames=[];
+ const count=readdirSync(input).length,frames=[];
  for(let i=0;i<count;i++){const suffix=String(i).padStart(6,'0'),name='mask-'+suffix+'.png',bytes=Buffer.from('mask-'+i);writeFileSync(join(output,name),bytes);
   frames.push({editFrame:start+i,file:name,sha256:createHash('sha256').update(bytes).digest('hex'),inputSha256:createHash('sha256').update(readFileSync(join(input,'frame-'+suffix+'.png'))).digest('hex')});}
  writeFileSync(join(output,'candidate.json'),JSON.stringify({schema:'sues-mask-candidate/v1',status:'CANDIDATE_NOT_VERIFIED',sourceSha256Claim:value('--source-sha256'),timelineFingerprintClaim:value('--timeline-fingerprint'),mode:value('--mode'),fps:30,coordinateSpace:'layer',rect,model:'fixture',modelSha256:'c'.repeat(64),frames}));
