@@ -621,7 +621,7 @@ $('master-generate').onclick=()=>work(async()=>{
  const result=await api('jobs/'+jobId+'/master-generate','POST',{brief});
  if(current?.id!==jobId||$('external-plan-text').value.trim()||$('master-generation-brief').value!==brief)throw Error('El proyecto o el encargo han cambiado. La propuesta generada se ha guardado en versiones.');
  const raw=JSON.stringify(result.story,null,2);$('external-plan-text').value=raw;
- masterNativeRequest=null;masterPreviewRequest=null;masterReview={jobId,raw,story:result.story,revision:result.revision,fingerprint:result.review.fingerprint};showMasterReview(result.review);
+ masterNativeRequest=null;masterPreviewRequest=null;masterHybridRequest=null;masterReview={jobId,raw,story:result.story,revision:result.revision,fingerprint:result.review.fingerprint};showMasterReview(result.review);
 });
 $('master-review-button').onclick=()=>work(async()=>{
  if(!current)throw Error('Abre un proyecto con vídeo preparado.');
@@ -629,7 +629,7 @@ $('master-review-button').onclick=()=>work(async()=>{
  const draft=await api('jobs/'+jobId+'/master-draft','POST',{story});
  const result=await api('jobs/'+jobId+'/master-review','POST',{revision:draft.revision});
  if(current?.id!==jobId||$('external-plan-text').value!==raw)throw Error('El proyecto o la propuesta han cambiado. Vuelve a revisarlos.');
- masterNativeRequest=null;masterPreviewRequest=null;masterReview={jobId,raw,story,revision:draft.revision,fingerprint:result.fingerprint};showMasterReview(result);
+ masterNativeRequest=null;masterPreviewRequest=null;masterHybridRequest=null;masterReview={jobId,raw,story,revision:draft.revision,fingerprint:result.fingerprint};showMasterReview(result);
 });
 async function masterDecision(mode){
  if(!masterReview||current?.id!==masterReview.jobId||$('external-plan-text').value!==masterReview.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
