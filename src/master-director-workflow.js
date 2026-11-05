@@ -51,7 +51,8 @@ export function buildMasterDirectorReview(plan,registry={}){
   return {number:i+1,id,operationIds,
    title:typeof a?.title==='string'&&a.title?a.title:id,
    kind:a?.kind??'unknown',origin:a?.origin??'unrecorded',
-   version:a?.version??null,
+   version:a?.version??null,sha256:a?.sha256??null,
+   commercialUseAllowed:a?.commercialUseAllowed===true,
    previewUrl:allowedLink(a?.previewUrl)?a.previewUrl:null,
    previewAvailable:allowedLink(a?.previewUrl),
    rightsVerified:a?.rightsVerified===true
