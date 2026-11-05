@@ -42,6 +42,9 @@ export function inspectMasterDirectorStory(story,registry={}){
  else if(registry.unresolvedRuleConflicts.length)
   issue(issues,'UNRESOLVED_RULE_CONFLICTS');
  const n=story.narrative??{};
+ if(story.resources!==undefined&&!Array.isArray(story.resources))issue(issues,'RESOURCES_INVALID');
+ if(n.motifs!==undefined&&!Array.isArray(n.motifs))issue(issues,'MOTIFS_INVALID');
+ if(n.arc!==undefined&&!Array.isArray(n.arc))issue(issues,'ARC_INVALID');
  if(!phrase(n.centralMessage)||!phrase(n.intendedExperience))issue(issues,'NARRATIVE_INTENT_MISSING');
  const arcReview=auditMasterDirectorArc(n,registry,t);
  for(const a of arcReview.issues)issue(issues,a.code,a.beat);
@@ -131,7 +134,7 @@ export function inspectMasterDirectorStory(story,registry={}){
   if(seen.has(k))return;
   if(path.has(k)){issue(issues,'DEPENDENCY_CYCLE',k);return}
   path.add(k);
-  for(const dep of byOp.get(k)?.dependsOn??[]){
+  for(const dep of (Array.isArray(byOp.get(k)?.dependsOn)?byOp.get(k).dependsOn:[])){
    if(!byOp.has(dep))issue(issues,'DEPENDENCY_MISSING',k);else visit(dep);
   }
   path.delete(k);seen.add(k);
