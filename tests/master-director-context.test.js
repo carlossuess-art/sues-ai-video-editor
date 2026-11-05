@@ -82,6 +82,14 @@ test('generated resources resolve only from verified project-bound server eviden
   p.generatedAssets=[{projectId:input.jobId,resourceId:'new-image',sourceSha256:source,timelineFingerprint:'edit-1',kind:'image',assetId:asset,sha256:asset,creationBriefSha256:createHash('sha256').update(brief).digest('hex')}];
   writeFileSync(path,JSON.stringify(p),{mode:0o600});const provider=createMasterDirectorContextProvider(dir),valid=await provider(input);
   assert.deepEqual(valid.registry.generatedAssets['new-image'],{assetId:asset,sha256:asset});assert.equal(valid.registry.licensedAssets[asset].rightsVerified,true);
+  const {MasterDirectorProjectStore}=await import('../src/master-director-project-store.js');
+  const store=new MasterDirectorProjectStore(join(dir,'job'),async story=>{const ctx=await provider({...input,story});return {...ctx,sourceSha256:source,timelineFingerprint:'edit-1',duration:3};});
+  const visual={rect:{x:0,y:0,width:100,height:100},zIndex:1,opacity:1,keyframes:[]};
+  const story={schema:'sues-master-story/v1',sourceSha256:source,timeline:{fingerprint:'edit-1',timeSpace:'edit-timeline',fps:30,duration:3},visual:{mode:'brand-sues'},
+   narrative:{centralMessage:'Una historia real',intendedExperience:'Sentir la transformación',scenes:[{id:'scene',start:0,end:3,purpose:'Presentar la historia'}],motifs:[],arc:[{id:'beat',phase:'development',start:0,end:3,purpose:'Presentar la historia',evidence:[{kind:'transcript-word',wordId:'word-0-span-0'}]}]},
+   resources:structuredClone(input.story.resources),operations:[{id:'image',sceneId:'scene',start:0,end:1,track:'graphics',renderer:'remotion',effect:'image-exact',reason:'Representar transformación',parameters:{fit:'fill',visual},resourceRef:'new-image',dependsOn:[],requiredQA:['rendered-frame','motion-playback','narrative-review']}]};
+  const prepared=await store.prepare(store.saveDraft(story).revision);assert.equal(prepared.response.status,'READY_FOR_CHOICE',JSON.stringify(prepared.response));
+  assert.equal(prepared.plan.operations[0].resourceId,asset);assert.equal(prepared.plan.operations[0].creativeResourceRef,'new-image');
   input.story.resources[0].creationBrief='Una escena diferente';assert.equal((await provider(input)).blockedIssues[0].code,'GENERATED_ASSET_EVIDENCE_INVALID');
   input.story.resources[0].creationBrief=brief;input.catalog.timelineFingerprint='edit-2';assert.deepEqual((await provider(input)).registry.generatedAssets,{});
   input.catalog.timelineFingerprint='edit-1';p.generatedAssets[0].kind='video';input.story.resources[0].kind='video';writeFileSync(path,JSON.stringify(p));
