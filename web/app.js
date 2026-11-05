@@ -501,7 +501,7 @@ async function resumeUpload(id){
 // External plans are data, never code. Always render messages through textContent.
 let externalReview=null,externalRequest=null;
 function invalidateExternal(){externalReview=null;externalRequest=null;$('external-execute').disabled=true;$('external-result').replaceChildren();}
-$('external-plan-text').oninput=invalidateExternal;
+$('external-plan-text').oninput=()=>{invalidateExternal();resetMasterReview();};
 // SUES Master Director: explicit approval and reversible per-layer layout edits.
 // A saved decision is not execution; the server enforces trust and costs.
 let masterReview=null,masterPreviewRequest=null,masterNativeRequest=null;
@@ -510,7 +510,7 @@ function showMasterReview(result){
  const target=$('master-review-result');target.replaceChildren();
  if(result.status!=='READY_FOR_CHOICE'){
   const p=document.createElement('p');p.textContent=result.status==='NEEDS_RESOURCES'?'Faltan recursos para esta propuesta.':'No se puede aprobar todavía. Revisa los elementos pendientes.';target.append(p);
-  for(const issue of result.issues??[]){const item=document.createElement('p');item.textContent=({'MASTER_PROFILE_NOT_SUPPORTED':'Este estilo aún no está conectado al Director. Selecciona CALMA o DOPAMIN para revisar el plan.','ASSET_EVIDENCE_MISSING':'Falta documentar la procedencia o los derechos del recurso','ASSET_UNAVAILABLE_OR_CHANGED':'Un recurso no está disponible o ha cambiado','TRUSTED_SERVER_CONTEXT_UNAVAILABLE':'El registro de confianza del director todavía no está preparado','PROJECT_VERSION_CHANGED':'El proyecto ha cambiado; prepara de nuevo el plan'})[issue.code]??'Hay un elemento del plan que necesita revisión.';if(issue.subject&&/^[a-f0-9]{64}$/.test(issue.subject))item.textContent+=' · '+issue.subject;target.append(item);}
+  for(const issue of result.issues??[]){const item=document.createElement('p');item.textContent=({'MASTER_PROFILE_NOT_SUPPORTED':'Este estilo aún no está conectado al Director. Selecciona CALMA o DOPAMIN para revisar el plan.','ASSET_EVIDENCE_MISSING':'Falta documentar la procedencia o los derechos del recurso','ASSET_UNAVAILABLE_OR_CHANGED':'Un recurso no está disponible o ha cambiado','TRUSTED_SERVER_CONTEXT_UNAVAILABLE':'El registro de confianza del director todavía no está preparado','PROJECT_VERSION_CHANGED':'El proyecto ha cambiado; prepara de nuevo el plan','STORY_FIELD_NOT_REPRESENTED':'El plan contiene un campo que todavía no puede conservarse en la ejecución'})[issue.code]??'Hay un elemento del plan que necesita revisión.';if(issue.subject&&/^[A-Za-z0-9._:\-\[\]]{1,160}$/.test(issue.subject))item.textContent+=' · '+issue.subject;target.append(item);}
   for(const asset of result.assetRequests??[]){const item=document.createElement('p');item.textContent='Recurso pendiente: '+(asset.creationBrief??asset.id);target.append(item);}
   $('master-review-actions').hidden=true;return;
  }
@@ -560,6 +560,7 @@ $('master-review-button').onclick=()=>work(async()=>{
  const jobId=current.id,raw=$('external-plan-text').value;let story;
  try{story=JSON.parse(raw);}catch{throw Error('Pega una propuesta compatible antes de revisarla.');}
  if(story?.schema!=='sues-master-story/v1')throw Error('Esta propuesta no corresponde al Master Director. Puedes usar la revisión habitual del Director IA.');
+ if(new TextEncoder().encode(JSON.stringify(story)).length>60000)throw Error('El plan maestro supera los 60.000 bytes. No lo recortes: necesita una ampliación del límite.');
  const draft=await api('jobs/'+jobId+'/master-draft','POST',{story});
  const result=await api('jobs/'+jobId+'/master-review','POST',{revision:draft.revision});
  if(current?.id!==jobId||$('external-plan-text').value!==raw)throw Error('El proyecto o la propuesta han cambiado. Vuelve a revisarlos.');
