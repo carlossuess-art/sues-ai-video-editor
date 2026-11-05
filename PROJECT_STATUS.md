@@ -1,3 +1,7 @@
+## ESTADO ACTIVO · 05/11/2026 · SUES MASTER DIRECTOR
+
+**Consultar antes de continuar:** [CHECKPOINT ACTIVO ÚNICO](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Es la fuente de verdad operativa del trabajo de Work/chat normal; contiene 50 % estimado global, evidencia, bloqueos, única rama escritora, permisos y próxima acción. **Todo lo que aparece a continuación es HISTÓRICO** y no debe sustituir el último checkpoint. Reglas aprobadas: [20 reglas](docs/SUES_MASTER_DIRECTOR_REGLAS_APROBADAS_20261104.md). No hay despliegue de este cerebro.
+
 ## 04/11/2026 · MASTER DIRECTOR · PREVIEW EN ENTORNO AISLADO · MISIÓN INCOMPLETA
 
 - Servidor/UI de desarrollo integran revisión, versiones y preview Remotion privada con aprobación, validación de fuente CFR30/cortes, bloqueo de cambios, auditoría técnica, reproducción autenticada e idempotencia. No habilitado en producción: política y configuración real faltan; no es exportación final.
