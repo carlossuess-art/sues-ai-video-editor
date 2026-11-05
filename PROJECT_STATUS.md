@@ -1,3 +1,7 @@
+## 06/11/2026 · Generador local opcional de borradores maestros
+
+En rama existe un adaptador para Qwen3/llama.cpp local conectado al mismo flujo de revisión; está desactivado por defecto y no despliega ni aprueba planes. Una prueba sintética con modelo real produjo JSON; una prueba HTTP guardó un borrador que la revisión bloqueó. Los límites, evidencia y trabajo pendiente constan en [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md) y [manual](docs/SUES_MASTER_LOCAL_GENERATOR_20261106.md).
+
 ## 05/11/2026 · Master Director: máscaras candidatas y muestras de supervisión
 
 Estado vivo: [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). En rama se ha conectado generación local opt-in de máscaras candidatas y preparación independiente de muestras para revisión. No se aprueban máscaras ni se certifica calidad automáticamente. Última regresión: 163 PASS, 0 FAIL, 5 SKIP en host; pruebas específicas omitidas ejecutadas aparte en entornos indicados en el checkpoint. No se ha desplegado ni generado un Reel nuevo. Pendientes planificación IA gratuita real, verificación de máscaras, supervisor audiovisual autónomo, integración integral y aceptación creativa.
