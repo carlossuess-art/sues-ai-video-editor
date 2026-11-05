@@ -25,6 +25,8 @@ test('supervision stores samples bound to plan and exact output, never declares 
   assert.throws(()=>openMasterSupervisorEvidence(request),/integrity/);
   const denied=await prepareMasterSupervisorEvidence({graph:g,previewPath,root,outputSha256:sha(media),approvalCheck:async()=>false,runner});
   assert.equal(denied.status,'BLOCKED');assert.equal(readdirSync(root).length,1);
+  let checks=0;const stale=await prepareMasterSupervisorEvidence({graph:g,previewPath,root,outputSha256:sha(media),approvalCheck:async()=>++checks===1,runner});
+  assert.equal(stale.status,'BLOCKED');assert.equal(readdirSync(root).length,1);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
 test('actual FFmpeg extracts source-bound evidence from a synthetic video',{skip:spawnSync('ffmpeg',['-version'],{stdio:'ignore'}).status!==0,timeout:60000},async()=>{
