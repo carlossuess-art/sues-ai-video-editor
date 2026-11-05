@@ -26,7 +26,7 @@ export async function prepareTrustedHybridWork({store,jobs,jobId,revision,decisi
  const hybrid=layers.hybrid;
  if(hybrid.crossEngineDependencies.some(d=>d.fromEngine==='remotion'&&d.toEngine==='native')||
     hybrid.crossEngineOverlaps.some(d=>d.classification==='audio-mix')||
-    hybrid.remotionComponent.layers.some(l=>l.maskAssetId))
+    hybrid.remotionComponent.layers.some(l=>l.maskAssetId||l.maskFrameAssetIds?.length))
   return block('HYBRID_HANDOFF_NEEDS_ENGINE_WORK');
  const project=jobs.loadProfile(parent.profileId),catalog=externalCatalog(project,parent.settings,assets.list());
  if(catalog.timelineFingerprint!==layers.graph.timelineFingerprint||
