@@ -12,6 +12,24 @@ import {reviewMasterDirectorHybridGraph} from './master-director-hybrid-review.j
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const HASH=/^[a-f0-9]{64}$/;
 const obj=x=>x&&typeof x==='object'&&!Array.isArray(x);
+// The story compiler selects specific fields. Keep the immutable draft intact and
+// block review whenever unknown envelope fields would otherwise disappear.
+function unrepresentedStoryFields(story){
+ const issues=[];
+ const check=(value,allowed,subject)=>{
+  if(!obj(value))return;
+  for(const key of Object.keys(value))
+   if(!allowed.includes(key))issues.push({code:'STORY_FIELD_NOT_REPRESENTED',subject:subject+'.'+key});
+ };
+ check(story,['schema','sourceSha256','timeline','visual','narrative','resources','operations'],'story');
+ check(story.visual,['mode','referenceId'],'visual');
+ check(story.narrative,['centralMessage','intendedExperience','scenes','motifs','arc'],'narrative');
+ for(const [i,r] of (Array.isArray(story.resources)?story.resources:[]).entries())
+  check(r,['id','source','assetId','expectedSha256','kind','creationBrief','narrativePurpose'],'resources['+i+']');
+ for(const [i,o] of (Array.isArray(story.operations)?story.operations:[]).entries())
+  check(o,['id','sceneId','start','end','track','renderer','effect','reason','parameters','dependsOn','requiredQA','resourceRef','motifId','speechAnchor'],'operations['+i+']');
+ return issues;
+}
 // Canonical hash over server-owned evidence: any substantive change invalidates
 // the earlier decision. Sorting prevents false invalidation from key order.
 const canonical=x=>Array.isArray(x)?x.map(canonical):obj(x)?Object.fromEntries(Object.keys(x).sort().map(k=>[k,canonical(x[k])])):x;
@@ -72,7 +90,11 @@ export class MasterDirectorProjectStore{
   const next=this.saveDraft(story);return {...next,parentRevision:revision,requiresNewReview:true};
  }
  async prepare(revision){
-  const story=this.readDraft(revision),context=await this.contextProvider(story);
+  const story=this.readDraft(revision);
+  const unrepresented=unrepresentedStoryFields(story);
+  if(unrepresented.length)
+   return {response:{status:'BLOCKED',revision,issues:unrepresented,canExecute:false}};
+  const context=await this.contextProvider(story);
   if(Array.isArray(context?.blockedIssues)&&context.blockedIssues.length)
    return {response:{status:'BLOCKED',revision,issues:context.blockedIssues,canExecute:false}};
   if(!context||!obj(context.registry)||!Array.isArray(context.rulebook))
