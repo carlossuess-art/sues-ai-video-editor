@@ -90,15 +90,16 @@ test('unknown failed operation cannot masquerade as benign defect',()=>{
 test('without independent QA a playable file is not declared final',()=>{
  const p=plan(),r=registry(p);
  assert.equal(assessMasterDirectorDelivery(p,r,render(p),{kind:'none',failedOperationIds:[]}).status,'PROVISIONAL_EXPORT_OPTION');
- r.creativeAcceptedFingerprint=masterDirectorFingerprint(p);r.finalQAAcceptedFingerprint=masterDirectorFingerprint(p);
+ r.creativeAcceptedFingerprint=masterDirectorFingerprint(p);r.finalQAAcceptedFingerprint=masterDirectorFingerprint(p);r.creativeAcceptedOutputSha256=output;r.finalQAAcceptedOutputSha256=output;
  // A claimed QA flag alone must not certify a real file.
  assert.equal(assessMasterDirectorDelivery(p,r,render(p),{kind:'none',failedOperationIds:[]}).status,'PROVISIONAL_EXPORT_OPTION');
  r.trustedVerifierIds=['qa-system'];
- r.qaPasses=['qa-first','qa-second'].map(runId=>({fingerprint:masterDirectorFingerprint(p),completed:true,verifierId:'qa-system',runId,
+ r.qaPasses=['qa-first','qa-second'].map(runId=>({fingerprint:masterDirectorFingerprint(p),outputSha256:output,completed:true,verifierId:'qa-system',runId,
    evidence:p.operations.map(op=>({operationId:op.id,proofs:op.requiredQA.map(kind=>({kind,passed:true,artifactSha256:output}))}))}));
- const verified={...render(p),executionManifest:{fingerprint:masterDirectorFingerprint(p),operations:p.operations.map(op=>({id:op.id,renderer:op.renderer,effect:op.effect,start:op.start,end:op.end,outputSha256:output}))}};
+ const verified={...render(p),executionManifest:{fingerprint:masterDirectorFingerprint(p),outputSha256:output,operations:p.operations.map(op=>({id:op.id,renderer:op.renderer,effect:op.effect,start:op.start,end:op.end,outputSha256:output}))}};
  const x=assessMasterDirectorDelivery(p,r,verified,{kind:'none',failedOperationIds:[]});
  assert.equal(x.status,'FINAL_FILE_REVIEW');assert.equal(x.mayPublish,false);
+ verified.executionManifest.outputSha256='f'.repeat(64);assert.equal(assessMasterDirectorDelivery(p,r,verified,{kind:'none',failedOperationIds:[]}).status,'PROVISIONAL_EXPORT_OPTION');
 });
 
 test('the review offers both supervision and autonomous mode with a narrative phase timeline',()=>{
