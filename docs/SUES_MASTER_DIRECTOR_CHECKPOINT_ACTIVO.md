@@ -5,6 +5,7 @@
 ## REVISIÓN DETALLADA Y GUARDIA DE EVIDENCIAS · 05/11/2026
 
 - La revisión incluye parámetros, motor, dependencias, recursos y anclas por operación; la interfaz muestra estos datos desplegables por escena. Commits `9648d6fabbb629691960cb8aae0f01d898c7fecc`, `be08f97512dc0a731eb112dcf90d7acf167c3f00`, `594420045ef763e9f6d75440699765c567763afb`.
+- La revisión también expone ID, procedencia, versión, SHA, uso comercial y operaciones vinculadas de cada recurso ya resuelto en el registro confiable; no implementa búsqueda ni acredita por sí misma los derechos. Commits `30a5458bcc484e80e0fc99a0efd3d4be40310e3a` y `8fa3f2538b97f8689391a989f6e5fde02e67ce58`.
 - La auditoría rechaza evidencia duplicada en cada pasada, evitando aceptar listas con entradas repetidas. Commit `7c3ff01f041a8514132f024aba2c1b7dc0d7ac7f`. No implementa supervisor audiovisual independiente ni demuestra sus resultados.
 - Sin tests, renders ni despliegue por indicación de Carlos. Cambios pendientes de validación. No acredita integración integral, efectos, máscaras reales ni segundo camino IA. Próxima acción: continuar la integración y mantener bloqueadas las capacidades sin equivalencia verificada.
 
