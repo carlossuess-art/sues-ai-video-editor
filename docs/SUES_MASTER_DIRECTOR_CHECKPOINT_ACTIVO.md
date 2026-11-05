@@ -1,3 +1,11 @@
+## MÁSCARA VERIFICADA CON ACABADO ESTÁTICO · 05/11/2026
+
+La rama admite en Remotion una máscara alfa verificada combinada con **una** sombra estática o **un** resplandor estático: la máscara afecta a la capa interior y el filtro se aplica después a su silueta. No permite sombra y resplandor simultáneos. La evidencia sigue ligada a la fuente, intervalo y recursos acreditados; no se promocionan candidatos automáticamente. En ejecución mixta se mantiene el bloqueo de máscaras sin evidencia de la fuente derivada.
+
+Validación acotada: 12/12 pruebas del compilador y TypeScript sin errores. Dos fotogramas sintéticos de una imagen con máscara cambiante y sombra azul sin desenfoque han confirmado por píxeles que la sombra sigue la silueta y no queda recortada por la máscara. Esto no certifica vídeo, texto, resplandor combinado, calidad de segmentación ni QA artística. La skill privada se sincronizó a 1.5.5; no implica despliegue.
+
+Siguen pendientes, entre otros, un generador de planes IA operativo configurado, revisión y promoción fiable de máscaras y supervisión audiovisual semántica autónoma. No se han creado Reels nuevos ni desplegado producción.
+
 # SUES MASTER DIRECTOR · CHECKPOINT ACTIVO ÚNICO
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
