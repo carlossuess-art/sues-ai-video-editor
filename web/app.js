@@ -631,6 +631,27 @@ $('master-review-button').onclick=()=>work(async()=>{
  if(current?.id!==jobId||$('external-plan-text').value!==raw)throw Error('El proyecto o la propuesta han cambiado. Vuelve a revisarlos.');
  masterNativeRequest=null;masterPreviewRequest=null;masterHybridRequest=null;masterReview={jobId,raw,story,revision:draft.revision,fingerprint:result.fingerprint};showMasterReview(result);
 });
+function addMasterSupervisorControl(area,state,previewId){
+ const old=area.querySelector('[data-master-supervisor]');if(old)old.remove();
+ const section=document.createElement('section');section.dataset.masterSupervisor='true';
+ const button=document.createElement('button'),status=document.createElement('p'),results=document.createElement('div');
+ button.type='button';button.textContent='Preparar muestras para supervisión';status.setAttribute('role','status');
+ button.onclick=()=>work(async()=>{
+  if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
+  button.disabled=true;status.textContent='Preparando fotogramas y audio del archivo…';results.replaceChildren();
+  try{
+   const result=await api('jobs/'+state.jobId+'/master-supervisor','POST',{revision:state.revision,decisionId:state.decisionId,previewId});
+   if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)return;
+   if(result.status!=='SAMPLES_REQUIRE_REVIEW'){status.textContent='No se han podido preparar las muestras. Revisa el vídeo, sus recursos y los límites.';return;}
+   status.textContent='Muestras preparadas. La revisión visual y la escucha siguen pendientes; esto no aprueba el vídeo.';
+   const query=new URLSearchParams({revision:state.revision,decisionId:state.decisionId,previewId,inspectionId:result.inspectionId});
+   const makeLink=(file,title)=>{const link=document.createElement('a'),q=new URLSearchParams(query);q.set('file',file);
+    link.href='/api/jobs/'+state.jobId+'/master-supervisor-evidence?'+q.toString();link.target='_blank';link.rel='noopener noreferrer';link.textContent=title;return link;};
+   const audio=document.createElement('p');audio.append(makeLink('audio.wav','Abrir audio para escuchar'));results.append(audio);
+   const list=document.createElement('ol');for(const sample of result.report.samples){const li=document.createElement('li');li.append(makeLink(sample.file,(sample.frame/30).toFixed(2)+' s · '+sample.operationIds.join(', ')));list.append(li);}results.append(list);
+  }finally{button.disabled=false;}
+ });section.append(button,status,results);area.append(section);
+}
 async function masterDecision(mode){
  if(!masterReview||current?.id!==masterReview.jobId||$('external-plan-text').value!==masterReview.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
  const state=masterReview,result=await api('jobs/'+state.jobId+'/master-decision','POST',{revision:state.revision,fingerprint:state.fingerprint,mode});
@@ -679,6 +700,7 @@ async function masterDecision(mode){
      if(progress.status==='RUNNING'){setTimeout(()=>void watch(),2000);return;}
      if(progress.status==='READY'&&progress.result?.previewId){
       player.src='/api/jobs/'+state.jobId+'/master-preview-media?previewId='+encodeURIComponent(progress.result.previewId);player.hidden=false;
+      addMasterSupervisorControl(area,state,progress.result.previewId);
       status.textContent='Previsualización privada preparada. Requiere revisión audiovisual.';button.disabled=false;return;
      }
      status.textContent=progress.status==='INTERRUPTED'?'La preparación se interrumpió y necesita diagnóstico.':'La preparación necesita revisar el plan, los recursos o los motores.';
@@ -714,6 +736,7 @@ async function masterDecision(mode){
     if(progress.status==='RUNNING'){setTimeout(()=>void watch(),2000);return;}
     if(progress.status==='READY'&&progress.result?.status==='PREVIEW_READY_FOR_REVIEW'){
      player.src='/api/jobs/'+state.jobId+'/master-preview-media?previewId='+encodeURIComponent(progress.result.previewId);player.hidden=false;
+      addMasterSupervisorControl(area,state,progress.result.previewId);
      previewStatus.textContent='Previsualización privada preparada. Revísala antes de decidir los siguientes ajustes.';generate.disabled=false;return;
     }
     const codes=(progress.issues??[]).map(issue=>issue.code);
