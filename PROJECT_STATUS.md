@@ -1,3 +1,7 @@
+## 05/11/2026 · Master Director: máscaras candidatas y muestras de supervisión
+
+Estado vivo: [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). En rama se ha conectado generación local opt-in de máscaras candidatas y preparación independiente de muestras para revisión. No se aprueban máscaras ni se certifica calidad automáticamente. Última regresión: 163 PASS, 0 FAIL, 5 SKIP en host; pruebas específicas omitidas ejecutadas aparte en entornos indicados en el checkpoint. No se ha desplegado ni generado un Reel nuevo. Pendientes planificación IA gratuita real, verificación de máscaras, supervisor audiovisual autónomo, integración integral y aceptación creativa.
+
 ## 05/11/2026 · Master Director: continuidad en rama
 
 Estado vivo y detalle de commits: [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Entrada IA preparada para proveedor gratuito inyectable, aún sin proveedor configurado; ambas entradas comparten borrador y revisión. Trazabilidad inmutable y comprobación nativa previa a aprobación incorporadas. Pendientes efectos, máscaras, editabilidad integral, supervisor audiovisual y validación posterior. Sin tests ni renders por decisión de Carlos; sin despliegue ni gasto.
