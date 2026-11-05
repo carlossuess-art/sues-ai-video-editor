@@ -60,3 +60,16 @@ test('blocks spring even when graph and source parameters agree',()=>{
  const r=compileMasterDirectorRemotion(g,{verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}}});
  assert.equal(r.status,'BLOCKED');assert.equal(r.composition,null);assert.ok(r.issues.some(i=>i.code==='ANIMATION_UNSUPPORTED'));
 });
+
+
+test('dynamic alpha mask requires one verified asset per frame and exact source timing',()=>{
+ const g=graph(),ids=['c','d','f'].map(c=>c.repeat(64));g.nodes[0].startFrame=3;g.nodes[0].endFrame=6;
+ g.nodes[0].visual.mask={proofId:'moving-mask',mode:'alpha-keep'};g.nodes[0].sourceParameters.visual=structuredClone(g.nodes[0].visual);
+ const proof={verified:true,sourceSha256:g.sourceSha256,start:0.1,end:0.2,startFrame:3,endFrame:6,fps:30,coordinateSpace:'layer',frameAssetIds:ids};
+ const options={verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}},verifiedAssets:Object.fromEntries(ids.map(id=>[id,{sha256:id,kind:'image',rightsVerified:true,commercialUseAllowed:true}])),verifiedMasks:{'moving-mask':proof}};
+ let result=compileMasterDirectorRemotion(g,options);assert.equal(result.status,'READY_FOR_REMOTION_STAGING');assert.deepEqual(result.composition.layers[0].maskFrameAssetIds,ids);
+ proof.frameAssetIds=ids.slice(0,2);assert.equal(compileMasterDirectorRemotion(g,options).status,'BLOCKED');
+ proof.frameAssetIds=ids;proof.assetId=ids[0];assert.equal(compileMasterDirectorRemotion(g,options).status,'BLOCKED');
+ delete proof.assetId;proof.sourceSha256='0'.repeat(64);assert.equal(compileMasterDirectorRemotion(g,options).status,'BLOCKED');
+ proof.sourceSha256=g.sourceSha256;options.verifiedAssets[ids[1]].rightsVerified=false;assert.equal(compileMasterDirectorRemotion(g,options).status,'BLOCKED');
+});
