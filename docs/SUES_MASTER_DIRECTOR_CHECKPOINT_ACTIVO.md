@@ -56,6 +56,18 @@ No reutilizar blindly `src/editor-server.js` de la rama sobre producción; la ba
 4. Completar política con procedencia real documentada; no simular licencias.
 5. Finalmente Reel 158404 y dos ciclos QA. En cada hito actualizar este documento + nota superior Drive.
 
+## HITO VERIFICADO · 05/11/2026, 08:42 CET (07:42 UTC) · REMOTION V2 RECUPERADO
+
+**Código consolidado en GitHub:** `6cc49b30802af3507b1f63c9ca24ced45ac06a1e` (HEAD verificado). Se recuperaron de la carpeta de QA de Work `master-director-runtime-manifest.js` y el soporte para configuración firmada `sues-master-preview-config/v2`, con hash de cada dependencia transitiva y protección ante symlinks externos y archivos mutables. Se integró con el diagnóstico propio de memoria de 512 MiB de reserva y la validación de biblioteca navegador `LD_LIBRARY_PATH` desde configuración confiable; no se exponen stderr ni rutas internas al navegador. Remotion bloquea rutas de cache Webpack preexistentes. Los archivos integrados se compararon por SHA-256 con el checkout local, sin diferencias.
+
+**Pruebas posteriores al cambio:**
+- **134/134 PASS, cero FAIL, cero SKIP** de pruebas Node dirigidas sobre el checkout de la rama unificada con `examples/assets/schemas` completos; log `/tmp/sues-master-unified-v2-directed-fixed-20261105.log` (~07:40 UTC). El primer intento sobre sparse checkout incompleto falló por fixtures ausentes; se completó el checkout y la suite PASÓ. No atribuir esos errores al motor.
+- **Remotion E2E sintético 24 s PASS dentro de Docker aislado --memory=1900m, --cpus=0.65, --network none**, versión de pruebas con manifiesto V2, biblioteca de Chrome y reserva de 512 MiB. Generó 720 frames a 30fps, audio AAC, MP4 H.264 270×480, SHA salida `d94303f59533b82f24b501cfb893aa0a61bc4e4de4867831762eff647d1c8be7`. Auditoría técnica completa de decodificación, URL Range e idempotencia **PASS**. Log `/tmp/sues-master-candidate-remotion-v2-1900m-20261105.log` (~07:38 UTC).
+- Con **--memory=1536m** se reprodujo y quedó diagnosticado `PREVIEW_MEMORY_LIMIT / CGROUP_MEMORY_LOW` durante render. **No se bajó la reserva** y no se adoptó un aumento de RAM en producción: el parámetro de 1900m fue EXCLUSIVAMENTE un límite en contenedor temporal con recursos del host existente. Así queda demostrado que la capacidad de memoria importa; no se garantiza el rendimiento de dos renders simultáneos ni de un Reel complejo.
+- El test nativo MP4 12 s anterior y la regresión 558/558 anterior siguen vigentes como referencias históricas, no sustituyen una regresión completa sobre este nuevo commit ni 2 auditorías creativas. No se ha probado la exportación final de Remotion ni una máscara dinámica real.
+
+**Próxima acción exacta de Work:** leer este checkpoint y revisar HEAD actual, luego implementar un plan mixto real cerebro→Remotion/nativo de manera fiel con persistencia de capas; documentar política del runtime y recursos con pruebas reales (sin inventar licencias), realizar Reel 158404 y QA audiovisual independiente. Pruebas 134 Node + E2E 24 s ya pasadas, evitar repetirlas sin cambios relevantes. Antes de despliegue: regresión integral sobre versión candidata definitiva y backup/rollback autorizados por Carlos. Skill permanece sin cambios.
+
 ## HITO NUEVO VERIFICADO · 05/11/2026, ~08:20 CET (07:20 UTC)
 
 **Candidata aislada reproducible:** `node scripts/master-director/build-isolated-candidate.mjs /opt/sues-video-setup/release-mobile-layers-20261030` sobre el checkout privado de trabajo `/tmp/sues-master-unified-20261105` al commit `6d9fb7911644bc1c1ebcff79e96071556e7ac401`. Resultado `ISOLATED_CANDIDATE_BUILT`, **458 hashes de archivos de producción verificados**, candidata `/tmp/sues-director-candidate-OcRkNV`, `deployed:false`. El constructor es reproducible sobre la base de hashes; la candidata lleva vínculos de node_modules para QA y **NO instala el runtime Remotion** por sí sola.
@@ -70,6 +82,8 @@ No reutilizar blindly `src/editor-server.js` de la rama sobre producción; la ba
 **Próxima acción única:** perfilar memoria incremental del render Remotion 24 s dentro de un cgroup aislado con límite conservador, comprobar motivo del guard cuando aparece (sin reducirlo). Si la capacidad del host no garantiza margen, no competir con producción: optimizar o probar en entorno mayor autorizado. Después cerrar política real/recursos y flujo mixto/Remotion, terminando con 158404 y 2 QA audiovisuales.
 
 ## Registro de actualizaciones
+
+- **2026-11-05 08:42 CET · Chat normal / integración V2 y QA**: HEAD 6cc49b3, runtime de integridad recuperado, 134/134 tests Node PASS, Remotion E2E 24s+audio y auditoría técnica en Docker 1900m PASS; Docker 1536m bloqueó por CGROUP_MEMORY_LOW (sin relajar guardia). Producción intacta. Pendiente mezcla nativo+Remotion, Reel real y QA creativa.
 
 - **2026-11-05 ~08:20 CET · Chat normal / ejecución aislada**: se publicaron diagnóstico seguro de memoria y 7 pruebas PASS, se construyó una candidata reproducible (458 archivos productivos verificados) y se probó completa (132/132 Node + 1/1 MP4 nativo FFmpeg). **El bloqueo Remotion en contenedor y la integración cinematográfica final permanecen pendientes.** Ningún despliegue.
 
