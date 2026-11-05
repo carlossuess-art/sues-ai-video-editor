@@ -50,8 +50,35 @@ export function createMasterDirectorContextProvider(directory){
   const style=job.settings?.styleId??'SUES_CALMA';
   const profileId=style==='SUES_CALMA'?'CALMA':style==='SUES_DOPAMIN'?'DOPAMIN':null;
   if(!profileId)return {blockedIssues:[{code:'MASTER_PROFILE_NOT_SUPPORTED',subject:String(style)}]};
-  const licensedAssets={},masters=[],masterHashes={};
-  const wanted=new Set([...policy.masters.map(m=>m?.assetId),...(Array.isArray(story?.resources)?story.resources:[]).filter(r=>r?.source==='library').map(r=>r.assetId)]);
+  const licensedAssets={},masters=[],masterHashes={},maskEvidence={};
+  // Optional attestations are administrator-owned server policy, never supplied
+  // by a plan. Scope every proof to this source and current edited timeline.
+  const requestedMasks=new Set((Array.isArray(story?.operations)?story.operations:[])
+   .map(op=>op?.parameters?.visual?.mask?.proofId).filter(safeId));
+  if(policy.maskEvidence!==undefined&&!Array.isArray(policy.maskEvidence))return null;
+  const availableMasks=policy.maskEvidence??[];
+  if(availableMasks.length>300||new Set(availableMasks.map(m=>m?.id)).size!==availableMasks.length)return null;
+  const maskAssets=[];
+  for(const id of requestedMasks){
+   const proof=availableMasks.find(m=>m?.id===id);if(!proof)continue;
+   if(proof.verified!==true||proof.sourceSha256!==catalog.sourceSha256||
+      proof.timelineFingerprint!==catalog.timelineFingerprint||typeof proof.evidenceRef!=='string'||!proof.evidenceRef.trim()||
+      !Number.isFinite(proof.start)||!Number.isFinite(proof.end)||proof.start<0||proof.end<=proof.start)
+    return {blockedIssues:[{code:'MASK_POLICY_EVIDENCE_INVALID',subject:id}]};
+   if(Array.isArray(proof.frameAssetIds)){
+    if(proof.coordinateSpace!=='layer'||proof.fps!==30||!Number.isInteger(proof.startFrame)||!Number.isInteger(proof.endFrame)||
+       proof.startFrame<0||proof.endFrame<=proof.startFrame||proof.endFrame-proof.startFrame>120||
+       proof.frameAssetIds.length!==proof.endFrame-proof.startFrame||!proof.frameAssetIds.every(x=>SHA.test(x??''))||
+       Math.abs(proof.start-proof.startFrame/30)>1e-6||Math.abs(proof.end-proof.endFrame/30)>1e-6)
+     return {blockedIssues:[{code:'MASK_POLICY_EVIDENCE_INVALID',subject:id}]};
+    maskAssets.push(...proof.frameAssetIds);
+   }else{
+    if(!SHA.test(proof.assetId??''))return {blockedIssues:[{code:'MASK_POLICY_EVIDENCE_INVALID',subject:id}]};
+    maskAssets.push(proof.assetId);
+   }
+   maskEvidence[id]=structuredClone(proof);
+  }
+  const wanted=new Set([...policy.masters.map(m=>m?.assetId),...maskAssets,...(Array.isArray(story?.resources)?story.resources:[]).filter(r=>r?.source==='library').map(r=>r.assetId)]);
   for(const id of wanted){
    if(!SHA.test(id??''))return null;
    try{
@@ -90,7 +117,7 @@ export function createMasterDirectorContextProvider(directory){
    approvedReferenceIds:policy.approvedReferenceIds,masterHashes,
    lockedMastersByMode:{'brand-sues':masters,'reference-exact':masters},
    rendererCapabilities:{native,remotion:['text','image-exact','video-exact','audio-clip-exact']},licensedAssets,generatedAssets:{},wordAnchors,
-   arcPolicy:'reel-observed-v2',frameEvidence:{},maskEvidence:{},canvas:{width:1080,height:1920},verifiedFonts
+   arcPolicy:'reel-observed-v2',frameEvidence:{},maskEvidence,canvas:{width:1080,height:1920},verifiedFonts
   }};
  };
 }
