@@ -409,9 +409,19 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       masterGeneratorRuns.add(id);
       try{
        const current=jobs.get(id),project=jobs.loadProfile(current.profileId),catalog=externalCatalog(project,current.settings,assets.list());
+       const trusted=typeof masterContextProvider==='function'?await masterContextProvider({jobId:id,project,job:current,assets,catalog,story:{resources:[]}}):null;
+       if(!trusted?.registry||!Array.isArray(trusted.rulebook)||trusted.blockedIssues?.length)
+        return json(res,409,{status:'BLOCKED',issues:trusted?.blockedIssues??[{code:'TRUSTED_SERVER_CONTEXT_UNAVAILABLE'}]});
+       const registry=trusted.registry;
+       // Send only the creative facts needed to make a candidate, not policy
+       // files, credentials, paths, or permissions/approval receipts.
        const context={schema:'sues-master-generation-context/v1',sourceSha256:catalog.sourceSha256,
         timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration,timeSpace:catalog.timeSpace,
-        sourceTimeMap:catalog.sourceTimeMap,captions:catalog.captions,assets:catalog.assets};
+        fps:30,sourceTimeMap:catalog.sourceTimeMap,captions:catalog.captions,
+        wordAnchors:registry.wordAnchors??{},canvas:registry.canvas??null,
+        rendererCapabilities:registry.rendererCapabilities??{},fonts:Object.keys(registry.verifiedFonts??{}),
+        approvedReferenceIds:registry.approvedReferenceIds??[],arcPolicy:registry.arcPolicy??null,
+        resourceCandidates:catalog.assets,resourceCandidatesRequireVerification:true};
        const raw=await generator.generate({brief:b.brief.trim(),context:structuredClone(context),outputSchema:'sues-master-story/v1'});
        if(typeof raw!=='string'||Buffer.byteLength(raw,'utf8')>60000)throw Error('La propuesta generada no es un JSON maestro válido o supera el límite.');
        const story=JSON.parse(raw);rejectDuplicateJsonKeys(raw);
