@@ -1418,3 +1418,5 @@ La tabla técnica de Carlos queda codificada como `sues-visual-grammar-158623-v1
 - Master Director: configuración privada de preview rechaza rutas no normalizadas, directorios padres inseguros o enlaces simbólicos; 122/122 pruebas Master Director en rama PASS. No protege dependencias transitivas ni elimina carreras de archivos; aún requiere runtime inmutable y validación de producción. Sin despliegue.
 
 - Seguridad y perfiles: política del cerebro rechaza ficheros de otro propietario, rutas o directorios inseguros; estilos ajenos a CALMA y DOPAMIN se bloquean en vez de convertirse silenciosamente a CALMA. 122 pruebas específicas PASS. ELEMENTS aún no integrado como perfil; producción intacta.
+
+- Preparación de política: comprobador offline de solo lectura valida bytes, metadatos y 20 reglas para tres IDs seleccionados; no crea política ni modifica biblioteca. 125 pruebas del cerebro PASS. Los tres tapices reales figuran como propios, pero carecen de metadatos V2 de prueba/licencia, por lo que el comprobador bloquea correctamente la activación; no se deben inventar pruebas.

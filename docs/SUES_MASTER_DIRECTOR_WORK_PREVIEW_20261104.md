@@ -87,3 +87,9 @@ La prueba integral aislada con configuración privada generó 24 segundos sinté
 ## 05/11 · Política confiable y perfiles
 
 El proveedor comprueba el propietario del fichero de política y la seguridad de toda su ruta; ubicaciones inseguras, enlaces y propietarios ajenos se rechazan. Los estilos no mapeados explícitamente se bloquean en lugar de tratarse silenciosamente como CALMA. ELEMENTS y otros estilos existentes siguen pendientes de integración explícita. 122 pruebas específicas PASS. No implica validar derechos reales ni eliminar carreras de archivos; no desplegado.
+
+## 05/11 · Preparación de política en solo lectura
+
+`scripts/app/master-director-policy-check.mjs /ruta/absoluta/assets ID1 ID2 ID3` comprueba las 20 reglas y archivos/metadatos de tres masters escogidos sin escribir ni limpiar la biblioteca; `--emit-policy` emite el candidato por stdout, sin instalarlo. Los IDs deben ser fuentes seleccionadas, no conjeturas. Prueba 3/3 y batería 125/125 PASS con evidencia simulada. En lectura real, los tres tapices identificados en la biblioteca como propios no tienen metadatos V2 ni referencias de licencia/prueba: bloqueo correcto. La presencia de referencias no verifica por sí sola su contenido y no autoriza producción.
+
+Regresión en copia productiva: dos pruebas antiguas se adaptaron solo en staging a la cola y el límite actual de proyectos; los nueve casos de subida/fragmento PASS en contenedor aislado. Batería amplia en curso; no se afirma aprobación integral.
