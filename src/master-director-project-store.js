@@ -6,6 +6,7 @@ import {mkdirSync,readFileSync,writeFileSync,readdirSync,lstatSync,existsSync} f
 import {join} from 'node:path';
 import {prepareMasterDirectorSession} from './master-director-orchestration.js';
 import {buildMasterDirectorReview} from './master-director-workflow.js';
+import {masterDirectorFingerprint} from './master-director-gate.js';
 import {buildMasterDirectorLayerGraph} from './master-director-layer-graph.js';
 import {compileMasterDirectorRemotion} from './master-director-remotion-compiler.js';
 import {reviewMasterDirectorHybridGraph} from './master-director-hybrid-review.js';
@@ -143,6 +144,20 @@ export class MasterDirectorProjectStore{
   // not required by a specific renderer, without trusting it as authorization.
   result.plan.storyRevision=revision;
   result.plan.trustedContextFingerprint=sha(JSON.stringify(canonical({registry,rulebook:context.rulebook})));
+  // Offline capability preflight uses a temporary fingerprint only to inspect
+  // structure; it does not record an approval, execute a job or authorize costs.
+  const inspectionRegistry={...registry,approvedPlanFingerprint:masterDirectorFingerprint(result.plan)};
+  const structural=buildMasterDirectorLayerGraph(result.plan,inspectionRegistry);
+  if(structural.status!=='STRUCTURE_READY_NOT_RENDERED')
+   return {response:{status:'BLOCKED',revision,issues:structural.issues??[],canExecute:false}};
+  const remotionNodes=structural.graph.nodes.filter(node=>node.renderer==='remotion');
+  if(remotionNodes.length){
+   const staged=compileMasterDirectorRemotion({...structural.graph,nodes:remotionNodes},{
+    verifiedFonts:registry.verifiedFonts??{},verifiedAssets:registry.licensedAssets??{},
+    verifiedMasks:registry.maskEvidence??{}});
+   if(staged.status!=='READY_FOR_REMOTION_STAGING')
+    return {response:{status:'BLOCKED',revision,issues:staged.issues??[],canExecute:false}};
+  }
   const view=buildMasterDirectorReview(result.plan,registry);
   return {response:{...view,revision,canExecute:false,projectFingerprint:context.timelineFingerprint},plan:result.plan,registry};
  }
