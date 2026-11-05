@@ -8,6 +8,7 @@
 - `src/master-director-project-store.js`: el endpoint ya autenticado `master-layers` expone `hybrid` cuando el plan es mixto. `master-render-preflight` continúa bloqueando los renders mixtos incompletos.
 - `src/master-director-hybrid-handoff.js`: contrato de handoff seguro tras completar el render nativo. Acepta solo un hijo nativo editable, con SHA de origen/salida, duración y auditoría técnica vinculados al plan aprobado; prepara un origen Remotion derivado con el audio nativo. Bloquea máscaras sin evidencia nueva, dependencias Remotion→nativo e interacciones de mezcla sonora sin verificar. **Aún no existe una ruta productiva que cree y persista este handoff automáticamente**; el llamador debe ser código de servidor autenticado, no datos del navegador.
 - `tests/master-director-hybrid-review.test.js`, `tests/master-director-hybrid-handoff.test.js` y caso E2E en `tests/master-director-project-store.test.js` comprueban conservación de operaciones, rechazo total en fallos y acceso autenticado.
+- **Revisión nativa de plan mixto integrada en backend** (`src/master-director-native-review.js`): con aprobación vigente de todo el plan, compila temporalmente solo la parte nativa para contrastarla con las reglas reales del editor, conservando el fingerprint del plan íntegro y las dependencias. El endpoint autenticado `/master-native-review` responde `HYBRID_NATIVE_PART_REVIEWED_NOT_EXECUTABLE` **sin entregar un plan nativo ejecutable**. `/master-native-apply` responde 409 si alguien intenta ejecutar esa mitad; el test HTTP autenticado está en `tests/master-director-project-store.test.js`. Tras este cambio, nueva candidata validada contra **458 hashes** y **146/146 pruebas Node PASS**: `/tmp/sues-master-hybrid-native-candidate-tests-20261105.log`, código `e5313398ef64b87f86f6c8a31f39f77291e7f5ad`, carpeta privada `/tmp/sues-director-candidate-rRJsvw`. No se inició render con ese endpoint.
 
 ## Prueba técnica ejecutada en VPS, sin Work ni APIs de pago
 
@@ -23,7 +24,7 @@ Estos resultados **sí acreditan** la factibilidad técnica de encadenar una sal
 
 ## Siguiente fase concreta
 
-1. Integrar **en el servidor autenticado** la creación de la versión hija nativa y la evidencia de su SHA, con autorización y coste cero, sin aceptarlo del navegador.
+1. Partiendo de la revisión autenticada de la parte nativa YA DISPONIBLE, integrar un **worker de etapa nativa no publicable** que cree una versión hija editable, verifique su SHA y la auditoría del MP4, mantenga la aprobación del plan mixto y no permita presentar la salida parcial como vídeo final. Ningún campo de confianza procede del navegador.
 2. Conectar el handoff de `master-director-hybrid-handoff.js`, persistir grafo de capas y relación padre/hijo de forma recuperable, revalidar aprobación de principio a fin y exponer preview mixta solamente cuando cada operación tenga representación exacta.
 3. Contrastar preview con render final y habilitar edición individual de todos los elementos; cubrir máscaras dinámicas solo con prueba real y no simular efectos.
 4. Resolver metadata de licencia V2 de tapices y recursos, plan real del 158404, dos auditorías audiovisuales completas y regresión final. **Pedir a Carlos aceptación creativa y permiso de deploy**, mantener skill sin alterar hasta entonces.
