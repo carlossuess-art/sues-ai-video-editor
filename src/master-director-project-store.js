@@ -30,6 +30,23 @@ function unrepresentedStoryFields(story){
   check(o,['id','sceneId','start','end','track','renderer','effect','reason','parameters','dependsOn','requiredQA','resourceRef','motifId','speechAnchor'],'operations['+i+']');
  return issues;
 }
+// Compare the creative instructions that must survive story compilation.
+// The original immutable draft remains authoritative for resource descriptions.
+function auditStoryTranslation(story,plan){
+ const issues=[],ops=Array.isArray(story.operations)?story.operations:[];
+ const compiled=Array.isArray(plan.operations)?plan.operations:[];
+ if(ops.length!==compiled.length)return [{code:'STORY_OPERATION_COUNT_CHANGED',subject:'operations'}];
+ for(let i=0;i<ops.length;i++){
+  const source=ops[i],target=compiled[i];
+  for(const key of ['id','sceneId','start','end','track','renderer','effect','reason','parameters','dependsOn','requiredQA','motifId','speechAnchor']){
+   if(JSON.stringify(source?.[key])!==JSON.stringify(target?.[key]))
+    issues.push({code:'STORY_OPERATION_FIELD_CHANGED',subject:'operations['+i+'].'+key});
+  }
+  if(source?.resourceRef!==undefined&&source.resourceRef!==target?.creativeResourceRef)
+   issues.push({code:'STORY_RESOURCE_REFERENCE_CHANGED',subject:'operations['+i+'].resourceRef'});
+ }
+ return issues;
+}
 // Canonical hash over server-owned evidence: any substantive change invalidates
 // the earlier decision. Sorting prevents false invalidation from key order.
 const canonical=x=>Array.isArray(x)?x.map(canonical):obj(x)?Object.fromEntries(Object.keys(x).sort().map(k=>[k,canonical(x[k])])):x;
@@ -106,6 +123,11 @@ export class MasterDirectorProjectStore{
   delete registry.approvedPlanFingerprint;delete registry.planChoice;delete registry.qaPasses;
   const result=prepareMasterDirectorSession({story,registry,rulebook:context.rulebook});
   if(!result.plan)return {response:{...result,revision,canExecute:false}};
+  const translationIssues=auditStoryTranslation(story,result.plan);
+  if(translationIssues.length)return {response:{status:'BLOCKED',revision,issues:translationIssues,canExecute:false}};
+  // Bind approval to every byte of the immutable source story, including metadata
+  // not required by a specific renderer, without trusting it as authorization.
+  result.plan.storyRevision=revision;
   result.plan.trustedContextFingerprint=sha(JSON.stringify(canonical({registry,rulebook:context.rulebook})));
   const view=buildMasterDirectorReview(result.plan,registry);
   return {response:{...view,revision,canExecute:false,projectFingerprint:context.timelineFingerprint},plan:result.plan,registry};
