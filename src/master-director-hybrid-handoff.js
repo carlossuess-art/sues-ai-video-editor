@@ -17,6 +17,8 @@ export function prepareMasterHybridNativeHandoff({hybrid,nativeChild,mediaAudit}
   return denied('HYBRID_REVIEW_INVALID');
  if(hybrid.crossEngineDependencies?.some(d=>d.fromEngine==='remotion'&&d.toEngine==='native'))
   return denied('HYBRID_EXECUTION_ORDER_UNSUPPORTED');
+ if(hybrid.crossEngineOverlaps?.some(x=>x.classification==='visual-order-unresolved'))
+  return denied('HYBRID_VISUAL_ORDER_UNVERIFIED');
  if(hybrid.crossEngineOverlaps?.some(x=>x.classification==='audio-mix'))
   return denied('HYBRID_AUDIO_MIX_NOT_VERIFIED');
  if(hybrid.remotionComponent.layers.some(l=>l.maskAssetId||l.maskFrameAssetIds?.length))
