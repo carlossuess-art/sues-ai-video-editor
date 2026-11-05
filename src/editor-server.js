@@ -297,7 +297,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
           layers.graph.planFingerprint===ready.composition.planFingerprint&&catalog.timelineFingerprint===ready.projectFingerprint&&catalog.sourceSha256===ready.composition.sourceSha256;
         };
         const result=await masterPreviewRenderer({composition:ready.composition,project:ready.project,assets,workRoot:previewRoot,
-         entryFile:masterPreviewConfig.entryFile,remotionCli:masterPreviewConfig.remotionCli,browserExecutable:masterPreviewConfig.browserExecutable,approvalCheck});
+         entryFile:masterPreviewConfig.entryFile,remotionCli:masterPreviewConfig.remotionCli,browserExecutable:masterPreviewConfig.browserExecutable,browserLibraryPath:masterPreviewConfig.browserLibraryPath,approvalCheck});
         if(result.status!=='PREVIEW_RENDERED_UNVERIFIED'){record.status='BLOCKED';record.issues=result.issues;requests.save(record);return;}
         output=result.outputPath;
         const audit=await masterPreviewAuditor({sourcePath:ready.project.sourcePath,sourceSha256:ready.composition.sourceSha256,
