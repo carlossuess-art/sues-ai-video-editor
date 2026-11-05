@@ -1,3 +1,4 @@
+import {prepareMasterSupervisorEvidence,openMasterSupervisorEvidence} from './master-director-supervisor-evidence.js';
 import {reviewMasterDirectorNative} from './master-director-native-review.js';
 import {MasterPreviewRequests} from './master-director-preview-requests.js';
 import {MasterHybridRequests} from './master-director-hybrid-requests.js';
@@ -80,7 +81,7 @@ async function body(req,maxBytes=65536,{rejectDuplicates=false}={}){
  if(rejectDuplicates)rejectDuplicateJsonKeys(raw);
  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -105,6 +106,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const masterPreviewRuns=new Map();
  const masterHybridRuns=new Map();
  const masterGeneratorRuns=new Set();
+ const masterSupervisorRuns=new Set();
  const cloudRuns=new Set();
  const cloud=cloudDirector??new CloudDirector({credentialsFile:join(dirname(passwordFile),'cloud-director-keys.json')});
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
@@ -236,14 +238,14 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     // Never expose a private native hybrid stage as a standalone final export.
     const stageInstruction=jobs.get(id).instructions?.at(-1);
     if(stageInstruction?.kind==='master-hybrid-native-stage'&&action&&action!=='cancel')
      return json(res,409,{status:'BLOCKED',error:'Esta versión es una etapa intermedia del montaje mixto; consulta el proyecto principal.'});
-    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-trace','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
+    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-trace','master-supervisor','master-supervisor-evidence','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
      const source=jobs.get(id);
      const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
@@ -436,6 +438,37 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       }catch{
        return json(res,422,{status:'BLOCKED',error:'No se pudo preparar un plan maestro válido. No se ha iniciado ninguna edición.'});
       }finally{masterGeneratorRuns.delete(id);}
+     }
+     if((action==='master-supervisor'&&req.method==='POST')||(action==='master-supervisor-evidence'&&req.method==='GET')){
+      const isStart=action==='master-supervisor',b=isStart?await body(req,2048):{
+       revision:url.searchParams.get('revision'),decisionId:url.searchParams.get('decisionId'),previewId:url.searchParams.get('previewId'),
+       inspectionId:url.searchParams.get('inspectionId'),file:url.searchParams.get('file')};
+      if(isStart&&Object.keys(b).some(k=>!['revision','decisionId','previewId'].includes(k)))return json(res,400,{error:'Solicitud de supervisión inválida.'});
+      if(!/^[a-f0-9]{64}$/.test(b.revision??'')||!/^[a-f0-9]{64}$/.test(b.decisionId??'')||
+         !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(b.previewId??''))
+       return json(res,400,{error:'Identificadores de supervisión inválidos.'});
+      const previewRoot=join(jobs.dir(id),'master-director','previews'),evidenceRoot=join(jobs.dir(id),'master-director','supervision');
+      const preview=findMasterPreview(previewRoot,{previewId:b.previewId});
+      if(!preview||preview.seal.revision!==b.revision||preview.seal.decisionId!==b.decisionId)
+       return json(res,409,{error:'La previsualización no corresponde a esta revisión.'});
+      const layers=await store.layers(b.revision,b.decisionId),graph=layers.graph,outputSha256=preview.seal.record.outputSha256;
+      if(layers.status!=='STRUCTURE_READY_NOT_RENDERED'||graph?.planFingerprint!==preview.seal.record.planFingerprint)
+       return json(res,409,{error:'La aprobación o el plan han cambiado.'});
+      if(!isStart){
+       const artifact=openMasterSupervisorEvidence({root:evidenceRoot,inspectionId:b.inspectionId,file:b.file,planFingerprint:graph.planFingerprint,outputSha256});
+       return sourceStream(req,res,artifact.path,artifact.mime);
+      }
+      if(masterSupervisorRuns.has(id))return json(res,409,{error:'Ya se está preparando una inspección para este proyecto.'});
+      masterSupervisorRuns.add(id);
+      try{
+       const approvalCheck=async()=>{
+        const approved=await store.approved(b.revision,b.decisionId),current=findMasterPreview(previewRoot,{previewId:b.previewId});
+        return !!approved&&approved.view.fingerprint===graph.planFingerprint&&current?.seal.record.outputSha256===outputSha256;
+       };
+       const options={graph,previewPath:preview.file,outputSha256,root:evidenceRoot,approvalCheck};
+       if(typeof masterSupervisorRunner==='function')options.runner=masterSupervisorRunner;
+       return json(res,200,await prepareMasterSupervisorEvidence(options));
+      }finally{masterSupervisorRuns.delete(id);}
      }
      if(action==='master-trace'&&req.method==='GET'){
       const revision=url.searchParams.get('revision'),decisionId=url.searchParams.get('decisionId'),manifestRevision=url.searchParams.get('manifestRevision');
