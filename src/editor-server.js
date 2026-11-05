@@ -236,14 +236,14 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     // Never expose a private native hybrid stage as a standalone final export.
     const stageInstruction=jobs.get(id).instructions?.at(-1);
     if(stageInstruction?.kind==='master-hybrid-native-stage'&&action&&action!=='cancel')
      return json(res,409,{status:'BLOCKED',error:'Esta versión es una etapa intermedia del montaje mixto; consulta el proyecto principal.'});
-    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
+    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-trace','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
      const source=jobs.get(id);
      const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
@@ -431,6 +431,11 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
        const saved=store.saveDraft(story),review=await store.review(saved.revision);
        return json(res,201,{story,revision:saved.revision,review,rendered:false});
       }finally{masterGeneratorRuns.delete(id);}
+     }
+     if(action==='master-trace'&&req.method==='GET'){
+      const revision=url.searchParams.get('revision'),decisionId=url.searchParams.get('decisionId'),manifestRevision=url.searchParams.get('manifestRevision');
+      if(![revision,decisionId,manifestRevision].every(x=>/^[a-f0-9]{64}$/.test(x??'')))return json(res,400,{error:'Identificadores de trazabilidad inválidos.'});
+      return json(res,200,await store.trace(revision,decisionId,manifestRevision));
      }
      if(action==='master-versions'&&req.method==='GET')return json(res,200,{versions:store.listDrafts()});
      if(action==='master-draft'&&req.method==='GET')return json(res,200,{story:store.readDraft(url.searchParams.get('revision'))});
