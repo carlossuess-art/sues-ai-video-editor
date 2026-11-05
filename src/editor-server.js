@@ -433,6 +433,8 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
         return json(res,409,{error:'El proyecto ha cambiado durante la generación. Prepara de nuevo la propuesta.'});
        const saved=store.saveDraft(story),review=await store.review(saved.revision);
        return json(res,201,{story,revision:saved.revision,review,rendered:false});
+      }catch{
+       return json(res,422,{status:'BLOCKED',error:'No se pudo preparar un plan maestro válido. No se ha iniciado ninguna edición.'});
       }finally{masterGeneratorRuns.delete(id);}
      }
      if(action==='master-trace'&&req.method==='GET'){
