@@ -273,3 +273,22 @@ test('master generation remains unavailable without a trusted zero-cost provider
   assert.equal((await fetch(endpoint,{method:'POST',headers,body:JSON.stringify({brief:'Una historia real'})})).status,503);
  }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });
+
+
+test('a trusted free generator saves the same master draft and cannot self-approve',async()=>{
+ let calls=0,output='{"schema":"sues-master-story/v1"}';const f=fixture();
+ const app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,
+  masterDirectorContext:async()=>({registry:{},rulebook:[]}),
+  masterPlanGenerator:{verifiedFree:true,maxCostUSD:0,generate:async()=>{calls++;return output;}}});
+ try{
+  const launch=await app.listen(),url=launch.split('/#')[0],job=app.jobs.create('test');
+  const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
+  const headers={Cookie:session.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'};
+  const endpoint=url+'/api/jobs/'+job.id+'/master-generate',request=()=>fetch(endpoint,{method:'POST',headers,body:JSON.stringify({brief:'Una historia real'})});
+  assert.equal((await (await fetch(endpoint,{headers})).json()).available,true);
+  const response=await request();assert.equal(response.status,201);const generated=await response.json();
+  assert.equal(generated.story.schema,'sues-master-story/v1');assert.equal(generated.review.status,'BLOCKED');assert.equal(generated.rendered,false);assert.equal(calls,1);
+  const stored=await (await fetch(url+'/api/jobs/'+job.id+'/master-draft?revision='+generated.revision,{headers})).json();assert.deepEqual(stored.story,generated.story);
+  output='{"schema":"sues-master-story/v1","schema":"sues-master-story/v1"}';assert.equal((await request()).status,422);
+ }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
+});
