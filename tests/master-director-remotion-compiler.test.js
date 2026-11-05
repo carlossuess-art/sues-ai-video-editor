@@ -113,3 +113,14 @@ test('verified static or frame-by-frame masks preserve one static finish',()=>{
   proof.verified=false;assert.equal(compileMasterDirectorRemotion(g,options).status,'BLOCKED');
  }
 });
+
+
+test('image and video preserve only explicit centered fit modes and reject all other values',()=>{
+ const id='c'.repeat(64);for(const kind of ['image','video'])for(const fit of ['fill','contain','cover']){
+  const g=graph();g.nodes[0]={id:'asset',renderer:'remotion',track:'graphics',effect:kind+'-exact',startFrame:1,endFrame:30,resource:{id,sha256:id},visual:{rect:{x:10,y:20,width:300,height:500},zIndex:1,opacity:1,keyframes:[]}};
+  g.nodes[0].sourceParameters={fit,visual:structuredClone(g.nodes[0].visual),...(kind==='video'?{sourceInFrame:2,muted:true}:{})};
+  const options={verifiedAssets:{[id]:{sha256:id,kind,duration:3,rightsVerified:true,commercialUseAllowed:true}}};
+  const r=compileMasterDirectorRemotion(g,options);assert.equal(r.status,'READY_FOR_REMOTION_STAGING');assert.equal(r.composition.layers[0].fit,fit);
+  g.nodes[0].sourceParameters.fit='none';assert.equal(compileMasterDirectorRemotion(g,options).status,'BLOCKED');
+ }
+});
