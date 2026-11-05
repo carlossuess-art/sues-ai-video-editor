@@ -252,7 +252,10 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       const catalog=externalCatalog(project,current.settings,assets.list());
       const verified=await masterContextProvider({jobId:id,project,job:current,assets,catalog,story});
       if(!verified)return null;
-      return {...verified,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration};
+      return {...verified,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration,
+        // Internal logical preflight only: never records approval or launches work.
+        nativePreflight:(plan,registry)=>reviewMasterDirectorNative({plan,registry,catalog,project,
+         settings:current.settings,assets:assets.list(),commandPlanner:planInstructions})};
      });
      // Full mixed-engine execution is private and authenticated. A native child is
      // strictly intermediate; only a sealed Remotion preview can reach HUMAN_QA.
