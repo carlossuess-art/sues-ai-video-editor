@@ -11,7 +11,7 @@ export async function prepareMasterSupervisorEvidence({graph,previewPath,outputS
  if(graph?.schema!=='sues-layer-graph/v1'||!HASH.test(graph.planFingerprint??'')||
     graph.fps!==30||!Number.isInteger(graph.durationFrames)||graph.durationFrames<1||graph.durationFrames>3600||
     !Array.isArray(graph.nodes)||!graph.nodes.length||graph.nodes.length>1500||
-    !isAbsolute(previewPath??'')||!isAbsolute(root??'')||!HASH.test(outputSha256??'')||
+    typeof previewPath!=='string'||!isAbsolute(previewPath)||typeof root!=='string'||!isAbsolute(root)||!HASH.test(outputSha256??'')||
     typeof approvalCheck!=='function'||typeof runner!=='function')
   return blocked('SUPERVISOR_INPUT_INVALID');
  const sampled=new Map(),ids=new Set();
