@@ -110,7 +110,7 @@ export class MasterDirectorProjectStore{
 
  editOperation(revision,operationId,patch){
   if(typeof operationId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(operationId)||!obj(patch)||
-     !Object.keys(patch).length||Object.keys(patch).some(k=>!['start','end','parameters'].includes(k)))
+     !Object.keys(patch).length||Object.keys(patch).some(k=>!['start','end','parameters','resourceRef'].includes(k)))
    throw Error('Invalid operation edit');
   const story=this.readDraft(revision),matches=Array.isArray(story.operations)?story.operations.filter(o=>o?.id===operationId):[];
   if(matches.length!==1||matches[0].renderer!=='remotion')throw Error('Editable operation not found');
@@ -118,6 +118,11 @@ export class MasterDirectorProjectStore{
   if(!Number.isFinite(start)||!Number.isFinite(end)||start<0||end<=start||!Number.isFinite(story.timeline?.duration)||end>story.timeline.duration)
    throw Error('Invalid operation timing');
   if(Object.hasOwn(patch,'parameters')&&(!obj(patch.parameters)||Buffer.byteLength(JSON.stringify(patch.parameters))>24000))throw Error('Invalid operation parameters');
+  if(Object.hasOwn(patch,'resourceRef')){
+   if(typeof patch.resourceRef!=='string'||!Array.isArray(story.resources)||
+      story.resources.filter(r=>r?.id===patch.resourceRef).length!==1)throw Error('Invalid resource reference');
+   op.resourceRef=patch.resourceRef;
+  }
   op.start=start;op.end=end;if(Object.hasOwn(patch,'parameters'))op.parameters=structuredClone(patch.parameters);
   const next=this.saveDraft(story);return {...next,parentRevision:revision,requiresNewReview:true};
  }
