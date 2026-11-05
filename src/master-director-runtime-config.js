@@ -65,3 +65,39 @@ export function loadMasterPreviewConfig(path){
  }
  return result;
 }
+
+
+// Optional local CPU mask candidate runtime. Disabled unless provisioned by a
+// trusted operator; request JSON can never supply executables or model paths.
+// Pins these entry points and model only, not every transitive Python dependency.
+export function loadMasterMaskConfig(path){
+ if(path===undefined||path===null||path==='')return null;
+ if(typeof path!=='string'||!isAbsolute(path)||resolve(path)!==path)throw Error('Mask config must be an absolute normalized path');
+ const uid=typeof process.getuid==='function'?process.getuid():null;
+ for(let dir=dirname(path);;dir=dirname(dir)){
+  const parent=lstatSync(dir);
+  if(!parent.isDirectory()||parent.isSymbolicLink()||(uid!==null&&parent.uid!==0&&parent.uid!==uid)||
+     ((parent.mode&0o022)!==0&&(parent.mode&0o1000)===0))throw Error('Untrusted mask config directory');
+  if(dir===parse(dir).root)break;
+ }
+ const st=lstatSync(path);
+ if(!st.isFile()||st.isSymbolicLink()||st.size>16384||(st.mode&0o022)!==0||
+    (uid!==null&&st.uid!==0&&st.uid!==uid))throw Error('Untrusted mask config');
+ const config=JSON.parse(readFileSync(path,'utf8'));
+ if(!record(config)||config.schema!=='sues-master-mask-config/v1'||
+    Object.keys(config).some(k=>!['schema','python','script','model'].includes(k)))throw Error('Invalid mask runtime config');
+ const result={verifiedLocal:true};
+ for(const name of ['python','script','model']){
+  const item=config[name];
+  if(!record(item)||Object.keys(item).some(k=>!['path','sha256'].includes(k))||
+     typeof item.path!=='string'||!isAbsolute(item.path)||resolve(item.path)!==item.path||!HASH.test(item.sha256??''))
+   throw Error('Invalid mask runtime dependency');
+  const actual=realpathSync(item.path),file=statSync(actual);
+  if(!file.isFile()||file.size<1||file.size>1024*1024*1024||fileSha256(actual)!==item.sha256)throw Error('Mask runtime dependency changed');
+  if(name==='python')accessSync(actual,constants.X_OK);
+  // Keep the venv entry path, not its system-Python symlink target.
+  if(name!=='model')result[name+'Path']=item.path;
+  result[name+'Sha256']=item.sha256;
+ }
+ return result;
+}
