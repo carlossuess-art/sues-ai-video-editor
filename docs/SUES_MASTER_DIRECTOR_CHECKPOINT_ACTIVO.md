@@ -2,6 +2,14 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## SINCRONIZACIÓN SKILL + PEGAR PLAN · 05/11/2026
+
+- Contrato anterior y actual: `sues-master-story/v1`, sin extensión ni nuevos efectos declarados. Documento `SKILL_CONTRACT_HANDOFF.md`; no garantiza pérdida cero de parámetros anidados.
+- Skill privada existente: 1.5.0 → **1.5.1**, release `pluginrel_6aecd186c2cc8191b02be8dde53f8635`, publicado y archivos/inventario releídos. Referencias y audiencia conservadas. Refleja la revisión maestra en desarrollo y no declara despliegue.
+- Código: `web/index.html` y `web/app.js`, commits `753268848bfb86a34534007f57b91c724dff38f2` y `bed51e51ce02ada8149ad7672397974fe42baeed`: cuadro ampliado, aviso de límite 60.000 bytes serializados, invalida revisión al editar, identifica campos no representados. Se mantiene límite del importador anterior. Guardia parcial del almacén en `3dbfc2577652c27f86ac47ae6c1dd770e2a00fb7`.
+- No se han añadido operaciones ejecutables. Pendientes: importación integral sin pérdida, acabados, máscaras reales, trazabilidad y edición completa de capas, búsqueda y derechos reales, supervisor audiovisual independiente y segundo camino IA. La ejecución mixta cuenta con código de worker; funcionamiento integral no verificado en esta iteración.
+- Por instrucción de Carlos: **no tests ni renders** durante integración. No despliegue, producción, servicios de pago ni nuevos Reels. Revisar de forma específica estos cambios cuando Carlos autorice validación. No atribuir pruebas históricas a estos commits.
+
 ## HITO NUEVO · V6B REAL DESDE EL BRUTO · 05/11/2026
 
 - **Nueva edición verdaderamente creada sobre el bruto** original `158404.mp4`, SHA-256 `9e06f49c30731d8a57aed312cfb46281bcffb7b3d5d62bf5a2164333944ccaad` (1080×1920, 73,753 s). **NO se emplearon los MP4 V4B/V5B para derivar el montaje.** Se reutilizó únicamente la tecnología ya desarrollada.
