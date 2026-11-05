@@ -50,7 +50,7 @@ export function createMasterDirectorContextProvider(directory){
   const style=job.settings?.styleId??'SUES_CALMA';
   const profileId=style==='SUES_CALMA'?'CALMA':style==='SUES_DOPAMIN'?'DOPAMIN':null;
   if(!profileId)return {blockedIssues:[{code:'MASTER_PROFILE_NOT_SUPPORTED',subject:String(style)}]};
-  const licensedAssets={},masters=[],masterHashes={},maskEvidence={};
+  const licensedAssets={},masters=[],masterHashes={},maskEvidence={},generatedAssets={};
   // Optional attestations are administrator-owned server policy, never supplied
   // by a plan. Scope every proof to this source and current edited timeline.
   const requestedMasks=new Set((Array.isArray(story?.operations)?story.operations:[])
@@ -78,7 +78,27 @@ export function createMasterDirectorContextProvider(directory){
    }
    maskEvidence[id]=structuredClone(proof);
   }
-  const wanted=new Set([...policy.masters.map(m=>m?.assetId),...maskAssets,...(Array.isArray(story?.resources)?story.resources:[]).filter(r=>r?.source==='library').map(r=>r.assetId)]);
+  // Generated resources become available only after server-owned evidence binds
+  // the exact request to this project, source, timeline, bytes and rights.
+  if(policy.generatedAssets!==undefined&&!Array.isArray(policy.generatedAssets))return null;
+  const generatedRecords=policy.generatedAssets??[],generatedKeys=new Set(),selectedGenerated=[];
+  if(generatedRecords.length>512)return null;
+  for(const item of generatedRecords){
+   if(!safeId(item?.projectId)||!safeId(item?.resourceId)||!HASH.test(item?.sourceSha256??'')||!safeId(item?.timelineFingerprint))return null;
+   const key=[item.projectId,item.sourceSha256,item.timelineFingerprint,item.resourceId].join('/');
+   if(generatedKeys.has(key))return null;generatedKeys.add(key);
+  }
+  for(const resource of (Array.isArray(story?.resources)?story.resources:[]).filter(r=>r?.source==='generate')){
+   const item=generatedRecords.find(x=>x.projectId===jobId&&x.resourceId===resource.id&&
+     x.sourceSha256===catalog.sourceSha256&&x.timelineFingerprint===catalog.timelineFingerprint);
+   if(!item)continue;
+   if(!HASH.test(item.assetId??'')||item.sha256!==item.assetId||typeof resource.creationBrief!=='string'||
+      item.creationBriefSha256!==sha(resource.creationBrief)||item.kind!==resource.kind||
+      !['image','video','sfx','music'].includes(item.kind))
+    return {blockedIssues:[{code:'GENERATED_ASSET_EVIDENCE_INVALID',subject:resource.id}]};
+   selectedGenerated.push({resource,item});
+  }
+  const wanted=new Set([...policy.masters.map(m=>m?.assetId),...maskAssets,...selectedGenerated.map(x=>x.item.assetId),...(Array.isArray(story?.resources)?story.resources:[]).filter(r=>r?.source==='library').map(r=>r.assetId)]);
   for(const id of wanted){
    if(!SHA.test(id??''))return null;
    try{
@@ -90,6 +110,11 @@ export function createMasterDirectorContextProvider(directory){
     licensedAssets[id]={sha256:id,rightsVerified:true,commercialUseAllowed:true,title:a.title,
      kind:a.kind,duration:a.duration??null,origin:'editor-private-library',version:id};
    }catch{return {blockedIssues:[{code:'ASSET_UNAVAILABLE_OR_CHANGED',subject:id}]};}
+  }
+  for(const {resource,item} of selectedGenerated){
+   const expectedKind=item.kind==='music'?'audio':item.kind,asset=licensedAssets[item.assetId];
+   if(!asset||asset.kind!==expectedKind)return {blockedIssues:[{code:'GENERATED_ASSET_KIND_MISMATCH',subject:resource.id}]};
+   generatedAssets[resource.id]={assetId:item.assetId,sha256:item.sha256};
   }
   for(const m of policy.masters){
    if(!safeId(m.id)||!SHA.test(m.assetId??'')||!licensedAssets[m.assetId]||masterHashes[m.id])return null;
@@ -116,7 +141,7 @@ export function createMasterDirectorContextProvider(directory){
    approvedRuleVersion:policy.version,approvedRuleIds:ids,requiredRuleKeys:keys,
    approvedReferenceIds:policy.approvedReferenceIds,masterHashes,
    lockedMastersByMode:{'brand-sues':masters,'reference-exact':masters},
-   rendererCapabilities:{native,remotion:['text','image-exact','video-exact','audio-clip-exact']},licensedAssets,generatedAssets:{},wordAnchors,
+   rendererCapabilities:{native,remotion:['text','image-exact','video-exact','audio-clip-exact']},licensedAssets,generatedAssets,wordAnchors,
    arcPolicy:'reel-observed-v2',frameEvidence:{},maskEvidence,canvas:{width:1080,height:1920},verifiedFonts
   }};
  };
