@@ -47,7 +47,7 @@ En el editor antiguo `sues-edit-plan/v1` hay acciones específicas nativas (por 
 
 `visual.dropShadow:{color,offsetX,offsetY,blurPx}` es opcional en `text`, `image-exact` y `video-exact` Remotion. Todas las propiedades del objeto son obligatorias: color `#RRGGBB` o `#RRGGBBAA`; desplazamientos x/y finitos de −500 a 500 píxeles; desenfoque finito de 0 a 200 píxeles. La sombra se calcula en el sistema local de la capa mediante el filtro CSS `drop-shadow`; el lienzo recorta cualquier parte exterior. Se bloquean las claves adicionales y la combinación con `visual.mask`, pendiente de una composición exacta de ambos efectos. Se conservan los parámetros en la revisión y en las versiones editables.
 
-Código en rama, no desplegado: compilador y controles probados, y un fotograma sintético con sombra azul sin desenfoque comprobado por píxeles. Eso no acredita QA de todas las variantes, resplandores complejos, sombras animadas, materiales ni integración completa. La skill privada se ha sincronizado a 1.5.3: solo puede emitir este campo si el servidor confirma la capacidad y la combinación no incluye máscara. La actualización no implica despliegue.
+Código en rama, no desplegado: compilador y controles probados, y un fotograma sintético con sombra azul sin desenfoque comprobado por píxeles. Eso no acredita QA de todas las variantes, resplandores complejos, sombras animadas, materiales ni integración completa. La skill privada se ha sincronizado a 1.5.4: solo puede emitir sombra o resplandor si el servidor confirma la capacidad; no se combinan entre sí ni con máscara. La actualización no implica despliegue.
 
 ### Resplandor estático opcional en la rama
 
