@@ -4,7 +4,7 @@ La rama admite en Remotion una máscara alfa verificada combinada con **una** so
 
 Validación acotada: 12/12 pruebas del compilador y TypeScript sin errores. Dos fotogramas sintéticos de una imagen con máscara cambiante y sombra azul sin desenfoque han confirmado por píxeles que la sombra sigue la silueta y no queda recortada por la máscara. Esto no certifica vídeo, texto, resplandor combinado, calidad de segmentación ni QA artística. La skill privada se sincronizó a 1.5.5; no implica despliegue.
 
-**Regresión general del 05/11:** en el host, `npm test` produjo 585 aprobadas, 24 fallidas y 6 omitidas de 615; las 24 fallidas requerían FFmpeg, ausente del PATH del host. Se inició una repetición selectiva solo de esos casos en un contenedor aislado con FFmpeg; no interpretar la ejecución del host como una regresión verde. El resultado de esa repetición debe anotarse al terminar.
+**Regresión general del 05/11:** en el host, `npm test` produjo 585 aprobadas, 24 fallidas y 6 omitidas de 615; las 24 fallidas requerían FFmpeg, ausente del PATH del host. La repetición selectiva de esos 24 casos en un contenedor aislado con FFmpeg obtuvo 24 aprobados y 0 fallidos. Son dos entornos y seis casos permanecen omitidos en la pasada general; no presentan una única ejecución integral verde.
 
 Siguen pendientes, entre otros, un generador de planes IA operativo configurado, revisión y promoción fiable de máscaras y supervisión audiovisual semántica autónoma. No se han creado Reels nuevos ni desplegado producción.
 
