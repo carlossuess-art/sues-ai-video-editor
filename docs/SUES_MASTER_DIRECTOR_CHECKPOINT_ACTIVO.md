@@ -1,3 +1,11 @@
+## BORRADOR IA LOCAL OPCIONAL · 06/11/2026
+
+En rama se añadió un proveedor opcional para llama.cpp/Qwen3 local, conectado al mismo endpoint y revisión de `sues-master-story/v1` que la entrada pegada. Desactivado si falta configuración privada; no aprueba ni ejecuta. Binario y modelo fijados por SHA, concurrencia uno, límites de entrada/salida y tiempo; no habilitado en producción. Manual y límites: `docs/SUES_MASTER_LOCAL_GENERATOR_20261106.md`. Commits principales `17e099d7aa4cf60de4f5acd4864d198b108555fd`, `d92a0330c8efb928bd065f192394786ec2e7e50e` y posteriores.
+
+Pruebas dirigidas 16/16 PASS, más 2/2 tras desactivar expresamente el desplazamiento de contexto. En contenedor sin red, llama.cpp y Qwen3 0.6B existentes produjeron un JSON sintético con las siete claves maestras. Una segunda prueba HTTP autenticada recibió 201 y guardó un borrador, pero la revisión lo BLOQUEÓ por campos no representados y contexto de prueba incompleto; no hubo render ni aprobación. Se restringió después la raíz de la gramática; esa última modificación necesita prueba con modelo real. No hay evidencia de que el modelo pueda producir planes creativos válidos o completos.
+
+Pendientes aislamiento de memoria/red/dependencias antes de uso real, evaluación de modelos y calidad; además de revisión y promoción fiable de máscaras, supervisor audiovisual semántico y ejecución fiel integral. No se ha desplegado ni creado un Reel.
+
 ## MÁSCARA VERIFICADA CON ACABADO ESTÁTICO · 05/11/2026
 
 La rama admite en Remotion una máscara alfa verificada combinada con **una** sombra estática o **un** resplandor estático: la máscara afecta a la capa interior y el filtro se aplica después a su silueta. No permite sombra y resplandor simultáneos. La evidencia sigue ligada a la fuente, intervalo y recursos acreditados; no se promocionan candidatos automáticamente. En ejecución mixta se mantiene el bloqueo de máscaras sin evidencia de la fuente derivada.
