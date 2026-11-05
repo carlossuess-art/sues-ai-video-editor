@@ -33,6 +33,14 @@ function reviewNativeOnly({plan,registry,catalog,project,settings,assets=[],comm
    })),...(preview.notes??[]).map(x=>({operationId:'plan',code:'NATIVE_REVIEW_NOTE',detail:x}))],
    fingerprint:bridged.fingerprint,preview:{rows:preview.rows,notes:preview.notes},
    nativePlan:null};
+ // Cards derive their duration from caption boundaries and editor policy.
+ // Compare the resulting composition rather than assuming those bounds match.
+ for(const op of plan.operations.filter(o=>o.effect==='card-grid-native')){
+  const cards=(preview.compiledGraphics??[]).filter(g=>g.captionId===op.parameters?.captionId);
+  if(cards.length!==1||Math.abs(cards[0].start-op.start)>1e-6||Math.abs(cards[0].end-op.end)>1e-6)
+   return {status:'NATIVE_PREVIEW_REJECTED',canExecute:false,nativePlan:null,
+    fingerprint:bridged.fingerprint,issues:[{operationId:op.id,code:'NATIVE_CARD_TIMING_MISMATCH'}]};
+ }
  return {status:'READY_FOR_EDITOR_PREVIEW',canExecute:false,issues:[],fingerprint:bridged.fingerprint,
   nativePlan:bridged.plan,operationMapping:bridged.operationMapping,
   preview:{reviewId:preview.reviewId,rows:preview.rows,notes:preview.notes,
