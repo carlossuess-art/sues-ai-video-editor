@@ -99,7 +99,7 @@ export function reviewMasterDirectorPlan(plan,registry={}){
     if(visited.has(id))return;
     if(visiting.has(id)){issue(issues,'DEPENDENCY_CYCLE',id);return;}
     visiting.add(id);
-    for(const dependency of byId.get(id)?.dependsOn??[]){
+    for(const dependency of (Array.isArray(byId.get(id)?.dependsOn)?byId.get(id).dependsOn:[])){
       if(!byId.has(dependency))issue(issues,'MISSING_DEPENDENCY',id);
       else walk(dependency);
     }
