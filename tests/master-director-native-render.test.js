@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync,execFileSync} from 'node:child_process';
-import {readFileSync,writeFileSync,rmSync} from 'node:fs';
+import {readFileSync,writeFileSync,rmSync,copyFileSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {fixture} from './helpers/editor-fixture.js';
@@ -29,7 +29,7 @@ test('approved master structured list creates a separate version and a real deco
   const payload={revision,decisionId:decision.decisionId,reviewId:nr.preview.reviewId,requestId:randomUUID()},created=await post('/master-native-apply',payload);assert.notEqual(created.id,job.id);
   let child;for(let i=0;i<1200;i++){child=app.jobs.get(created.id);if(['DONE','FAILED','PUBLISH_FAILED'].includes(child.state))break;await new Promise(r=>setTimeout(r,100));}
   assert.equal(child.state,'DONE',JSON.stringify(child));assert.equal(child.parentId,job.id);assert.equal(app.jobs.get(job.id).state,'PREVIEW_READY');
-  const output=await app.jobs.media(child.id);execFileSync('ffmpeg',['-v','error','-xerror','-i',output,'-f','null','-'],{timeout:120000});
+  const output=await app.jobs.media(child.id);if(process.env.SUES_QA_OUTPUT)copyFileSync(output,process.env.SUES_QA_OUTPUT);execFileSync('ffmpeg',['-v','error','-xerror','-i',output,'-f','null','-'],{timeout:120000});
   const info=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-show_format','-of','json',output],{encoding:'utf8'}));assert.ok(info.streams.some(s=>s.codec_type==='audio'));assert.ok(info.streams.some(s=>s.codec_type==='video'));assert.ok(Math.abs(Number(info.format.duration)-12)<.12);
   assert.equal((await post('/master-native-apply',payload)).id,child.id);
  }finally{await app.close();rmSync(f.dir,{recursive:true,force:true});}

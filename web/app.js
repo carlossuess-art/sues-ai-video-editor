@@ -563,7 +563,7 @@ $('master-review-button').onclick=()=>work(async()=>{
  const draft=await api('jobs/'+jobId+'/master-draft','POST',{story});
  const result=await api('jobs/'+jobId+'/master-review','POST',{revision:draft.revision});
  if(current?.id!==jobId||$('external-plan-text').value!==raw)throw Error('El proyecto o la propuesta han cambiado. Vuelve a revisarlos.');
- masterReview={jobId,raw,story,revision:draft.revision,fingerprint:result.fingerprint};showMasterReview(result);
+ masterNativeRequest=null;masterPreviewRequest=null;masterReview={jobId,raw,story,revision:draft.revision,fingerprint:result.fingerprint};showMasterReview(result);
 });
 async function masterDecision(mode){
  if(!masterReview||current?.id!==masterReview.jobId||$('external-plan-text').value!==masterReview.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
