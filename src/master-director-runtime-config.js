@@ -1,14 +1,24 @@
 // Operator-owned opt-in for the private preview runtime. Request JSON never controls these paths.
 import {accessSync,constants,lstatSync,readFileSync,realpathSync,statSync} from 'node:fs';
-import {isAbsolute} from 'node:path';
+import {dirname,isAbsolute,parse,resolve} from 'node:path';
 import {fileSha256} from './local-pipeline.js';
 const HASH=/^[a-f0-9]{64}$/;
 const fields=['entryFile','remotionCli','browserExecutable'];
 const record=x=>x&&typeof x==='object'&&!Array.isArray(x);
 export function loadMasterPreviewConfig(path){
  if(path===undefined||path===null||path==='')return null;
- if(typeof path!=='string'||!isAbsolute(path))throw Error('Master preview config must be an absolute path');
- const st=lstatSync(path),uid=typeof process.getuid==='function'?process.getuid():null;
+ if(typeof path!=='string'||!isAbsolute(path)||resolve(path)!==path)throw Error('Master preview config must be an absolute normalized path');
+ const uid=typeof process.getuid==='function'?process.getuid():null;
+ // A trusted file inside a replaceable parent directory is not a trusted configuration.
+ // Sticky directories protect entries from replacement by users who do not own them.
+ for(let dir=dirname(path);;dir=dirname(dir)){
+  const parent=lstatSync(dir);
+  if(!parent.isDirectory()||parent.isSymbolicLink()||
+     (uid!==null&&parent.uid!==0&&parent.uid!==uid)||
+     ((parent.mode&0o022)!==0&&(parent.mode&0o1000)===0))throw Error('Untrusted master preview config directory');
+  if(dir===parse(dir).root)break;
+ }
+ const st=lstatSync(path);
  if(!st.isFile()||st.isSymbolicLink()||st.size>16384||(st.mode&0o022)!==0||
     (uid!==null&&st.uid!==0&&st.uid!==uid))throw Error('Untrusted master preview config');
  const config=JSON.parse(readFileSync(path,'utf8'));
