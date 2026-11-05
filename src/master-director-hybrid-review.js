@@ -47,7 +47,8 @@ export function reviewMasterDirectorHybridGraph(graph, evidence={}){
  const crossEngineOverlaps=[];
  for(const n of native)for(const r of remotion)if(overlaps(n,r)){
   const classification=AUDIO.has(n.track)&&AUDIO.has(r.track)?'audio-mix':
-   VISUAL.has(n.track)&&VISUAL.has(r.track)?'visual-stack':'cross-track';
+   VISUAL.has(n.track)&&VISUAL.has(r.track)?
+    (['transition','graphics','captions'].includes(n.track)?'visual-order-unresolved':'visual-stack'):'cross-track';
   if(classification!=='cross-track')crossEngineOverlaps.push({nativeId:n.id,remotionId:r.id,classification});
  }
  return {
