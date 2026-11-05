@@ -41,19 +41,31 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
   if(image&&(!SHA.test(id??'')||node.resource?.sha256!==id||asset?.sha256!==id||asset?.kind!=='image'||
      asset?.rightsVerified!==true||asset?.commercialUseAllowed!==true))
    {fail(issues,node,'IMAGE_RESOURCE_UNVERIFIED');continue;}
-  let maskAssetId=null;
+  let maskAssetId=null,maskFrameAssetIds=null;
   if(v.mask!==undefined){
    const m=v.mask,proof=verifiedMasks[m?.proofId];
    if(!only(m,['proofId','mode'])||m.mode!=='alpha-keep'||proof?.verified!==true||
-      proof.sourceSha256!==graph.sourceSha256||!SHA.test(proof.assetId??'')||
-      !Number.isFinite(proof.start)||!Number.isFinite(proof.end)||
+      proof.sourceSha256!==graph.sourceSha256||!Number.isFinite(proof.start)||!Number.isFinite(proof.end)||
       proof.start>node.startFrame/graph.fps||proof.end<node.endFrame/graph.fps){
     fail(issues,node,'MASK_EVIDENCE_UNVERIFIED');continue;
    }
-   const a=verifiedAssets[proof.assetId];
-   if(a?.sha256!==proof.assetId||a?.kind!=='image'||a?.rightsVerified!==true||a?.commercialUseAllowed!==true)
-    {fail(issues,node,'MASK_RESOURCE_UNVERIFIED');continue;}
-   maskAssetId=proof.assetId;
+   // Dynamic masks are trusted proof records, not a user-supplied list of paths.
+   // One verified image per output frame; no interpolation or repeated frame fallback.
+   if(Array.isArray(proof.frameAssetIds)){
+    const count=node.endFrame-node.startFrame;
+    if(proof.coordinateSpace!=='layer'||proof.fps!==graph.fps||proof.startFrame!==node.startFrame||
+       proof.endFrame!==node.endFrame||!Number.isInteger(count)||count<1||count>120||proof.frameAssetIds.length!==count||
+       proof.frameAssetIds.some(id=>!SHA.test(id??'')||verifiedAssets[id]?.sha256!==id||
+        verifiedAssets[id]?.kind!=='image'||verifiedAssets[id]?.rightsVerified!==true||verifiedAssets[id]?.commercialUseAllowed!==true)){
+     fail(issues,node,'DYNAMIC_MASK_EVIDENCE_UNVERIFIED');continue;
+    }
+    maskFrameAssetIds=[...proof.frameAssetIds];
+   }else{
+    const id=proof.assetId,a=verifiedAssets[id];
+    if(!SHA.test(id??'')||a?.sha256!==id||a?.kind!=='image'||a?.rightsVerified!==true||a?.commercialUseAllowed!==true)
+     {fail(issues,node,'MASK_RESOURCE_UNVERIFIED');continue;}
+    maskAssetId=id;
+   }
   }
   if(video&&(!SHA.test(id??'')||node.resource?.sha256!==id||asset?.sha256!==id||asset?.kind!=='video'||
      asset?.rightsVerified!==true||asset?.commercialUseAllowed!==true||!Number.isFinite(asset.duration)||
@@ -65,7 +77,7 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
      node.endFrame<=node.startFrame||node.endFrame>graph.durationFrames)
    {fail(issues,node,'TIMELINE_INVALID');continue;}
   layers.push({id:node.id,kind:text?'text':video?'video':'image',startFrame:node.startFrame,endFrame:node.endFrame,
-   ...(text?{text:p.text,fontAssetId:font.sha256}:video?{assetId:id,sourceInFrame:p.sourceInFrame,muted:true}:{assetId:id}),...(maskAssetId?{maskAssetId}:{}),visual:structuredClone(v)});
+   ...(text?{text:p.text,fontAssetId:font.sha256}:video?{assetId:id,sourceInFrame:p.sourceInFrame,muted:true}:{assetId:id}),...(maskAssetId?{maskAssetId}:{}),...(maskFrameAssetIds?{maskFrameAssetIds}:{}),visual:structuredClone(v)});
  }
  if(issues.length)return {status:'BLOCKED',issues,composition:null};
  return {status:'READY_FOR_REMOTION_STAGING',issues:[],composition:{schema:'sues-remotion-layers/v1',
