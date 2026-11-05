@@ -115,9 +115,10 @@ export function assessMasterDirectorDelivery(plan,registry={},render={},fault={}
   failedOperationIds:failures,options:['repair-render','retry-after-revalidation']};
  // Completion doesn't imply good QA, acceptance, or publication authorization.
  const isFaultless=failures.length===0&&fault.kind==='none';
- const audit=isFaultless?auditMasterDirectorExecution(plan,registry,render.executionManifest??{}):null;
+ const audit=isFaultless&&render.executionManifest?.outputSha256===render.outputSha256?
+  auditMasterDirectorExecution(plan,registry,render.executionManifest):null;
  const mayDeliverFinal=isFaultless&&audit?.status==='READY_FOR_RELEASE'&&
-   registry.finalQAAcceptedFingerprint===preflight.fingerprint;
+   registry.finalQAAcceptedFingerprint===preflight.fingerprint&&registry.finalQAAcceptedOutputSha256===render.outputSha256;
  if(mayDeliverFinal)return {status:'FINAL_FILE_REVIEW',issues:[],options:['download'],mayPublish:false};
  return {status:'PROVISIONAL_EXPORT_OPTION',issues:failures.map(x=>issue('UNFINISHED_OPERATION',x)),
   failedOperationIds:failures,options:['repair','export-provisional','finish-manually-in-capcut'],
