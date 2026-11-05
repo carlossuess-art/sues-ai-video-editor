@@ -84,7 +84,7 @@ export function createMasterDirectorContextProvider(directory){
   const generatedRecords=policy.generatedAssets??[],generatedKeys=new Set(),selectedGenerated=[];
   if(generatedRecords.length>512)return null;
   for(const item of generatedRecords){
-   if(!safeId(item?.projectId)||!safeId(item?.resourceId)||!HASH.test(item?.sourceSha256??'')||!safeId(item?.timelineFingerprint))return null;
+   if(!safeId(item?.projectId)||!safeId(item?.resourceId)||!SHA.test(item?.sourceSha256??'')||!safeId(item?.timelineFingerprint))return null;
    const key=[item.projectId,item.sourceSha256,item.timelineFingerprint,item.resourceId].join('/');
    if(generatedKeys.has(key))return null;generatedKeys.add(key);
   }
@@ -92,7 +92,7 @@ export function createMasterDirectorContextProvider(directory){
    const item=generatedRecords.find(x=>x.projectId===jobId&&x.resourceId===resource.id&&
      x.sourceSha256===catalog.sourceSha256&&x.timelineFingerprint===catalog.timelineFingerprint);
    if(!item)continue;
-   if(!HASH.test(item.assetId??'')||item.sha256!==item.assetId||typeof resource.creationBrief!=='string'||
+   if(!SHA.test(item.assetId??'')||item.sha256!==item.assetId||typeof resource.creationBrief!=='string'||
       item.creationBriefSha256!==sha(resource.creationBrief)||item.kind!==resource.kind||
       !['image','video','sfx','music'].includes(item.kind))
     return {blockedIssues:[{code:'GENERATED_ASSET_EVIDENCE_INVALID',subject:resource.id}]};
