@@ -89,8 +89,9 @@ export function reviewMasterDirectorPlan(plan,registry={}){
     if(op?.resourceId!==undefined){
       const asset=registry.licensedAssets?.[op?.resourceId];
       if(!validId(op.resourceId)||!asset||asset.rightsVerified!==true||
-         asset.commercialUseAllowed!==true||!SHA.test(asset.sha256??''))
-        issue(issues,'ASSET_RIGHTS_UNVERIFIED',op?.id??'unknown');
+         asset.commercialUseAllowed!==true||!SHA.test(asset.sha256??'')||
+         !SHA.test(op.resourceSha256??'')||asset.sha256!==op.resourceSha256)
+        issue(issues,'ASSET_RIGHTS_OR_VERSION_UNVERIFIED',op?.id??'unknown');
     }
   }
   const visiting=new Set(),visited=new Set();
