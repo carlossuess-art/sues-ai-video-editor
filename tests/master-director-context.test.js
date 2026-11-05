@@ -42,7 +42,7 @@ test('approved-rule registry, review and decisions bind to provider fixture evid
  try{writeFileSync(join(dir,'master-director-policy.json'),JSON.stringify(policy()),{mode:0o600});
   const input=request(),provide=createMasterDirectorContextProvider(dir),source='f'.repeat(64),fp='edit-01';
   const store=new MasterDirectorProjectStore(join(dir,'job'),async story=>{
-   const context=await provide({...input,story});return context&&{...context,sourceSha256:source,timelineFingerprint:fp,duration:10};
+   const context=await provide({...input,story});return context&&{...context,sourceSha256:source,timelineFingerprint:fp,duration:10,nativePreflight:async()=>({status:'READY_FOR_EDITOR_PREVIEW'})};
   });
   const story={schema:'sues-master-story/v1',sourceSha256:source,timeline:{fingerprint:fp,timeSpace:'edit-timeline',fps:30,duration:10},visual:{mode:'brand-sues'},
    narrative:{centralMessage:'Una historia real',intendedExperience:'Recorrido visual',scenes:[{id:'intro',start:0,end:10,purpose:'Explicar la historia'}],motifs:[],arc:[{id:'observado',phase:'development',start:0,end:10,purpose:'Explicar la historia',evidence:[{kind:'transcript-word',wordId:'word-0-span-0'}]}]},resources:[],
