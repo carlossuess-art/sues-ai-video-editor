@@ -29,7 +29,7 @@ export function reviewMasterDirectorHybridGraph(graph, evidence={}){
    issues.push(failure('HYBRID_DEPENDENCIES_INVALID',n?.id));
  }
  const byId=new Map(nodes.map(n=>[n?.id,n]));
- for(const n of nodes)for(const dep of n?.dependencies??[]){
+ for(const n of nodes)for(const dep of (Array.isArray(n?.dependencies)?n.dependencies:[])){
   if(!byId.has(dep))issues.push(failure('HYBRID_DEPENDENCY_MISSING',n.id));
  }
  if(issues.length)return {status:'BLOCKED',canExecute:false,issues};
