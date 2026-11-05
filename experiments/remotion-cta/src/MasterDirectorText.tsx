@@ -32,7 +32,8 @@ export const MasterDirectorText:React.FC<MasterTextProps>=({layers,source})=>{
   const x=valueAt(keyframes,f,'x',0),y=valueAt(keyframes,f,'y',0),scale=valueAt(keyframes,f,'scale',1),rotation=valueAt(keyframes,f,'rotation',0);
   const style:React.CSSProperties={position:'absolute',left:rect.x,top:rect.y,width:rect.width,height:rect.height,zIndex:l.visual.zIndex,
    opacity:l.visual.opacity*valueAt(keyframes,f,'opacity',1),transform:`translate(${x}px,${y}px) rotate(${rotation}deg) scale(${scale})`,transformOrigin:'center'};
-  const maskId=l.maskFrameAssetIds?.[f]??l.maskAssetId;
+  const maskId=l.maskFrameAssetIds?l.maskFrameAssetIds[f]:l.maskAssetId;
+  if(l.maskFrameAssetIds&&!maskId)throw new Error('Dynamic mask frame missing');
   if(maskId){const mask=`url("${staticFile(`master-assets/${maskId}`)}")`;style.maskImage=mask;style.maskMode='alpha';style.maskSize='100% 100%';style.maskRepeat='no-repeat';}
   if(l.kind==='video'&&l.assetId)return <Sequence key={l.id} from={l.startFrame} durationInFrames={l.endFrame-l.startFrame}><OffthreadVideo src={staticFile(`master-assets/${l.assetId}`)} startFrom={l.sourceInFrame??0} muted style={{...style,objectFit:'fill'}}/></Sequence>;
   if(l.kind==='image'&&l.assetId)return <Img key={l.id} src={staticFile(`master-assets/${l.assetId}`)} style={{...style,objectFit:'fill'}}/>;
