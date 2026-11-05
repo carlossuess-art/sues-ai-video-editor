@@ -52,10 +52,33 @@ export function parseRange(value,size){
  if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||start>=size||end<start)throw new Error('Invalid range');
  end=Math.min(end,size-1);return {start,end,partial:true};
 }
-async function body(req,maxBytes=65536){
+// JSON.parse alone discards repeated keys. For master drafts, scan the valid
+// JSON text before accepting it so API callers get the same lossless guard as UI.
+function rejectDuplicateJsonKeys(raw){
+ const stack=[];
+ for(let i=0;i<raw.length;i++){
+  const ch=raw[i];
+  if(ch==='{')stack.push(new Set());
+  else if(ch==='[')stack.push(null);
+  else if(ch==='}'||ch===']')stack.pop();
+  else if(ch==='"'){
+   const start=i;i++;
+   while(i<raw.length){if(raw.charCodeAt(i)===92){i+=2;continue;}if(raw[i]==='"')break;i++;}
+   let next=i+1;while(next<raw.length&&/\\s/.test(raw[next]))next++;
+   if(raw[next]===':'){
+    const key=JSON.parse(raw.slice(start,i+1)),keys=stack.at(-1);
+    if(keys?.has(key))throw Error('El plan contiene una propiedad repetida.');
+    keys?.add(key);
+   }
+  }
+ }
+}
+async function body(req,maxBytes=65536,{rejectDuplicates=false}={}){
  if(!/^application\/json(?:;|$)/i.test(req.headers['content-type']??''))throw new Error('JSON required');
  const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>maxBytes)throw new Error('Request too large');chunks.push(chunk);}
- const value=JSON.parse(Buffer.concat(chunks).toString());if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
+ const raw=Buffer.concat(chunks).toString(),value=JSON.parse(raw);
+ if(rejectDuplicates)rejectDuplicateJsonKeys(raw);
+ if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
 export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia}){
  let origin;
@@ -371,7 +394,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      if(action==='master-versions'&&req.method==='GET')return json(res,200,{versions:store.listDrafts()});
      if(action==='master-draft'&&req.method==='GET')return json(res,200,{story:store.readDraft(url.searchParams.get('revision'))});
      if(action==='master-draft'&&req.method==='POST'){
-      const b=await body(req,65536);if(Object.keys(b).some(k=>k!=='story'))return json(res,400,{error:'Solo se admite la historia creativa.'});
+      const b=await body(req,65536,{rejectDuplicates:true});if(Object.keys(b).some(k=>k!=='story'))return json(res,400,{error:'Solo se admite la historia creativa.'});
       return json(res,201,store.saveDraft(b.story));
      }
      if(action==='master-review'&&req.method==='POST'){
