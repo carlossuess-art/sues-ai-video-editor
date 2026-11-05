@@ -1,3 +1,13 @@
+## DECISIÓN DE ALCANCE V1 · 06/11/2026 · PRIORIDAD DE CARLOS
+
+**La skill SUES AI Film Director (ChatGPT + supervisión de Carlos) es la fuente inicial de planes de edición.** Se congela la mejora del generador de planes con modelo local: queda opcional, desactivado y fuera de la ruta crítica de la V1. No es requisito demostrar que Qwen/llama.cpp produzcan un plan creativo autónomo. No retirar las salvaguardas de validación ni eliminar el código existente.
+
+**Ruta crítica obligatoria:** plan de la skill en `sues-master-story/v1` → importación maestra autenticada sin pérdida → revisión de reglas/capacidades/recursos y aprobación → ejecución fiel de operaciones nativas y Remotion con handoff de capas verificable → máscaras con evidencia y aprobación → preview y corrección manual → exportación MP4 → supervisor audiovisual de imagen+audio, correcciones y dos auditorías independientes → aceptación con Reel real → despliegue controlado.
+
+**Primero cerrar todos los módulos que consumen y ejecutan el plan externo.** El supervisor audiovisual y la verificación de máscaras sí son parte del objetivo. No convertir la ausencia de proveedor IA local válido en bloqueo del desarrollo ni de la prueba extremo a extremo. La vía de generación automática queda para una etapa posterior.
+
+**Próximo trabajo de código:** comprobar en HEAD de rama la importación, revisión, persistencia y ejecución del plan maestro de la skill; identificar la primera pérdida de información/bloqueo no justificado y corregirlo con pruebas. Después cerrar el worker de la etapa nativa y el handoff hacia Remotion, antes de ampliar efectos y pasar a QA creativa. Este cambio de prioridades no constituye implementación, QA ni despliegue; progreso oficial conservado 55 % ±10 puntos.
+
 ## BORRADOR IA LOCAL OPCIONAL · 06/11/2026
 
 En rama se añadió un proveedor opcional para llama.cpp/Qwen3 local, conectado al mismo endpoint y revisión de `sues-master-story/v1` que la entrada pegada. Desactivado si falta configuración privada; no aprueba ni ejecuta. Binario y modelo fijados por SHA, concurrencia uno, límites de entrada/salida y tiempo; no habilitado en producción. Manual y límites: `docs/SUES_MASTER_LOCAL_GENERATOR_20261106.md`. Commits principales `17e099d7aa4cf60de4f5acd4864d198b108555fd`, `d92a0330c8efb928bd065f192394786ec2e7e50e` y posteriores.
