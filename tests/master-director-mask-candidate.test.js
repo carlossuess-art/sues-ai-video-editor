@@ -32,6 +32,8 @@ test('candidate generation maps source frames and never approves the mask',async
   const request={root,candidateId:result.candidateId,file:'mask-000000.png',planFingerprint:f.graph.planFingerprint,sourceSha256:f.graph.sourceSha256};
   assert.equal(openMasterMaskCandidate(request).mime,'image/png');assert.throws(()=>openMasterMaskCandidate({...request,planFingerprint:'d'.repeat(64)}),/another plan/);
   writeFileSync(join(root,result.candidateId,'masks','mask-000000.png'),'modified');assert.throws(()=>openMasterMaskCandidate(request),/integrity/);
+  assert.equal((await prepareMasterMaskCandidate({...args,pythonSha256:'0'.repeat(64)})).status,'BLOCKED');
+  assert.equal((await prepareMasterMaskCandidate({...args,modelSha256:'0'.repeat(64)})).status,'BLOCKED');
   let calls=0;const blocked=await prepareMasterMaskCandidate({...args,approvalCheck:async()=>++calls===1});assert.equal(blocked.status,'BLOCKED');assert.equal(readdirSync(root).length,1);
   f.composition.source.spans=[{sourceInFrame:0,startFrame:0,endFrame:1},{sourceInFrame:0,startFrame:1,endFrame:3}];
   assert.equal((await prepareMasterMaskCandidate(args)).issues[0].code,'MASK_CANDIDATE_TIMEMAP_UNSUPPORTED');
