@@ -76,11 +76,11 @@ function rejectDuplicateJsonKeys(raw){
 async function body(req,maxBytes=65536,{rejectDuplicates=false}={}){
  if(!/^application\/json(?:;|$)/i.test(req.headers['content-type']??''))throw new Error('JSON required');
  const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>maxBytes)throw new Error('Request too large');chunks.push(chunk);}
- const raw=Buffer.concat(chunks).toString(),value=JSON.parse(raw);
+ const raw=rejectDuplicates?new TextDecoder('utf-8',{fatal:true}).decode(Buffer.concat(chunks)):Buffer.concat(chunks).toString(),value=JSON.parse(raw);
  if(rejectDuplicates)rejectDuplicateJsonKeys(raw);
  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -104,6 +104,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const masterContextProvider=masterDirectorContext??createMasterDirectorContextProvider(directory);
  const masterPreviewRuns=new Map();
  const masterHybridRuns=new Map();
+ const masterGeneratorRuns=new Set();
  const cloudRuns=new Set();
  const cloud=cloudDirector??new CloudDirector({credentialsFile:join(dirname(passwordFile),'cloud-director-keys.json')});
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
@@ -235,14 +236,14 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     // Never expose a private native hybrid stage as a standalone final export.
     const stageInstruction=jobs.get(id).instructions?.at(-1);
     if(stageInstruction?.kind==='master-hybrid-native-stage'&&action&&action!=='cancel')
      return json(res,409,{status:'BLOCKED',error:'Esta versión es una etapa intermedia del montaje mixto; consulta el proyecto principal.'});
-    if(['master-draft','master-review','master-decision','master-layers','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
+    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
      const source=jobs.get(id);
      const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
@@ -390,6 +391,36 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       if(!proposal.canApply||proposal.reviewId!==b.reviewId)return json(res,409,{error:'El montaje ha cambiado. Revisa de nuevo.'});
       const next=jobs.create(current.profileId,proposal.changes,{parentId:id,requestId:b.requestId,instruction:{kind:'master-native',revision:b.revision,decisionId:b.decisionId,reviewId:b.reviewId,actions:proposal.actions,at:new Date().toISOString()}});
       return json(res,202,jobs.render(next.id));
+     }
+     // Optional trusted zero-cost provider. Both input paths persist the same
+     // master story and use the same review; this route never executes the plan.
+     if(action==='master-generate'&&req.method==='GET'){
+      const available=masterPlanGenerator?.verifiedFree===true&&masterPlanGenerator?.maxCostUSD===0&&typeof masterPlanGenerator?.generate==='function';
+      return json(res,200,{available,schema:'sues-master-story/v1'});
+     }
+     if(action==='master-generate'&&req.method==='POST'){
+      const b=await body(req,8192,{rejectDuplicates:true});
+      if(Object.keys(b).some(k=>k!=='brief')||typeof b.brief!=='string'||b.brief.trim().length<5||b.brief.length>4000)
+       return json(res,400,{error:'Escribe un encargo de entre 5 y 4000 caracteres.'});
+      const generator=masterPlanGenerator;
+      if(generator?.verifiedFree!==true||generator?.maxCostUSD!==0||typeof generator?.generate!=='function')
+       return json(res,503,{error:'La generación de planes maestros todavía no está configurada con un proveedor gratuito.'});
+      if(masterGeneratorRuns.has(id))return json(res,409,{error:'Ya hay una propuesta en preparación para este proyecto.'});
+      masterGeneratorRuns.add(id);
+      try{
+       const current=jobs.get(id),project=jobs.loadProfile(current.profileId),catalog=externalCatalog(project,current.settings,assets.list());
+       const context={schema:'sues-master-generation-context/v1',sourceSha256:catalog.sourceSha256,
+        timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration,timeSpace:catalog.timeSpace,
+        sourceTimeMap:catalog.sourceTimeMap,captions:catalog.captions,assets:catalog.assets};
+       const raw=await generator.generate({brief:b.brief.trim(),context:structuredClone(context),outputSchema:'sues-master-story/v1'});
+       if(typeof raw!=='string'||Buffer.byteLength(raw,'utf8')>60000)throw Error('La propuesta generada no es un JSON maestro válido o supera el límite.');
+       const story=JSON.parse(raw);rejectDuplicateJsonKeys(raw);
+       const latest=jobs.get(id),latestCatalog=externalCatalog(jobs.loadProfile(latest.profileId),latest.settings,assets.list());
+       if(latestCatalog.sourceSha256!==catalog.sourceSha256||latestCatalog.timelineFingerprint!==catalog.timelineFingerprint)
+        return json(res,409,{error:'El proyecto ha cambiado durante la generación. Prepara de nuevo la propuesta.'});
+       const saved=store.saveDraft(story),review=await store.review(saved.revision);
+       return json(res,201,{story,revision:saved.revision,review,rendered:false});
+      }finally{masterGeneratorRuns.delete(id);}
      }
      if(action==='master-versions'&&req.method==='GET')return json(res,200,{versions:store.listDrafts()});
      if(action==='master-draft'&&req.method==='GET')return json(res,200,{story:store.readDraft(url.searchParams.get('revision'))});
