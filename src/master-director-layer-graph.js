@@ -65,6 +65,10 @@ export function buildMasterDirectorLayerGraph(plan,registry={}){
  const issues=[],nodes=[],fps=plan.timeline.fps;
  for(const o of plan.operations){
   const start=Math.round(o.start*fps),end=Math.round(o.end*fps);
+  // Exact composition boundaries must never be silently rounded to another frame.
+  if(o.renderer==='remotion'&&(Math.abs(start/fps-o.start)>1e-6||Math.abs(end/fps-o.end)>1e-6)){
+   failure(issues,'OPERATION_NOT_FRAME_ALIGNED',o.id);continue;
+  }
   if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||end<=start||
      Math.abs(start/fps-o.start)>1/(fps*2)+.000001||
      Math.abs(end/fps-o.end)>1/(fps*2)+.000001){
@@ -74,7 +78,8 @@ export function buildMasterDirectorLayerGraph(plan,registry={}){
     startFrame:start,endFrame:end,reason:o.reason,dependencies:[...(o.dependsOn??[])],
     requiredQA:[...(o.requiredQA??[])],
     resource:o.resourceId?{id:o.resourceId,sha256:o.resourceSha256??null}:null,
-    motifId:o.motifId??null,sourceParameters:structuredClone(o.parameters)};
+    motifId:o.motifId??null,speechAnchor:o.speechAnchor?structuredClone(o.speechAnchor):null,
+    sourceParameters:structuredClone(o.parameters)};
   if(VISUAL.has(o.track)){
    const v=visualCheck(o,registry,start,end,issues);
    if(v)nodes.push({...base,editability:v.status,visual:v.visual});
