@@ -458,8 +458,9 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
        const artifact=openMasterSupervisorEvidence({root:evidenceRoot,inspectionId:b.inspectionId,file:b.file,planFingerprint:graph.planFingerprint,outputSha256});
        return sourceStream(req,res,artifact.path,artifact.mime);
       }
-      if(masterSupervisorRuns.has(id))return json(res,409,{error:'Ya se está preparando una inspección para este proyecto.'});
-      masterSupervisorRuns.add(id);
+      if(masterSupervisorRuns.size||jobs.previewBusy||jobs.children.size||jobs.queued().length||jobs.publishing.size||previews.pending.size||adjustmentPreviews.running)
+       return json(res,409,{error:'Hay otra edición o inspección en proceso. Espera antes de continuar.'});
+      masterSupervisorRuns.add(id);jobs.previewBusy=true;
       try{
        const approvalCheck=async()=>{
         const approved=await store.approved(b.revision,b.decisionId),current=findMasterPreview(previewRoot,{previewId:b.previewId});
@@ -468,7 +469,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
        const options={graph,previewPath:preview.file,outputSha256,root:evidenceRoot,approvalCheck};
        if(typeof masterSupervisorRunner==='function')options.runner=masterSupervisorRunner;
        return json(res,200,await prepareMasterSupervisorEvidence(options));
-      }finally{masterSupervisorRuns.delete(id);}
+      }finally{masterSupervisorRuns.delete(id);jobs.previewBusy=false;jobs.drain();}
      }
      if(action==='master-trace'&&req.method==='GET'){
       const revision=url.searchParams.get('revision'),decisionId=url.searchParams.get('decisionId'),manifestRevision=url.searchParams.get('manifestRevision');
