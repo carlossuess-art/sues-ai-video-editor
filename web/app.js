@@ -619,7 +619,7 @@ $('master-generate').onclick=()=>work(async()=>{
  if(current?.id!==jobId)throw Error('El proyecto ha cambiado.');
  if(!status.available)throw Error('La generación de planes maestros todavía no está configurada con un proveedor gratuito.');
  const result=await api('jobs/'+jobId+'/master-generate','POST',{brief});
- if(current?.id!==jobId||$('external-plan-text').value.trim())throw Error('El proyecto o el plan han cambiado. La propuesta generada se ha guardado en versiones.');
+ if(current?.id!==jobId||$('external-plan-text').value.trim()||$('master-generation-brief').value!==brief)throw Error('El proyecto o el encargo han cambiado. La propuesta generada se ha guardado en versiones.');
  const raw=JSON.stringify(result.story,null,2);$('external-plan-text').value=raw;
  masterNativeRequest=null;masterPreviewRequest=null;masterReview={jobId,raw,story:result.story,revision:result.revision,fingerprint:result.review.fingerprint};showMasterReview(result.review);
 });
