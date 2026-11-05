@@ -115,3 +115,13 @@ test('the review offers both supervision and autonomous mode with a narrative ph
  assert.equal(view.narrativeTimeline[0].start,0);
  assert.equal(view.narrativeTimeline[1].purpose,'Cambiar perspectiva');
 });
+
+
+test('review exposes only same-origin hash-bound private resource links',()=>{
+ const p=plan();p.operations[0].resourceId=asset;const r=registry(p),metadata={...r.licensedAssets.asset01,origin:'editor-private-library'};
+ delete metadata.previewUrl;delete r.licensedAssets.asset01;r.licensedAssets[asset]=metadata;
+ const view=buildMasterDirectorReview(p,r);assert.equal(view.status,'READY_FOR_CHOICE');
+ assert.equal(view.resources[0].previewPath,'/api/assets/'+asset+'/media');assert.equal(view.resources[0].previewAvailable,true);
+ p.operations[0].resourceId='asset01';delete r.licensedAssets[asset];r.licensedAssets.asset01=metadata;
+ const logical=buildMasterDirectorReview(p,r);assert.equal(logical.resources[0].previewPath,null);assert.equal(logical.resources[0].previewAvailable,false);
+});
