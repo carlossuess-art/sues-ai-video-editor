@@ -2,6 +2,12 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## CONTINUIDAD · INTEGRIDAD DEL PLAN · 05/11/2026
+
+- Sin cambio de contrato `sues-master-story/v1` ni versión de skill 1.5.2. Añadida comparación narrativa, escenas, motivos, fuente y timeline entre borrador y plan compilado; la revisión del borrador se conserva en el grafo editable. Commits `9deb8087cacd3fb733b6da64d0b4309432b79991`, `da03afdadd92952519491eda6a99799b5b52472c`, `388481508da516a725b48d65593fcb7dcae26d5e`.
+- El motor nativo calcula la duración de las tarjetas a partir de subtítulos y política. Se comunica su tiempo resultante en revisión y se bloquea la tarjeta maestra si no coincide con los tiempos solicitados; evita una traducción temporal silenciosa. Commits `95d05706166a859fc5b33369b5777fb7d88fbc3f`, `dde76058079f3f0ecdb1791682c33ff8f2d0aa2f`.
+- Cambios **sin pruebas ni renders**, por indicación de Carlos, y sin despliegue. No acreditan equivalencia completa ni terminación del importador, efectos, máscaras, audio, supervisor o ejecución IA. Validar estas conexiones una vez autorizada la fase de pruebas.
+
 ## INTEGRACIÓN PEGAR PLAN Y SKILL · 05/11/2026
 
 - Sin cambio de schema: `sues-master-story/v1`. Skill 1.5.1 → **1.5.2**, release `pluginrel_6aecd552b0088191a6da812025a9d3a1`; publicación y lectura confirmadas. Se documenta que los límites de operaciones Remotion deben coincidir con fotogramas, con tolerancia de 0,000001 s. No se incorporan efectos nuevos.
