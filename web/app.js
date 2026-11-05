@@ -770,6 +770,10 @@ async function masterDecision(mode){
    shadowLabel.append(shadowEnabled,document.createTextNode(' Activar sombra'));box.append(shadowLabel);inputs.shadowEnabled=shadowEnabled;
    const colorLabel=document.createElement('label'),colorInput=document.createElement('input');colorLabel.textContent='Color de sombra';colorInput.value=shadow.color;colorLabel.append(colorInput);box.append(colorLabel);inputs.shadowColor=colorInput;
    numberField('shadowX','Sombra horizontal (px)',shadow.offsetX);numberField('shadowY','Sombra vertical (px)',shadow.offsetY);numberField('shadowBlur','Desenfoque de sombra (px)',shadow.blurPx);
+   const glow=node.visual.glow??{color:'#FF8800AA',radiusPx:16},glowLabel=document.createElement('label'),glowEnabled=document.createElement('input');
+   glowEnabled.type='checkbox';glowEnabled.checked=!!node.visual.glow;glowLabel.append(glowEnabled,document.createTextNode(' Activar resplandor'));box.append(glowLabel);inputs.glowEnabled=glowEnabled;
+   const glowColorLabel=document.createElement('label'),glowColor=document.createElement('input');glowColorLabel.textContent='Color del resplandor';glowColor.value=glow.color;glowColorLabel.append(glowColor);box.append(glowColorLabel);inputs.glowColor=glowColor;
+   numberField('glowRadius','Radio del resplandor (px)',glow.radiusPx);
    if(node.visual.typography){
     const typography=node.visual.typography;
     for(const [key,labelText] of [['fontFamily','Familia de la fuente'],['fontColor','Color (#RRGGBB o #RRGGBBAA)']]){
@@ -866,6 +870,15 @@ async function masterDecision(mode){
       throw Error('Comprueba el color, desplazamiento y desenfoque de la sombra.');
      parameters.visual.dropShadow={color,offsetX,offsetY,blurPx};
     }else delete parameters.visual.dropShadow;
+   }
+   if(inputs.glowEnabled){
+    if(inputs.glowEnabled.checked){
+     const color=inputs.glowColor.value.trim(),radiusPx=Number(inputs.glowRadius.value);
+     if(parameters.visual.mask||parameters.visual.dropShadow)throw Error('El resplandor todavía no se puede combinar con máscara ni sombra.');
+     if(!/^#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?$/.test(color)||inputs.glowRadius.value.trim()===''||!Number.isFinite(radiusPx)||radiusPx<=0||radiusPx>200)
+      throw Error('Comprueba el color y el radio del resplandor.');
+     parameters.visual.glow={color,radiusPx};
+    }else delete parameters.visual.glow;
    }
    if(inputs.fontFamily){
     const family=inputs.fontFamily.value.trim(),color=inputs.fontColor.value.trim(),sizePx=Number(inputs.fontSize.value),weight=Number(inputs.fontWeight.value);
