@@ -232,6 +232,14 @@ test('authenticated mixed plan reports both engine components and blocks an inco
   assert.deepEqual(layers.hybrid.nativeOperationIds,['n1']);assert.deepEqual(layers.hybrid.remotionOperationIds,['r1']);
   assert.equal(layers.hybrid.remotionComponent.layers.length,1);assert.equal(layers.hybrid.canRender,false);
   assert.equal(layers.remotion.status,'BLOCKED');assert.equal(layers.canExecute,false);
+  const nativeReview=await post('/master-native-review',{revision,decisionId:decision.decisionId});
+  assert.equal(nativeReview.status,'HYBRID_NATIVE_PART_REVIEWED_NOT_EXECUTABLE',JSON.stringify(nativeReview));
+  assert.equal(nativeReview.nativePlan,null);assert.equal(nativeReview.canExecute,false);assert.equal(nativeReview.canApply,false);
+  assert.deepEqual(nativeReview.nativeOperationIds,['n1']);assert.deepEqual(nativeReview.remotionOperationIds,['r1']);
+  assert.equal(typeof nativeReview.nativeReviewId,'string');
+  const partialApply=await fetch(root+'/master-native-apply',{method:'POST',headers,body:JSON.stringify({revision,
+   decisionId:decision.decisionId,reviewId:nativeReview.nativeReviewId,requestId:randomUUID()})});
+  assert.equal(partialApply.status,409,'An editor cannot render only the native half of a mixed approved story');
   const denied=await post('/master-render-preflight',{revision,decisionId:decision.decisionId});
   assert.equal(denied.status,'BLOCKED');assert.equal(denied.canExecute,false);
   assert.equal(probes,0);assert.equal(app.jobs.children.size,0);
