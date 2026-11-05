@@ -19,7 +19,7 @@ export function prepareMasterHybridNativeHandoff({hybrid,nativeChild,mediaAudit}
   return denied('HYBRID_EXECUTION_ORDER_UNSUPPORTED');
  if(hybrid.crossEngineOverlaps?.some(x=>x.classification==='audio-mix'))
   return denied('HYBRID_AUDIO_MIX_NOT_VERIFIED');
- if(hybrid.remotionComponent.layers.some(l=>l.maskAssetId))
+ if(hybrid.remotionComponent.layers.some(l=>l.maskAssetId||l.maskFrameAssetIds?.length))
   return denied('HYBRID_MASK_NEEDS_DERIVED_SOURCE_PROOF');
  if(!nativeChild||!ID.test(nativeChild.jobId??'')||!ID.test(nativeChild.parentJobId??'')||
     nativeChild.jobId===nativeChild.parentJobId||
