@@ -74,3 +74,20 @@ export async function prepareMasterMaskCandidate({graph,composition,project,oper
   return {status:manifest.status,candidateId:basename(dir),manifest,verified:false};
  }catch{if(dir)rmSync(dir,{recursive:true,force:true});return blocked('MASK_CANDIDATE_GENERATION_FAILED');}
 }
+
+export function openMasterMaskCandidate({root,candidateId,file,planFingerprint,sourceSha256}={}){
+ if(typeof root!=='string'||!isAbsolute(root)||!/^candidate-[A-Za-z0-9]{6}$/.test(candidateId??'')||
+    !/^mask-[0-9]{6}\.png$/.test(file??'')||!HASH.test(planFingerprint??'')||!HASH.test(sourceSha256??''))
+  throw Error('Invalid mask candidate request');
+ const dir=join(root,candidateId),d=lstatSync(dir),masks=join(dir,'masks'),md=lstatSync(masks);
+ if(!d.isDirectory()||d.isSymbolicLink()||!md.isDirectory()||md.isSymbolicLink())throw Error('Invalid candidate directory');
+ const meta=join(dir,'manifest.json'),st=lstatSync(meta);
+ if(!st.isFile()||st.isSymbolicLink()||st.size>262144)throw Error('Invalid candidate manifest');
+ const report=JSON.parse(readFileSync(meta,'utf8'));
+ if(report.schema!=='sues-master-mask-candidate/v1'||report.planFingerprint!==planFingerprint||
+    report.sourceSha256!==sourceSha256||!Array.isArray(report.frames))throw Error('Candidate belongs to another plan');
+ const entries=report.frames.filter(frame=>frame?.file===file);if(entries.length!==1||!HASH.test(entries[0].sha256??''))throw Error('Candidate frame not found');
+ const path=join(masks,file),image=lstatSync(path);
+ if(!image.isFile()||image.isSymbolicLink()||fileSha256(path)!==entries[0].sha256)throw Error('Candidate frame integrity failure');
+ return {path,mime:'image/png',sha256:entries[0].sha256};
+}
