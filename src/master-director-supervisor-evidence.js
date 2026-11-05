@@ -2,7 +2,7 @@
 // semantic correctness, artistic quality, acceptance, or publication.
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
-import {mkdirSync,mkdtempSync,readdirSync,lstatSync,writeFileSync,rmSync} from 'node:fs';
+import {mkdirSync,mkdtempSync,readdirSync,lstatSync,writeFileSync,rmSync,readFileSync} from 'node:fs';
 import {join,basename,isAbsolute} from 'node:path';
 import {fileSha256} from './local-pipeline.js';
 const run=promisify(execFile),HASH=/^[a-f0-9]{64}$/,ID=/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/;
@@ -51,4 +51,20 @@ export async function prepareMasterSupervisorEvidence({graph,previewPath,outputS
   writeFileSync(join(dir,'manifest.json'),JSON.stringify(report),{mode:0o600,flag:'wx'});
   return {status:report.status,inspectionId:basename(dir),report,final:false};
  }catch{if(dir)rmSync(dir,{recursive:true,force:true});return blocked('SUPERVISOR_EVIDENCE_FAILED');}
+}
+
+export function openMasterSupervisorEvidence({root,inspectionId,file,planFingerprint,outputSha256}={}){
+ if(typeof root!=='string'||!isAbsolute(root)||!/^inspection-[A-Za-z0-9]{6}$/.test(inspectionId??'')||
+    !/^(?:audio\.wav|frame-[0-9]{4}\.png)$/.test(file??'')||!HASH.test(planFingerprint??'')||!HASH.test(outputSha256??''))
+  throw Error('Invalid supervisor evidence request');
+ const dir=join(root,inspectionId),d=lstatSync(dir);if(!d.isDirectory()||d.isSymbolicLink())throw Error('Invalid evidence directory');
+ const manifest=join(dir,'manifest.json'),m=lstatSync(manifest);
+ if(!m.isFile()||m.isSymbolicLink()||m.size>262144)throw Error('Invalid evidence manifest');
+ const report=JSON.parse(readFileSync(manifest,'utf8'));
+ if(report.schema!=='sues-master-supervisor-evidence/v1'||report.planFingerprint!==planFingerprint||
+    report.outputSha256!==outputSha256||!Array.isArray(report.files))throw Error('Evidence belongs to another output');
+ const entries=report.files.filter(entry=>entry?.name===file);if(entries.length!==1||!HASH.test(entries[0].sha256??''))throw Error('Evidence not found');
+ const path=join(dir,file),st=lstatSync(path);
+ if(!st.isFile()||st.isSymbolicLink()||st.size!==entries[0].bytes||fileSha256(path)!==entries[0].sha256)throw Error('Evidence integrity failure');
+ return {path,mime:file==='audio.wav'?'audio/wav':'image/png',sha256:entries[0].sha256};
 }
