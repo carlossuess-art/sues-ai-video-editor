@@ -87,3 +87,16 @@ test('static drop shadows preserve exact values and reject unsupported combinati
  const masked=structuredClone(g);masked.nodes[0].visual.mask={proofId:'proof',mode:'alpha-keep'};masked.nodes[0].sourceParameters.visual=structuredClone(masked.nodes[0].visual);
  assert.equal(compileMasterDirectorRemotion(masked,options).status,'BLOCKED');
 });
+
+
+test('static glow is bounded and cannot silently combine with shadow or mask',()=>{
+ const options={verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}}},g=graph();
+ g.nodes[0].visual.glow={color:'#ff9900aa',radiusPx:24};g.nodes[0].sourceParameters.visual=structuredClone(g.nodes[0].visual);
+ const result=compileMasterDirectorRemotion(g,options);assert.equal(result.status,'READY_FOR_REMOTION_STAGING');assert.deepEqual(result.composition.layers[0].visual.glow,g.nodes[0].visual.glow);
+ for(const bad of [{color:'#ff0000',radiusPx:0},{color:'#ff0000',radiusPx:201},{color:'red',radiusPx:4},{color:'#ff0000',radiusPx:4,intensity:2}]){
+  const candidate=structuredClone(g);candidate.nodes[0].visual.glow=bad;candidate.nodes[0].sourceParameters.visual=structuredClone(candidate.nodes[0].visual);assert.equal(compileMasterDirectorRemotion(candidate,options).status,'BLOCKED');
+ }
+ for(const extra of [{mask:{proofId:'p1',mode:'alpha-keep'}},{dropShadow:{color:'#000000',offsetX:0,offsetY:1,blurPx:2}}]){
+  const candidate=structuredClone(g);Object.assign(candidate.nodes[0].visual,extra);candidate.nodes[0].sourceParameters.visual=structuredClone(candidate.nodes[0].visual);assert.equal(compileMasterDirectorRemotion(candidate,options).status,'BLOCKED');
+ }
+});
