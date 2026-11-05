@@ -8,6 +8,7 @@ import {prepareMasterDirectorSession} from './master-director-orchestration.js';
 import {buildMasterDirectorReview} from './master-director-workflow.js';
 import {buildMasterDirectorLayerGraph} from './master-director-layer-graph.js';
 import {compileMasterDirectorRemotion} from './master-director-remotion-compiler.js';
+import {reviewMasterDirectorHybridGraph} from './master-director-hybrid-review.js';
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const HASH=/^[a-f0-9]{64}$/;
 const obj=x=>x&&typeof x==='object'&&!Array.isArray(x);
@@ -103,7 +104,10 @@ export class MasterDirectorProjectStore{
   if(!result.graph)return {...result,revision,canExecute:false};
   const graphRevision=immutable(join(this.root,'layer-graphs'),result.graph);
   const remotion=compileMasterDirectorRemotion(result.graph,{verifiedFonts:registry.verifiedFonts??{},verifiedAssets:registry.licensedAssets??{},verifiedMasks:registry.maskEvidence??{}});
-  return {...result,revision,graphRevision,remotion,canExecute:false};
+  const hybrid=result.graph.nodes.some(n=>n.renderer==='native')&&result.graph.nodes.some(n=>n.renderer==='remotion')?
+   reviewMasterDirectorHybridGraph(result.graph,{verifiedFonts:registry.verifiedFonts??{},verifiedAssets:registry.licensedAssets??{},verifiedMasks:registry.maskEvidence??{}}):null;
+  // Remotion-only preview remains deliberately BLOCKED for mixed plans: never drop native operations.
+  return {...result,revision,graphRevision,remotion,...(hybrid?{hybrid}:{}),canExecute:false};
  }
  async decide(revision,fingerprint,mode){
   if(!HASH.test(fingerprint??'')||!['review','approve','autonomous'].includes(mode))throw Error('Invalid decision');
