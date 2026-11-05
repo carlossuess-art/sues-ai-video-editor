@@ -2,7 +2,7 @@ import React, {useEffect,useState} from 'react';
 import {masterEasing} from './masterEasing.js';
 import {AbsoluteFill,Img,Audio,OffthreadVideo,Sequence,staticFile,useCurrentFrame,delayRender,continueRender,cancelRender} from 'remotion';
 type Keyframe={atFrame:number;easing?:'linear'|'ease-in'|'ease-out'|'ease-in-out';x?:number;y?:number;opacity?:number;scale?:number;rotation?:number};
-type Layer={id:string;kind?:'text'|'image'|'audio'|'video';sourceInFrame?:number;gain?:number;assetId?:string;maskAssetId?:string;maskFrameAssetIds?:string[];fontAssetId?:string;startFrame:number;endFrame:number;text?:string;visual:{rect:{x:number;y:number;width:number;height:number};zIndex:number;opacity:number;dropShadow?:{color:string;offsetX:number;offsetY:number;blurPx:number};glow?:{color:string;radiusPx:number};typography?:{family:string;sizePx:number;weight:number;color:string};keyframes:Keyframe[]}};
+type Layer={id:string;kind?:'text'|'image'|'audio'|'video';fit?:'fill'|'contain'|'cover';sourceInFrame?:number;gain?:number;assetId?:string;maskAssetId?:string;maskFrameAssetIds?:string[];fontAssetId?:string;startFrame:number;endFrame:number;text?:string;visual:{rect:{x:number;y:number;width:number;height:number};zIndex:number;opacity:number;dropShadow?:{color:string;offsetX:number;offsetY:number;blurPx:number};glow?:{color:string;radiusPx:number};typography?:{family:string;sizePx:number;weight:number;color:string};keyframes:Keyframe[]}};
 export type MasterTextProps={layers:Layer[];durationFrames?:number;canvasWidth?:number;canvasHeight?:number;fps?:number;source?:{assetId:string;fit:'fill';audio:true;spans:Array<{sourceInFrame:number;startFrame:number;endFrame:number}>}};
 function valueAt(keys:Keyframe[],frame:number,key:'x'|'y'|'opacity'|'scale'|'rotation',fallback:number){
  const values=keys.filter(k=>k[key]!==undefined);if(!values.length)return fallback;
@@ -41,13 +41,13 @@ export const MasterDirectorText:React.FC<MasterTextProps>=({layers,source})=>{
   if(maskId){const mask=`url("${staticFile(`master-assets/${maskId}`)}")`,target=combined?maskStyle:style;target.maskImage=mask;target.maskMode='alpha';target.maskSize='100% 100%';target.maskRepeat='no-repeat';}
   if(combined){
    const inner:React.CSSProperties={...maskStyle,width:'100%',height:'100%'};
-   if(l.kind==='video'&&l.assetId)return <div key={l.id} style={style}><Sequence from={l.startFrame} durationInFrames={l.endFrame-l.startFrame}><OffthreadVideo src={staticFile(`master-assets/${l.assetId}`)} startFrom={l.sourceInFrame??0} muted style={{...inner,objectFit:'fill'}}/></Sequence></div>;
-   if(l.kind==='image'&&l.assetId)return <div key={l.id} style={style}><Img src={staticFile(`master-assets/${l.assetId}`)} style={{...inner,objectFit:'fill'}}/></div>;
+   if(l.kind==='video'&&l.assetId)return <div key={l.id} style={style}><Sequence from={l.startFrame} durationInFrames={l.endFrame-l.startFrame}><OffthreadVideo src={staticFile(`master-assets/${l.assetId}`)} startFrom={l.sourceInFrame??0} muted style={{...inner,objectFit:l.fit??'fill',objectPosition:'50% 50%'}}/></Sequence></div>;
+   if(l.kind==='image'&&l.assetId)return <div key={l.id} style={style}><Img src={staticFile(`master-assets/${l.assetId}`)} style={{...inner,objectFit:l.fit??'fill',objectPosition:'50% 50%'}}/></div>;
    if(!typography)return null;
    return <div key={l.id} style={style}><div style={{...inner,fontFamily:l.fontAssetId?'sues-'+l.fontAssetId:typography.family,fontSize:typography.sizePx,fontWeight:typography.weight,fontSynthesis:'none',color:typography.color,whiteSpace:'pre-wrap'}}>{l.text}</div></div>;
   }
-  if(l.kind==='video'&&l.assetId)return <Sequence key={l.id} from={l.startFrame} durationInFrames={l.endFrame-l.startFrame}><OffthreadVideo src={staticFile(`master-assets/${l.assetId}`)} startFrom={l.sourceInFrame??0} muted style={{...style,objectFit:'fill'}}/></Sequence>;
-  if(l.kind==='image'&&l.assetId)return <Img key={l.id} src={staticFile(`master-assets/${l.assetId}`)} style={{...style,objectFit:'fill'}}/>;
+  if(l.kind==='video'&&l.assetId)return <Sequence key={l.id} from={l.startFrame} durationInFrames={l.endFrame-l.startFrame}><OffthreadVideo src={staticFile(`master-assets/${l.assetId}`)} startFrom={l.sourceInFrame??0} muted style={{...style,objectFit:l.fit??'fill',objectPosition:'50% 50%'}}/></Sequence>;
+  if(l.kind==='image'&&l.assetId)return <Img key={l.id} src={staticFile(`master-assets/${l.assetId}`)} style={{...style,objectFit:l.fit??'fill',objectPosition:'50% 50%'}}/>;
   if(!typography)return null;
   return <div key={l.id} style={{...style,fontFamily:l.fontAssetId?'sues-'+l.fontAssetId:typography.family,fontSize:typography.sizePx,fontWeight:typography.weight,fontSynthesis:'none',color:typography.color,whiteSpace:'pre-wrap'}}>{l.text}</div>;
  })}</AbsoluteFill>;
