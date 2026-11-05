@@ -18,7 +18,8 @@ export async function prepareMasterMaskCandidate({graph,composition,project,oper
     rect.x+rect.width>canvas.width||rect.y+rect.height>canvas.height||
     !Number.isInteger(node.startFrame)||!Number.isInteger(node.endFrame)||node.startFrame<0||
     node.endFrame<=node.startFrame||node.endFrame-node.startFrame>120||
-    composition?.schema!=='sues-remotion-layers/v1'||composition.sourceSha256!==graph.sourceSha256||
+    composition?.schema!=='sues-remotion-layers/v1'||composition.fps!==30||composition.durationFrames!==graph.durationFrames||
+    composition.sourceSha256!==graph.sourceSha256||project?.boundHashes?.source!==graph.sourceSha256||
     source?.assetId!==graph.sourceSha256||!Array.isArray(source.spans)||!['keep-subject','keep-background'].includes(mode)||
     typeof sourcePath!=='string'||!isAbsolute(sourcePath)||typeof root!=='string'||!isAbsolute(root)||
     typeof pythonPath!=='string'||!isAbsolute(pythonPath)||typeof scriptPath!=='string'||!isAbsolute(scriptPath)||
@@ -57,14 +58,17 @@ export async function prepareMasterMaskCandidate({graph,composition,project,oper
   const report=JSON.parse(readFileSync(reportPath,'utf8'));
   if(report.schema!=='sues-mask-candidate/v1'||report.status!=='CANDIDATE_NOT_VERIFIED'||
      report.sourceSha256Claim!==graph.sourceSha256||report.timelineFingerprintClaim!==graph.timelineFingerprint||
-     report.mode!==mode||!Array.isArray(report.frames)||report.frames.length!==sourceFrames.length)
+     report.mode!==mode||report.fps!==30||report.coordinateSpace!=='layer'||
+     JSON.stringify(report.rect)!==JSON.stringify([rect.x,rect.y,rect.width,rect.height])||
+     typeof report.model!=='string'||!HASH.test(report.modelSha256??'')||!Array.isArray(report.frames)||report.frames.length!==sourceFrames.length)
    throw Error('Candidate report does not match request');
   for(let i=0;i<report.frames.length;i++){
    const frame=report.frames[i],name='mask-'+String(i).padStart(6,'0')+'.png',path=join(output,name),asset=lstatSync(path);
-   if(frame.file!==name||frame.editFrame!==node.startFrame+i||!asset.isFile()||asset.isSymbolicLink()||
+   if(frame.file!==name||frame.editFrame!==node.startFrame+i||!asset.isFile()||asset.isSymbolicLink()||asset.size<1||asset.size>20*1024*1024||
       frame.inputSha256!==fileSha256(join(input,files[i]))||frame.sha256!==fileSha256(path))throw Error('Candidate integrity failed');
   }
-  if(fileSha256(sourcePath)!==graph.sourceSha256||!await approvalCheck())throw Error('Source or approval changed');
+  const expectedOutputs=['candidate.json',...report.frames.map(frame=>frame.file)].sort();
+  if(JSON.stringify(readdirSync(output).sort())!==JSON.stringify(expectedOutputs)||fileSha256(sourcePath)!==graph.sourceSha256||!await approvalCheck())throw Error('Candidate contents, source or approval changed');
   rmSync(input,{recursive:true,force:true});
   const manifest={schema:'sues-master-mask-candidate/v1',status:'CANDIDATE_NOT_VERIFIED',verified:false,
    planFingerprint:graph.planFingerprint,sourceSha256:graph.sourceSha256,timelineFingerprint:graph.timelineFingerprint,
