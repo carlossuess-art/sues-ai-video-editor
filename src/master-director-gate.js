@@ -140,7 +140,7 @@ export function auditMasterDirectorExecution(plan,registry={},execution={}){
     issue(issues,'TWO_INDEPENDENT_QA_PASSES_REQUIRED');
   else for(let i=0;i<2;i++){
     const evidence=new Map((Array.isArray(passes[i].evidence)?passes[i].evidence:[]).filter(obj).map(e=>[e.operationId,e]));
-    if(!Array.isArray(passes[i].evidence)||evidence.size!==ops.length)
+    if(!Array.isArray(passes[i].evidence)||passes[i].evidence.length!==ops.length||evidence.size!==ops.length)
       issue(issues,'QA_EVIDENCE_INCOMPLETE','pass-'+(i+1));
     for(const op of ops){
       const entry=evidence.get(op.id);
