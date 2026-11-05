@@ -34,6 +34,20 @@ function unrepresentedStoryFields(story){
 // The original immutable draft remains authoritative for resource descriptions.
 function auditStoryTranslation(story,plan){
  const issues=[],ops=Array.isArray(story.operations)?story.operations:[];
+ const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+ const fields=[
+  ['sourceSha256',story.sourceSha256,plan.source?.sha256],
+  ['timeline',story.timeline,plan.timeline],
+  ['visual.mode',story.visual?.mode,plan.creativeContext?.visualMode],
+  ['visual.referenceId',story.visual?.referenceId??null,plan.creativeContext?.referenceId??null],
+  ['narrative.centralMessage',story.narrative?.centralMessage,plan.creativeContext?.centralMessage],
+  ['narrative.intendedExperience',story.narrative?.intendedExperience,plan.creativeContext?.intendedExperience],
+  ['narrative.scenes',story.narrative?.scenes,plan.scenes],
+  ['narrative.motifs',story.narrative?.motifs??[],plan.creativeContext?.motifs],
+  ['narrative.arc',story.narrative?.arc??[],plan.creativeContext?.arc]
+ ];
+ for(const [subject,source,target] of fields)
+  if(!equal(source,target))issues.push({code:'STORY_FIELD_TRANSLATION_CHANGED',subject});
  const compiled=Array.isArray(plan.operations)?plan.operations:[];
  if(ops.length!==compiled.length)return [{code:'STORY_OPERATION_COUNT_CHANGED',subject:'operations'}];
  for(let i=0;i<ops.length;i++){
