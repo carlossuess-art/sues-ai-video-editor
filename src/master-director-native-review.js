@@ -73,6 +73,9 @@ export function reviewMasterDirectorNative(args={}){
  if(hybrid.crossEngineDependencies.some(d=>d.fromEngine==='remotion'&&d.toEngine==='native'))
   return {status:'BLOCKED',canExecute:false,canApply:false,
    issues:[{code:'HYBRID_EXECUTION_ORDER_UNSUPPORTED'}],nativePlan:null};
+ if(hybrid.crossEngineOverlaps.some(o=>o.classification==='visual-order-unresolved'))
+  return {status:'BLOCKED',canExecute:false,canApply:false,
+   issues:[{code:'HYBRID_VISUAL_ORDER_UNVERIFIED'}],nativePlan:null};
  if(hybrid.crossEngineOverlaps.some(o=>o.classification==='audio-mix'))
   return {status:'BLOCKED',canExecute:false,canApply:false,
    issues:[{code:'HYBRID_AUDIO_MIX_NOT_VERIFIED'}],nativePlan:null};
