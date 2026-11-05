@@ -11,10 +11,10 @@ const graph=()=>{
   timelineFingerprint:'approved-timeline-001',canvas:{width:1080,height:1920},fps:30,durationFrames:150,
   nodes:[
    {id:'cut-1',sceneId:'intro',renderer:'native',track:'transition',effect:'transition-native',
-    startFrame:30,endFrame:42,dependencies:[],sourceParameters:{kind:'warm'},
+    startFrame:30,endFrame:42,startTime:1,endTime:1.4,dependencies:[],sourceParameters:{kind:'warm'},
     editability:'native-controls-only',visual:null},
    {id:'title-1',sceneId:'intro',renderer:'remotion',track:'graphics',effect:'text',
-    startFrame:40,endFrame:90,dependencies:['cut-1'],visual:v,
+    startFrame:40,endFrame:90,startTime:40/30,endTime:3,dependencies:['cut-1'],visual:v,
     sourceParameters:{text:'CORAZÓN',visual:structuredClone(v)},editability:'parameterized-layer'}
   ]};
 };
@@ -56,5 +56,11 @@ test('a single-engine plan is not incorrectly promoted as a hybrid',()=>{
 test('full-composition native effects overlapping a Remotion layer require visual ordering',()=>{
  const g=graph();for(const track of ['transition','graphics','captions']){g.nodes[0].track=track;assert.equal(reviewMasterDirectorHybridGraph(g,verified).crossEngineOverlaps[0].classification,'visual-order-unresolved');}
  g.nodes[0].track='camera';assert.equal(reviewMasterDirectorHybridGraph(g,verified).crossEngineOverlaps[0].classification,'visual-stack');
- g.nodes[0].track='transition';g.nodes[0].endFrame=40;assert.deepEqual(reviewMasterDirectorHybridGraph(g,verified).crossEngineOverlaps,[]);
+ g.nodes[0].track='transition';g.nodes[0].endFrame=40;g.nodes[0].endTime=40/30;assert.deepEqual(reviewMasterDirectorHybridGraph(g,verified).crossEngineOverlaps,[]);
+});
+
+test('native time boundaries are compared before rounding to avoid hiding overlaps',()=>{
+ const g=graph();g.nodes[0].startTime=0.9;g.nodes[0].startFrame=27;g.nodes[0].endTime=40/30+0.001;g.nodes[0].endFrame=40;
+ assert.equal(reviewMasterDirectorHybridGraph(g,verified).crossEngineOverlaps[0].classification,'visual-order-unresolved');
+ delete g.nodes[0].endTime;assert.ok(reviewMasterDirectorHybridGraph(g,verified).issues.some(x=>x.code==='HYBRID_EXACT_TIMING_MISSING'));
 });
