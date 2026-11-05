@@ -2,6 +2,12 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## CAPACIDADES ANTES DE APROBAR · 05/11/2026
+
+- En rama se inspecciona la estructura del grafo y se compilan de forma lógica las operaciones Remotion antes de mostrar una propuesta como aprobable; los identificadores y códigos de los bloqueos se presentan en pantalla. La huella temporal usada para inspección no registra una aprobación ni ejecuta un trabajo.
+- Cambios `8093b22c342f5ece2739f9f19e124513f09c8017` y `6aecacc750d5ca6da259acbce7d34edaaf6d4da2`. No modifica schema ni skill y no acredita capacidad gráfica o audiovisual. La revisión completa del motor nativo y la ejecución mixta siguen dependiendo de sus propios controles.
+- Sin pruebas ni renders por instrucción del titular; cambios no validados y no desplegados. Pendientes de integración completa y revisión posterior.
+
 ## CONTINUIDAD · INTEGRIDAD DEL PLAN · 05/11/2026
 
 - Sin cambio de contrato `sues-master-story/v1` ni versión de skill 1.5.2. Añadida comparación narrativa, escenas, motivos, fuente y timeline entre borrador y plan compilado; la revisión del borrador se conserva en el grafo editable. Commits `9deb8087cacd3fb733b6da64d0b4309432b79991`, `da03afdadd92952519491eda6a99799b5b52472c`, `388481508da516a725b48d65593fcb7dcae26d5e`.
