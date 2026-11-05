@@ -2,6 +2,12 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## REVISIÓN DETALLADA Y GUARDIA DE EVIDENCIAS · 05/11/2026
+
+- La revisión incluye parámetros, motor, dependencias, recursos y anclas por operación; la interfaz muestra estos datos desplegables por escena. Commits `9648d6fabbb629691960cb8aae0f01d898c7fecc`, `be08f97512dc0a731eb112dcf90d7acf167c3f00`, `594420045ef763e9f6d75440699765c567763afb`.
+- La auditoría rechaza evidencia duplicada en cada pasada, evitando aceptar listas con entradas repetidas. Commit `7c3ff01f041a8514132f024aba2c1b7dc0d7ac7f`. No implementa supervisor audiovisual independiente ni demuestra sus resultados.
+- Sin tests, renders ni despliegue por indicación de Carlos. Cambios pendientes de validación. No acredita integración integral, efectos, máscaras reales ni segundo camino IA. Próxima acción: continuar la integración y mantener bloqueadas las capacidades sin equivalencia verificada.
+
 ## IMPORTACIÓN DE ARCHIVO MAESTRO · 05/11/2026
 
 - Añadidos controles de importación y descarga JSON en el editor de rama. Archivo y pegado comparten inspección de schema y tamaño y la misma revisión, aprobación y ejecución existente. El archivo UTF-8 se mantiene íntegro en el cuadro; un proyecto cambiado durante la lectura bloquea la importación.
