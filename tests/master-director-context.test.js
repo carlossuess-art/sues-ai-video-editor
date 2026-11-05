@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,writeFileSync,chmodSync,chownSync,symlinkSync,rmSync,readFileSync} from 'node:fs';
 import {join} from 'node:path';
+import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
 import {createMasterDirectorContextProvider} from '../src/master-director-context.js';
 import {buildMasterDirectorPolicy} from '../src/master-director-policy-builder.js';
@@ -68,5 +69,22 @@ test('trusted dynamic mask evidence is scoped to source and edited timeline',asy
   input.catalog.timelineFingerprint='edit-2';assert.equal((await provider(input)).blockedIssues[0].code,'MASK_POLICY_EVIDENCE_INVALID');
   input.catalog.timelineFingerprint='edit-1';p.maskEvidence[0].frameAssetIds=frames.slice(0,1);writeFileSync(path,JSON.stringify(p));
   assert.equal((await provider(input)).blockedIssues[0].code,'MASK_POLICY_EVIDENCE_INVALID');
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+
+test('generated resources resolve only from verified project-bound server evidence',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'sues-generated-policy-')),path=join(dir,'master-director-policy.json');
+ try{
+  const p=policy(),input=request(),source='f'.repeat(64),asset='d'.repeat(64),brief='Una escena de transformación';
+  input.catalog.sourceSha256=source;input.catalog.timelineFingerprint='edit-1';
+  input.story.resources=[{id:'new-image',source:'generate',kind:'image',creationBrief:brief}];
+  p.generatedAssets=[{projectId:input.jobId,resourceId:'new-image',sourceSha256:source,timelineFingerprint:'edit-1',kind:'image',assetId:asset,sha256:asset,creationBriefSha256:createHash('sha256').update(brief).digest('hex')}];
+  writeFileSync(path,JSON.stringify(p),{mode:0o600});const provider=createMasterDirectorContextProvider(dir),valid=await provider(input);
+  assert.deepEqual(valid.registry.generatedAssets['new-image'],{assetId:asset,sha256:asset});assert.equal(valid.registry.licensedAssets[asset].rightsVerified,true);
+  input.story.resources[0].creationBrief='Una escena diferente';assert.equal((await provider(input)).blockedIssues[0].code,'GENERATED_ASSET_EVIDENCE_INVALID');
+  input.story.resources[0].creationBrief=brief;input.catalog.timelineFingerprint='edit-2';assert.deepEqual((await provider(input)).registry.generatedAssets,{});
+  input.catalog.timelineFingerprint='edit-1';p.generatedAssets[0].kind='video';input.story.resources[0].kind='video';writeFileSync(path,JSON.stringify(p));
+  assert.equal((await provider(input)).blockedIssues[0].code,'GENERATED_ASSET_KIND_MISMATCH');
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
