@@ -2,6 +2,13 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## RECURSOS Y COBERTURA DE SUPERVISIÓN · 05/11/2026
+
+- El contexto confiable puede resolver un recurso solicitado para generar si una política del servidor ya acredita proyecto, fuente, montaje, hash del brief, tipo, SHA, bytes y derechos; ante una discrepancia se bloquea. Imagen, vídeo, música y SFX; la generación o licencia no se inventa. Probado hasta revisión y compilación con datos simulados. Commits `2f579fd34e2b9f6165038de5b217dfe9f4cada74`, `769d54e3ac9b8ca2a5ecdf62ec5a7567bb193505`, `bf7d7e04bf4f06bbe8e7bb9aa90e31b8985dad54`, `88fd45a0630a6e44bb1501f6d22b364f1e02d09a`.
+- La revisión enlaza medios de la biblioteca privada por rutas autenticadas derivadas de hashes; controles en navegador escritorio/móvil PASS con datos simulados. Commits `62b13b88799bdaf666f282d382fc232b92595f8f`, `058ebd7bd1d368d60e20eada33c79bd5066cd8bb`, `c1269d8b9bcf57d9c75b4da0cc5aac87a94ec8de`, `2d2b670c5ce517db89f444d77c1dc81076144a85`.
+- Las muestras para supervisión cubren toda la línea temporal a 1 fps más entrada, mitad y salida de operaciones, limitadas a 180 frames únicos. Prueba real FFmpeg sintética 2/2 y navegador simulado 1440/390 PASS. No equivale a inspección completa de movimiento ni escucha automática. Commits `406ff3c01f652aba11b276a52b3f5550bcc837be`, `30ee2ea22bea6c6caa4d81845cf19a58893a6cd5`, `a9b0d8bb540082b37070b583c1ae2001c2ab5b18`.
+- Regresión posterior: 165 PASS, 0 FAIL, 5 SKIP de 170 en host; las cinco pruebas que requieren FFmpeg o modelo se ejecutaron por separado en cortes anteriores según se documenta abajo. Sin despliegue ni Reel nuevo. Pendientes registro y verificación de máscaras, generador IA gratuito real, supervisor audiovisual autónomo y validación integral.
+
 ## ÚLTIMA REGRESIÓN Y ENTORNO · 05/11/2026
 
 - Tras conectar supervisor y candidaturas de máscaras, suite `node --test tests/master-director-*.test.js`: 163 PASS, 0 FAIL, 5 SKIP de 168 en host. Las cinco pruebas omitidas dependen de FFmpeg o del runtime Python: se han ejecutado por separado en los cortes documentados, 2 pruebas nativas, 1 extracción de evidencia y 2 pruebas de máscaras reales/sintéticas, sin trasladar esos resultados como si se hubieran ejecutado en la suite de host.
