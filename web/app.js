@@ -504,8 +504,8 @@ function invalidateExternal(){externalReview=null;externalRequest=null;$('extern
 $('external-plan-text').oninput=()=>{invalidateExternal();resetMasterReview();};
 // SUES Master Director: explicit approval and reversible per-layer layout edits.
 // A saved decision is not execution; the server enforces trust and costs.
-let masterReview=null,masterPreviewRequest=null,masterNativeRequest=null;
-function resetMasterReview(){masterReview=null;masterPreviewRequest=null;masterNativeRequest=null;$('master-review-actions').hidden=true;$('master-layer-controls').replaceChildren();$('master-review-result').replaceChildren();}
+let masterReview=null,masterPreviewRequest=null,masterNativeRequest=null,masterHybridRequest=null;
+function resetMasterReview(){masterReview=null;masterPreviewRequest=null;masterNativeRequest=null;masterHybridRequest=null;$('master-review-actions').hidden=true;$('master-layer-controls').replaceChildren();$('master-review-result').replaceChildren();}
 function showMasterReview(result){
  const target=$('master-review-result');target.replaceChildren();
  if(result.status!=='READY_FOR_CHOICE'){
@@ -642,7 +642,8 @@ async function masterDecision(mode){
  const layers=await api('jobs/'+state.jobId+'/master-layers','POST',{revision:state.revision,decisionId:result.decisionId});
  if(layers.status!=='STRUCTURE_READY_NOT_RENDERED'){const p=document.createElement('p');p.textContent='Hay capas o recursos pendientes antes de preparar la edición.';$('master-review-result').append(p);return;}
  const area=$('master-layer-controls');area.replaceChildren();
- if(layers.graph.nodes.every(node=>node.renderer==='native')){
+ const hasNative=layers.graph.nodes.some(node=>node.renderer==='native'),hasRemotion=layers.graph.nodes.some(node=>node.renderer==='remotion');
+ if(hasNative&&!hasRemotion){
   const nativeButton=document.createElement('button'),nativeStatus=document.createElement('p');
   nativeButton.type='button';nativeButton.textContent='Crear versión editable';nativeStatus.setAttribute('role','status');
   const prepareNative=async()=>{
@@ -661,6 +662,35 @@ async function masterDecision(mode){
   nativeButton.onclick=()=>work(prepareNative);area.append(nativeButton,nativeStatus);
   if(mode==='autonomous')setTimeout(()=>void work(prepareNative),0);
  }
+ if(hasNative&&hasRemotion){
+  const button=document.createElement('button'),status=document.createElement('p'),player=document.createElement('video');
+  button.type='button';button.textContent='Preparar previsualización mixta';status.setAttribute('role','status');
+  player.controls=true;player.playsInline=true;player.hidden=true;player.style.maxWidth='100%';
+  const prepareHybrid=async()=>{
+   if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
+   masterHybridRequest??=crypto.randomUUID();const requestId=masterHybridRequest;button.disabled=true;
+   status.textContent='Preparando las capas y la previsualización privada…';
+   let launched;try{launched=await api('jobs/'+state.jobId+'/master-hybrid-start','POST',{revision:state.revision,decisionId:state.decisionId,requestId});}
+   catch(e){button.disabled=false;throw e;}
+   const watch=async initial=>{
+    if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)return;
+    try{
+     const progress=initial??await api('jobs/'+state.jobId+'/master-hybrid-status?requestId='+encodeURIComponent(requestId));
+     if(progress.status==='RUNNING'){setTimeout(()=>void watch(),2000);return;}
+     if(progress.status==='READY'&&progress.result?.previewId){
+      player.src='/api/jobs/'+state.jobId+'/master-preview-media?previewId='+encodeURIComponent(progress.result.previewId);player.hidden=false;
+      status.textContent='Previsualización privada preparada. Requiere revisión audiovisual.';button.disabled=false;return;
+     }
+     status.textContent=progress.status==='INTERRUPTED'?'La preparación se interrumpió y necesita diagnóstico.':'La preparación necesita revisar el plan, los recursos o los motores.';
+     if(['BLOCKED','FAILED'].includes(progress.status)&&masterHybridRequest===requestId)masterHybridRequest=null;
+     button.disabled=false;
+    }catch{status.textContent='Se ha interrumpido la conexión. Puedes volver a comprobar la preparación.';button.disabled=false;}
+   };
+   void watch(launched);
+  };
+  button.onclick=()=>work(prepareHybrid);area.append(button,status,player);
+  if(mode==='autonomous')setTimeout(()=>void work(prepareHybrid),0);
+ }
  const checkButton=document.createElement('button'),checkStatus=document.createElement('p');
  checkButton.type='button';checkButton.id='master-preflight';checkButton.textContent='Comprobar preparación del vídeo';checkStatus.id='master-preflight-result';checkStatus.setAttribute('role','status');
  checkButton.onclick=()=>work(async()=>{
@@ -668,7 +698,7 @@ async function masterDecision(mode){
   checkStatus.textContent='Comprobando vídeo y recursos…';
   const check=await api('jobs/'+state.jobId+'/master-render-preflight','POST',{revision:state.revision,decisionId:result.decisionId});
   checkStatus.textContent=check.status==='READY_FOR_SOURCE_STAGING'?'Preparación comprobada. Todavía no se ha generado el vídeo.':'Hay elementos del vídeo o del plan pendientes de comprobar antes de generar.';
- });area.append(checkButton,checkStatus);
+ });if(!hasNative)area.append(checkButton,checkStatus);
  const generate=document.createElement('button'),previewStatus=document.createElement('p'),player=document.createElement('video');
  generate.type='button';generate.id='master-generate-preview';generate.textContent='Generar previsualización privada';previewStatus.id='master-preview-status';previewStatus.setAttribute('role','status');player.controls=true;player.playsInline=true;player.hidden=true;player.style.maxWidth='100%';
  generate.onclick=()=>work(async()=>{
@@ -697,7 +727,7 @@ async function masterDecision(mode){
    }catch{previewStatus.textContent='Se ha interrumpido la conexión. Puedes volver a comprobar la previsualización.';generate.disabled=false;}
   };
   void watch(launched);
- });area.append(generate,previewStatus,player);
+ });if(!hasNative)area.append(generate,previewStatus,player);
  for(const node of layers.graph.nodes.filter(n=>n.renderer==='remotion')){
   const original=state.story.operations.find(o=>o.id===node.id);if(!original)continue;
   const box=document.createElement('fieldset'),legend=document.createElement('legend');legend.textContent='Ajustar capa · '+node.id;box.append(legend);
@@ -755,7 +785,7 @@ async function masterDecision(mode){
    $('external-plan-text').value=JSON.stringify(revised,null,2);resetMasterReview();$('master-review-result').textContent='Ajuste guardado en una nueva versión. Revisa el plan otra vez antes de aprobarlo.';
   });box.append(save);area.append(box);
  }
- if(mode==='autonomous')setTimeout(()=>generate.click(),0);
+ if(mode==='autonomous'&&!hasNative)setTimeout(()=>generate.click(),0);
 }
 $('master-approve').onclick=()=>work(()=>masterDecision('approve'));
 $('master-revise').onclick=()=>work(()=>masterDecision('review'));
