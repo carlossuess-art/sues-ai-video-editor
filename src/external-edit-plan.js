@@ -162,5 +162,5 @@ export function reviewExternalPlan(text,{project,settings,assets=[],commandPlann
  }
  const canApply=rows.every(r=>r.status==='ready')&&!notes.length;
  const reviewId=createHash('sha256').update(JSON.stringify({imported,base:baseline.fingerprint,result:prepared?.fingerprint,rows,notes})).digest('hex');
- return {canApply,reviewId,rows,notes,editorialQuality:prepared?dopaminQualityGate(prepared.plan):null,changes:canApply?next:null,timeSpace:'edit-timeline',duration:manifest.duration,actions:rows.filter(r=>r.status==='ready').map(r=>r.description)};
+ return {canApply,reviewId,rows,notes,editorialQuality:prepared?dopaminQualityGate(prepared.plan):null,changes:canApply?next:null,timeSpace:'edit-timeline',duration:manifest.duration,compiledGraphics:(prepared?.plan?.graphics??[]).map(g=>({captionId:g.captionId,start:g.start,end:g.end})),actions:rows.filter(r=>r.status==='ready').map(r=>r.description)};
 }
