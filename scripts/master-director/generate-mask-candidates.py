@@ -46,6 +46,12 @@ def generate(args):
         if path.name != f"frame-{index:06d}.png" or path.is_symlink() or not path.is_file() or path.stat().st_size > 20 * 1024 * 1024:
             raise ValueError("Input frames must be consecutive regular PNG files")
 
+    if mp.__version__ != "0.10.14":
+        raise ValueError("Unsupported MediaPipe version")
+    model_path = Path(mp.__file__).resolve().parent / "modules/selfie_segmentation/selfie_segmentation_landscape.tflite"
+    if not model_path.is_file() or model_path.is_symlink():
+        raise ValueError("Segmentation model unavailable")
+    model_sha = digest(model_path)
     output.mkdir(mode=0o700)
     try:
         entries = []
@@ -93,7 +99,7 @@ def generate(args):
         report = {"schema": "sues-mask-candidate/v1", "status": "CANDIDATE_NOT_VERIFIED",
                   "sourceSha256Claim": args.source_sha256, "timelineFingerprintClaim": args.timeline_fingerprint,
                   "fps": 30, "coordinateSpace": "layer", "rect": list(args.rect),
-                  "mode": args.mode, "model": "mediapipe-selfie-segmentation-0.10.14",
+                  "mode": args.mode, "model": "mediapipe-selfie-segmentation-0.10.14", "modelSha256": model_sha,
                   "limitations": ["input-provenance-unverified", "silhouette-review-required",
                                   "no-tracking-guarantee", "not-policy-evidence"],
                   "frames": entries}
