@@ -20,7 +20,7 @@ const sample=()=>({
       reason:'Subtitular las palabras pronunciadas',dependsOn:[],requiredQA:['rendered-frame','time-sync']},
     {id:'broll-1',sceneId:'desarrollo',renderer:'remotion',effect:'subject-occlusion',start:3.1,end:5.7,
       reason:'Reforzar la metáfora sin cubrir al sujeto',dependsOn:['caption-1'],
-      resourceId:'video-licensed-1',requiredQA:['rendered-frame','motion-playback']}
+      resourceId:'video-licensed-1',resourceSha256:assetSha,requiredQA:['rendered-frame','motion-playback']}
   ]
 });
 const context=()=>({
@@ -68,7 +68,7 @@ test('unsupported renderer capability cannot be silently substituted',()=>{
 
 test('unlicensed assets, rule conflicts, missing narrative purpose and coverage are blockers',()=>{
  const {p,r}=ready();r.licensedAssets['video-licensed-1'].commercialUseAllowed=false;
- assert.ok(reviewMasterDirectorPlan(p,r).issues.some(x=>x.code==='ASSET_RIGHTS_UNVERIFIED'));
+ assert.ok(reviewMasterDirectorPlan(p,r).issues.some(x=>x.code==='ASSET_RIGHTS_OR_VERSION_UNVERIFIED'));
  r.licensedAssets['video-licensed-1'].commercialUseAllowed=true;
  p.rules.unresolvedConflicts=['tapiz'];
  assert.ok(reviewMasterDirectorPlan(p,r).issues.some(x=>x.code==='UNRESOLVED_RULE_CONFLICTS'));
