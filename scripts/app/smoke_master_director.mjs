@@ -32,6 +32,10 @@ try{
   const page=await browser.newPage({viewport});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(launch);await page.waitForFunction(()=>document.querySelector('#profile').options.length>0&&design!==null,{timeout:30000});
   await page.evaluate(async id=>{await select(id);showView('editor');showTool('director');$('external-plan-panel').hidden=false;$('external-plan-panel').open=true;},job.id);
+  await page.evaluate(()=>showMasterReview({status:'READY_FOR_CHOICE',timeline:[],resources:[{number:1,title:'Recurso local',rightsVerified:true,previewPath:'/api/assets/'+'a'.repeat(64)+'/media'}]}));
+  assert.equal(await page.locator('#master-review-result a').getAttribute('href'),'/api/assets/'+'a'.repeat(64)+'/media');
+  await page.evaluate(()=>showMasterReview({status:'READY_FOR_CHOICE',timeline:[],resources:[{number:1,title:'No autorizado',rightsVerified:true,previewPath:'//invalid.example/media'}]}));
+  assert.equal(await page.locator('#master-review-result a').count(),0);await page.evaluate(()=>resetMasterReview());
   const cat=await (await fetch(base+'/api/jobs/'+job.id+'/external-catalog',{headers:{Cookie:'sues_session='+app.token}})).json();
   const visual={rect:{x:100,y:300,width:500,height:300},zIndex:1,opacity:1,typography:{family:'Montserrat',sizePx:80,weight:700,color:'#ffffff'},keyframes:[{atFrame:0,x:0},{atFrame:30,x:100,easing:'linear'}]};
   const story={schema:'sues-master-story/v1',sourceSha256:cat.sourceSha256,timeline:{fingerprint:cat.timelineFingerprint,timeSpace:'edit-timeline',fps:30,duration:cat.duration},visual:{mode:'brand-sues'},
