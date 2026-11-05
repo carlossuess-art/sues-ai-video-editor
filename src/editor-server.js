@@ -64,7 +64,7 @@ function rejectDuplicateJsonKeys(raw){
   else if(ch==='"'){
    const start=i;i++;
    while(i<raw.length){if(raw.charCodeAt(i)===92){i+=2;continue;}if(raw[i]==='"')break;i++;}
-   let next=i+1;while(next<raw.length&&/\\s/.test(raw[next]))next++;
+   let next=i+1;while(next<raw.length&&/\s/.test(raw[next]))next++;
    if(raw[next]===':'){
     const key=JSON.parse(raw.slice(start,i+1)),keys=stack.at(-1);
     if(keys?.has(key))throw Error('El plan contiene una propiedad repetida.');
