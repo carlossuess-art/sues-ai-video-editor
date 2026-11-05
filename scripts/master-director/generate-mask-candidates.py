@@ -10,6 +10,7 @@ import hashlib
 import json
 import re
 import shutil
+import struct
 from pathlib import Path
 
 import cv2
@@ -51,6 +52,14 @@ def generate(args):
         dimensions = None
         with mp.solutions.selfie_segmentation.SelfieSegmentation(model_selection=1) as segmenter:
             for index, path in enumerate(files):
+                with path.open("rb") as stream:
+                    header = stream.read(24)
+                if len(header) != 24 or header[:8] != b"\x89PNG\r\n\x1a\n" or header[12:16] != b"IHDR":
+                    raise ValueError("Input is not a PNG image")
+                declared_width, declared_height = struct.unpack(">II", header[16:24])
+                if declared_width < 1 or declared_height < 1 or declared_width * declared_height > 9_000_000:
+                    raise ValueError("Declared image dimensions exceed limits")
+                input_sha = digest(path)
                 image = cv2.imread(str(path), cv2.IMREAD_COLOR)
                 if image is None:
                     raise ValueError("Input image cannot be decoded")
@@ -77,7 +86,9 @@ def generate(args):
                 target = output / f"mask-{index:06d}.png"
                 if not cv2.imwrite(str(target), pixels, [cv2.IMWRITE_PNG_COMPRESSION, 3]):
                     raise ValueError("Cannot write mask")
-                entries.append({"editFrame": args.start_frame + index, "inputSha256": digest(path),
+                if digest(path) != input_sha:
+                    raise ValueError("Input frame changed during segmentation")
+                entries.append({"editFrame": args.start_frame + index, "inputSha256": input_sha,
                                 "file": target.name, "sha256": digest(target)})
         report = {"schema": "sues-mask-candidate/v1", "status": "CANDIDATE_NOT_VERIFIED",
                   "sourceSha256Claim": args.source_sha256, "timelineFingerprintClaim": args.timeline_fingerprint,
