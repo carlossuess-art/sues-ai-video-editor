@@ -739,6 +739,9 @@ async function masterDecision(mode){
   if(node.visual){
    numberField('opacity','Opacidad (0–1)',node.visual.opacity,'.01');
    numberField('zIndex','Orden de capa (0–500)',node.visual.zIndex,'1');
+   const maskLabel=document.createElement('label'),maskInput=document.createElement('input');
+   maskLabel.textContent='ID de prueba de máscara (opcional)';maskInput.value=node.visual.mask?.proofId??'';
+   maskLabel.append(maskInput);box.append(maskLabel);inputs.maskProofId=maskInput;
    if(node.visual.typography){
     const typography=node.visual.typography;
     for(const [key,labelText] of [['fontFamily','Familia de la fuente'],['fontColor','Color (#RRGGBB o #RRGGBBAA)']]){
@@ -800,6 +803,11 @@ async function masterDecision(mode){
     if(Object.values(rect).some(n=>!Number.isFinite(n))||rect.width<=0||rect.height<=0)throw Error('Comprueba la posición y el tamaño de la capa.');parameters.visual={...node.visual,rect};}
    if(inputs.opacity){const opacity=Number(inputs.opacity.value);if(!Number.isFinite(opacity)||opacity<0||opacity>1)throw Error('La opacidad debe estar entre 0 y 1.');parameters.visual.opacity=opacity;}
    if(inputs.zIndex){const z=Number(inputs.zIndex.value);if(inputs.zIndex.value.trim()===''||!Number.isInteger(z)||z<0||z>500)throw Error('El orden de capa debe ser un número entero entre 0 y 500.');parameters.visual.zIndex=z;}
+   if(inputs.maskProofId){
+    const proofId=inputs.maskProofId.value.trim();
+    if(proofId&&!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(proofId))throw Error('El identificador de la máscara no es válido.');
+    if(proofId)parameters.visual.mask={proofId,mode:'alpha-keep'};else delete parameters.visual.mask;
+   }
    if(inputs.fontFamily){
     const family=inputs.fontFamily.value.trim(),color=inputs.fontColor.value.trim(),sizePx=Number(inputs.fontSize.value),weight=Number(inputs.fontWeight.value);
     if(!family||!/^#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?$/.test(color)||!Number.isFinite(sizePx)||sizePx<=0||sizePx>500||!Number.isFinite(weight)||weight<100||weight>1000)
