@@ -34,8 +34,8 @@ No reutilizar blindly `src/editor-server.js` de la rama sobre producción; la ba
 
 | Fase | Entregable y evidencia de cierre | ¿Carlos? | Estado |
 |---|---|---|---|
-| 1. Unificación/continuidad | Checkpoint único GitHub+Drive, commits y logs referenciados, 1 escritor | No | EN CURSO al crear este documento |
-| 2. Candidata reproducible | Reconstruir desde montaje productivo con hashes; ejecutar suite dirigida y comparativa; conservar backout | No | Código del builder existente; validar funcionamiento |
+| 1. Unificación/continuidad | Checkpoint único GitHub+Drive, commits y logs referenciados, 1 escritor | No | COMPLETADO: GitHub+Drive+PR+PROJECT_STATUS |
+| 2. Candidata reproducible | Reconstruir desde montaje productivo con hashes; ejecutar suite dirigida y comparativa; conservar backout | No | COMPLETADO: candidata 458 hashes; 132 pruebas+MP4 nativo |
 | 3. Bloqueos y recursos | Investigar `PREVIEW_MEMORY_LIMIT`, diferenciar capacidad real del contenedor; revisar metadata/procedencia de masters sin inventarla | Solo si falta documento de titularidad o hacen falta recursos/gastos nuevos | PENDIENTE |
 | 4. Integración efectiva | Cerebro→nativo+Remotion mixto, edición de capas y keyframes, audio, máscaras reales, versiones recuperables; rechazo exacto de efectos no soportados | No para desarrollo | PARCIAL |
 | 5. QA de Reel real 158404 | Plan genuino, recursos reales autorizados, preview y MP4 final, voz/música/SFX/oclusiones, 2 auditorías audiovisuales independientes completas, regresión | Sí para aceptación estética | PENDIENTE |
@@ -56,6 +56,21 @@ No reutilizar blindly `src/editor-server.js` de la rama sobre producción; la ba
 4. Completar política con procedencia real documentada; no simular licencias.
 5. Finalmente Reel 158404 y dos ciclos QA. En cada hito actualizar este documento + nota superior Drive.
 
+## HITO NUEVO VERIFICADO · 05/11/2026, ~08:20 CET (07:20 UTC)
+
+**Candidata aislada reproducible:** `node scripts/master-director/build-isolated-candidate.mjs /opt/sues-video-setup/release-mobile-layers-20261030` sobre el checkout privado de trabajo `/tmp/sues-master-unified-20261105` al commit `6d9fb7911644bc1c1ebcff79e96071556e7ac401`. Resultado `ISOLATED_CANDIDATE_BUILT`, **458 hashes de archivos de producción verificados**, candidata `/tmp/sues-director-candidate-OcRkNV`, `deployed:false`. El constructor es reproducible sobre la base de hashes; la candidata lleva vínculos de node_modules para QA y **NO instala el runtime Remotion** por sí sola.
+
+**Pruebas nuevas y diferenciadas:**
+- **132/132 PASS, 0 omisiones y 0 fallos** en la candidata completa: 23 ficheros de test `master-director-*.test.js` exceptuando el test audiovisual de FFmpeg, `/tmp/sues-master-candidate-directed-20261105.log` (~07:17 UTC).
+- **1/1 PASS** del test nativo audiovisual REAL con FFmpeg en Docker aislado y sin red, `tests/master-director-native-render.test.js`: versión hija editable y MP4 privado sintético de 12 s, audio presente, decodificación y reintento idempotente. Log `/tmp/sues-master-candidate-native-video-20261105.log` (~07:19 UTC). No es la QA creativa del Reel.
+- **7/7 PASS** de diagnóstico de memoria y cancelación limpia en staging, `/tmp/sues-master-memory-diagnostic-tests-v2-20261105.log` (~07:13 UTC). Se añadió `src/master-director-memory-budget.js`, `scripts/master-director/inspect-preview-memory.mjs` y se mejoró `src/master-director-preview-renderer.js` para comunicar la causa exacta de falta de margen, **manteniendo el mínimo de 512 MiB**. Último commit de este bloque `6d9fb7911644bc1c1ebcff79e96071556e7ac401`.
+- **Inspección aislada de memoria del contenedor al arranque:** `--memory=1536m`, `hostAvailableBytes≈2.49 GB`, `cgroupAvailableBytes≈1.60 GB`, `reason=READY`. Por tanto, el bloqueo anterior **no se reprodujo al iniciar**; puede depender del consumo durante render. **No declarar resuelto `PREVIEW_MEMORY_LIMIT` ni volver a lanzar un E2E completo sin medir su pico y garantizar RAM para producción.**
+- La rama GitHub y las pruebas NO se han desplegado. `/opt/sues-video-setup/release-mobile-layers-20261030` permanece intacto.
+
+**Próxima acción única:** perfilar memoria incremental del render Remotion 24 s dentro de un cgroup aislado con límite conservador, comprobar motivo del guard cuando aparece (sin reducirlo). Si la capacidad del host no garantiza margen, no competir con producción: optimizar o probar en entorno mayor autorizado. Después cerrar política real/recursos y flujo mixto/Remotion, terminando con 158404 y 2 QA audiovisuales.
+
 ## Registro de actualizaciones
+
+- **2026-11-05 ~08:20 CET · Chat normal / ejecución aislada**: se publicaron diagnóstico seguro de memoria y 7 pruebas PASS, se construyó una candidata reproducible (458 archivos productivos verificados) y se probó completa (132/132 Node + 1/1 MP4 nativo FFmpeg). **El bloqueo Remotion en contenedor y la integración cinematográfica final permanecen pendientes.** Ningún despliegue.
 
 - **2026-11-05 ~08:00 CET · Chat normal / auditoría de solo lectura**: corte inicial, 50 % estimado, 558/558 regresión, 128/129 dirigida con 1 omitida, bloqueo memoria contenedor. Este documento inaugura el estado único; no se ha modificado producción. Las mejoras posteriores deben documentarse aquí con su commit y resultados nuevos.
