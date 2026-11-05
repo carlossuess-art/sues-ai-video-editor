@@ -1,3 +1,7 @@
+## 05/11/2026 · Master Director: continuidad en rama
+
+Estado vivo y detalle de commits: [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Entrada IA preparada para proveedor gratuito inyectable, aún sin proveedor configurado; ambas entradas comparten borrador y revisión. Trazabilidad inmutable y comprobación nativa previa a aprobación incorporadas. Pendientes efectos, máscaras, editabilidad integral, supervisor audiovisual y validación posterior. Sin tests ni renders por decisión de Carlos; sin despliegue ni gasto.
+
 ## ESTADO ACTIVO · 05/11/2026 · SUES MASTER DIRECTOR
 
 **Consultar antes de continuar:** [CHECKPOINT ACTIVO ÚNICO](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Es la fuente de verdad operativa del trabajo de Work/chat normal; contiene 50 % estimado global, evidencia, bloqueos, única rama escritora, permisos y próxima acción. **Todo lo que aparece a continuación es HISTÓRICO** y no debe sustituir el último checkpoint. Reglas aprobadas: [20 reglas](docs/SUES_MASTER_DIRECTOR_REGLAS_APROBADAS_20261104.md). No hay despliegue de este cerebro.
