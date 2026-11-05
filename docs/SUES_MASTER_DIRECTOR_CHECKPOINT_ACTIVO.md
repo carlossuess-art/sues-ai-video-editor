@@ -1,3 +1,13 @@
+## FIDELIDAD TEMPORAL Y ORDEN EN MOTOR MIXTO · 06/11/2026
+
+Se detectó que el worker nativo → Remotion colocaba siempre las capas Remotion por encima del resultado nativo. Una transición nativa que afecta a toda la composición podía solaparse con un texto Remotion y quedar aplicada solo al vídeo de debajo, alterando el plan. La revisión ahora bloquea los solapamientos de transición, gráfico o subtítulo nativo con capas Remotion cuando el orden visual no está representado. En la interfaz se explica el motivo. El bloqueo evita una edición incorrecta; **aún no implementa esa composición**.
+
+El grafo conserva además `startTime`/`endTime` exactos junto a los fotogramas. El análisis mixto compara los segundos originales para no perder un solapamiento real por redondeo, y rechaza tiempos ausentes o incompatibles. Las operaciones que no solapan mantienen la vía nativa → Remotion existente.
+
+Pruebas: regresión dirigida `tests/master-director-*.test.js`: 174 PASS, 0 FAIL, 5 SKIP (host sin FFmpeg). Una de esas cinco, el render nativo sintético y handoff autenticado, se ejecutó con FFmpeg aislado: 1/1 PASS tras este cambio. Los cuatro restantes no se ejecutaron en esta pasada. La prueba del render nativo es sintética y no constituye un Reel real, validación visual final ni exportación MP4 aprobada. No se ha desplegado.
+
+Siguiente trabajo: implementar la composición fiel para solapamientos bloqueados, el circuito de revisión y aplicación de máscaras, supervisor audiovisual independiente y exportación; después realizar la prueba integral autorizada con un Reel real y las dos auditorías. La generación de planes local sigue aparcada por decisión de Carlos.
+
 ## DECISIÓN DE ALCANCE V1 · 06/11/2026 · PRIORIDAD DE CARLOS
 
 **La skill SUES AI Film Director (ChatGPT + supervisión de Carlos) es la fuente inicial de planes de edición.** Se congela la mejora del generador de planes con modelo local: queda opcional, desactivado y fuera de la ruta crítica de la V1. No es requisito demostrar que Qwen/llama.cpp produzcan un plan creativo autónomo. No retirar las salvaguardas de validación ni eliminar el código existente.
