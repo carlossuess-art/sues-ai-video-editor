@@ -89,7 +89,7 @@ test('static drop shadows preserve exact values and reject unsupported combinati
 });
 
 
-test('static glow is bounded and cannot silently combine with shadow or mask',()=>{
+test('static glow is bounded and rejects shadows and unverified masks',()=>{
  const options={verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}}},g=graph();
  g.nodes[0].visual.glow={color:'#ff9900aa',radiusPx:24};g.nodes[0].sourceParameters.visual=structuredClone(g.nodes[0].visual);
  const result=compileMasterDirectorRemotion(g,options);assert.equal(result.status,'READY_FOR_REMOTION_STAGING');assert.deepEqual(result.composition.layers[0].visual.glow,g.nodes[0].visual.glow);
@@ -98,5 +98,18 @@ test('static glow is bounded and cannot silently combine with shadow or mask',()
  }
  for(const extra of [{mask:{proofId:'p1',mode:'alpha-keep'}},{dropShadow:{color:'#000000',offsetX:0,offsetY:1,blurPx:2}}]){
   const candidate=structuredClone(g);Object.assign(candidate.nodes[0].visual,extra);candidate.nodes[0].sourceParameters.visual=structuredClone(candidate.nodes[0].visual);assert.equal(compileMasterDirectorRemotion(candidate,options).status,'BLOCKED');
+ }
+});
+
+
+test('verified static or frame-by-frame masks preserve one static finish',()=>{
+ for(const dynamic of [false,true])for(const finish of [{dropShadow:{color:'#0000ff',offsetX:12,offsetY:3,blurPx:4}},{glow:{color:'#ffffff',radiusPx:8}}]){
+  const g=graph(),id='c'.repeat(64);g.nodes[0].startFrame=3;g.nodes[0].endFrame=6;
+  Object.assign(g.nodes[0].visual,{mask:{proofId:'proof',mode:'alpha-keep'}},finish);g.nodes[0].sourceParameters.visual=structuredClone(g.nodes[0].visual);
+  const proof={verified:true,sourceSha256:g.sourceSha256,start:0.1,end:0.2,...(dynamic?{startFrame:3,endFrame:6,fps:30,coordinateSpace:'layer',frameAssetIds:[id,id,id]}:{assetId:id})};
+  const options={verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}},verifiedAssets:{[id]:{sha256:id,kind:'image',rightsVerified:true,commercialUseAllowed:true}},verifiedMasks:{proof}};
+  const result=compileMasterDirectorRemotion(g,options);assert.equal(result.status,'READY_FOR_REMOTION_STAGING');assert.deepEqual(result.composition.layers[0].visual,g.nodes[0].visual);
+  assert.deepEqual(dynamic?result.composition.layers[0].maskFrameAssetIds:result.composition.layers[0].maskAssetId,dynamic?[id,id,id]:id);
+  proof.verified=false;assert.equal(compileMasterDirectorRemotion(g,options).status,'BLOCKED');
  }
 });
