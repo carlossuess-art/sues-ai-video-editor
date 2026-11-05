@@ -1,3 +1,4 @@
+import {prepareMasterMaskCandidate,openMasterMaskCandidate} from './master-director-mask-candidate.js';
 import {prepareMasterSupervisorEvidence,openMasterSupervisorEvidence} from './master-director-supervisor-evidence.js';
 import {reviewMasterDirectorNative} from './master-director-native-review.js';
 import {MasterPreviewRequests} from './master-director-preview-requests.js';
@@ -81,7 +82,7 @@ async function body(req,maxBytes=65536,{rejectDuplicates=false}={}){
  if(rejectDuplicates)rejectDuplicateJsonKeys(raw);
  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -238,14 +239,14 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-mask-candidate|master-mask-frame|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     // Never expose a private native hybrid stage as a standalone final export.
     const stageInstruction=jobs.get(id).instructions?.at(-1);
     if(stageInstruction?.kind==='master-hybrid-native-stage'&&action&&action!=='cancel')
      return json(res,409,{status:'BLOCKED',error:'Esta versión es una etapa intermedia del montaje mixto; consulta el proyecto principal.'});
-    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-trace','master-supervisor','master-supervisor-evidence','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
+    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-trace','master-supervisor','master-supervisor-evidence','master-mask-candidate','master-mask-frame','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
      const source=jobs.get(id);
      const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
@@ -438,6 +439,36 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       }catch{
        return json(res,422,{status:'BLOCKED',error:'No se pudo preparar un plan maestro válido. No se ha iniciado ninguna edición.'});
       }finally{masterGeneratorRuns.delete(id);}
+     }
+     if((action==='master-mask-candidate'&&req.method==='POST')||(action==='master-mask-frame'&&req.method==='GET')){
+      const isStart=action==='master-mask-candidate',b=isStart?await body(req,2048):{
+       revision:url.searchParams.get('revision'),decisionId:url.searchParams.get('decisionId'),candidateId:url.searchParams.get('candidateId'),file:url.searchParams.get('file')};
+      if(isStart&&Object.keys(b).some(k=>!['revision','decisionId','operationId','mode'].includes(k)))return json(res,400,{error:'Solicitud de máscara inválida.'});
+      if(!/^[a-f0-9]{64}$/.test(b.revision??'')||!/^[a-f0-9]{64}$/.test(b.decisionId??''))return json(res,400,{error:'Identificadores de máscara inválidos.'});
+      const layers=await store.layers(b.revision,b.decisionId),graph=layers.graph,maskRoot=join(jobs.dir(id),'master-director','mask-candidates');
+      if(layers.status!=='STRUCTURE_READY_NOT_RENDERED'||!graph)return json(res,409,{error:'La aprobación o el plan han cambiado.'});
+      if(!isStart){
+       const image=openMasterMaskCandidate({root:maskRoot,candidateId:b.candidateId,file:b.file,planFingerprint:graph.planFingerprint,sourceSha256:graph.sourceSha256});
+       return sourceStream(req,res,image.path,image.mime);
+      }
+      if(masterMaskConfig?.verifiedLocal!==true||typeof masterMaskConfig.pythonPath!=='string'||!masterMaskConfig.pythonPath.startsWith('/')||
+         typeof masterMaskConfig.scriptPath!=='string'||!masterMaskConfig.scriptPath.startsWith('/'))
+       return json(res,503,{error:'La generación local de máscaras todavía no está configurada.'});
+      if(!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(b.operationId??'')||!['keep-subject','keep-background'].includes(b.mode))
+       return json(res,400,{error:'Elige una capa y un modo de máscara válidos.'});
+      if(jobs.previewBusy||jobs.children.size||jobs.queued().length||jobs.publishing.size||previews.pending.size||adjustmentPreviews.running)
+       return json(res,409,{error:'Hay otra edición o inspección en proceso.'});
+      jobs.previewBusy=true;
+      try{
+       const ready=await prepareMasterDirectorRender({store,revision:b.revision,decisionId:b.decisionId,jobs,jobId:id,assets,probe:masterSourceProbe});
+       if(ready.status!=='READY_FOR_SOURCE_STAGING'||ready.composition?.planFingerprint!==graph.planFingerprint)
+        return json(res,409,{status:'BLOCKED',issues:ready.issues??[{code:'MASK_SOURCE_NOT_READY'}]});
+       const approvalCheck=async()=>{const approved=await store.approved(b.revision,b.decisionId);return !!approved&&approved.view.fingerprint===graph.planFingerprint;};
+       const options={graph,composition:ready.composition,project:ready.project,operationId:b.operationId,mode:b.mode,root:maskRoot,
+        pythonPath:masterMaskConfig.pythonPath,scriptPath:masterMaskConfig.scriptPath,approvalCheck};
+       if(typeof masterMaskRunner==='function')options.runner=masterMaskRunner;
+       return json(res,200,await prepareMasterMaskCandidate(options));
+      }finally{jobs.previewBusy=false;jobs.drain();}
      }
      if((action==='master-supervisor'&&req.method==='POST')||(action==='master-supervisor-evidence'&&req.method==='GET')){
       const isStart=action==='master-supervisor',b=isStart?await body(req,2048):{
