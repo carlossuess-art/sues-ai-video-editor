@@ -98,7 +98,7 @@ export class MasterDirectorProjectStore{
 
  editVisual(revision,operationId,visual){
   if(typeof operationId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(operationId)||
-     !obj(visual)||Object.keys(visual).some(k=>!['rect','zIndex','opacity','typography','keyframes','mask','stack','dropShadow'].includes(k)))
+     !obj(visual)||Object.keys(visual).some(k=>!['rect','zIndex','opacity','typography','keyframes','mask','stack','dropShadow','glow'].includes(k)))
    throw Error('Invalid visual edit');
   const story=this.readDraft(revision),matches=Array.isArray(story.operations)?story.operations.filter(o=>o?.id===operationId):[];
   if(matches.length!==1||matches[0].renderer!=='remotion'||!obj(matches[0].parameters)||!obj(matches[0].parameters.visual))
