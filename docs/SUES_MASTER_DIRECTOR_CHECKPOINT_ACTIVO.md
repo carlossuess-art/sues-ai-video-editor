@@ -2,6 +2,11 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## EDICIÓN DE CAPAS · 05/11/2026
+
+- En la interfaz de rama se añaden controles para modificar orden de capa y tipografía, añadir y eliminar fotogramas de animación y seleccionar otro recurso declarado en el plan. El guardado crea una nueva revisión que exige volver a revisar; la validación normal sigue bloqueando fuentes, tiempos y recursos incompatibles. Commits `8c6edff7d31efdb7b8bf4ae720360948843ac469`, `6b01664142c76f416df8a86ee54235f30e5abf32`, `65319f09fe45db3976ebd39e045fa1f6df2ae5f1`, `cccc45de0370c5cc7b4923bd9728eb82eb71af0a`.
+- Alcance: capas Remotion que ya han superado revisión; no representa edición integral, máscaras dinámicas, pruebas ni evidencia audiovisual. Sin tests, renders, despliegue ni gasto por indicación de Carlos. Pendiente integrar las capacidades restantes y validar cuando lo autorice.
+
 ## CONTINUIDAD · IMPORTACIÓN, TRAZABILIDAD Y ENTRADA IA · 05/11/2026
 
 - El endpoint de borradores rechaza JSON con claves duplicadas y UTF-8 inválido; la validación bloquea listas malformadas de recursos, motivos y arco, y dependencias inválidas sin recorrer valores no iterables. Commits `551cb880d645db5349f5a2dc244375db96b89a91`, `8c21b72d94890b2d185924cc8bb1503629280d35`, `ffed36da51ae81cf720c25fec760045630c10d95`, `702ec38bf7959c962afb606559be43ff33168f30`, `686229969f451ceff7fbdd28d3733998e2ced0fa`.
