@@ -75,7 +75,7 @@ export function buildMasterDirectorLayerGraph(plan,registry={}){
    failure(issues,'OPERATION_FRAME_ALIGNMENT_INVALID',o.id);continue;
   }
   const base={id:o.id,sceneId:o.sceneId,track:o.track,renderer:o.renderer,effect:o.effect,
-    startFrame:start,endFrame:end,reason:o.reason,dependencies:[...(o.dependsOn??[])],
+    startFrame:start,endFrame:end,startTime:o.start,endTime:o.end,reason:o.reason,dependencies:[...(o.dependsOn??[])],
     requiredQA:[...(o.requiredQA??[])],
     resource:o.resourceId?{id:o.resourceId,sha256:o.resourceSha256??null}:null,
     motifId:o.motifId??null,speechAnchor:o.speechAnchor?structuredClone(o.speechAnchor):null,
