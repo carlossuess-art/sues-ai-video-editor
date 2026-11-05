@@ -23,6 +23,10 @@ export async function prepareMasterSupervisorEvidence({graph,previewPath,outputS
   ids.add(node.id);
   mark(node.startFrame,node.id);mark(Math.floor((node.startFrame+node.endFrame-1)/2),node.id);mark(node.endFrame-1,node.id);
  }
+ // Include the full timeline at one-second intervals, including quiet sections
+ // with no planned operation, plus every operation boundary and midpoint.
+ for(let frame=0;frame<graph.durationFrames;frame+=graph.fps)if(!sampled.has(frame))sampled.set(frame,new Set());
+ if(!sampled.has(graph.durationFrames-1))sampled.set(graph.durationFrames-1,new Set());
  const frames=[...sampled.keys()].sort((a,b)=>a-b);
  if(frames.length>180)return blocked('SUPERVISOR_SAMPLE_LIMIT');
  let dir=null;
@@ -45,7 +49,7 @@ export async function prepareMasterSupervisorEvidence({graph,previewPath,outputS
   });
   if(total>128*1024*1024||fileSha256(previewPath)!==outputSha256||!await approvalCheck())throw Error('Evidence source changed');
   const report={schema:'sues-master-supervisor-evidence/v1',status:'SAMPLES_REQUIRE_REVIEW',final:false,
-   planFingerprint:graph.planFingerprint,outputSha256,fps:30,durationFrames:graph.durationFrames,
+   planFingerprint:graph.planFingerprint,outputSha256,fps:30,durationFrames:graph.durationFrames,coverage:'one-frame-per-second-plus-boundaries',
    samples:frames.map((frame,i)=>({frame,file:expected[i],operationIds:[...sampled.get(frame)]})),files,
    limitations:['sampled-frames-only','audio-not-listened','semantic-review-pending','not-qa-pass']};
   writeFileSync(join(dir,'manifest.json'),JSON.stringify(report),{mode:0o600,flag:'wx'});
