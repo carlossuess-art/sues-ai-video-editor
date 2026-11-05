@@ -101,7 +101,8 @@ export function buildMasterDirectorLayerGraph(plan,registry={}){
   return {status:'BLOCKED',issues,graph:null};
  return {status:'STRUCTURE_READY_NOT_RENDERED',issues:[],
   graph:{schema:LAYER_GRAPH_SCHEMA,sourceSha256:plan.source.sha256,
-   planFingerprint:preflight.fingerprint,timelineFingerprint:plan.timeline.fingerprint,
+   planFingerprint:preflight.fingerprint,storyRevision:plan.storyRevision??null,
+   timelineFingerprint:plan.timeline.fingerprint,
    canvas:structuredClone(registry.canvas??null),fps,durationFrames:Math.round(plan.timeline.duration*fps),
    nodes,editableInWebEditor:false,rendered:false,
    note:'Exact editable source schema only: native web/Remotion integration and real QA remain required.'}};
