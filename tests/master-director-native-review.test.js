@@ -7,6 +7,7 @@ import {externalCatalog} from '../src/external-edit-plan.js';
 import {planInstructions} from '../src/instruction-director.js';
 import {masterDirectorFingerprint} from '../src/master-director-gate.js';
 import {reviewMasterDirectorNative} from '../src/master-director-native-review.js';
+import {prepareMasterHybridNativeStage} from '../src/master-director-hybrid-native-stage.js';
 
 const master='b'.repeat(64);
 const prepare=()=>{
@@ -85,5 +86,35 @@ test('native structured list is validated by the real editor without replacing p
   x.settings.elements={format:'LIST',items:[{captionId:c.id,label:'Anterior'}]};
   x.catalog=externalCatalog(x.project,x.settings);x.plan.timeline.fingerprint=x.catalog.timelineFingerprint;x.registry.timelineFingerprint=x.catalog.timelineFingerprint;x.registry.approvedPlanFingerprint=masterDirectorFingerprint(x.plan);
   const blocked=reviewMasterDirectorNative({...x,assets:[],commandPlanner:planInstructions});assert.equal(blocked.status,'NATIVE_PREVIEW_REJECTED');assert.match(JSON.stringify(blocked.issues),/sustitución explícita/);
+ }finally{rmSync(x.f.dir,{recursive:true,force:true})}
+});
+
+test('trusted native staging preserves full-plan approval and reconstructs exact changes without HTTP exposure',()=>{
+ const x=prepare();
+ try{
+  x.registry.rendererCapabilities.remotion=['text'];
+  x.registry.canvas={width:1080,height:1920};
+  x.registry.verifiedFonts={'Montserrat:700':{sha256:'e'.repeat(64)}};
+  const visual={rect:{x:100,y:200,width:600,height:180},opacity:1,zIndex:5,
+   typography:{family:'Montserrat',sizePx:70,weight:700,color:'#ffffff'},keyframes:[]};
+  x.plan.operations.push({id:'title',sceneId:'video',renderer:'remotion',track:'graphics',
+   effect:'text',start:6,end:8,reason:'Texto significativo',parameters:{text:'SIGUIENTE PASO',visual},
+   dependsOn:['flash'],requiredQA:['rendered-frame','motion-playback']});
+  x.registry.approvedPlanFingerprint=masterDirectorFingerprint(x.plan);
+  const params={plan:x.plan,registry:x.registry,catalog:x.catalog,project:x.project,settings:x.settings,assets:[],commandPlanner:planInstructions};
+  const before=JSON.stringify(x.settings);
+  const v=prepareMasterHybridNativeStage(params);
+  assert.equal(v.status,'NATIVE_STAGE_PREPARED',JSON.stringify(v.issues));
+  assert.equal(v.canExecute,false);assert.equal(v.canPublish,false);
+  assert.deepEqual(v.nativeOperationIds,['flash']);
+  assert.deepEqual(v.remotionOperationIds,['title']);
+  assert.equal(v.planFingerprint,masterDirectorFingerprint(x.plan));
+  assert.equal(v.originalSourceSha256,x.catalog.sourceSha256);
+  assert.ok(v.changes&&typeof v.changes==='object');
+  assert.ok(Array.isArray(v.actions));
+  assert.equal(JSON.stringify(x.settings),before);
+  assert.equal(v.changes?.title,undefined);
+  delete x.registry.approvedPlanFingerprint;
+  assert.equal(prepareMasterHybridNativeStage(params).status,'BLOCKED');
  }finally{rmSync(x.f.dir,{recursive:true,force:true})}
 });
