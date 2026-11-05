@@ -176,11 +176,27 @@ export class MasterDirectorProjectStore{
   const result=buildMasterDirectorLayerGraph(plan,registry);
   if(!result.graph)return {...result,revision,canExecute:false};
   const graphRevision=immutable(join(this.root,'layer-graphs'),result.graph);
+  // Immutable provenance is linked to the original draft and graph; it is an
+  // expected mapping, not proof that any renderer executed an operation.
+  const story=this.readDraft(revision),originals=new Map(story.operations.map(o=>[o.id,o]));
+  const trace={schema:'sues-master-trace/v1',status:'PLANNED_NOT_EXECUTED',storyRevision:revision,
+   graphRevision,planFingerprint:result.graph.planFingerprint,timelineFingerprint:result.graph.timelineFingerprint,
+   operations:result.graph.nodes.map(node=>({operationId:node.id,renderer:node.renderer,
+    graphNodeId:node.id,startFrame:node.startFrame,endFrame:node.endFrame,
+    original:structuredClone(originals.get(node.id)),dependencies:[...node.dependencies],
+    resource:node.resource,requiredQA:[...node.requiredQA]}))};
+  const manifestRevision=immutable(join(this.root,'traces'),trace);
   const remotion=compileMasterDirectorRemotion(result.graph,{verifiedFonts:registry.verifiedFonts??{},verifiedAssets:registry.licensedAssets??{},verifiedMasks:registry.maskEvidence??{}});
   const hybrid=result.graph.nodes.some(n=>n.renderer==='native')&&result.graph.nodes.some(n=>n.renderer==='remotion')?
    reviewMasterDirectorHybridGraph(result.graph,{verifiedFonts:registry.verifiedFonts??{},verifiedAssets:registry.licensedAssets??{},verifiedMasks:registry.maskEvidence??{}}):null;
   // Remotion-only preview remains deliberately BLOCKED for mixed plans: never drop native operations.
-  return {...result,revision,graphRevision,remotion,...(hybrid?{hybrid}:{}),canExecute:false};
+  return {...result,revision,graphRevision,manifestRevision,remotion,...(hybrid?{hybrid}:{}),canExecute:false};
+ }
+ async trace(revision,decisionId,manifestRevision){
+  const layers=await this.layers(revision,decisionId);
+  if(layers.status!=='STRUCTURE_READY_NOT_RENDERED'||layers.manifestRevision!==manifestRevision)
+   return {status:'BLOCKED',issues:[{code:'TRACE_OR_APPROVAL_CHANGED'}]};
+  return {status:'PLANNED_NOT_EXECUTED',manifest:load(join(this.root,'traces'),manifestRevision)};
  }
  async decide(revision,fingerprint,mode){
   if(!HASH.test(fingerprint??'')||!['review','approve','autonomous'].includes(mode))throw Error('Invalid decision');
