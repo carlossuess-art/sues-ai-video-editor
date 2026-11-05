@@ -29,7 +29,7 @@ test('mixed review preserves both engines and all operation identities without a
  assert.equal(out.remotionComponent.planFingerprint,planId);
  assert.equal(out.remotionComponent.sourceSha256,source);
  assert.deepEqual(out.crossEngineDependencies,[{from:'cut-1',to:'title-1',fromEngine:'native',toEngine:'remotion'}]);
- assert.deepEqual(out.crossEngineOverlaps,[{nativeId:'cut-1',remotionId:'title-1',classification:'visual-stack'}]);
+ assert.deepEqual(out.crossEngineOverlaps,[{nativeId:'cut-1',remotionId:'title-1',classification:'visual-order-unresolved'}]);
  assert.ok(out.issues.some(i=>i.code==='HYBRID_COMPOSITOR_NOT_IMPLEMENTED'));
  assert.equal(JSON.stringify(g),original);
 });
@@ -51,4 +51,10 @@ test('unresolved cross-engine dependencies block rather than invent a preceding 
 test('a single-engine plan is not incorrectly promoted as a hybrid',()=>{
  const g=graph();g.nodes.pop();
  const out=reviewMasterDirectorHybridGraph(g,verified);assert.equal(out.status,'NOT_MIXED');assert.equal(out.canExecute,false);
+});
+
+test('full-composition native effects overlapping a Remotion layer require visual ordering',()=>{
+ const g=graph();for(const track of ['transition','graphics','captions']){g.nodes[0].track=track;assert.equal(reviewMasterDirectorHybridGraph(g,verified).crossEngineOverlaps[0].classification,'visual-order-unresolved');}
+ g.nodes[0].track='camera';assert.equal(reviewMasterDirectorHybridGraph(g,verified).crossEngineOverlaps[0].classification,'visual-stack');
+ g.nodes[0].track='transition';g.nodes[0].endFrame=40;assert.deepEqual(reviewMasterDirectorHybridGraph(g,verified).crossEngineOverlaps,[]);
 });
