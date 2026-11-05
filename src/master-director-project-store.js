@@ -158,6 +158,19 @@ export class MasterDirectorProjectStore{
    if(staged.status!=='READY_FOR_REMOTION_STAGING')
     return {response:{status:'BLOCKED',revision,issues:staged.issues??[],canExecute:false}};
   }
+  if(result.plan.operations.some(op=>op.renderer==='native')){
+   if(typeof context.nativePreflight!=='function')
+    return {response:{status:'BLOCKED',revision,issues:[{code:'NATIVE_PREFLIGHT_UNAVAILABLE'}],canExecute:false}};
+   const checked=await context.nativePreflight(result.plan,inspectionRegistry);
+   const mixed=result.plan.operations.some(op=>op.renderer==='remotion');
+   const expected=mixed?'HYBRID_NATIVE_PART_REVIEWED_NOT_EXECUTABLE':'READY_FOR_EDITOR_PREVIEW';
+   if(checked?.status!==expected)
+    return {response:{status:'BLOCKED',revision,issues:checked?.issues?.length?checked.issues:[{code:'NATIVE_PREFLIGHT_REJECTED'}],canExecute:false}};
+   // Mask proof applies to the original, not automatically to the derived
+   // native child in a mixed handoff. Do not solicit approval for an impossible handoff.
+   if(mixed&&structural.graph.nodes.some(n=>n.renderer==='remotion'&&n.visual?.mask))
+    return {response:{status:'BLOCKED',revision,issues:[{code:'HYBRID_MASK_NEEDS_DERIVED_SOURCE_PROOF'}],canExecute:false}};
+  }
   const view=buildMasterDirectorReview(result.plan,registry);
   return {response:{...view,revision,canExecute:false,projectFingerprint:context.timelineFingerprint},plan:result.plan,registry};
  }
