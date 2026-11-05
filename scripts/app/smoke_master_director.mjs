@@ -11,7 +11,11 @@ const f=fixture(),master='b'.repeat(64),context={registry:{brandId:'sues',profil
 let renders=0,probeBlocked=false;
 const renderer=async({composition,workRoot,approvalCheck})=>{assert.equal(await approvalCheck(),true);await new Promise(resolve=>setTimeout(resolve,1200));const dir=join(workRoot,'master-preview-'+String(++renders).padStart(6,'0'));mkdirSync(dir,{recursive:true});const outputPath=join(dir,'preview.mp4');writeFileSync(outputPath,'fixture-preview');const outputSha256=createHash('sha256').update(readFileSync(outputPath)).digest('hex');return {status:'PREVIEW_RENDERED_UNVERIFIED',record:{id:randomUUID(),planFingerprint:composition.planFingerprint,sourceSha256:composition.sourceSha256,outputSha256,bytes:15,final:false},outputPath}};
 const auditor=async({outputPath})=>({status:'TECHNICAL_PASS_HUMAN_QA_PENDING',outputSha256:createHash('sha256').update(readFileSync(outputPath)).digest('hex')});
-const app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,masterDirectorContext:async()=>context,masterSourceProbe:async project=>probeBlocked?({status:'BLOCKED',issues:[{code:'SOURCE_GEOMETRY_UNVERIFIED'}]}):({status:'SOURCE_CFR30_VERIFIED',sourceTiming:'cfr30-verified',sourceHasAudio:true,sourceDuration:24,width:1080,height:1920,sourceSha256:project.boundHashes.source}),masterPreviewConfig:{entryFile:'/tmp/a',remotionCli:'/tmp/b',browserExecutable:'/tmp/c'},masterPreviewRenderer:renderer,masterPreviewAuditor:auditor});let browser;
+const supervisorRunner=async(_executable,args)=>{
+ const target=args.at(-1);if(target.endsWith('audio.wav'))writeFileSync(target,'audio-fixture');
+ else{const count=Number(args[args.indexOf('-frames:v')+1]);for(let i=1;i<=count;i++)writeFileSync(target.replace('%04d',String(i).padStart(4,'0')),'frame-fixture-'+i);}
+};
+const app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,masterSupervisorRunner:supervisorRunner,masterDirectorContext:async()=>context,masterSourceProbe:async project=>probeBlocked?({status:'BLOCKED',issues:[{code:'SOURCE_GEOMETRY_UNVERIFIED'}]}):({status:'SOURCE_CFR30_VERIFIED',sourceTiming:'cfr30-verified',sourceHasAudio:true,sourceDuration:24,width:1080,height:1920,sourceSha256:project.boundHashes.source}),masterPreviewConfig:{entryFile:'/tmp/a',remotionCli:'/tmp/b',browserExecutable:'/tmp/c'},masterPreviewRenderer:renderer,masterPreviewAuditor:auditor});let browser;
 try{
  const launch=await app.listen(),job=app.jobs.create('test'),base=launch.split('/#')[0];
  browser=await chromium.launch({executablePath:process.env.SUES_CHROMIUM_PATH,headless:true,args:['--no-sandbox']});
@@ -41,6 +45,10 @@ try{
   await page.waitForFunction(()=>!working,{timeout:30000});assert.equal(app.jobs.previewBusy,true);
   await page.waitForFunction(()=>document.querySelector('#master-preview-status').textContent.includes('preparada'),{timeout:30000});
   assert.match(await page.locator('#master-layer-controls video').getAttribute('src'),/master-preview-media/);
+  await page.evaluate(()=>document.querySelector('[data-master-supervisor] button').click());
+  await page.waitForFunction(()=>document.querySelector('[data-master-supervisor] [role=status]')?.textContent.includes('Muestras preparadas'),{timeout:30000});
+  const evidenceHref=await page.locator('[data-master-supervisor] a').first().getAttribute('href');
+  const evidence=await page.request.get(base+evidenceHref);assert.equal(evidence.status(),200);assert.match(evidence.headers()['content-type'],/audio\\/wav/);
   await page.evaluate(()=>document.querySelector('#master-preview-history').click());
   await page.waitForFunction(()=>!document.querySelector('#master-preview-history-label').hidden,{timeout:30000});
   await page.evaluate(()=>document.querySelector('#master-preview-history-open').click());
