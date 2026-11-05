@@ -524,6 +524,17 @@ function showMasterReview(result){
   const item=document.createElement('li');item.textContent=`${beat.start.toFixed(1)}–${beat.end.toFixed(1)} s · ${beat.phase??beat.title??'Escena'} · ${beat.purpose??beat.objective??''}`;timeline.append(item);
  }target.append(timeline);
  for(const a of result.resources??[]){const p=document.createElement('p');p.append(document.createTextNode(`${a.number}. ${a.title} · ${a.rightsVerified?'derechos registrados':'derechos pendientes'} `));if(a.previewUrl){const link=document.createElement('a');link.href=a.previewUrl;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Abrir recurso';p.append(link);}target.append(p);}
+ const technical=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Ver instrucciones de cada escena';technical.append(summary);
+ for(const scene of result.timeline??[]){
+  const section=document.createElement('section'),title=document.createElement('h4');title.textContent=scene.title??scene.sceneId;section.append(title);
+  for(const op of scene.operations??[]){
+   const details=document.createElement('details'),label=document.createElement('summary');
+   label.textContent=`${op.id} · ${op.start}–${op.end} s · ${op.track} / ${op.effect}`;details.append(label);
+   const information=document.createElement('pre');information.textContent=JSON.stringify({motor:op.renderer,motivo:op.reason,recurso:op.resourceRef??op.resourceId,dependencias:op.dependsOn,anclaVoz:op.speechAnchor,motivoNarrativo:op.motifId,parametros:op.parameters,comprobaciones:op.requiredQA},null,2);details.append(information);section.append(details);
+  }
+  technical.append(section);
+ }
+ target.append(technical);
  $('master-review-actions').hidden=false;
 }
 $('master-preview-history').onclick=()=>work(async()=>{
