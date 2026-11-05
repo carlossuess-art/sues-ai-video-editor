@@ -1,5 +1,8 @@
 import {reviewMasterDirectorNative} from './master-director-native-review.js';
 import {MasterPreviewRequests} from './master-director-preview-requests.js';
+import {MasterHybridRequests} from './master-director-hybrid-requests.js';
+import {prepareTrustedHybridWork,startTrustedHybridNativeJob,verifyTrustedHybridNativeChild} from './master-director-hybrid-worker.js';
+import {fileSha256} from './local-pipeline.js';
 import {sealMasterPreview,findMasterPreview,discardUnsealedMasterPreview,listMasterPreviews} from './master-director-preview-index.js';
 import {probeMasterDirectorSource} from './master-director-source-probe.js';
 import {prepareMasterDirectorRender} from './master-director-preflight.js';
@@ -77,6 +80,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const analysis=new LocalAnalysis(intake);
  const masterContextProvider=masterDirectorContext??createMasterDirectorContextProvider(directory);
  const masterPreviewRuns=new Map();
+ const masterHybridRuns=new Map();
  const cloudRuns=new Set();
  const cloud=cloudDirector??new CloudDirector({credentialsFile:join(dirname(passwordFile),'cloud-director-keys.json')});
  const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
@@ -208,10 +212,14 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-review|master-decision|master-layers|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
-    if(['master-draft','master-review','master-decision','master-layers','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply'].includes(action)){
+    // Never expose a private native hybrid stage as a standalone final export.
+    const stageInstruction=jobs.get(id).instructions?.at(-1);
+    if(stageInstruction?.kind==='master-hybrid-native-stage'&&action&&action!=='cancel')
+     return json(res,409,{status:'BLOCKED',error:'Esta versión es una etapa intermedia del montaje mixto; consulta el proyecto principal.'});
+    if(['master-draft','master-review','master-decision','master-layers','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
      const source=jobs.get(id);
      const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
@@ -222,6 +230,125 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       if(!verified)return null;
       return {...verified,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration};
      });
+     // Full mixed-engine execution is private and authenticated. A native child is
+     // strictly intermediate; only a sealed Remotion preview can reach HUMAN_QA.
+     if(action==='master-hybrid-status'&&req.method==='GET'){
+      const requestId=url.searchParams.get('requestId');
+      if(!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(requestId??''))
+       return json(res,400,{error:'Identificador híbrido inválido.'});
+      const requests=new MasterHybridRequests(jobs.dir(id)),record=requests.get(requestId);
+      if(!record)return json(res,404,{error:'Ejecución mixta no encontrada.'});
+      if(record.status==='RUNNING'&&!masterHybridRuns.has(id+':'+requestId)){
+       record.status='INTERRUPTED';record.step='NEEDS_OPERATOR_DIAGNOSIS';
+       record.issues=[{code:'HYBRID_RUN_INTERRUPTED_NO_AUTOMATIC_REPLAY'}];requests.save(record);
+      }
+      return json(res,200,record);
+     }
+     if(action==='master-hybrid-start'&&req.method==='POST'){
+      const b=await body(req,2048);
+      if(Object.keys(b).some(k=>!['revision','decisionId','requestId'].includes(k))||
+         !/^[a-f0-9]{64}$/.test(b.revision??'')||!/^[a-f0-9]{64}$/.test(b.decisionId??'')||
+         !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(b.requestId??''))
+       return json(res,400,{error:'Identificadores de proyecto mixto inválidos.'});
+      if(!masterPreviewConfig)return json(res,503,{error:'El runtime privado de Remotion no está configurado.'});
+      const requests=new MasterHybridRequests(jobs.dir(id)),old=requests.get(b.requestId),key=id+':'+b.requestId;
+      if(old){
+       if(old.revision!==b.revision||old.decisionId!==b.decisionId)
+        return json(res,409,{error:'El identificador pertenece a un plan distinto.'});
+       if(old.status==='RUNNING'&&!masterHybridRuns.has(key))
+        return json(res,409,{error:'La ejecución anterior quedó interrumpida; necesita diagnóstico.'});
+       return json(res,old.status==='RUNNING'?202:200,old);
+      }
+      if(requests.hasInterrupted()||requests.records().some(r=>r.status==='RUNNING')||
+         [...masterHybridRuns.keys()].some(k=>k.startsWith(id+':'))||
+         jobs.previewBusy||jobs.children.size||jobs.queued().length||jobs.publishing.size||
+         previews.pending.size||adjustmentPreviews.running)
+       return json(res,409,{error:'Hay otra ejecución activa o interrumpida; necesita revisión.'});
+      const work=await prepareTrustedHybridWork({store,jobs,jobId:id,revision:b.revision,
+       decisionId:b.decisionId,requestId:b.requestId,assets,commandPlanner:planInstructions});
+      if(work.status!=='READY_TO_START_NATIVE_STAGE')
+       return json(res,409,{status:'BLOCKED',issues:work.issues??[{code:'HYBRID_NOT_READY'}]});
+      const record=requests.create(b),previewRoot=join(jobs.dir(id),'master-director','previews');
+      const task=(async()=>{
+       let output=null,locked=false;
+       const fail=(status,code,reason)=>{record.status=status;record.step='STOPPED';
+        record.issues=[{code,...(typeof reason==='string'?{reason}:{})}];requests.save(record);};
+       try{
+        const started=await startTrustedHybridNativeJob({work,jobs,store,assets,commandPlanner:planInstructions});
+        if(started.status!=='NATIVE_STAGE_QUEUED'){fail('BLOCKED',started.issues?.[0]?.code??'HYBRID_NATIVE_STAGE_REJECTED');return;}
+        record.childId=started.childId;record.step='NATIVE_RENDERING';requests.save(record);
+        let child;
+        for(let i=0;i<1500;i++){
+         child=jobs.get(started.childId);
+         if(['DONE','FAILED','PUBLISH_FAILED','CANCELLED'].includes(child.state)||jobs.closing)break;
+         await new Promise(resolve=>setTimeout(resolve,200));
+        }
+        if(jobs.closing){fail('INTERRUPTED','HYBRID_SERVER_CLOSING');return;}
+        if(child?.state!=='DONE'){fail('BLOCKED','HYBRID_NATIVE_RENDER_NOT_COMPLETE');return;}
+        record.step='VERIFYING_NATIVE';requests.save(record);
+        const verified=await verifyTrustedHybridNativeChild({store,jobs,parentId:id,childId:child.id,
+         revision:b.revision,decisionId:b.decisionId,assets,auditor:masterPreviewAuditor});
+        if(verified.status!=='HANDOFF_READY_FOR_PRIVATE_PREVIEW'){
+         fail('BLOCKED',verified.issues?.[0]?.code??'HYBRID_NATIVE_HANDOFF_REJECTED');return;
+        }
+        // The intermediate child has NOT been approved as the final video.
+        record.nativeOutputSha256=verified.mediaAudit.outputSha256;
+        record.step='WAITING_FOR_REMOTION_CAPACITY';requests.save(record);
+        for(let i=0;i<450;i++){
+         if(jobs.closing)break;
+         if(!jobs.previewBusy&&!jobs.children.size&&!jobs.queued().length&&!jobs.publishing.size&&
+            !previews.pending.size&&!adjustmentPreviews.running)break;
+         await new Promise(resolve=>setTimeout(resolve,200));
+        }
+        if(jobs.closing){fail('INTERRUPTED','HYBRID_SERVER_CLOSING');return;}
+        if(jobs.previewBusy||jobs.children.size||jobs.queued().length||jobs.publishing.size||
+           previews.pending.size||adjustmentPreviews.running){fail('BLOCKED','HYBRID_PREVIEW_CAPACITY_UNAVAILABLE');return;}
+        jobs.previewBusy=true;locked=true;record.step='REMOTION_RENDERING';requests.save(record);
+        const approvalCheck=async()=>{
+         try{
+          const current=jobs.get(id),native=jobs.get(child.id);
+          const layers=await store.layers(b.revision,b.decisionId),original=jobs.loadProfile(current.profileId),
+           catalog=externalCatalog(original,current.settings,assets.list());
+          return native.state==='DONE'&&native.parentId===id&&
+           layers.hybrid?.status==='MIXED_COMPONENTS_STAGED_NOT_RENDERABLE'&&
+           layers.hybrid.planFingerprint===verified.handoff.sourceLineage.approvedPlanFingerprint&&
+           catalog.timelineFingerprint===layers.graph.timelineFingerprint&&
+           catalog.sourceSha256===verified.handoff.sourceLineage.originalSourceSha256&&
+           fileSha256(verified.outputPath)===verified.mediaAudit.outputSha256;
+         }catch{return false;}
+        };
+        if(!await approvalCheck()){fail('BLOCKED','HYBRID_APPROVAL_OR_SOURCE_CHANGED');return;}
+        const original=jobs.loadProfile(jobs.get(id).profileId),
+         derived={...original,sourcePath:verified.outputPath,boundHashes:{...original.boundHashes,source:verified.mediaAudit.outputSha256}};
+        const result=await masterPreviewRenderer({composition:verified.handoff.composition,project:derived,
+         assets,workRoot:previewRoot,entryFile:masterPreviewConfig.entryFile,remotionCli:masterPreviewConfig.remotionCli,
+         browserExecutable:masterPreviewConfig.browserExecutable,browserLibraryPath:masterPreviewConfig.browserLibraryPath,
+         approvalCheck});
+        if(result.status!=='PREVIEW_RENDERED_UNVERIFIED'){fail('BLOCKED',result.issues?.[0]?.code??'HYBRID_REMOTION_FAILED',result.issues?.[0]?.reason);return;}
+        output=result.outputPath;
+        const audit=await masterPreviewAuditor({sourcePath:verified.outputPath,
+         sourceSha256:verified.mediaAudit.outputSha256,outputPath:output,
+         expected:{width:270,height:480,duration:verified.handoff.composition.durationFrames/30,fps:30}});
+        if(audit.status!=='TECHNICAL_PASS_HUMAN_QA_PENDING'||audit.outputSha256!==result.record.outputSha256||
+           !await approvalCheck()){fail('BLOCKED','HYBRID_REMOTION_AUDIT_OR_APPROVAL_FAILED');return;}
+        const seal={schema:'sues-master-preview-seal/v1',requestId:b.requestId,revision:b.revision,
+         decisionId:b.decisionId,record:result.record,audit,
+         hybrid:{schema:'sues-master-hybrid-lineage/v1',...verified.handoff.sourceLineage}};
+        sealMasterPreview(previewRoot,output,seal);output=null;
+        record.status='READY';record.step='HUMAN_QA_PENDING';record.previewId=result.record.id;
+        record.result={status:'PREVIEW_READY_FOR_REVIEW',previewId:result.record.id,
+         audit:{status:audit.status,fullDecode:audit.fullDecode,audioPresent:audit.audioPresent,
+          outputSha256:audit.outputSha256},final:false};
+        requests.save(record);
+       }catch(error){try{fail('FAILED','HYBRID_WORKER_FAILED')}catch{}}
+       finally{
+        if(output)try{discardUnsealedMasterPreview(previewRoot,output)}catch{}
+        if(locked){jobs.previewBusy=false;jobs.drain();}
+        masterHybridRuns.delete(key);
+       }
+      })();masterHybridRuns.set(key,task);
+      return json(res,202,{status:'RUNNING',requestId:b.requestId,final:false});
+     }
      if(['master-native-review','master-native-apply'].includes(action)&&req.method==='POST'){
       const b=await body(req,2048),allowed=action==='master-native-review'?['revision','decisionId']:['revision','decisionId','reviewId','requestId'];
       if(Object.keys(b).some(k=>!allowed.includes(k)))return json(res,400,{error:'Solicitud inválida.'});
