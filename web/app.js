@@ -555,6 +555,33 @@ $('master-version-open').onclick=()=>work(async()=>{
  const result=await api('jobs/'+jobId+'/master-draft?revision='+encodeURIComponent(revision));if(current?.id!==jobId)return;
  resetMasterReview();$('external-plan-text').value=JSON.stringify(result.story,null,2);$('master-review-result').textContent='Versión recuperada. Revísala antes de aprobarla.';
 });
+// File intake feeds the same review, decision and execution path as pasted JSON.
+function inspectMasterInput(raw){
+ let story;try{story=JSON.parse(raw);}catch{throw Error('El archivo no contiene un JSON válido.');}
+ if(story?.schema!=='sues-master-story/v1')throw Error('El archivo debe contener un plan sues-master-story/v1.');
+ if(new TextEncoder().encode(JSON.stringify(story)).length>60000)
+  throw Error('El plan maestro supera los 60.000 bytes. No se ha recortado.');
+ return story;
+}
+$('master-import-file').onclick=()=>$('master-plan-file').click();
+$('master-plan-file').onchange=()=>work(async()=>{
+ const input=$('master-plan-file'),file=input.files?.[0];input.value='';
+ if(!file)return;
+ if(file.size>1024*1024)throw Error('El archivo supera 1 MB. No se ha importado ni recortado.');
+ const jobId=current?.id;
+ const bytes=await file.arrayBuffer();let raw;
+ try{raw=new TextDecoder('utf-8',{fatal:true}).decode(bytes);}catch{throw Error('Guarda el archivo en formato UTF-8.');}
+ inspectMasterInput(raw);
+ if(current?.id!==jobId)throw Error('El proyecto ha cambiado. Importa el archivo en el proyecto correcto.');
+ invalidateExternal();resetMasterReview();$('external-plan-text').value=raw;
+ $('master-review-result').textContent='Plan importado. Revisa la propuesta antes de aprobarla.';
+});
+$('master-download-plan').onclick=()=>work(async()=>{
+ const raw=$('external-plan-text').value;inspectMasterInput(raw);
+ const blob=new Blob([raw],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob);
+ const link=document.createElement('a');link.href=url;link.download='sues-master-story.json';
+ document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
 $('master-review-button').onclick=()=>work(async()=>{
  if(!current)throw Error('Abre un proyecto con vídeo preparado.');
  const jobId=current.id,raw=$('external-plan-text').value;let story;
