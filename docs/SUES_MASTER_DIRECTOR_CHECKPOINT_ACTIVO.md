@@ -2,6 +2,16 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## VALIDACIÓN AUTORIZADA · 05/11/2026
+
+Carlos ha autorizado generar lo necesario para pruebas y continuar. En copia aislada del HEAD de rama, sin despliegue ni vídeo real nuevo:
+
+- Suite dirigida inicial: 71/71 PASS tras actualizar fixtures para exigir SHA de recurso y preflight nativo. Regresión Master Director posterior: 150 PASS, 8 FAIL y 2 SKIP; los ocho fallos correspondían a fixtures anteriores a los controles nuevos. Corregidos sin relajar los controles y sus dos archivos se repitieron: 11 PASS, 1 SKIP, 0 FAIL. La prueba omitida requiere FFmpeg en el host; no declarar una suite completa nueva sin fallos como si se hubiera repetido entera.
+- Nuevas pruebas de entrada de IA, JSON duplicado/UTF-8, máscara dinámica y enlace a origen: suite del almacén 13/13, contexto/compilador 13/13 y preparación de máscaras 4/4 PASS; proveedor IA simulado, no configurado en producción. `tsc --noEmit` PASS en copia aislada.
+- Dos fotogramas sintéticos 100×100 generados en contenedor sin red con memoria limitada: la máscara desplaza la zona visible entre imágenes; píxeles observados frame 0: izquierda rojo opaco, derecha transparente; frame 1: izquierda transparente, derecha rojo opaco. Esto acredita solo esa composición sintética, no segmentación real de personas, tracking ni flujo mixto completo. No se generó Reel ni se desplegó. El primer intento en host falló por librería de navegador ausente; se resolvió usando contenedor aislado.
+- Test commits `ab7cca3600de397897a843d1f59066c634438936`, `3469a6e8a1dfabbea54cfa1490d745f54ef1ad73`, `801a6a90f84dfd2d97e8d5d272758f1843552ab7`, `7d4540d4d14b11fe8ce9af0921996667a3da316c`, `6e9b67e881e14de51c05ee976aea13e1db3ce48b`, `8e9cef080c25f9fb8d7522af48e3e928c5c022b1`, `38b7f3c9149b40e3005c2da4bf218fe5a3935006`, `421195f436e05386ce1f6e9dc31a9ddac31d72d9`, `9879df68cf2ec7534d57c1172bdf9fea40162251`, `863585f2e5db4841a44ad5dbef442be0bb5d52e9`.
+- Pendientes: dos entradas operativas con un generador real gratuito, creación/QA de máscaras reales, edición integral, supervisor audiovisual independiente y verificación integral. No declarar cierre ni despliegue.
+
 ## MÁSCARAS DINÁMICAS · 05/11/2026
 
 - En rama se han añadido compilación, preparación y composición de secuencias alpha de hasta 120 imágenes por operación, una por fotograma, vinculadas a una prueba de confianza de la fuente y línea temporal. El registro de pruebas solo puede proceder de la política del servidor; cada imagen se comprueba por SHA y derechos al preparar recursos. El JSON de la skill no cambia: referencia `proofId` y modo `alpha-keep`. El compositor espera la carga de imágenes y bloquea la ausencia de un fotograma. Commits `b20b3ed1491fccf50f5321cc47b7af0be5bcfe79`, `d7144162ffd745485c69c887afd810a0ac872cfe`, `66af3cc5823a89a8909861006081b489d3126bc2`, `7089c65af2b98af4f318320780f8d51ab48cb168`, `cf6d80b8f86ff7e5661c114a3ed2d24b2da7f6bd`.
