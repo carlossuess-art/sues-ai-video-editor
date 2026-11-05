@@ -864,7 +864,6 @@ async function masterDecision(mode){
    if(inputs.shadowEnabled){
     if(inputs.shadowEnabled.checked){
      const color=inputs.shadowColor.value.trim(),offsetX=Number(inputs.shadowX.value),offsetY=Number(inputs.shadowY.value),blurPx=Number(inputs.shadowBlur.value);
-     if(parameters.visual.mask)throw Error('La combinación de sombra y máscara todavía no está disponible.');
      if(!/^#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?$/.test(color)||[inputs.shadowX,inputs.shadowY,inputs.shadowBlur].some(x=>x.value.trim()==='')||
        !Number.isFinite(offsetX)||Math.abs(offsetX)>500||!Number.isFinite(offsetY)||Math.abs(offsetY)>500||!Number.isFinite(blurPx)||blurPx<0||blurPx>200)
       throw Error('Comprueba el color, desplazamiento y desenfoque de la sombra.');
@@ -874,7 +873,7 @@ async function masterDecision(mode){
    if(inputs.glowEnabled){
     if(inputs.glowEnabled.checked){
      const color=inputs.glowColor.value.trim(),radiusPx=Number(inputs.glowRadius.value);
-     if(parameters.visual.mask||parameters.visual.dropShadow)throw Error('El resplandor todavía no se puede combinar con máscara ni sombra.');
+     if(parameters.visual.dropShadow)throw Error('El resplandor todavía no se puede combinar con sombra.');
      if(!/^#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?$/.test(color)||inputs.glowRadius.value.trim()===''||!Number.isFinite(radiusPx)||radiusPx<=0||radiusPx>200)
       throw Error('Comprueba el color y el radio del resplandor.');
      parameters.visual.glow={color,radiusPx};
