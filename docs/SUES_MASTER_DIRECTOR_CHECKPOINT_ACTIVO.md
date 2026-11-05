@@ -2,6 +2,13 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## CONTINUIDAD · IMPORTACIÓN, TRAZABILIDAD Y ENTRADA IA · 05/11/2026
+
+- El endpoint de borradores rechaza JSON con claves duplicadas y UTF-8 inválido; la validación bloquea listas malformadas de recursos, motivos y arco, y dependencias inválidas sin recorrer valores no iterables. Commits `551cb880d645db5349f5a2dc244375db96b89a91`, `8c21b72d94890b2d185924cc8bb1503629280d35`, `ffed36da51ae81cf720c25fec760045630c10d95`, `702ec38bf7959c962afb606559be43ff33168f30`, `686229969f451ceff7fbdd28d3733998e2ced0fa`.
+- Añadida entrada opcional de generación de `sues-master-story/v1` por proveedor inyectado como gratuito, sin proveedor configurado por defecto. Comparte borrador y revisión con la entrada pegada; no ejecuta ni aprueba. La interfaz informa si no hay proveedor disponible. El contexto incluye datos limitados del proyecto y las capacidades registradas; los candidatos requieren verificación posterior. Commits `686229969f451ceff7fbdd28d3733998e2ced0fa`, `bb35a423ff4640428805eaa2af5d3789cbed64ce`, `31d6c2d3665b3a8aa4f5f6cfb964d5314d016081`, `82cd54082e7de24c6516af29db341dc739815e85`. **No hay generador operativo configurado ni gasto realizado.**
+- Se persiste un manifiesto inmutable que enlaza operaciones originales y nodos del grafo a la revisión aprobada, consultable mediante endpoint autenticado. Es trazabilidad planificada, no evidencia de ejecución ni auditoría audiovisual. Commits `6ce01acd003cad826a573186bee04c56262b3ded` y `dcce99ac30c08c741f085dfe7f85471b690b67ec`.
+- Sin pruebas ni renders por decisión expresa de Carlos; código no verificado ni desplegado. Continúan pendientes la conexión real del proveedor gratuito, representación fiel de todos los efectos y máscaras, editor integral, supervisor audiovisual independiente y validación autorizada posterior.
+
 ## REVISIÓN DETALLADA Y GUARDIA DE EVIDENCIAS · 05/11/2026
 
 - La revisión incluye parámetros, motor, dependencias, recursos y anclas por operación; la interfaz muestra estos datos desplegables por escena. Commits `9648d6fabbb629691960cb8aae0f01d898c7fecc`, `be08f97512dc0a731eb112dcf90d7acf167c3f00`, `594420045ef763e9f6d75440699765c567763afb`.
@@ -12,7 +19,7 @@
 ## IMPORTACIÓN DE ARCHIVO MAESTRO · 05/11/2026
 
 - Añadidos controles de importación y descarga JSON en el editor de rama. Archivo y pegado comparten inspección de schema y tamaño y la misma revisión, aprobación y ejecución existente. El archivo UTF-8 se mantiene íntegro en el cuadro; un proyecto cambiado durante la lectura bloquea la importación.
-- Se rechazan propiedades JSON duplicadas en la entrada de interfaz para evitar que JSON.parse descarte instrucciones anteriores silenciosamente. La API existente sigue recibiendo objetos; esta protección no cubre clientes API externos.
+- Se rechazan propiedades JSON duplicadas en la entrada de interfaz para evitar que JSON.parse descarte instrucciones anteriores silenciosamente. La API de borradores incorpora posteriormente la misma protección; véase la entrada de continuidad más reciente.
 - Commits `401c7ebb121119a47137869745322a181eea8344`, `fbd0bcd4733d72174f2bd3ba62235563010d5aff`, `cccebb8ad5bdbfb8a8af81add91792157b292a8b`. Sin ampliación de schema ni efectos; skill 1.5.2 sin cambios.
 - Sin tests ni renders por indicación de Carlos; código no validado ni desplegado. Integración global aún pendiente; no declarar cierre, ejecución completa ni importación universal sin pérdida.
 
