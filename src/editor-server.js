@@ -452,7 +452,8 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
        return sourceStream(req,res,image.path,image.mime);
       }
       if(masterMaskConfig?.verifiedLocal!==true||typeof masterMaskConfig.pythonPath!=='string'||!masterMaskConfig.pythonPath.startsWith('/')||
-         typeof masterMaskConfig.scriptPath!=='string'||!masterMaskConfig.scriptPath.startsWith('/'))
+         typeof masterMaskConfig.scriptPath!=='string'||!masterMaskConfig.scriptPath.startsWith('/')||
+         ![masterMaskConfig.pythonSha256,masterMaskConfig.scriptSha256,masterMaskConfig.modelSha256].every(x=>/^[a-f0-9]{64}$/.test(x??'')))
        return json(res,503,{error:'La generación local de máscaras todavía no está configurada.'});
       if(!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(b.operationId??'')||!['keep-subject','keep-background'].includes(b.mode))
        return json(res,400,{error:'Elige una capa y un modo de máscara válidos.'});
@@ -465,7 +466,8 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
         return json(res,409,{status:'BLOCKED',issues:ready.issues??[{code:'MASK_SOURCE_NOT_READY'}]});
        const approvalCheck=async()=>{const approved=await store.approved(b.revision,b.decisionId);return !!approved&&approved.view.fingerprint===graph.planFingerprint;};
        const options={graph,composition:ready.composition,project:ready.project,operationId:b.operationId,mode:b.mode,root:maskRoot,
-        pythonPath:masterMaskConfig.pythonPath,scriptPath:masterMaskConfig.scriptPath,approvalCheck};
+        pythonPath:masterMaskConfig.pythonPath,pythonSha256:masterMaskConfig.pythonSha256,scriptPath:masterMaskConfig.scriptPath,
+        scriptSha256:masterMaskConfig.scriptSha256,modelSha256:masterMaskConfig.modelSha256,approvalCheck};
        if(typeof masterMaskRunner==='function')options.runner=masterMaskRunner;
        return json(res,200,await prepareMasterMaskCandidate(options));
       }finally{jobs.previewBusy=false;jobs.drain();}
