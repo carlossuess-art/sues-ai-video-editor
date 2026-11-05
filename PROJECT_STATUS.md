@@ -1412,3 +1412,5 @@ La tabla técnica de Carlos queda codificada como `sues-visual-grammar-158623-v1
 - Master Director rama aislada: validación narrativa basada en fases documentadas, evidencia requerida, aviso de fases sin documentar y sin inventar moraleja/caída. Mantiene compatibilidad del modo estricto y exige nueva revisión cuando cambie contexto. 27 pruebas dirigidas, 116 específicas y Chromium escritorio/móvil PASS con fixtures. No acredita comprensión audiovisual integral ni despliegue.
 
 - Arco observado comprobado con bruto privado y transcripción local: 20 reglas procesadas, fases documentadas, moraleja sin documentar y cinco capas preparadas PASS en proveedor real con derechos de recursos simulados. No demuestra comprensión audiovisual completa, verificación de derechos ni autorización creativa.
+
+- Master Director: arranque normal admite configuración de preview opt-in con rutas y SHA de tres puntos de entrada validados antes de iniciar; por defecto desactivado. 2 tests de configuración/arranque HTTP y 117 pruebas específicas PASS. No protege dependencias transitivas ni sustituye política real/rollback; no configurado ni desplegado en producción.
