@@ -6,32 +6,19 @@ import {join,resolve} from 'node:path';
 import {execFile} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
 import {fileSha256} from './local-pipeline.js';
+import {inspectMasterPreviewMemoryBudget} from './master-director-memory-budget.js';
 import {stageMasterDirectorImages,stageMasterDirectorFonts,stageMasterDirectorSource} from './master-director-remotion-stage.js';
-const HASH=/^[a-f0-9]{64}$/,MIN_FREE=512*1024*1024;
-// Consider host availability and, when configured, the current cgroup limit.
-// An unobservable budget fails closed rather than risking the live editor.
-export function hasPreviewMemoryHeadroom(){
- try{
-  const text=readFileSync('/proc/meminfo','utf8'),available=/^MemAvailable:\s+(\d+)\s+kB/m.exec(text);
-  if(!available||Number(available[1])*1024<MIN_FREE)return false;
-  const membership=readFileSync('/proc/self/cgroup','utf8').match(/^0::(.*)$/m)?.[1];
-  if(membership!==undefined){
-   const root=join('/sys/fs/cgroup',membership),max=readFileSync(join(root,'memory.max'),'utf8').trim();
-   if(max!=='max'){const limit=Number(max),used=Number(readFileSync(join(root,'memory.current'),'utf8').trim());
-    if(!Number.isFinite(limit)||!Number.isFinite(used)||limit-used<MIN_FREE)return false;}
-  }
-  return true;
- }catch{return false;}
-}
+const HASH=/^[a-f0-9]{64}$/;
+export function hasPreviewMemoryHeadroom(){return inspectMasterPreviewMemoryBudget().ok;}
 function boundedRun(executable,args,options,memoryCheck){
  return new Promise((resolveRun,rejectRun)=>{
-  let low=false,forceTimer=null;
+  let low=false,forceTimer=null,lowReason=null;
   const child=execFile(executable,args,options,(error,stdout,stderr)=>{
    clearInterval(timer);if(forceTimer)clearTimeout(forceTimer);
-   if(low){const e=new Error('Preview stopped for memory headroom');e.code='PREVIEW_MEMORY_LIMIT';return rejectRun(e);}
+   if(low){const e=new Error('Preview stopped for memory headroom');e.code='PREVIEW_MEMORY_LIMIT';e.memoryReason=lowReason;return rejectRun(e);}
    if(error){if(error.killed){error.code='PREVIEW_RENDER_TIMEOUT';}return rejectRun(error);}resolveRun({stdout,stderr});
   });
-  const timer=setInterval(()=>{if(!low&&!memoryCheck()){low=true;child.kill('SIGTERM');forceTimer=setTimeout(()=>child.kill('SIGKILL'),5000);}},1000);
+  const timer=setInterval(()=>{if(!low&&!memoryCheck()){lowReason=memoryCheck===hasPreviewMemoryHeadroom?inspectMasterPreviewMemoryBudget().reason:'CUSTOM_MEMORY_CHECK';low=true;child.kill('SIGTERM');forceTimer=setTimeout(()=>child.kill('SIGKILL'),5000);}},1000);
  });
 }
 
@@ -42,7 +29,7 @@ export async function renderMasterDirectorPreview({composition,project,assets,wo
     composition.durationFrames>3600||composition.fps!==30||composition.canvas?.width!==1080||composition.canvas?.height!==1920||
     typeof approvalCheck!=='function'||![workRoot,entryFile,remotionCli,browserExecutable].every(p=>typeof p==='string'&&p.startsWith('/')))
   return {status:'BLOCKED',issues:[{code:'PREVIEW_CONTEXT_INVALID'}]};
- if(typeof memoryCheck!=='function'||!memoryCheck())return {status:'BLOCKED',issues:[{code:'PREVIEW_MEMORY_LIMIT'}]};
+ if(typeof memoryCheck!=='function'||!memoryCheck())return {status:'BLOCKED',issues:[{code:'PREVIEW_MEMORY_LIMIT',reason:memoryCheck===hasPreviewMemoryHeadroom?inspectMasterPreviewMemoryBudget().reason:'CUSTOM_MEMORY_CHECK'}]};
  try{if(!await approvalCheck())return {status:'BLOCKED',issues:[{code:'APPROVAL_OR_EVIDENCE_CHANGED'}]};}
  catch{return {status:'BLOCKED',issues:[{code:'APPROVAL_OR_EVIDENCE_CHANGED'}]};}
  const root=resolve(workRoot);mkdirSync(root,{recursive:true,mode:0o700});
@@ -69,6 +56,6 @@ export async function renderMasterDirectorPreview({composition,project,assets,wo
   rmSync(pub,{recursive:true,force:true});rmSync(props,{force:true});
   writeFileSync(join(dir,'preview.json'),JSON.stringify(record)+'\n',{mode:0o600,flag:'wx'});keep=true;
   return {status:'PREVIEW_RENDERED_UNVERIFIED',issues:[],record,outputPath:output};
- }catch(error){return {status:'BLOCKED',issues:[{code:['PREVIEW_MEMORY_LIMIT','PREVIEW_RENDER_TIMEOUT'].includes(error?.code)?error.code:'PREVIEW_RENDER_FAILED'}]};}
+ }catch(error){return {status:'BLOCKED',issues:[{code:['PREVIEW_MEMORY_LIMIT','PREVIEW_RENDER_TIMEOUT'].includes(error?.code)?error.code:'PREVIEW_RENDER_FAILED',...(error?.memoryReason?{reason:error.memoryReason}:{})}]};}
  finally{if(!keep)rmSync(dir,{recursive:true,force:true});}
 }
