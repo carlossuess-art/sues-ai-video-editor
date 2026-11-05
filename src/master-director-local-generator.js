@@ -71,7 +71,7 @@ export function createMasterLocalGenerator(deps,{spawnProcess=spawn,timeoutMs=30
     let child,stdout='',size=0,settled=false,timer;
     const done=(err,value)=>{if(settled)return;settled=true;clearTimeout(timer);err?reject(err):resolveOutput(value);};
     const schema={type:'object',properties:{schema:{type:'string'},sourceSha256:{type:'string'},timeline:{type:'object'},visual:{type:'object'},narrative:{type:'object'},resources:{type:'array'},operations:{type:'array'}},required:['schema','sourceSha256','timeline','visual','narrative','resources','operations']};
-    try{child=spawnProcess(deps.binary.path,['--model',deps.model.path,'--file',promptPath,'--no-display-prompt','--no-conversation','--no-warmup','--threads','1','--ctx-size','8192','--n-predict','3072','--temp','0.2','--json-schema',JSON.stringify(schema)],{stdio:['ignore','pipe','ignore'],env:{PATH:'/usr/bin:/bin',LANG:'C.UTF-8'}});}
+    try{child=spawnProcess(deps.binary.path,['--model',deps.model.path,'--file',promptPath,'--no-display-prompt','--no-conversation','--no-context-shift','--no-warmup','--threads','1','--ctx-size','8192','--n-predict','3072','--temp','0.2','--json-schema',JSON.stringify(schema)],{stdio:['ignore','pipe','ignore'],env:{PATH:'/usr/bin:/bin',LANG:'C.UTF-8'}});}
     catch(e){done(e);return;}
     timer=setTimeout(()=>{child.kill('SIGKILL');done(Error('Local director timed out'));},timeoutMs);
     child.on('error',e=>done(e));
