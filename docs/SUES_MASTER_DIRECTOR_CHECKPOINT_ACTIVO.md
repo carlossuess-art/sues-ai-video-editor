@@ -1,6 +1,6 @@
 # SUES MASTER DIRECTOR · CHECKPOINT ACTIVO ÚNICO
 
-**Corte confirmado:** 2026-11-05 08:00 CET aprox. (07:00 UTC). **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 50 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
+**Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
 ## Prioridad de lectura y autoridad
 
@@ -36,8 +36,8 @@ No reutilizar blindly `src/editor-server.js` de la rama sobre producción; la ba
 |---|---|---|---|
 | 1. Unificación/continuidad | Checkpoint único GitHub+Drive, commits y logs referenciados, 1 escritor | No | COMPLETADO: GitHub+Drive+PR+PROJECT_STATUS |
 | 2. Candidata reproducible | Reconstruir desde montaje productivo con hashes; ejecutar suite dirigida y comparativa; conservar backout | No | COMPLETADO: candidata 458 hashes; 132 pruebas+MP4 nativo |
-| 3. Bloqueos y recursos | Investigar `PREVIEW_MEMORY_LIMIT`, diferenciar capacidad real del contenedor; revisar metadata/procedencia de masters sin inventarla | Solo si falta documento de titularidad o hacen falta recursos/gastos nuevos | PENDIENTE |
-| 4. Integración efectiva | Cerebro→nativo+Remotion mixto, edición de capas y keyframes, audio, máscaras reales, versiones recuperables; rechazo exacto de efectos no soportados | No para desarrollo | PARCIAL |
+| 3. Bloqueos y recursos | Memoria Remotion y metadata de procedencia/rights V2 de masters | Solo si falta prueba de titularidad o recursos/gastos | PARCIAL: render 1900m PASS; 1536m guard activado; derechos V2 pendientes |
+| 4. Integración efectiva | Cerebro→nativo+Remotion mixto, edición de capas y keyframes, audio, máscaras reales, versiones recuperables; rechazo exacto de efectos no soportados | No para desarrollo | EN CURSO: grafo mixto+handoff y prueba técnica 12s PASS; ejecución integrada, UI y máscaras reales pendientes |
 | 5. QA de Reel real 158404 | Plan genuino, recursos reales autorizados, preview y MP4 final, voz/música/SFX/oclusiones, 2 auditorías audiovisuales independientes completas, regresión | Sí para aceptación estética | PENDIENTE |
 | 6. Release seguro | Snapshot/backup y rollback probado, producción contra candidata, autorización explícita de despliegue | Sí | PENDIENTE |
 | 7. Skill | Informe técnico final para adaptar SUES AI Film Director en chat normal | Sí, luego | PENDIENTE |
@@ -55,6 +55,17 @@ No reutilizar blindly `src/editor-server.js` de la rama sobre producción; la ba
 3. Verificar capacidad de edición de versiones y composición con una operación real mínima; después integrar operaciones mixtas y máscaras dinámicas por capas.
 4. Completar política con procedencia real documentada; no simular licencias.
 5. Finalmente Reel 158404 y dos ciclos QA. En cada hito actualizar este documento + nota superior Drive.
+
+## HITO VERIFICADO · 05/11/2026 · CONTRATO MIXTO Y POC DE DOS MOTORES
+
+- **Referencia técnica detallada:** [POC mixto nativo→Remotion](SUES_MASTER_DIRECTOR_POC_MIXTO_20261105.md); código de esta iteración hasta `eae9d7ad7097fc9cff3aee211a47b7c57a315683` (commit doc, antes de actualizar este checkpoint).
+- `src/master-director-hybrid-review.js` conserva identidad, tiempos y dependencias de todas las operaciones nativas y de Remotion; la UI autenticada `master-layers` devuelve revisión `hybrid` sin omitir efectos. `master-render-preflight` **bloquea** el render mixto incompleto.
+- `src/master-director-hybrid-handoff.js` valida la relación de un futuro hijo nativo editable con SHA, prueba de audio/frames, aprobación del plan original y fuente derivada para Remotion. Rechaza máscaras sin evidencia propia del nuevo origen y mezcla/dependencias no garantizadas; **NO está todavía conectado a la ejecución del servidor**.
+- Pruebas **146/146 dirigidas PASS**, 0 FAIL/SKIP, sobre candidata aislada reconstruida por hashes de **458 archivos** activos. Logs: `/tmp/sues-master-handoff-candidate-tests-20261105.log` y `/tmp/sues-master-handoff-candidate-build-20261105.log`. El checkout de ese hito está en `fc2645df868658136442a4f588adc73df2b6ab70`.
+- **Dos motores encadenados de verdad en una prueba sintética:** versión nativa hija de 12s 1080×1920 con sonido y FFmpeg real (1/1 PASS, SHA `b24d29d710704b56ae2178fffcd1a510359b64397dea08bbdceb4c0ac09af4f0`); su salida alimentó a Remotion, que añadió texto animado y creó preview 360 fotogramas 270×480 H.264/AAC con audio y decodificación completa. Diferencia de píxeles comprobada en un fotograma con título (6285 canales). SHA preview `3e04250be184d2bf6125e5925ded0bfd72c20235728177b6a196323b9dd208b4`. Logs `/tmp/sues-master-hybrid-native-poc-20261105.log`, `/tmp/sues-master-hybrid-remotion-poc-20261105.log`. Docker privado sin red, CPU0.65, RAM1900m, sin desplegar ni publicar.
+- Test reproducible `tests/master-hybrid-two-stage-poc.mjs` y documentación de montaje. **IMPORTANTE:** el POC no prueba edición Remotion desde UI ni conserva automáticamente el vínculo padre/hijo en el servidor. Aprobación sintética de prueba, no recursos/rights de marca finales. No hay máscara dinámica real, mezclas profesionales, Reel 158404 acabado ni dos auditorías audiovisuales.
+- **Próximo paso de ingeniería:** integrar un worker autenticado que use el render nativo para crear y verificar un hijo editable, valide su auditoría, persista el handoff de ambos grafos y permita preview Remotion vinculada. Bloquear ejecución ante mezcla no representable; después resolver licencia V2, máscaras, Reel real y dos QA creativas. **NO repetir estas pruebas sin cambios relevantes.**
+- **Progreso estimado actualizado a 55 %, incertidumbre ±10 puntos;** ningún consumo de API de pago, cambio de skill ni modificación de producción.
 
 ## HITO VERIFICADO · 05/11/2026, 08:42 CET (07:42 UTC) · REMOTION V2 RECUPERADO
 
@@ -82,6 +93,8 @@ No reutilizar blindly `src/editor-server.js` de la rama sobre producción; la ba
 **Próxima acción única:** perfilar memoria incremental del render Remotion 24 s dentro de un cgroup aislado con límite conservador, comprobar motivo del guard cuando aparece (sin reducirlo). Si la capacidad del host no garantiza margen, no competir con producción: optimizar o probar en entorno mayor autorizado. Después cerrar política real/recursos y flujo mixto/Remotion, terminando con 158404 y 2 QA audiovisuales.
 
 ## Registro de actualizaciones
+
+- **2026-11-05 · Hito mixto reproducible:** 146/146 Node PASS, proyecto nativo real 12s + Remotion overlay 12s decodificados con audio, 2 motores encadenados en POC; contratos de revisión/handoff publicados. Aún NO integrado automáticamente ni listo para producción.
 
 - **2026-11-05 08:42 CET · Chat normal / integración V2 y QA**: HEAD 6cc49b3, runtime de integridad recuperado, 134/134 tests Node PASS, Remotion E2E 24s+audio y auditoría técnica en Docker 1900m PASS; Docker 1536m bloqueó por CGROUP_MEMORY_LOW (sin relajar guardia). Producción intacta. Pendiente mezcla nativo+Remotion, Reel real y QA creativa.
 
