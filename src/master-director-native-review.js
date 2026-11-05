@@ -2,8 +2,11 @@
 // Deliberately does not create a project, mutate settings, charge APIs or render.
 import {bridgeMasterDirectorToNative} from './master-director-native-bridge.js';
 import {reviewExternalPlan} from './external-edit-plan.js';
+import {reviewMasterDirectorPlan,masterDirectorFingerprint} from './master-director-gate.js';
+import {buildMasterDirectorLayerGraph} from './master-director-layer-graph.js';
+import {reviewMasterDirectorHybridGraph} from './master-director-hybrid-review.js';
 
-export function reviewMasterDirectorNative({plan,registry,catalog,project,settings,assets=[],commandPlanner}={}){
+function reviewNativeOnly({plan,registry,catalog,project,settings,assets=[],commandPlanner}={}){
  const bridged=bridgeMasterDirectorToNative(plan,registry,catalog);
  if(bridged.status!=='READY_FOR_NATIVE_REVIEW')
   return {status:bridged.status,canExecute:false,issues:bridged.issues??[],
@@ -34,4 +37,57 @@ export function reviewMasterDirectorNative({plan,registry,catalog,project,settin
   nativePlan:bridged.plan,operationMapping:bridged.operationMapping,
   preview:{reviewId:preview.reviewId,rows:preview.rows,notes:preview.notes,
    actions:preview.actions,editorialQuality:preview.editorialQuality}};
+}
+
+/**
+ * Review the native subset of an approved mixed-engine plan without authorizing
+ * a partial native-only render. The authentic server must still issue a separate,
+ * source-bound, versioned hybrid staging command before any execution.
+ */
+export function reviewMasterDirectorNative(args={}){
+ const {plan,registry={},catalog,project,settings,assets=[],commandPlanner}=args;
+ if(!Array.isArray(plan?.operations)||!plan.operations.some(o=>o.renderer==='remotion'))
+  return reviewNativeOnly(args);
+ const full=reviewMasterDirectorPlan(plan,registry);
+ if(full.status!=='READY_TO_EXECUTE')
+  return {status:full.status,canExecute:false,canApply:false,
+   issues:full.issues??[],fingerprint:full.fingerprint,nativePlan:null};
+ const graph=buildMasterDirectorLayerGraph(plan,registry);
+ if(graph.status!=='STRUCTURE_READY_NOT_RENDERED')
+  return {status:'BLOCKED',canExecute:false,canApply:false,
+   issues:graph.issues??[{code:'HYBRID_GRAPH_UNAVAILABLE'}],nativePlan:null};
+ const hybrid=reviewMasterDirectorHybridGraph(graph.graph,{
+  verifiedFonts:registry.verifiedFonts??{},verifiedAssets:registry.licensedAssets??{},
+  verifiedMasks:registry.maskEvidence??{}});
+ if(hybrid.status!=='MIXED_COMPONENTS_STAGED_NOT_RENDERABLE')
+  return {status:'BLOCKED',canExecute:false,canApply:false,
+   issues:hybrid.issues?.length?hybrid.issues:[{code:'HYBRID_TWO_ENGINES_REQUIRED'}],nativePlan:null};
+ if(hybrid.crossEngineDependencies.some(d=>d.fromEngine==='remotion'&&d.toEngine==='native'))
+  return {status:'BLOCKED',canExecute:false,canApply:false,
+   issues:[{code:'HYBRID_EXECUTION_ORDER_UNSUPPORTED'}],nativePlan:null};
+ if(hybrid.crossEngineOverlaps.some(o=>o.classification==='audio-mix'))
+  return {status:'BLOCKED',canExecute:false,canApply:false,
+   issues:[{code:'HYBRID_AUDIO_MIX_NOT_VERIFIED'}],nativePlan:null};
+ const subset={...structuredClone(plan),operations:plan.operations.filter(o=>o.renderer==='native')};
+ // This derived hash is used ONLY for offline review; full-plan approval above is
+ // mandatory. Never persist this hash as a user's new approval or publish the subset.
+ const derivedRegistry={...registry,approvedPlanFingerprint:masterDirectorFingerprint(subset)};
+ const native=reviewNativeOnly({plan:subset,registry:derivedRegistry,catalog,project,settings,assets,commandPlanner});
+ if(native.status!=='READY_FOR_EDITOR_PREVIEW')
+  return {status:'BLOCKED',canExecute:false,canApply:false,nativePlan:null,
+   issues:native.issues?.length?native.issues:[{code:'HYBRID_NATIVE_SUBSET_REJECTED'}],
+   fullPlanFingerprint:full.fingerprint};
+ if(native.operationMapping.length!==hybrid.nativeOperationIds.length||
+    native.operationMapping.some((o,i)=>o.masterOperationId!==hybrid.nativeOperationIds[i]))
+  return {status:'BLOCKED',canExecute:false,canApply:false,nativePlan:null,
+   issues:[{code:'HYBRID_NATIVE_MAPPING_MISMATCH'}]};
+ return {schema:'sues-master-hybrid-native-review/v1',
+  status:'HYBRID_NATIVE_PART_REVIEWED_NOT_EXECUTABLE',
+  canExecute:false,canApply:false,nativePlan:null,
+  fullPlanFingerprint:full.fingerprint,nativeReviewFingerprint:native.fingerprint,
+  nativeReviewId:native.preview.reviewId,
+  nativeOperationIds:hybrid.nativeOperationIds,remotionOperationIds:hybrid.remotionOperationIds,
+  crossEngineDependencies:hybrid.crossEngineDependencies,crossEngineOverlaps:hybrid.crossEngineOverlaps,
+  nativeRows:native.preview.rows,
+  issues:[{code:'HYBRID_EXECUTION_STILL_BLOCKED'}]};
 }
