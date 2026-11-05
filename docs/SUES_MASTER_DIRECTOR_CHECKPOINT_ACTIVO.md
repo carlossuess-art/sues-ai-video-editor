@@ -5,6 +5,7 @@
 ## INTEGRIDAD DE QA · 05/11/2026
 
 - La puerta de calidad exige que las dos pasadas y la aceptación creativa se refieran al SHA exacto del archivo entregado, además del fingerprint del plan. Colecciones de pruebas malformadas o duplicadas producen bloqueo. Commits `acc562fda3f7eefefe4764da8c876424103598d5`, `60905dffeddfdb4d45e420ea483df66c03a25755`; cobertura nueva `e77efa275fe92fc3b79eeab8c90585bf416fda16`, `a6391901dd0e8b0c8790e2794eddd155facfbb61`: 24/24 pruebas dirigidas PASS.
+- Regresión posterior al cambio de QA: 160 PASS, 0 FAIL, 2 SKIP de 162 en host; las dos pruebas con FFmpeg se superaron en contenedor en el corte anterior al cambio de QA. No confundir con auditoría audiovisual ni con producción.
 - Es un control de consistencia, no un supervisor audiovisual real ni pruebas de escucha o calidad creativa. Los productores de evidencias y aceptaciones aún deben suministrar SHA del archivo; sin ellos, la entrega final se bloquea. No desplegado.
 
 ## VALIDACIÓN AUTORIZADA · 05/11/2026
