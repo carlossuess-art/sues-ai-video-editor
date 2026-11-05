@@ -245,3 +245,31 @@ test('authenticated mixed plan reports both engine components and blocks an inco
   assert.equal(probes,0);assert.equal(app.jobs.children.size,0);
  }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });
+
+
+test('master draft API rejects duplicate keys and invalid UTF-8 without saving a partial story',async()=>{
+ const f=fixture(),app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles});
+ try{
+  const launch=await app.listen(),url=launch.split('/#')[0],job=app.jobs.create('test');
+  const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
+  const headers={Cookie:session.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'};
+  const endpoint=url+'/api/jobs/'+job.id+'/master-draft';
+  const repeated='{"story":{"schema":"sues-master-story/v1","narrative":{"centralMessage":"first", "centralMessage" : "second"}}}';
+  assert.equal((await fetch(endpoint,{method:'POST',headers,body:repeated})).status,400);
+  const invalid=Buffer.concat([Buffer.from('{"story":{"schema":"sues-master-story/v1","x":"'),Buffer.from([0xff]),Buffer.from('"}}')]);
+  assert.equal((await fetch(endpoint,{method:'POST',headers,body:invalid})).status,400);
+  const versions=await (await fetch(url+'/api/jobs/'+job.id+'/master-versions',{headers})).json();assert.deepEqual(versions.versions,[]);
+ }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
+});
+
+test('master generation remains unavailable without a trusted zero-cost provider',async()=>{
+ const f=fixture(),app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles});
+ try{
+  const launch=await app.listen(),url=launch.split('/#')[0],job=app.jobs.create('test');
+  const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
+  const headers={Cookie:session.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'};
+  const endpoint=url+'/api/jobs/'+job.id+'/master-generate';
+  assert.equal((await (await fetch(endpoint,{headers})).json()).available,false);
+  assert.equal((await fetch(endpoint,{method:'POST',headers,body:JSON.stringify({brief:'Una historia real'})})).status,503);
+ }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
+});
