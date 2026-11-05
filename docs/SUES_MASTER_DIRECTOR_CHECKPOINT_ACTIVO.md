@@ -2,6 +2,13 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## RESPLANDOR ESTÁTICO · 05/11/2026
+
+- Añadido `visual.glow:{color,radiusPx}` opcional en capas Remotion de texto/imagen/vídeo: radio >0–200 px y color hexadecimal, usando un filtro CSS sobre la silueta. Se bloquea su combinación con máscara o sombra; no cubre animación, múltiples halos ni materiales. Compilación, edición y persistencia en rama: `74969127425d8f715f1551c6b852a644e4174f13`, `4b1d00dbb2cc6fb45e2e753772f9072140bf8c5e`, `5e21293161beeea23d622ee571086e45b4656e88`, `ea3b3dd6241208f1a0bf6f5af77a4f0f688bfb26`.
+- Pruebas dirigidas 24/24 PASS, TypeScript PASS, navegador 1440/390 con cambio de sombra a glow PASS. Un fotograma sintético de Remotion comprobó objeto rojo, halo azul semitransparente y exterior transparente; no acredita todas las variantes ni calidad artística. Tests `b1c71fb64d6b524e40cec25f8970bc8ac9c3d42a`, `a107884c28263cf28b0220f9e9748fd66040735f`. Regresión de rama: 167 PASS, 0 FAIL, 5 SKIP de 172 en host; pruebas omitidas se ejecutaron aparte en cortes anteriores, no tras este cambio.
+- Skill privada sincronizada de 1.5.3 a **1.5.4**, release `pluginrel_6aed0bd277708191adb2feee10a29e3c`, contenido y 11 archivos releídos. Mantiene prohibición de combinaciones no soportadas, generación de Reels nuevos, gasto no autorizado y despliegue. Contrato actualizado en `3cf73ec70d27e3fc6301246bdbe50fd5aedb010d` y `9875c74a14256f490be1558a0d00c34cc24c5f52`.
+- Sin despliegue ni Reel nuevo. Pendientes efectos combinados y materiales, registro y supervisión de máscaras, generador IA gratuito real y auditoría audiovisual autónoma integral.
+
 ## SOMBRA ESTÁTICA Y SINCRONIZACIÓN DE SKILL · 05/11/2026
 
 - Añadido `visual.dropShadow` opcional en el compilador y compositor Remotion: color hexadecimal, desplazamiento y desenfoque acotados, sin combinación con máscara. El editor permite modificarlo de forma reversible. El contrato detalla semántica y límites. Commits `d1dde2c0096cc887cab2c0566c2a21c50dfd3784`, `285aa69dbd2dcbd020e1a366b4d875557bdf5037`, `e9cf5652afc48825b25990d1fb94c9cb455dbbf2`, `27447eeb93bc8550d488e03e7bf03ecda24fd221`, `01513131f5a0c85651b0a1ce38a42bc74b37eecc`.
