@@ -48,13 +48,15 @@ export function buildMasterDirectorReview(plan,registry={}){
  }
  const resources=[...grouped.entries()].map(([id,operationIds],i)=>{
   const a=registry.licensedAssets?.[id];
+  // A same-origin library link is derived only from a verified content hash.
+  const previewPath=a?.origin==='editor-private-library'&&SHA.test(id)&&a.sha256===id?'/api/assets/'+id+'/media':null;
   return {number:i+1,id,operationIds,
    title:typeof a?.title==='string'&&a.title?a.title:id,
    kind:a?.kind??'unknown',origin:a?.origin??'unrecorded',
    version:a?.version??null,sha256:a?.sha256??null,
    commercialUseAllowed:a?.commercialUseAllowed===true,
-   previewUrl:allowedLink(a?.previewUrl)?a.previewUrl:null,
-   previewAvailable:allowedLink(a?.previewUrl),
+   previewUrl:allowedLink(a?.previewUrl)?a.previewUrl:null,previewPath,
+   previewAvailable:!!previewPath||allowedLink(a?.previewUrl),
    rightsVerified:a?.rightsVerified===true
   };
  });
