@@ -116,7 +116,7 @@ export function auditMasterDirectorExecution(plan,registry={},execution={}){
   const preflight=reviewMasterDirectorPlan(plan,registry);
   if(preflight.status!=='READY_TO_EXECUTE')return preflight;
   const issues=[],fingerprint=preflight.fingerprint,ops=plan.operations;
-  if(execution.fingerprint!==fingerprint||!Array.isArray(execution.operations)||
+  if(execution.fingerprint!==fingerprint||!SHA.test(execution.outputSha256??'')||!Array.isArray(execution.operations)||
      execution.operations.length!==ops.length)
     issue(issues,'EXECUTION_MANIFEST_MISMATCH');
   else{
@@ -134,7 +134,7 @@ export function auditMasterDirectorExecution(plan,registry={},execution={}){
   // acceptance is separate from the technical audit.
   const passes=registry.qaPasses;
   if(!Array.isArray(passes)||passes.length!==2||
-     !passes.every(p=>p?.fingerprint===fingerprint&&p?.completed===true&&
+     !passes.every(p=>p?.fingerprint===fingerprint&&p?.completed===true&&SHA.test(execution.outputSha256??'')&&p?.outputSha256===execution.outputSha256&&
        validId(p?.verifierId)&&registry.trustedVerifierIds?.includes(p.verifierId)&&validId(p?.runId))||
      (Array.isArray(passes)&&passes.length===2&&passes[0]?.runId===passes[1]?.runId))
     issue(issues,'TWO_INDEPENDENT_QA_PASSES_REQUIRED');
@@ -144,13 +144,15 @@ export function auditMasterDirectorExecution(plan,registry={},execution={}){
       issue(issues,'QA_EVIDENCE_INCOMPLETE','pass-'+(i+1));
     for(const op of ops){
       const entry=evidence.get(op.id);
+      if(!Array.isArray(entry?.proofs)||new Set(entry.proofs.map(p=>p?.kind)).size!==entry.proofs.length)
+        issue(issues,'QA_PROOFS_INVALID',op.id+':pass-'+(i+1));
       for(const kind of op.requiredQA){
-        const proof=entry?.proofs?.find(p=>p.kind===kind);
+        const proof=Array.isArray(entry?.proofs)?entry.proofs.find(p=>p?.kind===kind):null;
         if(!proof||proof.passed!==true||!SHA.test(proof.artifactSha256??''))
           issue(issues,'QA_PROOF_MISSING_OR_FAILED',op.id+':'+kind+':pass-'+(i+1));
       }
     }
   }
   if(issues.length)return {status:'QA_REJECTED',fingerprint,issues};
-  return {status:registry.creativeAcceptedFingerprint===fingerprint?'READY_FOR_RELEASE':'AWAITING_CREATIVE_ACCEPTANCE',fingerprint,issues:[]};
+  return {status:registry.creativeAcceptedFingerprint===fingerprint&&registry.creativeAcceptedOutputSha256===execution.outputSha256?'READY_FOR_RELEASE':'AWAITING_CREATIVE_ACCEPTANCE',fingerprint,issues:[]};
 }
