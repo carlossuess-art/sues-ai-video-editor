@@ -39,3 +39,17 @@ test('original media staging rechecks source bytes and never replaces existing s
   assert.deepEqual(readFileSync(join(dir,'master-source',hash)),bytes);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
+
+
+test('dynamic mask frames are independently staged and changed bytes are rejected',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'master-mask-stage-'));
+ try{
+  const contents=[Buffer.from('frame zero'),Buffer.from('frame one')],ids=contents.map(b=>createHash('sha256').update(b).digest('hex'));
+  const locations=Object.fromEntries(ids.map((id,i)=>{const path=join(dir,'source-'+i);writeFileSync(path,contents[i]);return [id,path];}));
+  const assets={resolve:id=>({sha256:id,localFile:locations[id],kind:'image'}),metadata:()=>({approvedForProduction:true,license:{rightsStatus:'verified',commercialUseAllowed:true,proofRef:'record'},testReportRef:'record'})};
+  const composition={schema:'sues-remotion-layers/v1',layers:[{kind:'text',maskFrameAssetIds:ids}]};
+  stageMasterDirectorImages(composition,{assets,publicDirectory:dir});
+  assert.deepEqual(readFileSync(join(dir,'master-assets',ids[0])),contents[0]);assert.deepEqual(readFileSync(join(dir,'master-assets',ids[1])),contents[1]);
+  writeFileSync(locations[ids[1]],'changed');assert.throws(()=>stageMasterDirectorImages(composition,{assets,publicDirectory:dir}),/changed/);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
