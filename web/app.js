@@ -765,6 +765,11 @@ async function masterDecision(mode){
    const maskLabel=document.createElement('label'),maskInput=document.createElement('input');
    maskLabel.textContent='ID de prueba de máscara (opcional)';maskInput.value=node.visual.mask?.proofId??'';
    maskLabel.append(maskInput);box.append(maskLabel);inputs.maskProofId=maskInput;
+   const shadow=node.visual.dropShadow??{color:'#00000080',offsetX:0,offsetY:8,blurPx:16};
+   const shadowLabel=document.createElement('label'),shadowEnabled=document.createElement('input');shadowEnabled.type='checkbox';shadowEnabled.checked=!!node.visual.dropShadow;
+   shadowLabel.append(shadowEnabled,document.createTextNode(' Activar sombra'));box.append(shadowLabel);inputs.shadowEnabled=shadowEnabled;
+   const colorLabel=document.createElement('label'),colorInput=document.createElement('input');colorLabel.textContent='Color de sombra';colorInput.value=shadow.color;colorLabel.append(colorInput);box.append(colorLabel);inputs.shadowColor=colorInput;
+   numberField('shadowX','Sombra horizontal (px)',shadow.offsetX);numberField('shadowY','Sombra vertical (px)',shadow.offsetY);numberField('shadowBlur','Desenfoque de sombra (px)',shadow.blurPx);
    if(node.visual.typography){
     const typography=node.visual.typography;
     for(const [key,labelText] of [['fontFamily','Familia de la fuente'],['fontColor','Color (#RRGGBB o #RRGGBBAA)']]){
@@ -851,6 +856,16 @@ async function masterDecision(mode){
     const proofId=inputs.maskProofId.value.trim();
     if(proofId&&!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(proofId))throw Error('El identificador de la máscara no es válido.');
     if(proofId)parameters.visual.mask={proofId,mode:'alpha-keep'};else delete parameters.visual.mask;
+   }
+   if(inputs.shadowEnabled){
+    if(inputs.shadowEnabled.checked){
+     const color=inputs.shadowColor.value.trim(),offsetX=Number(inputs.shadowX.value),offsetY=Number(inputs.shadowY.value),blurPx=Number(inputs.shadowBlur.value);
+     if(parameters.visual.mask)throw Error('La combinación de sombra y máscara todavía no está disponible.');
+     if(!/^#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?$/.test(color)||[inputs.shadowX,inputs.shadowY,inputs.shadowBlur].some(x=>x.value.trim()==='')||
+       !Number.isFinite(offsetX)||Math.abs(offsetX)>500||!Number.isFinite(offsetY)||Math.abs(offsetY)>500||!Number.isFinite(blurPx)||blurPx<0||blurPx>200)
+      throw Error('Comprueba el color, desplazamiento y desenfoque de la sombra.');
+     parameters.visual.dropShadow={color,offsetX,offsetY,blurPx};
+    }else delete parameters.visual.dropShadow;
    }
    if(inputs.fontFamily){
     const family=inputs.fontFamily.value.trim(),color=inputs.fontColor.value.trim(),sizePx=Number(inputs.fontSize.value),weight=Number(inputs.fontWeight.value);
