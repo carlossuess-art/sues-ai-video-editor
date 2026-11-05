@@ -817,6 +817,27 @@ async function masterDecision(mode){
   }
   if(typeof original.parameters?.gain==='number')numberField('gain','Volumen',original.parameters.gain,'.01');
   if(Number.isInteger(original.parameters?.sourceInFrame))numberField('sourceInFrame','Inicio en el recurso (fotogramas)',original.parameters.sourceInFrame,'1');
+  if(node.visual){
+   const maskGroup=document.createElement('fieldset'),maskLegend=document.createElement('legend'),maskMode=document.createElement('select'),maskButton=document.createElement('button'),maskStatus=document.createElement('p'),maskResults=document.createElement('div');
+   maskLegend.textContent='Generar máscara candidata';maskGroup.append(maskLegend);
+   for(const [value,title] of [['keep-subject','Conservar sujeto'],['keep-background','Conservar fondo']]){const option=document.createElement('option');option.value=value;option.textContent=title;maskMode.append(option);}
+   maskButton.type='button';maskButton.textContent='Preparar máscara local';maskStatus.setAttribute('role','status');
+   maskButton.onclick=()=>work(async()=>{
+    if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
+    maskButton.disabled=true;maskStatus.textContent='Preparando máscaras candidatas…';maskResults.replaceChildren();
+    try{
+     const result=await api('jobs/'+state.jobId+'/master-mask-candidate','POST',{revision:state.revision,decisionId:state.decisionId,operationId:node.id,mode:maskMode.value});
+     if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)return;
+     if(result.status!=='CANDIDATE_NOT_VERIFIED'){maskStatus.textContent='No se pudo preparar la máscara; revisa el vídeo, la duración y el entorno local.';return;}
+     maskStatus.textContent='Máscara candidata preparada. Debe revisarse; todavía no se ha aplicado ni aprobado.';
+     const list=document.createElement('ol');for(const frame of result.manifest.frames){
+      const q=new URLSearchParams({revision:state.revision,decisionId:state.decisionId,candidateId:result.candidateId,file:frame.file});
+      const li=document.createElement('li'),link=document.createElement('a');link.href='/api/jobs/'+state.jobId+'/master-mask-frame?'+q.toString();
+      link.target='_blank';link.rel='noopener noreferrer';link.textContent='Fotograma '+frame.editFrame;li.append(link);list.append(li);
+     }maskResults.append(list);
+    }finally{maskButton.disabled=false;}
+   });maskGroup.append(maskMode,maskButton,maskStatus,maskResults);box.append(maskGroup);
+  }
   const save=document.createElement('button');save.type='button';save.textContent='Guardar ajuste de esta capa';
   save.onclick=()=>work(async()=>{
    if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
