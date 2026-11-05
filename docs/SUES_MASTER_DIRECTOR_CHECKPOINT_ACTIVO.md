@@ -2,6 +2,11 @@
 
 **Última actualización verificada:** 2026-11-05. **Estado:** EN DESARROLLO, sin despliegue. **Progreso global estimado: 55 % ±10 puntos** de la misión completa (estimación humana; NO deriva del número de tests, commits o funcionalidades contadas).
 
+## INTEGRIDAD DE QA · 05/11/2026
+
+- La puerta de calidad exige que las dos pasadas y la aceptación creativa se refieran al SHA exacto del archivo entregado, además del fingerprint del plan. Colecciones de pruebas malformadas o duplicadas producen bloqueo. Commits `acc562fda3f7eefefe4764da8c876424103598d5`, `60905dffeddfdb4d45e420ea483df66c03a25755`; cobertura nueva `e77efa275fe92fc3b79eeab8c90585bf416fda16`, `a6391901dd0e8b0c8790e2794eddd155facfbb61`: 24/24 pruebas dirigidas PASS.
+- Es un control de consistencia, no un supervisor audiovisual real ni pruebas de escucha o calidad creativa. Los productores de evidencias y aceptaciones aún deben suministrar SHA del archivo; sin ellos, la entrega final se bloquea. No desplegado.
+
 ## VALIDACIÓN AUTORIZADA · 05/11/2026
 
 Carlos ha autorizado generar lo necesario para pruebas y continuar. En copia aislada del HEAD de rama, sin despliegue ni vídeo real nuevo:
