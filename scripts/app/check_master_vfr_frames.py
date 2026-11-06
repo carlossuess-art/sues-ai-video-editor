@@ -57,5 +57,3 @@ if __name__=='__main__':
     summary={k:v for k,v in doc.items() if k!='mapping'}
     print(json.dumps(summary,indent=2))
     sys.exit(0 if result['status']=='FRAME_CORRESPONDENCE_PASS_LOW_RES_NOT_APPROVAL' else 2)
-
-[executed on device: srv1841004 (02556f29-b0ec-42da-81b0-a7ef0e517c98)]
