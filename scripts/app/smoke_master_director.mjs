@@ -8,11 +8,12 @@ const f=fixture(),master='b'.repeat(64),context={registry:{brandId:'sues',profil
  approvedRuleIds:['r1'],requiredRuleKeys:['brand.background'],approvedReferenceIds:[],arcPolicy:'reel-observed-v2',wordAnchors:{'test-word':{time:1,text:'Hola'}},masterHashes:{tapiz:master},
  lockedMastersByMode:{'brand-sues':[{id:'tapiz',sha256:master}]},rendererCapabilities:{remotion:['text']},licensedAssets:{},canvas:{width:1080,height:1920},verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}}},
  rulebook:[{id:'r1',key:'brand.background',scope:'global',authority:'explicit-user-approval',status:'approved',value:'anthracite',supersedes:[]}]};
+function wav(frames=4){const b=Buffer.alloc(44+frames*4);b.write('RIFF');b.writeUInt32LE(b.length-8,4);b.write('WAVE',8);b.write('fmt ',12);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(2,22);b.writeUInt32LE(48000,24);b.writeUInt32LE(192000,28);b.writeUInt16LE(4,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(frames*4,40);return b;}
 let renders=0,probeBlocked=false;
 const renderer=async({composition,workRoot,approvalCheck})=>{assert.equal(await approvalCheck(),true);await new Promise(resolve=>setTimeout(resolve,1200));const dir=join(workRoot,'master-preview-'+String(++renders).padStart(6,'0'));mkdirSync(dir,{recursive:true});const outputPath=join(dir,'preview.mp4');writeFileSync(outputPath,'fixture-preview');const outputSha256=createHash('sha256').update(readFileSync(outputPath)).digest('hex');return {status:'PREVIEW_RENDERED_UNVERIFIED',record:{id:randomUUID(),planFingerprint:composition.planFingerprint,sourceSha256:composition.sourceSha256,outputSha256,bytes:15,final:false},outputPath}};
 const auditor=async({outputPath})=>({status:'TECHNICAL_PASS_HUMAN_QA_PENDING',outputSha256:createHash('sha256').update(readFileSync(outputPath)).digest('hex')});
 const supervisorRunner=async(_executable,args)=>{
- const target=args.at(-1);if(target.endsWith('audio.wav'))writeFileSync(target,'audio-fixture');
+ const target=args.at(-1);if(target.endsWith('audio.wav'))writeFileSync(target,wav());
  else{const count=Number(args[args.indexOf('-frames:v')+1]);for(let i=1;i<=count;i++)writeFileSync(target.replace('%04d',String(i).padStart(4,'0')),'frame-fixture-'+i);}
 };
 const maskRunner=async(executable,args)=>{
@@ -64,6 +65,7 @@ try{
   assert.match(await page.locator('#master-layer-controls video').getAttribute('src'),/master-preview-media/);
   await page.evaluate(()=>document.querySelector('[data-master-supervisor] button').click());
   await page.waitForFunction(()=>document.querySelector('[data-master-supervisor] [role=status]')?.textContent.includes('Muestras preparadas'),{timeout:30000});
+  assert.match(await page.locator('[data-master-supervisor]').textContent(),/Medición orientativa del audio convertido/);
   const evidenceHref=await page.locator('[data-master-supervisor] a').first().getAttribute('href');
   const evidence=await page.request.get(base+evidenceHref);assert.equal(evidence.status(),200);assert.ok(evidence.headers()['content-type'].startsWith('audio/wav'));
   await page.evaluate(()=>document.querySelector('#master-preview-history').click());
