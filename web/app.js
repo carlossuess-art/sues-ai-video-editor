@@ -639,6 +639,29 @@ $('master-generate').onclick=()=>work(async()=>{
  const raw=JSON.stringify(result.story,null,2);$('external-plan-text').value=raw;masterInputDirty=false;
  masterNativeRequest=null;masterPreviewRequest=null;masterFullHDRequest=null;masterHybridRequest=null;masterHybridHDRequest=null;masterReview={jobId,raw,story:result.story,revision:result.revision,fingerprint:result.review.fingerprint};showMasterReview(result.review);
 });
+$('master-pause-check').onclick=()=>work(async()=>{
+ if(!current)throw Error('Abre primero un proyecto.');
+ const jobId=current.id,workingRevision=masterWorkingRevision;
+ const [head,catalog]=await Promise.all([api('jobs/'+jobId+'/master-current'),api('jobs/'+jobId+'/external-catalog')]);
+ if(current?.id!==jobId||head.revision!==workingRevision)throw Error('El proyecto ha cambiado. Abre su última edición antes de evaluar pausas.');
+ const report=await api('jobs/'+jobId+'/master-pause-audit','POST',{
+  expectedRevision:head.revision,expectedSourceSha256:catalog.sourceSha256,
+  expectedTimelineFingerprint:catalog.timelineFingerprint,suggest:true});
+ if(current?.id!==jobId||masterWorkingRevision!==workingRevision)throw Error('El proyecto cambió durante la comprobación.');
+ const root=$('master-pause-results');root.replaceChildren();
+ const summary=document.createElement('p');summary.textContent=`${report.reviewedCandidates} posibles pausas. ${report.technicalCandidates} requieren escucha, ${report.expressiveCandidates} necesitan revisión expresiva y ${report.blockedCandidates} están bloqueadas. No se ha modificado el vídeo.`;
+ root.append(summary);
+ if(report.candidates?.length){
+  const list=document.createElement('ol');
+  for(const candidate of report.candidates){
+   const item=document.createElement('li');
+   const label=candidate.status==='PENDING_PERCEPTUAL_QA'?'Pendiente de escucha':candidate.status==='EXPRESSIVE_PAUSE_LISTEN_FIRST'?'Pausa expresiva: escuchar antes':'Bloqueada';
+   item.textContent=`${candidate.alignedStart??'—'}–${candidate.alignedEnd??'—'} s · ${label} · ${candidate.previousWord??'…'} / ${candidate.nextWord??'…'}`;
+   list.append(item);
+  }
+  root.append(list);
+ }
+});
 $('master-review-button').onclick=()=>work(async()=>{
  if(!current)throw Error('Abre un proyecto con vídeo preparado.');
  const jobId=current.id,raw=$('external-plan-text').value,story=inspectMasterInput(raw);

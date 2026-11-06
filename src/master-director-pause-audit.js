@@ -42,3 +42,24 @@ export function auditMasterPauseCandidates({words,candidates,duration,fps=30,min
   blockedCandidates:results.filter(x=>x.status==='BLOCKED').length,
   candidates:results,approved:false,canExecute:false};
 }
+
+// Deterministic candidates from observed word gaps; these are suggestions ONLY.
+// There is no automatic cut or inferential claim that any pause lacks meaning.
+export function suggestMasterPauseCandidates(words,{fps=30,minRetainedSeconds=.67,limit=60}={}){
+ if(!Array.isArray(words)||!Number.isInteger(limit)||limit<1||limit>60||fps!==30)return [];
+ const sorted=[...words].filter(w=>finite(w?.start)&&finite(w?.end)&&w.start>=0&&w.end>w.start)
+  .sort((a,b)=>a.start-b.start||a.end-b.end);
+ const out=[];
+ for(let i=1;i<sorted.length&&out.length<limit;i++){
+  const previous=sorted[i-1],next=sorted[i],gap=next.start-previous.end;
+  if(gap<=.7+1e-6)continue;
+  const frames=Math.floor((gap-minRetainedSeconds)*fps+1e-6);
+  if(frames<=0)continue;
+  const first=Math.ceil(previous.end*fps-1e-7),last=Math.floor(next.start*fps+1e-7);
+  const count=Math.min(frames,last-first);
+  if(count<=0)continue;
+  const startFrame=Math.max(first,Math.min(last-count,Math.round((previous.end+(gap-count/fps)/2)*fps)));
+  out.push({start:fixed(startFrame/fps),end:fixed((startFrame+count)/fps)});
+ }
+ return out;
+}
