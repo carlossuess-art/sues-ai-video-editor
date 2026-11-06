@@ -79,3 +79,15 @@ test('stereo measurements preserve channel peaks and reject truncated or unsuppo
  assert.ok(m.seconds[0].rms[1]>m.seconds[0].rms[0]);assert.throws(()=>measureSupervisorStereoWav(b.subarray(0,47)),/WAV/);
  const mono=Buffer.from(b);mono.writeUInt16LE(1,22);assert.throws(()=>measureSupervisorStereoWav(mono),/WAV/);
 });
+
+
+test('audio measurement cannot be sealed if its evidence changes while approval is checked',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'master-audio-change-'));try{
+  const media=Buffer.from('preview'),previewPath=join(dir,'video.mp4');writeFileSync(previewPath,media);let audioPath,checks=0;
+  const runner=async(_exe,args)=>{const out=args.at(-1);if(out.endsWith('audio.wav')){audioPath=out;writeFileSync(out,wav());}
+   else for(let i=1;i<=Number(args[args.indexOf('-frames:v')+1]);i++)writeFileSync(out.replace('%04d',String(i).padStart(4,'0')),'png-'+i);};
+  const result=await prepareMasterSupervisorEvidence({graph:graph(),previewPath,root:join(dir,'evidence'),outputSha256:sha(media),runner,approvalCheck:async()=>{
+   if(++checks===2){const changed=wav();changed.writeInt16LE(30000,44);writeFileSync(audioPath,changed);}return true;}});
+  assert.equal(result.status,'BLOCKED');assert.deepEqual(readdirSync(join(dir,'evidence')),[]);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
