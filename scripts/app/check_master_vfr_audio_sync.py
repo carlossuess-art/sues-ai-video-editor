@@ -58,5 +58,3 @@ if __name__ == '__main__':
     result=assess(a.source_pcm,a.derived_pcm)
     print(json.dumps(result,indent=2))
     sys.exit(0 if result['status']=='SIGNAL_TIMING_PASS_NOT_LISTENING' else 2)
-
-[executed on device: srv1841004 (02556f29-b0ec-42da-81b0-a7ef0e517c98)]
