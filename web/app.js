@@ -648,6 +648,11 @@ function addMasterSupervisorControl(area,state,previewId){
    const makeLink=(file,title)=>{const link=document.createElement('a'),q=new URLSearchParams(query);q.set('file',file);
     link.href='/api/jobs/'+state.jobId+'/master-supervisor-evidence?'+q.toString();link.target='_blank';link.rel='noopener noreferrer';link.textContent=title;return link;};
    const audio=document.createElement('p');audio.append(makeLink('audio.wav',result.report.audioEvidence?.channels===2?'Abrir audio de revisión (estéreo convertido)':'Abrir audio para escuchar'));results.append(audio);
+   const measured=result.report.audioMeasurements;
+   if(measured?.notQualityJudgment===true&&Array.isArray(measured.seconds)&&Array.isArray(measured.clippingSamples)){
+    const peaks=measured.seconds.flatMap(part=>part.peak??[]).filter(Number.isFinite),maximum=peaks.length?Math.max(...peaks):0;
+    const info=document.createElement('p');info.className='small';info.textContent='Medición orientativa del audio convertido: pico '+(maximum*100).toFixed(1)+' %; muestras al límite digital '+measured.clippingSamples.join(' / ')+' (izquierda / derecha). No sustituye la escucha ni una auditoría.';results.append(info);
+   }
    const list=document.createElement('ol');for(const sample of result.report.samples){const li=document.createElement('li');li.append(makeLink(sample.file,(sample.frame/30).toFixed(2)+' s'+(sample.operationIds.length?' · '+sample.operationIds.join(', '):' · línea temporal')));list.append(li);}results.append(list);
   }finally{button.disabled=false;}
  });section.append(button,status,results);area.append(section);
