@@ -1,8 +1,8 @@
 ## AJUSTE DE IMAGEN Y VÍDEO EN REMOTION · 06/11/2026
 
-El plan externo puede elegir `fit:"fill"`, `"contain"` o `"cover"` en recursos `image-exact` y `video-exact`, con encuadre centrado: estirar, ajustar dejando transparencia o recortar. Se conserva el valor en compilación y render; no se admite anclaje personalizado. Contrato actualizado y skill privada 1.5.6 sincronizada sin tocar producción.
+El plan externo puede elegir `fit:"fill"`, `"contain"` o `"cover"` en recursos `image-exact` y `video-exact`, con encuadre centrado: estirar, ajustar dejando transparencia o recortar. Se conserva el valor en compilación y render; no se admite anclaje personalizado. El editor permite cambiarlo y guarda una nueva versión que exige revisión y aprobación renovadas. Contrato actualizado y skill privada 1.5.6 sincronizada sin tocar producción.
 
-Pruebas tras el cambio: 37/37 de compilación/almacenamiento/staging/revisión híbrida y TypeScript sin errores. Fotogramas sintéticos Remotion de imagen con contain y cover y vídeo con cover comprobaron por píxeles el ajuste, transparencia y recorte. Esto no acredita movimiento completo, contain en vídeo, máscaras combinadas, Reel real ni QA creativa. Sin despliegue ni gasto.
+Pruebas tras el cambio: 37/37 de compilación/almacenamiento/staging/revisión híbrida, TypeScript sin errores y navegador simulado escritorio/móvil con persistencia de `cover` y nueva aprobación. La prueba general existente de revisión/edición también pasó en ambos tamaños. Fotogramas sintéticos Remotion de imagen con contain y cover y vídeo con cover comprobaron por píxeles el ajuste, transparencia y recorte. Esto no acredita movimiento completo, contain en vídeo, máscaras combinadas, Reel real ni QA creativa. Sin despliegue ni gasto.
 
 ## FIDELIDAD TEMPORAL Y ORDEN EN MOTOR MIXTO · 06/11/2026
 
