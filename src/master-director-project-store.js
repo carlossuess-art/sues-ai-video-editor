@@ -2,7 +2,7 @@
 // The caller supplies current editor facts and server-owned policy; request bodies
 // cannot assert resources, rules, budget, or user approvals.
 import {createHash,randomBytes} from 'node:crypto';
-import {mkdirSync,readFileSync,writeFileSync,readdirSync,lstatSync,existsSync} from 'node:fs';
+import {mkdirSync,readFileSync,writeFileSync,renameSync,unlinkSync,readdirSync,lstatSync,existsSync} from 'node:fs';
 import {join} from 'node:path';
 import {prepareMasterDirectorSession} from './master-director-orchestration.js';
 import {buildMasterDirectorReview} from './master-director-workflow.js';
@@ -96,6 +96,50 @@ export class MasterDirectorProjectStore{
   }).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)||a.revision.localeCompare(b.revision));
  }
 
+ // One visible working head per job. Historical drafts remain immutable and
+ // recoverable, but every new edit must explicitly target the observed head.
+ // A stale browser tab or chat request can never silently overwrite newer work.
+ current(){
+  const path=join(this.root,'current.json');
+  if(!existsSync(path))return {revision:null};
+  const value=JSON.parse(readFileSync(path,'utf8'));
+  if(value?.schema!=='sues-master-current/v1'||!HASH.test(value.revision??''))throw Error('Invalid project head');
+  this.readDraft(value.revision);
+  return {revision:value.revision,updatedAt:value.updatedAt};
+ }
+ setCurrent(revision,expectedRevision){
+  if(!HASH.test(revision??'')||!(expectedRevision===null||HASH.test(expectedRevision??'')))
+   throw Error('Invalid project head');
+  this.readDraft(revision);
+  const previous=this.current();
+  if(previous.revision!==expectedRevision)
+   return {status:'CONFLICT',code:'STALE_PROJECT_REVISION',currentRevision:previous.revision};
+  if(previous.revision===revision)
+   return {status:'CURRENT',revision,updatedAt:previous.updatedAt};
+  mkdirSync(this.root,{recursive:true,mode:0o700});
+  const updatedAt=new Date().toISOString();
+  const tmp=join(this.root,'current-'+randomBytes(12).toString('hex')+'.tmp');
+  try{
+   writeFileSync(tmp,JSON.stringify({schema:'sues-master-current/v1',revision,updatedAt}),{mode:0o600,flag:'wx'});
+   renameSync(tmp,join(this.root,'current.json'));
+  }finally{try{unlinkSync(tmp);}catch(e){if(e.code!=='ENOENT')throw e;}}
+  return {status:'CURRENT',revision,parentRevision:expectedRevision,updatedAt,requiresNewReview:true};
+ }
+ editCurrentOperation(expectedRevision,operationId,patch){
+  const head=this.current();
+  if(head.revision!==expectedRevision)
+   return {status:'CONFLICT',code:'STALE_PROJECT_REVISION',currentRevision:head.revision};
+  const updated=this.editOperation(expectedRevision,operationId,patch);
+  return this.setCurrent(updated.revision,expectedRevision);
+ }
+ editCurrentVisual(expectedRevision,operationId,visual){
+  const head=this.current();
+  if(head.revision!==expectedRevision)
+   return {status:'CONFLICT',code:'STALE_PROJECT_REVISION',currentRevision:head.revision};
+  const updated=this.editVisual(expectedRevision,operationId,visual);
+  return this.setCurrent(updated.revision,expectedRevision);
+ }
+
  editVisual(revision,operationId,visual){
   if(typeof operationId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(operationId)||
      !obj(visual)||Object.keys(visual).some(k=>!['rect','zIndex','opacity','typography','keyframes','mask','stack','dropShadow','glow'].includes(k)))
@@ -110,7 +154,7 @@ export class MasterDirectorProjectStore{
 
  editOperation(revision,operationId,patch){
   if(typeof operationId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(operationId)||!obj(patch)||
-     !Object.keys(patch).length||Object.keys(patch).some(k=>!['start','end','parameters','resourceRef'].includes(k)))
+     !Object.keys(patch).length||Object.keys(patch).some(k=>!['start','end','parameters','parametersPatch','resourceRef'].includes(k)))
    throw Error('Invalid operation edit');
   const story=this.readDraft(revision),matches=Array.isArray(story.operations)?story.operations.filter(o=>o?.id===operationId):[];
   if(matches.length!==1||matches[0].renderer!=='remotion')throw Error('Editable operation not found');
@@ -118,6 +162,16 @@ export class MasterDirectorProjectStore{
   if(!Number.isFinite(start)||!Number.isFinite(end)||start<0||end<=start||!Number.isFinite(story.timeline?.duration)||end>story.timeline.duration)
    throw Error('Invalid operation timing');
   if(Object.hasOwn(patch,'parameters')&&(!obj(patch.parameters)||Buffer.byteLength(JSON.stringify(patch.parameters))>24000))throw Error('Invalid operation parameters');
+  // Fine-grained edits retain every unspecified parameter (e.g. changing
+  // caption text must not erase typography, animation, geometry or masks).
+  if(Object.hasOwn(patch,'parametersPatch')){
+   if(!obj(patch.parametersPatch)||!Object.keys(patch.parametersPatch).length||
+      !obj(op.parameters)||Object.keys(patch.parametersPatch).some(k=>['__proto__','constructor','prototype'].includes(k)))
+    throw Error('Invalid operation parameters patch');
+   const merged={...op.parameters,...structuredClone(patch.parametersPatch)};
+   if(Buffer.byteLength(JSON.stringify(merged))>24000)throw Error('Invalid operation parameters patch');
+   op.parameters=merged;
+  }
   if(Object.hasOwn(patch,'resourceRef')){
    if(typeof patch.resourceRef!=='string'||!Array.isArray(story.resources)||
       story.resources.filter(r=>r?.id===patch.resourceRef).length!==1)throw Error('Invalid resource reference');
