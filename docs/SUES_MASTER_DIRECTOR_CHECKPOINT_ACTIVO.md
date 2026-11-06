@@ -1,3 +1,9 @@
+## COMPROBACIÓN DEL ORIGINAL REAL · 06/11/2026
+
+El original del Reel 158404 identificado por SHA256 `9e06f49c30731d8a57aed312cfb46281bcffb7b3d5d62bf5a2164333944ccaad` se comprobó en modo de solo lectura con el detector de fuente real. Tiene 1080×1920 y audio; el detector lo bloqueó como `SOURCE_NOT_FRAME_ALIGNED_CFR30` desde el fotograma 1. No se ha modificado ni convertido.
+
+Para una prueba integral con este original hace falta integrar o preparar una derivación CFR30 verificable y editable, registrar su linaje y el mapa temporal respecto al original, comprobar sincronía de audio y volver a revisar/aprobar el plan sobre esa versión. No cambiar silenciosamente la fuente ni atribuir a esta comprobación una aceptación creativa. No se generó un Reel.
+
 ## REGRESIÓN DE EXPORTACIÓN PRIVADA · 06/11/2026
 
 Tras conectar MP4 1080, suite de Master Director en host: 181 PASS, 0 FAIL, 6 SKIP de 187. Los seis omitidos dependen de FFmpeg o runtime de máscaras; no se ejecutaron en esta pasada. Pruebas dirigidas de exportación, API y journal 21/21, más 10/10 de memoria y renderer; flujo mixto simulado extremo a extremo y navegador simulado a 1440 y 390: descarga del archivo privado comprobada para ambos flujos con contenido ficticio y nombre esperado; no se ha comprobado la descarga en dispositivos reales. La salida real 1080 de seis fotogramas fue sintética, no Reel de aceptación. Sin despliegue.
