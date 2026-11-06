@@ -38,19 +38,20 @@ export async function prepareMasterSupervisorEvidence({graph,previewPath,outputS
    '-vf','select='+selection,'-vsync','0','-frames:v',String(frames.length),join(dir,'frame-%04d.png')],
    {timeout:600000,maxBuffer:1048576});
   await runner('ffmpeg',['-v','error','-xerror','-protocol_whitelist','file,pipe','-i',previewPath,
-   '-map','0:a:0','-vn','-ac','1','-ar','16000','-c:a','pcm_s16le',join(dir,'audio.wav')],
+   '-map','0:a:0','-vn','-ac','2','-ar','48000','-c:a','pcm_s16le',join(dir,'audio.wav')],
    {timeout:600000,maxBuffer:1048576});
   const names=readdirSync(dir).sort(),expected=frames.map((_,i)=>'frame-'+String(i+1).padStart(4,'0')+'.png');
   if(JSON.stringify(names)!==JSON.stringify(['audio.wav',...expected].sort()))throw Error('Evidence file mismatch');
   let total=0;
   const files=names.map(name=>{
-   const path=join(dir,name),st=lstatSync(path);if(!st.isFile()||st.isSymbolicLink()||st.size<1||st.size>12*1024*1024)throw Error('Invalid evidence file');
+   const path=join(dir,name),st=lstatSync(path);if(!st.isFile()||st.isSymbolicLink()||st.size<1||st.size>(name==='audio.wav'?32:12)*1024*1024)throw Error('Invalid evidence file');
    total+=st.size;return {name,bytes:st.size,sha256:fileSha256(path)};
   });
   if(total>128*1024*1024||fileSha256(previewPath)!==outputSha256||!await approvalCheck())throw Error('Evidence source changed');
   const report={schema:'sues-master-supervisor-evidence/v1',status:'SAMPLES_REQUIRE_REVIEW',final:false,
    planFingerprint:graph.planFingerprint,outputSha256,fps:30,durationFrames:graph.durationFrames,coverage:'one-frame-per-second-plus-boundaries',
    samples:frames.map((frame,i)=>({frame,file:expected[i],operationIds:[...sampled.get(frame)]})),files,
+   audioEvidence:{encoding:'pcm-s16le',sampleRate:48000,channels:2,sourceDownmixPossible:true,notOriginalBytes:true},
    limitations:['sampled-frames-only','audio-not-listened','semantic-review-pending','not-qa-pass']};
   writeFileSync(join(dir,'manifest.json'),JSON.stringify(report),{mode:0o600,flag:'wx'});
   return {status:report.status,inspectionId:basename(dir),report,final:false};
