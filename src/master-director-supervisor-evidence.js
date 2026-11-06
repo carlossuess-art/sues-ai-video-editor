@@ -1,6 +1,7 @@
 // Independent read-only evidence preparation. This module never certifies
 // semantic correctness, artistic quality, acceptance, or publication.
 import {execFile} from 'node:child_process';
+import {createHash} from 'node:crypto';
 import {promisify} from 'node:util';
 import {mkdirSync,mkdtempSync,readdirSync,lstatSync,writeFileSync,rmSync,readFileSync} from 'node:fs';
 import {join,basename,isAbsolute} from 'node:path';
@@ -74,8 +75,10 @@ export async function prepareMasterSupervisorEvidence({graph,previewPath,outputS
    const path=join(dir,name),st=lstatSync(path);if(!st.isFile()||st.isSymbolicLink()||st.size<1||st.size>(name==='audio.wav'?32:12)*1024*1024)throw Error('Invalid evidence file');
    total+=st.size;return {name,bytes:st.size,sha256:fileSha256(path)};
   });
-  const audioMeasurements=measureSupervisorStereoWav(readFileSync(join(dir,'audio.wav')));
-  if(total>128*1024*1024||fileSha256(previewPath)!==outputSha256||!await approvalCheck())throw Error('Evidence source changed');
+  const audioPath=join(dir,'audio.wav'),audioBytes=readFileSync(audioPath),audioHash=files.find(f=>f.name==='audio.wav')?.sha256;
+  if(createHash('sha256').update(audioBytes).digest('hex')!==audioHash)throw Error('Audio evidence changed');
+  const audioMeasurements=measureSupervisorStereoWav(audioBytes);
+  if(total>128*1024*1024||fileSha256(previewPath)!==outputSha256||!await approvalCheck()||fileSha256(audioPath)!==audioHash)throw Error('Evidence source changed');
   const report={schema:'sues-master-supervisor-evidence/v1',status:'SAMPLES_REQUIRE_REVIEW',final:false,
    planFingerprint:graph.planFingerprint,outputSha256,fps:30,durationFrames:graph.durationFrames,coverage:'one-frame-per-second-plus-boundaries',
    samples:frames.map((frame,i)=>({frame,file:expected[i],operationIds:[...sampled.get(frame)]})),files,
