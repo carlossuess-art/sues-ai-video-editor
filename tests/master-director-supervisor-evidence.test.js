@@ -59,3 +59,14 @@ test('supervisor audio retains opposing stereo channels instead of cancelling th
   assert.ok(l>1e9&&r>1e9);assert.ok(cross/Math.sqrt(l*r)<-.95);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
+
+test('stereo evidence accommodates the full 120-second bound without a silent size regression',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'master-supervisor-limit-'));try{
+  const media=Buffer.from('preview'),previewPath=join(dir,'video.mp4');writeFileSync(previewPath,media);
+  const g=graph();g.durationFrames=3600;
+  const runner=async(_exe,args)=>{const out=args.at(-1);if(out.endsWith('audio.wav'))writeFileSync(out,Buffer.alloc(48000*2*2*120+128));
+   else for(let i=1;i<=Number(args[args.indexOf('-frames:v')+1]);i++)writeFileSync(out.replace('%04d',String(i).padStart(4,'0')),'png-'+i);};
+  const result=await prepareMasterSupervisorEvidence({graph:g,previewPath,root:join(dir,'evidence'),outputSha256:sha(media),approvalCheck:async()=>true,runner});
+  assert.equal(result.status,'SAMPLES_REQUIRE_REVIEW');assert.ok(result.report.files.find(x=>x.name==='audio.wav').bytes>12*1024*1024);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
