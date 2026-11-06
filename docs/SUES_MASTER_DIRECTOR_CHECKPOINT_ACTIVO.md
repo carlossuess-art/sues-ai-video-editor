@@ -4,9 +4,9 @@ Se aplicó el nuevo medidor únicamente al audio de la previsualización real V6
 
 ## MEDICIONES OBJETIVAS DE AUDIO · 06/11/2026
 
-El supervisor calcula por canal y por segundo el pico y el RMS del WAV estéreo convertido, además de muestras próximas al límite digital. Se muestra como medición orientativa, sin tratarla como escucha, revisión semántica, garantía de ausencia de distorsión ni aprobación. El WAV se valida estructuralmente y las medidas quedan en el manifiesto vinculado al SHA exacto de salida.
+El supervisor calcula por canal y por segundo el pico y el RMS del WAV estéreo convertido, además de muestras próximas al límite digital. Se muestra como medición orientativa, sin tratarla como escucha, revisión semántica, garantía de ausencia de distorsión ni aprobación. El WAV se valida estructuralmente, se compara con su propio SHA antes y después de la comprobación de aprobación, y las medidas quedan en el manifiesto vinculado al SHA exacto de salida.
 
-Pruebas 5/5 con FFmpeg aislado, incluida señal en contrafase, archivo hasta 120 s simulado y WAV truncado; navegación simulada escritorio/móvil mostró las medidas sin errores. No hay supervisor audiovisual semántico completo ni aceptación de Reel. Sin despliegue.
+Pruebas 6/6 con FFmpeg aislado, incluida señal en contrafase, archivo hasta 120 s simulado, WAV truncado y cambio de evidencia durante la aprobación; navegación simulada escritorio/móvil mostró las medidas sin errores. No hay supervisor audiovisual semántico completo ni aceptación de Reel. Sin despliegue.
 
 ## AUDIO DE SUPERVISIÓN ESTÉREO · 06/11/2026
 
