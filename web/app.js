@@ -824,6 +824,11 @@ async function masterDecision(mode){
    for(const resource of state.story.resources){const option=document.createElement('option');option.value=resource.id;option.textContent=resource.id+(resource.kind?' · '+resource.kind:'');select.append(option);}
    select.value=original.resourceRef;label.append(select);box.append(label);inputs.resourceRef=select;
   }
+  if(node.renderer==='remotion'&&['image-exact','video-exact'].includes(node.effect)&&['fill','contain','cover'].includes(original.parameters?.fit)){
+   const label=document.createElement('label'),select=document.createElement('select');label.textContent='Ajuste del recurso';
+   for(const [value,title] of [['fill','Estirar al rectángulo'],['contain','Mostrar completo'],['cover','Cubrir y recortar centrado']]){const option=document.createElement('option');option.value=value;option.textContent=title;select.append(option);}
+   select.value=original.parameters.fit;label.append(select);box.append(label);inputs.fit=select;
+  }
   if(typeof original.parameters?.gain==='number')numberField('gain','Volumen',original.parameters.gain,'.01');
   if(Number.isInteger(original.parameters?.sourceInFrame))numberField('sourceInFrame','Inicio en el recurso (fotogramas)',original.parameters.sourceInFrame,'1');
   if(node.visual){
@@ -904,6 +909,7 @@ async function masterDecision(mode){
      if(index<0)index=keys.length;keys.splice(index,0,entry);
     }
    }
+   if(inputs.fit)parameters.fit=inputs.fit.value;
    if(inputs.text)parameters.text=inputs.text.value;if(inputs.gain)parameters.gain=Number(inputs.gain.value);
    if(inputs.sourceInFrame){const n=Number(inputs.sourceInFrame.value);if(!Number.isInteger(n)||n<0)throw Error('El inicio del recurso debe ser un fotograma válido.');parameters.sourceInFrame=n;}
    if(inputs.gain&&(!Number.isFinite(parameters.gain)||parameters.gain<0||parameters.gain>2))throw Error('Comprueba el volumen de la capa.');
