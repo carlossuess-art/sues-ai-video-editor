@@ -45,7 +45,7 @@ En el editor antiguo `sues-edit-plan/v1` hay acciones específicas nativas (por 
 
 ### Ajuste de imagen y vídeo en la rama
 
-En las capas Remotion de imagen y vídeo, `fit` es obligatorio: `fill` estira el recurso al rectángulo; `contain` conserva proporciones y deja espacio transparente; `cover` conserva proporciones y recorta el excedente dentro del rectángulo. En `contain` y `cover`, el encuadre está centrado (50 % / 50 %) y no admite un punto de anclaje personalizado. La imagen se ha comprobado en dos fotogramas sintéticos; vídeo, máscaras y combinaciones requieren su propia QA. La fuente principal mantiene su `fill` separado.
+En las capas Remotion de imagen y vídeo, `fit` es obligatorio: `fill` estira el recurso al rectángulo; `contain` conserva proporciones y deja espacio transparente; `cover` conserva proporciones y recorta el excedente dentro del rectángulo. En `contain` y `cover`, el encuadre está centrado (50 % / 50 %) y no admite un punto de anclaje personalizado. Se han comprobado por píxeles dos fotogramas sintéticos de imagen y uno de vídeo con `cover`; vídeo en movimiento, `contain` en vídeo, máscaras y combinaciones requieren su propia QA. La fuente principal mantiene su `fill` separado.
 
 ### Sombra estática opcional en la rama
 
