@@ -16,7 +16,7 @@ Examples: changing the caption at 17s preserves the original source, other capti
 4. `/api/projects` and `/api/projects/:projectId/current` expose one current job per project, with the verified master revision when available; all endpoints retain authenticated access controls.
 5. `MasterDirectorProjectStore` has a durable, SHA-256-verified `current` pointer, atomic compare-and-swap with filesystem lock and immutable historical drafts for integrity. Edits that were based on a stale revision return a conflict.
 6. The web project uses revision-aware saving (optimistic concurrency) to reject writes from a stale browser tab. Styling changes and backups update the existing project instead of creating user-facing duplicates.
-7. `master-current-command` supports **surgical commands**: `caption-text`, `broll-replace`, `mask-set`, `mask-remove` by exact operation ID or time if and only if one operation matches. Missing, ambiguous, native-only or unregistered resources block without modifying the current project.
+7. `master-current-command` supports **surgical commands**: `caption-text`, `broll-replace`, `mask-set`, `mask-remove` by exact operation ID or time if and only if one operation matches. Missing or ambiguous operations and unregistered resources block without modifying the current project. Safe native primitives (caption text and full-screen B-roll resource swap) are now individually editable; native masks and unsupported effects still fail closed.
 8. `scripts/master-editor-cli.mjs` provides owner-operated read-only `status` and explicit `apply` from a trusted machine for the same commands, using the same store and expected revision; no rendering or publishing. This is a bridge for chat-controlled editing, not proof that a standalone ChatGPT Video Editor plugin is connected.
 9. Editor checks the project's current master revision periodically while open; unsaved text is protected from being overwritten by updates from another tab or external chat tool.
 10. The API and UI preserve the master plan's prior visual styling, unmodified layers and resource references when editing only one property.
@@ -27,7 +27,7 @@ Examples: changing the caption at 17s preserves the original source, other capti
 - Resource replacements must refer to a registered project resource. Masks require a proof reference; QA and actual rendering still enforce supported mask capabilities.
 - Any edit invalidates previous creative acceptance and requires fresh review. Exports are never automatically published.
 - Preserve original source and existing private artifacts. No automatic deletion of revision history.
-- The native/Remotion graph remains the authority for final output. Re-rendering a final MP4 may be necessary after a modification, but **creative decisions and unaffected layers are not regenerated**.
+- The native/Remotion graph remains the authority for final output. A chat-side change to a master draft requires the same review and render pipeline before its visual output changes. Re-rendering a final MP4 may be necessary after a modification, but **creative decisions and unaffected layers are not regenerated**.
 
 ## Verification
 

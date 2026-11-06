@@ -171,9 +171,22 @@ export class MasterDirectorProjectStore{
    return {status:'BLOCKED',code:found.length?'AMBIGUOUS_OPERATION':'OPERATION_NOT_FOUND',
     candidates:found.map(o=>({id:o.id,track:o.track,start:o.start,end:o.end})),currentRevision:head.revision};
   const op=found[0];
-  if(op.renderer!=='remotion')return {status:'BLOCKED',code:'NATIVE_TRACK_NOT_YET_SURGICALLY_EDITABLE',operationId:op.id};
   let result;
-  if(command.type==='caption-text'){
+  if(op.renderer==='native'){
+   // Only two native primitives have a lossless, individually addressable
+   // mapping through the existing native review adapter.
+   if(command.type==='caption-text'&&op.effect==='caption-edit'&&
+      obj(op.parameters)&&typeof op.parameters.captionId==='string'&&
+      typeof op.parameters.text==='string'&&typeof command.text==='string'&&
+      !!command.text.trim()&&command.text.length<=52){
+    op.parameters.text=command.text;
+   }else if(command.type==='broll-replace'&&op.effect==='broll-fullframe'&&
+      typeof command.resourceRef==='string'&&story.resources?.filter(r=>r?.id===command.resourceRef).length===1){
+    op.resourceRef=command.resourceRef;
+   }else return {status:'BLOCKED',code:'NATIVE_OPERATION_NOT_LOSSLESSLY_EDITABLE',operationId:op.id};
+   result=this.saveDraft(story);
+  }else if(op.renderer!=='remotion')return {status:'BLOCKED',code:'UNKNOWN_RENDERER',operationId:op.id};
+  else if(command.type==='caption-text'){
    if(typeof command.text!=='string'||!command.text.trim()||command.text.length>500||!obj(op.parameters)||typeof op.parameters.text!=='string')
     throw Error('Invalid caption replacement');
    result=this.editOperation(expectedRevision,op.id,{parametersPatch:{text:command.text}});

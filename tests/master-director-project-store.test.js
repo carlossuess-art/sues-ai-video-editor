@@ -436,3 +436,25 @@ test('authenticated temporal commands preserve current project and reject stale 
   assert.equal((await post('/master-current-command',{expectedRevision:saved.revision,command:{type:'caption-text',at:17.3,text:'No'}})).status,409);
  }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });
+
+test('native captions and full-screen B-roll can be surgically edited; unsupported native masks fail closed',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'sues-native-surgical-'));
+ try{
+  const store=new MasterDirectorProjectStore(dir,async()=>null),story={schema:'sues-master-story/v1',timeline:{duration:20},
+   resources:[{id:'clip-a',kind:'video'},{id:'clip-b',kind:'video'}],operations:[
+    {id:'native-caption',renderer:'native',track:'captions',effect:'caption-edit',start:17,end:18,parameters:{captionId:'seg-17',text:'Antes'}},
+    {id:'native-broll',renderer:'native',track:'broll',effect:'broll-fullframe',start:5,end:9,resourceRef:'clip-a',parameters:{sourceIn:1}},
+    {id:'native-audio',renderer:'native',track:'music',effect:'music-full-video',start:0,end:20,parameters:{gain:.08,duck:true}}
+   ]};
+  const saved=store.saveDraft(story);store.setCurrent(saved.revision,null);
+  const corrected=store.editCurrentAt(saved.revision,{type:'caption-text',at:17.3,text:'Después'});
+  assert.equal(corrected.status,'CURRENT');assert.equal(store.readDraft(corrected.revision).operations[0].parameters.text,'Después');
+  assert.deepEqual(store.readDraft(corrected.revision).operations[1],story.operations[1]);
+  const broll=store.editCurrentAt(corrected.revision,{type:'broll-replace',at:6,resourceRef:'clip-b'});
+  assert.equal(broll.status,'CURRENT');assert.equal(store.readDraft(broll.revision).operations[1].resourceRef,'clip-b');
+  assert.equal(store.readDraft(broll.revision).operations[1].parameters.sourceIn,1);
+  assert.equal(store.editCurrentAt(broll.revision,{type:'mask-set',at:6,track:'broll',proofId:'p1'}).code,'NATIVE_OPERATION_NOT_LOSSLESSLY_EDITABLE');
+  assert.equal(store.editCurrentAt(broll.revision,{type:'caption-text',at:17.3,text:'x'.repeat(53)}).status,'BLOCKED');
+  assert.equal(store.current().revision,broll.revision);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
