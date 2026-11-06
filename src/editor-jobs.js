@@ -67,14 +67,21 @@ export class EditorJobs{
  summary(p){return {editionCounts:p.plan.editionCounts,musicPresent:!!p.plan.audioMix,soundEffects:p.plan.editionCounts.soundEffects,framing:p.plan.camera.mode,duration:p.plan.outputDuration??p.plan.duration,compositionDuration:p.plan.duration,styleId:p.plan.policy.templateId,sourceWords:p.director.audit.sourceWords,mappedWords:p.director.audit.mappedWords,omittedWords:p.director.audit.omittedWords,captions:p.plan.captions.length,zooms:p.plan.semantic.zooms.length,motions:p.plan.semantic.motions.length+(p.plan.graphics?.length??0)+(p.plan.elements?.length??0)+(p.plan.subjectLayers?.length??0)+(p.plan.masterGraphics?.length??0),transitions:p.plan.globalTransitions?.length??0,manualHighlights:p.director.audit.manualHighlights??0,rejections:p.director.audit.rejections,externalCostUSD:0,productionReady:false};}
  plan(id){const job=this.get(id),bundle=join(this.dir(id),job.bundle);const manifest=JSON.parse(readFileSync(join(bundle,'manifest.json'),'utf8'));if(!manifest.manualVisuals)applyManualVisualVisibility(manifest,job.settings.hiddenVisualEventIds??[]);return {manifest,quality:dopaminQualityGate(manifest),director:JSON.parse(readFileSync(join(bundle,'director.json'),'utf8'))};}
  adjust(id,settings,{recordHistory=true}={}){
-  const job=this.get(id);if(this.backupBusy.has(id))throw new Error('Backup busy');if(job.state!=='PREVIEW_READY')throw new Error('Adjustments require PREVIEW_READY; duplicate completed jobs to adjust');
+  const job=this.get(id);if(this.backupBusy.has(id))throw new Error('Backup busy');if(!['PREVIEW_READY','DONE'].includes(job.state))throw new Error('Adjustments require an editable project');
   if(recordHistory&&((settings.captionWords!==undefined&&settings.captionWords!==(job.settings.captionWords??3))||(settings.styleId!==undefined&&settings.styleId!==(job.settings.styleId??'SUES_CALMA')))&&((settings.elements?.items??[]).length||(settings.motionChoices??[]).length||(settings.graphicCards??[]).length||(settings.transitions??[]).length||Object.keys(settings.keywordOverrides??{}).length||Object.keys(settings.captionOverrides??{}).length||(settings.highlightCaptions??[]).length))throw new Error('Changing caption groups requires resetting caption edits and highlights');
   const project=this.loadProfile(job.profileId),prepared=prepareProject(project,settings);
   if(prepared.fingerprint===job.fingerprint){if(bundleDigest(join(this.dir(id),job.bundle))!==job.bundleDigest)throw new Error('Prepared bundle changed; create a new job');return this.view(job);}
-  const prior=structuredClone(job.settings);
+  const prior=structuredClone(job.settings),previousFingerprint=job.fingerprint,wasDone=job.state==='DONE';
   this.transition(job,'ADJUSTING');
   try{
-   const revision=job.revision+1,bundle='bundle-'+revision;writePreparedBundle(project,prepared,join(this.dir(id),bundle));job.revision=revision;job.bundle=bundle;job.bundleDigest=bundleDigest(join(this.dir(id),bundle));job.settings=prepared.settings;job.fingerprint=prepared.fingerprint;job.summary=this.summary(prepared);if(recordHistory)job.undo=[...(job.undo??[]),prior].slice(-10);this.transition(job,'PREVIEW_READY');return this.view(job);
+   const revision=job.revision+1,bundle='bundle-'+revision;writePreparedBundle(project,prepared,join(this.dir(id),bundle));job.revision=revision;job.bundle=bundle;job.bundleDigest=bundleDigest(join(this.dir(id),bundle));job.settings=prepared.settings;job.fingerprint=prepared.fingerprint;job.summary=this.summary(prepared);
+   if(wasDone){
+    // Keep the previous export internally for recovery, but never treat it as
+    // the approved current render after a change in the live project.
+    if(job.artifact)job.previousExport={artifact:job.artifact,auditArtifact:job.auditArtifact??null,previousFingerprint};
+    delete job.artifact;delete job.auditArtifact;delete job.editorialReview;
+   }
+   if(recordHistory)job.undo=[...(job.undo??[]),prior].slice(-10);this.transition(job,'PREVIEW_READY');return this.view(job);
   }catch(error){job.error=error.message;this.transition(job,'FAILED');throw error;}
  }
  acquireLock(name='worker.lock'){
@@ -86,6 +93,22 @@ export class EditorJobs{
    try{process.kill(old.pid,0);}catch(e){if(e.code==='ESRCH'){unlinkSync(path);return this.acquireLock(name);}throw e;}
    throw new Error('Worker busy');
   }
+ }
+ applyDirected(id,settings,{requestId,payloadSha256,instruction}){
+  const job=this.get(id);
+  if(typeof requestId!=='string'||!ID.test(requestId)||!/^[a-f0-9]{64}$/.test(payloadSha256)||
+     !instruction||typeof instruction!=='object')throw Error('Invalid directed edit receipt');
+  const previous=(job.directReceipts??[]).find(r=>r.requestId===requestId);
+  if(previous){
+   if(previous.payloadSha256!==payloadSha256)throw Error('Directed edit request reused with different content');
+   return {reused:true,stale:(job.directReceipts.at(-1)?.requestId!==requestId),job:this.view(job)};
+  }
+  if(!['PREVIEW_READY','DONE'].includes(job.state))throw Error('A previous render is in progress; wait before editing the current project');
+  this.adjust(id,settings);
+  job.instructions=[...(job.instructions??[]),structuredClone(instruction)].slice(-50);
+  job.directReceipts=[...(job.directReceipts??[]),{requestId,payloadSha256,revision:job.revision,at:now()}].slice(-50);
+  this.save(job);
+  return {reused:false,stale:false,job:this.view(job)};
  }
  undo(id){const job=this.get(id);if(job.state!=='PREVIEW_READY'||!job.undo?.length)throw new Error('No saved adjustment to undo');const history=[...job.undo],settings=history.pop();this.adjust(id,settings,{recordHistory:false});job.undo=history;this.save(job);return this.view(job);}
  queued(){return [...this.jobs.values()].filter(j=>j.state==='QUEUED').sort((a,b)=>a.queueOrder-b.queueOrder||a.id.localeCompare(b.id));}

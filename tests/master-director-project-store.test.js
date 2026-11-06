@@ -67,21 +67,22 @@ test('authenticated review and explicit approval use server evidence and expire 
   assert.equal((await post('/master-native-review',{revision,decisionId:decision.decisionId,registry:{approved:true}})).status,400);
   const native=await (await post('/master-native-review',{revision,decisionId:decision.decisionId})).json();
   assert.equal(native.status,'READY_FOR_EDITOR_PREVIEW',JSON.stringify(native));
-  app.jobs.autoStart=false;
-  const requestId=randomUUID(),payload={revision,decisionId:decision.decisionId,reviewId:native.preview.reviewId,requestId};
-  assert.equal((await post('/master-native-apply',{...payload,reviewId:'0'.repeat(64)})).status,409);
-  const applied=await post('/master-native-apply',payload);assert.equal(applied.status,202);const version=await applied.json();
-  assert.notEqual(version.id,job.id);assert.equal(app.jobs.get(version.id).parentId,job.id);assert.equal(app.jobs.get(job.id).state,'PREVIEW_READY');
-  const retry=await post('/master-native-apply',payload);assert.equal(retry.status,200);assert.equal((await retry.json()).id,version.id);
-  assert.equal((await post('/master-native-apply',{...payload,decisionId:'a'.repeat(64)})).status,400);
   const layers=await (await post('/master-layers',{revision,decisionId:decision.decisionId})).json();
   assert.equal(layers.status,'STRUCTURE_READY_NOT_RENDERED');assert.equal(layers.graph.nodes[0].id,'o1');
   assert.equal(layers.graph.editableInWebEditor,false);assert.equal(layers.canExecute,false);
   assert.equal(layers.remotion.status,'BLOCKED');assert.equal(layers.remotion.composition,null);
+  app.jobs.autoStart=false;
+  const requestId=randomUUID(),payload={revision,decisionId:decision.decisionId,reviewId:native.preview.reviewId,requestId};
+  assert.equal((await post('/master-native-apply',{...payload,reviewId:'0'.repeat(64)})).status,409);
+  const applied=await post('/master-native-apply',payload);assert.equal(applied.status,202);const version=await applied.json();
+  assert.equal(version.id,job.id);assert.equal(app.jobs.get(version.id).parentId,null);assert.equal(app.jobs.get(job.id).state,'QUEUED');assert.equal(app.jobs.list().length,1);
+  const retry=await post('/master-native-apply',payload);assert.equal(retry.status,200);assert.equal((await retry.json()).id,version.id);
+  assert.equal((await post('/master-native-apply',{...payload,decisionId:'a'.repeat(64)})).status,409);
+  assert.equal((await (await post('/master-layers',{revision,decisionId:decision.decisionId})).json()).status,'BLOCKED');
   policy.registry.approvedReferenceIds.push('changed-reference');
   assert.equal((await (await post('/master-layers',{revision,decisionId:decision.decisionId})).json()).status,'BLOCKED');
   policy.registry.approvedReferenceIds.pop();
-  const update=await fetch(root,{method:'PATCH',headers,body:JSON.stringify({settings:{zoomIntensity:0}})});assert.equal(update.status,200);
+  const update=await fetch(root,{method:'PATCH',headers,body:JSON.stringify({settings:{zoomIntensity:0}})});assert.equal(update.status,409);
   assert.equal((await (await post('/master-review',{revision})).json()).issues[0].code,'PROJECT_VERSION_CHANGED');
   assert.equal((await (await post('/master-decision',{revision,fingerprint:review.fingerprint,mode:'approve'})).json()).status,'BLOCKED');
   assert.equal((await (await post('/master-layers',{revision,decisionId:decision.decisionId})).json()).status,'BLOCKED');
@@ -368,5 +369,70 @@ test('authenticated project head and targeted edits are conflict-protected over 
   assert.deepEqual(current.story.operations[1],story.operations[1]);
   assert.equal((await post('/master-current',{revision:initial.revision,expectedRevision:initial.revision})).status,409);
   assert.equal((await post('/master-current',{revision:initial.revision,expectedRevision:updated.revision})).status,200);
+ }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
+});
+
+test('timestamp commands edit only the intended caption, B-roll or mask and reject ambiguity',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'sues-time-command-'));
+ try{
+  const store=new MasterDirectorProjectStore(dir,async()=>null),mask='mask-evidence-1';
+  const visual={rect:{x:20,y:20,width:100,height:100},zIndex:2,opacity:1,typography:{family:'Montserrat',sizePx:24,weight:700,color:'#ffffff'},keyframes:[]};
+  const story={schema:'sues-master-story/v1',timeline:{duration:25},resources:[{id:'clip-one',source:'library'},{id:'clip-two',source:'library'}],operations:[
+   {id:'caption-17',renderer:'remotion',track:'captions',start:17,end:18,parameters:{text:'Original',visual}},
+   {id:'caption-else',renderer:'remotion',track:'captions',start:6,end:7,parameters:{text:'Intacto',visual}},
+   {id:'broll-8',renderer:'remotion',track:'broll',start:8,end:12,resourceRef:'clip-one',parameters:{visual}}
+  ]};
+  const initial=store.saveDraft(story);assert.equal(store.setCurrent(initial.revision,null).status,'CURRENT');
+  const edited=store.editCurrentAt(initial.revision,{type:'caption-text',at:17.3,text:'Corregido'});
+  assert.equal(edited.status,'CURRENT');assert.equal(edited.operationId,'caption-17');
+  let active=store.readDraft(edited.revision);
+  assert.equal(active.operations[0].parameters.text,'Corregido');
+  assert.deepEqual(active.operations[1],story.operations[1]);
+  assert.deepEqual(active.operations[2],story.operations[2]);
+  assert.equal(store.editCurrentAt(initial.revision,{type:'caption-text',at:17.3,text:'Caducado'}).status,'CONFLICT');
+  const swapped=store.editCurrentAt(edited.revision,{type:'broll-replace',at:9,resourceRef:'clip-two'});
+  assert.equal(swapped.status,'CURRENT');active=store.readDraft(swapped.revision);
+  assert.equal(active.operations[2].resourceRef,'clip-two');
+  assert.deepEqual(active.operations[0].parameters.visual,visual);
+  assert.equal(store.editCurrentAt(swapped.revision,{type:'broll-replace',at:9,resourceRef:'missing'}).code,'RESOURCE_NOT_IN_PROJECT');
+  const masked=store.editCurrentAt(swapped.revision,{type:'mask-set',at:9,track:'broll',proofId:mask});
+  assert.equal(masked.status,'CURRENT');active=store.readDraft(masked.revision);
+  assert.deepEqual(active.operations[2].parameters.visual.mask,{proofId:mask,mode:'alpha-keep'});
+  assert.deepEqual(active.operations[0].parameters.visual,visual);
+  const clean=store.editCurrentAt(masked.revision,{type:'mask-remove',operationId:'broll-8',track:'broll'});
+  assert.equal(clean.status,'CURRENT');
+  assert.equal(store.readDraft(clean.revision).operations[2].parameters.visual.mask,undefined);
+  assert.equal(store.editCurrentAt(clean.revision,{type:'caption-text',at:16.1,text:'ninguno'}).code,'OPERATION_NOT_FOUND');
+  const overlapping=store.readDraft(clean.revision);overlapping.operations.push({id:'caption-17-b',renderer:'remotion',track:'captions',start:17,end:18,parameters:{text:'otra',visual}});
+  const ambiguous=store.saveDraft(overlapping);store.setCurrent(ambiguous.revision,clean.revision);
+  const outcome=store.editCurrentAt(ambiguous.revision,{type:'caption-text',at:17.5,text:'Ambiguo'});
+  assert.equal(outcome.code,'AMBIGUOUS_OPERATION');assert.equal(outcome.candidates.length,2);
+  assert.equal(store.current().revision,ambiguous.revision);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+test('authenticated temporal commands preserve current project and reject stale or unauthenticated calls',async()=>{
+ const f=fixture(),app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles});
+ try{
+  const url=(await app.listen()).split('/#')[0],job=app.jobs.create('test');
+  const path='/api/jobs/'+job.id+'/master-current-command';
+  assert.equal((await fetch(url+path,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).status,401);
+  const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
+  const headers={Cookie:session.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'};
+  const post=(p,b)=>fetch(url+'/api/jobs/'+job.id+p,{method:'POST',headers,body:JSON.stringify(b)});
+  const visual={rect:{x:1,y:1,width:300,height:400},zIndex:2,opacity:1};
+  const story={schema:'sues-master-story/v1',timeline:{duration:20},operations:[{id:'caption',renderer:'remotion',track:'captions',start:17,end:18,parameters:{text:'Antes',visual}}]};
+  const saved=await (await post('/master-draft',{story})).json();
+  assert.equal((await post('/master-current',{expectedRevision:null,revision:saved.revision})).status,200);
+  const changed=await post('/master-current-command',{expectedRevision:saved.revision,command:{type:'caption-text',at:17.3,text:'Después'}});
+  assert.equal(changed.status,201);const result=await changed.json();
+  assert.equal(result.operationId,'caption');
+  const latest=await (await fetch(url+'/api/jobs/'+job.id+'/master-current',{headers})).json();
+  assert.equal(latest.story.operations[0].parameters.text,'Después');
+  const projectRows=(await (await fetch(url+'/api/projects',{headers})).json()).projects;
+  const active=projectRows.find(p=>p.activeJobId===job.id);
+  assert.equal(active.masterRevision,latest.revision);assert.equal(active.masterJobId,job.id);assert.equal(active.masterEditable,true);
+  assert.deepEqual(latest.story.operations[0].parameters.visual,visual);
+  assert.equal((await post('/master-current-command',{expectedRevision:saved.revision,command:{type:'caption-text',at:17.3,text:'No'}})).status,409);
  }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });

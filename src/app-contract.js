@@ -38,7 +38,7 @@ export function canTransition(from,to){
     PUBLISHING:['DONE','PUBLISH_FAILED'],
     PUBLISH_FAILED:['PUBLISHING','CANCELLED'],
     FAILED:['ANALYZING','QUEUED','RENDERING','CANCELLED'],
-    DONE:[],CANCELLED:[]
+    DONE:['ADJUSTING'],CANCELLED:[]
   };
   return allowed[from]?.includes(to)??false;
 }

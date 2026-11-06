@@ -235,18 +235,50 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      return json(res,200,{brand,template,graphicBlocks:GRAPHIC_BLOCKS,transitions:GLOBAL_TRANSITIONS,styles:Object.entries(STYLE_VARIANTS).map(([id,v])=>({id,available:true,status:v.status,pacing:v.pacing})),motions:catalog.map(m=>({id:m.id,type:m.type,tags:m.tags,minDuration:m.trigger.minDuration,reasons:m.trigger.semanticReasons,rendered:RENDERED_MOTIONS.includes(m.id),allowedInTemplate:template.motion.allowed.map(a=>MOTION_ALIASES[a]??a).includes(m.id)}))});
     }
     if(path==='/api/profiles'&&req.method==='GET'){const recovered=new Map(recoveries.list().map(r=>[r.profileId,r.title]));return json(res,200,Object.keys(profiles).map(id=>({id,title:recovered.has(id)?recovered.get(id)+' · recuperado':id.startsWith('upload-')?'Vídeo subido':id,template:'SUES_CALMA',mode:'existing-transcript-and-vision',ready:projectReady(profiles[id])})));}
+    // Chat-compatible discovery: one current editable job per project, never
+    // a list of obsolete renders. No source files or private paths exposed.
+    const projects=()=>{
+     const groups=new Map();
+     for(const job of jobs.list().filter(j=>!j.intermediate)){
+      const key=job.projectId??job.profileId,current=groups.get(key);
+      if(!current||(job.updatedAt??job.createdAt)>(current.updatedAt??current.createdAt)||
+          job.updatedAt===current.updatedAt&&job.createdAt>current.createdAt)groups.set(key,job);
+     }
+     return [...groups.entries()].map(([projectId,job])=>{
+      let cursor=job,masterRevision=null,masterJobId=null,integrityError=false;
+      const visited=new Set();
+      while(cursor&&!visited.has(cursor.id)){
+       visited.add(cursor.id);
+       try{
+        const found=new MasterDirectorProjectStore(jobs.dir(cursor.id),async()=>null).current();
+        if(found.revision){masterRevision=found.revision;masterJobId=cursor.id;break;}
+       }catch{integrityError=true;break;}
+       cursor=cursor.parentId?jobs.jobs.get(cursor.parentId):null;
+      }
+      return {projectId,title:job.projectTitle??job.title,activeJobId:job.id,
+       updatedAt:job.updatedAt??job.createdAt,state:job.state,styleId:job.settings?.styleId??null,
+       masterRevision,masterJobId,masterEditable:!!masterRevision&&masterJobId===job.id&&!integrityError,
+       ...(integrityError?{issue:'PROJECT_REVISION_INTEGRITY_ERROR'}:{})};
+     }).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)||a.projectId.localeCompare(b.projectId));
+    };
+    if(path==='/api/projects'&&req.method==='GET')return json(res,200,{projects:projects()});
+    const projectCurrent=/^\/api\/projects\/([A-Za-z0-9][A-Za-z0-9._:-]{0,127})\/current$/.exec(path);
+    if(projectCurrent&&req.method==='GET'){
+     const found=projects().find(row=>row.projectId===projectCurrent[1]);
+     return json(res,found?200:404,found??{error:'Proyecto no encontrado'});
+    }
     if(path==='/api/jobs'&&req.method==='GET')return json(res,200,jobs.list());
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-mask-candidate|master-mask-frame|master-layer-edit|master-operation-edit|master-versions|master-current|master-current-operation-edit|master-current-layer-edit|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-mask-candidate|master-mask-frame|master-layer-edit|master-operation-edit|master-versions|master-current|master-current-operation-edit|master-current-layer-edit|master-current-command|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     // Never expose a private native hybrid stage as a standalone final export.
     const stageInstruction=jobs.get(id).instructions?.at(-1);
     if(stageInstruction?.kind==='master-hybrid-native-stage'&&action&&action!=='cancel')
      return json(res,409,{status:'BLOCKED',error:'Esta versión es una etapa intermedia del montaje mixto; consulta el proyecto principal.'});
-    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-trace','master-supervisor','master-supervisor-evidence','master-mask-candidate','master-mask-frame','master-layer-edit','master-operation-edit','master-versions','master-current','master-current-operation-edit','master-current-layer-edit','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
+    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-trace','master-supervisor','master-supervisor-evidence','master-mask-candidate','master-mask-frame','master-layer-edit','master-operation-edit','master-versions','master-current','master-current-operation-edit','master-current-layer-edit','master-current-command','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
      const source=jobs.get(id);
      const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
@@ -383,21 +415,32 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      if(['master-native-review','master-native-apply'].includes(action)&&req.method==='POST'){
       const b=await body(req,2048),allowed=action==='master-native-review'?['revision','decisionId']:['revision','decisionId','reviewId','requestId'];
       if(Object.keys(b).some(k=>!allowed.includes(k)))return json(res,400,{error:'Solicitud inválida.'});
-      if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))return json(res,409,{error:'Espera a que termine la edición actual.'});
+      let payloadSha256=null;
+      if(action==='master-native-apply'){
+       if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId)||typeof b.reviewId!=='string'||!/^[a-f0-9]{64}$/.test(b.reviewId))
+        return json(res,400,{error:'Identificador de petición o revisión inválido.'});
+       payloadSha256=createHash('sha256').update(JSON.stringify({revision:b.revision,decisionId:b.decisionId,reviewId:b.reviewId})).digest('hex');
+       const prior=source.directReceipts?.find(r=>r.requestId===b.requestId);
+       if(prior){
+        if(prior.payloadSha256!==payloadSha256)return json(res,409,{error:'Petición reutilizada con otro plan.'});
+        if(source.directReceipts.at(-1).requestId!==b.requestId||prior.revision!==source.revision)
+         return json(res,409,{error:'La edición ya evolucionó. Abre el proyecto actual.'});
+        return json(res,200,source.state==='PREVIEW_READY'?jobs.render(id):jobs.view(source));
+       }
+      }
+      if(!['PREVIEW_READY','DONE'].includes(source.state))return json(res,409,{error:'Espera a que termine la edición actual.'});
       const approved=await store.approved(b.revision,b.decisionId);
       if(!approved)return json(res,409,{status:'BLOCKED',issues:[{code:'APPROVAL_OR_PROJECT_CHANGED'}]});
       const current=jobs.get(id),project=jobs.loadProfile(current.profileId),available=assets.list();
       const catalog=externalCatalog(project,current.settings,available);
       const reviewed=reviewMasterDirectorNative({plan:approved.plan,registry:approved.registry,catalog,project,settings:current.settings,assets:available,commandPlanner:planInstructions});
       if(action==='master-native-review')return json(res,200,reviewed);
-      if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId)||typeof b.reviewId!=='string'||!/^[a-f0-9]{64}$/.test(b.reviewId))return json(res,400,{error:'Identificador de petición o revisión inválido.'});
-      const existing=[...jobs.jobs.values()].find(j=>j.parentId===id&&j.requestId===b.requestId);
-      if(existing){const last=existing.instructions?.at(-1);if(last?.kind!=='master-native'||last.revision!==b.revision||last.decisionId!==b.decisionId||last.reviewId!==b.reviewId)return json(res,409,{error:'Petición reutilizada con otro plan.'});return json(res,200,existing.state==='PREVIEW_READY'?jobs.render(existing.id):jobs.view(existing));}
       if(reviewed.status!=='READY_FOR_EDITOR_PREVIEW'||reviewed.preview?.reviewId!==b.reviewId)return json(res,409,{error:'El plan no está listo o ha cambiado. Revisa de nuevo.',issues:reviewed.issues??[]});
       const proposal=reviewExternalPlan(JSON.stringify(reviewed.nativePlan),{project,settings:current.settings,assets:available,commandPlanner:planInstructions});
       if(!proposal.canApply||proposal.reviewId!==b.reviewId)return json(res,409,{error:'El montaje ha cambiado. Revisa de nuevo.'});
-      const next=jobs.create(current.profileId,proposal.changes,{parentId:id,requestId:b.requestId,instruction:{kind:'master-native',revision:b.revision,decisionId:b.decisionId,reviewId:b.reviewId,actions:proposal.actions,at:new Date().toISOString()}});
-      return json(res,202,jobs.render(next.id));
+      const applied=jobs.applyDirected(id,{...current.settings,...proposal.changes},{requestId:b.requestId,payloadSha256,
+       instruction:{kind:'master-native',revision:b.revision,decisionId:b.decisionId,reviewId:b.reviewId,actions:proposal.actions,at:new Date().toISOString()}});
+      return json(res,202,jobs.render(applied.job.id));
      }
      // Optional trusted zero-cost provider. Both input paths persist the same
      // master story and use the same review; this route never executes the plan.
@@ -532,6 +575,13 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       const result=store.editCurrentOperation(b.expectedRevision,b.operationId,b.patch);
       return json(res,result.status==='CONFLICT'?409:201,result);
      }
+     if(action==='master-current-command'&&req.method==='POST'){
+      const b=await body(req,8192,{rejectDuplicates:true});
+      if(Object.keys(b).some(k=>!['expectedRevision','command'].includes(k))||
+         !Object.hasOwn(b,'expectedRevision'))return json(res,400,{error:'Revisión actual obligatoria.'});
+      const result=store.editCurrentAt(b.expectedRevision,b.command);
+      return json(res,result.status==='CONFLICT'?409:result.status==='BLOCKED'?422:201,result);
+     }
      if(action==='master-current-layer-edit'&&req.method==='POST'){
       const b=await body(req,32768,{rejectDuplicates:true});
       if(Object.keys(b).some(k=>!['expectedRevision','operationId','visual'].includes(k)))
@@ -640,7 +690,13 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      return json(res,405,{error:'Método no permitido.'});
     }
     if(!action&&req.method==='GET')return json(res,200,jobs.view(jobs.get(id)));
-    if(!action&&req.method==='PATCH')return json(res,200,jobs.adjust(id,(await body(req)).settings));
+    if(!action&&req.method==='PATCH'){
+     const b=await body(req),active=jobs.get(id);
+     if(Object.keys(b).some(k=>!['settings','expectedRevision'].includes(k))||!b.settings||typeof b.settings!=='object')return json(res,400,{error:'Ajuste no permitido.'});
+     if(Object.hasOwn(b,'expectedRevision')&&b.expectedRevision!==active.revision)
+      return json(res,409,{error:'La edición ha cambiado. Abre la última revisión antes de guardar.',currentRevision:active.revision});
+     return json(res,200,jobs.adjust(id,b.settings));
+    }
     if(action==='external-draft'&&['GET','POST'].includes(req.method)){
      const file=join(jobs.dir(id),'external-plan-draft.json');
      if(req.method==='GET')return json(res,200,existsSync(file)?JSON.parse(readFileSync(file,'utf8')):{text:''});
@@ -727,30 +783,50 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       return json(res,200,externalCatalog(jobs.loadProfile(source.profileId),source.settings,described));}
     if(['external-review','external-execute'].includes(action)&&req.method==='POST'){
      const b=await body(req),source=jobs.get(id);
-     if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))throw Error('Espera a que termine la edición actual.');
+     // A duplicate request must be answered before re-evaluating the plan against
+     // a timeline already modified by its first application.
+     let payloadSha256=null;
+     if(action==='external-execute'){
+      if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId))throw Error('Identificador de petición no válido.');
+      payloadSha256=createHash('sha256').update(JSON.stringify({text:b.text,reviewId:b.reviewId})).digest('hex');
+      const prior=source.directReceipts?.find(r=>r.requestId===b.requestId);
+      if(prior){
+       if(prior.payloadSha256!==payloadSha256)return json(res,409,{error:'Petición reutilizada con otro plan.'});
+       if(source.directReceipts.at(-1).requestId!==b.requestId||prior.revision!==source.revision)return json(res,409,{error:'La edición ya evolucionó. Abre el proyecto actual.'});
+       return json(res,200,source.state==='PREVIEW_READY'?jobs.render(id):jobs.view(source));
+      }
+     }
+     if(!['PREVIEW_READY','DONE'].includes(source.state))return json(res,409,{error:'Espera a que termine la edición actual.'});
      const proposal=reviewExternalPlan(b.text,{project:jobs.loadProfile(source.profileId),settings:source.settings,assets:assets.list(),commandPlanner:planInstructions});
      if(action==='external-review')return json(res,200,proposal);
-     if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId))throw Error('Identificador de petición no válido.');
-     const existing=[...jobs.jobs.values()].find(j=>j.parentId===id&&j.requestId===b.requestId);
-     if(existing){if(existing.instructions.at(-1)?.reviewId!==b.reviewId)return json(res,409,{error:'Petición reutilizada con otro plan.'});return json(res,200,existing.state==='PREVIEW_READY'?jobs.render(existing.id):jobs.view(existing));}
-     if(!proposal.canApply)return json(res,422,{error:'Hay operaciones pendientes. No se ha creado ni renderizado otra versión.',proposal});
+     if(!proposal.canApply)return json(res,422,{error:'Hay operaciones pendientes. La edición actual no se ha modificado.',proposal});
      if(b.reviewId!==proposal.reviewId)return json(res,409,{error:'El plan o el proyecto han cambiado. Revisa de nuevo.'});
-     const next=jobs.create(source.profileId,proposal.changes,{parentId:id,requestId:b.requestId,instruction:{kind:'external-plan',text:b.text,reviewId:proposal.reviewId,actions:proposal.actions,at:new Date().toISOString()}});
-     return json(res,202,jobs.render(next.id));
+     const applied=jobs.applyDirected(id,proposal.changes,{requestId:b.requestId,payloadSha256,
+      instruction:{kind:'external-plan',text:b.text,reviewId:proposal.reviewId,actions:proposal.actions,at:new Date().toISOString()}});
+     return json(res,202,jobs.render(applied.job.id));
     }
     if(['direct-plan','direct'].includes(action)&&req.method==='POST'){
      const b=await body(req),source=jobs.get(id);
-     if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))throw Error('Espera a que termine la edición actual.');
+     let payloadSha256=null;
+     if(action==='direct'){
+      if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId))throw Error('Identificador de petición no válido.');
+      payloadSha256=createHash('sha256').update(JSON.stringify({prompt:b.prompt??'',settings:b.settings??null,confirmReset:b.confirmReset===true})).digest('hex');
+      const prior=source.directReceipts?.find(r=>r.requestId===b.requestId);
+      if(prior){
+       if(prior.payloadSha256!==payloadSha256)return json(res,409,{error:'Petición reutilizada con otro contenido.'});
+       if(source.directReceipts.at(-1).requestId!==b.requestId||prior.revision!==source.revision)return json(res,409,{error:'La edición ya evolucionó. Abre el proyecto actual.'});
+       return json(res,200,source.state==='PREVIEW_READY'?jobs.render(id):jobs.view(source));
+      }
+     }
+     if(!['PREVIEW_READY','DONE'].includes(source.state))return json(res,409,{error:'Espera a que termine la edición actual.'});
      const base=b.settings??source.settings,proposal=planInstructions(b.prompt??'',base);
      if(proposal.canApply){const prepared=prepareProject(jobs.loadProfile(source.profileId),{...base,...proposal.changes});Object.assign(proposal,reviewInstructionExecution(proposal,prepared.plan));}
      if(action==='direct-plan')return json(res,200,proposal);
-     if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId))throw Error('Identificador de petición no válido.');
-     const existing=[...jobs.jobs.values()].find(j=>j.parentId===id&&j.requestId===b.requestId);
-     if(existing)return json(res,200,existing.state==='PREVIEW_READY'?jobs.render(existing.id):jobs.view(existing));
      if(!proposal.canApply)return json(res,422,{error:'Hay instrucciones que todavía no puedo ejecutar. Revisa la propuesta antes de generar.',proposal});
      if(proposal.requiresResetConfirmation&&b.confirmReset!==true)return json(res,409,{error:proposal.warning,proposal});
-     const next=jobs.create(source.profileId,{...base,...proposal.changes},{parentId:id,requestId:b.requestId,instruction:{text:(b.prompt??'').trim(),actions:proposal.actions,at:new Date().toISOString()}});
-     return json(res,202,jobs.render(next.id));
+     const applied=jobs.applyDirected(id,{...base,...proposal.changes},{requestId:b.requestId,payloadSha256,
+      instruction:{text:(b.prompt??'').trim(),actions:proposal.actions,at:new Date().toISOString()}});
+     return json(res,202,jobs.render(applied.job.id));
     }
     if(action==='live-preview'){
      if(req.method==='POST')return json(res,202,livePreviews.scene(id,await body(req,131072)));

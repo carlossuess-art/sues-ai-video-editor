@@ -147,6 +147,55 @@ export class MasterDirectorProjectStore{
   return this.setCurrent(updated.revision,expectedRevision);
  }
 
+ // Chat and web editor share this exact incremental command path. A timestamp
+ // is a selector, NEVER permission to guess between overlapping operations.
+ editCurrentAt(expectedRevision,command){
+  const head=this.current();
+  if(head.revision!==expectedRevision)
+   return {status:'CONFLICT',code:'STALE_PROJECT_REVISION',currentRevision:head.revision};
+  const allowed=['caption-text','broll-replace','mask-set','mask-remove'];
+  if(!obj(command)||!allowed.includes(command.type)||
+     Object.keys(command).some(k=>!['type','at','operationId','text','resourceRef','proofId','track'].includes(k)))
+   throw Error('Invalid editor command');
+  const story=this.readDraft(expectedRevision),ops=Array.isArray(story.operations)?story.operations:[];
+  const track=command.type==='caption-text'?'captions':command.type==='broll-replace'?'broll':command.track;
+  if(!['broll','graphics','captions','subject','camera'].includes(track??'')||
+     (command.type.startsWith('mask-')&&track==='captions'))throw Error('Unsupported editor track');
+  const hasId=Object.hasOwn(command,'operationId'),hasAt=Object.hasOwn(command,'at');
+  if(!hasId&&!hasAt||hasAt&&(!Number.isFinite(command.at)||command.at<0)||
+     hasId&&(typeof command.operationId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(command.operationId)))
+   throw Error('Invalid editor operation selector');
+  const found=ops.filter(o=>o.track===track&&(!hasId||o.id===command.operationId)&&
+     (!hasAt||o.start<=command.at&&command.at<o.end));
+  if(found.length!==1)
+   return {status:'BLOCKED',code:found.length?'AMBIGUOUS_OPERATION':'OPERATION_NOT_FOUND',
+    candidates:found.map(o=>({id:o.id,track:o.track,start:o.start,end:o.end})),currentRevision:head.revision};
+  const op=found[0];
+  if(op.renderer!=='remotion')return {status:'BLOCKED',code:'NATIVE_TRACK_NOT_YET_SURGICALLY_EDITABLE',operationId:op.id};
+  let result;
+  if(command.type==='caption-text'){
+   if(typeof command.text!=='string'||!command.text.trim()||command.text.length>500||!obj(op.parameters)||typeof op.parameters.text!=='string')
+    throw Error('Invalid caption replacement');
+   result=this.editOperation(expectedRevision,op.id,{parametersPatch:{text:command.text}});
+  }else if(command.type==='broll-replace'){
+   if(typeof command.resourceRef!=='string'||!story.resources?.some(r=>r?.id===command.resourceRef))
+    return {status:'BLOCKED',code:'RESOURCE_NOT_IN_PROJECT',operationId:op.id};
+   result=this.editOperation(expectedRevision,op.id,{resourceRef:command.resourceRef});
+  }else{
+   if(!obj(op.parameters?.visual))return {status:'BLOCKED',code:'VISUAL_LAYER_NOT_DEFINED',operationId:op.id};
+   const visual=structuredClone(op.parameters.visual);
+   if(command.type==='mask-set'){
+    if(typeof command.proofId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(command.proofId))
+     throw Error('Mask proof identifier required');
+    visual.mask={proofId:command.proofId,mode:'alpha-keep'};
+   }else delete visual.mask;
+   result=this.editVisual(expectedRevision,op.id,visual);
+  }
+  const current=this.setCurrent(result.revision,expectedRevision);
+  return {...current,operationId:op.id,commandType:command.type,
+   ...(current.status==='CURRENT'?{rendered:false,requiresNewReview:true}:{})};
+ }
+
  editVisual(revision,operationId,visual){
   if(typeof operationId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$/.test(operationId)||
      !obj(visual)||Object.keys(visual).some(k=>!['rect','zIndex','opacity','typography','keyframes','mask','stack','dropShadow','glow'].includes(k)))
