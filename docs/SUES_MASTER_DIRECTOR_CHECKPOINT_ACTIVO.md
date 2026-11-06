@@ -1,10 +1,14 @@
+## REGRESIÓN DE EXPORTACIÓN PRIVADA · 06/11/2026
+
+Tras conectar MP4 1080, suite de Master Director en host: 181 PASS, 0 FAIL, 6 SKIP de 187. Los seis omitidos dependen de FFmpeg o runtime de máscaras; no se ejecutaron en esta pasada. Pruebas dirigidas de exportación, API y journal 21/21, más 10/10 de memoria y renderer; flujo mixto simulado extremo a extremo y navegador simulado a 1440 y 390 con descarga privada. La salida real 1080 de seis fotogramas fue sintética, no Reel de aceptación. Sin despliegue.
+
 ## MP4 1080 PRIVADO PARA REVISIÓN · 06/11/2026
 
 La rama permite pedir un MP4 1080×1920 privado para revisión desde los flujos Remotion y mixto nativo→Remotion ya admitidos. Se conserva el plan, la aprobación y las versiones editables; el archivo queda sellado, sujeto a auditoría técnica de identidad/decodificación y marcado **no final**. La interfaz permite descargarlo; no constituye publicación ni aceptación creativa. Solicitudes 270p y 1080 tienen claves independientes e inmutables, y el historial indica su calidad. Combinaciones mixtas cuyo orden no puede representarse y máscaras no verificadas continúan bloqueadas.
 
 La opción 1080 mantiene al menos 1 GiB libre observado en host y cgroup durante el trabajo, además de los controles anteriores; el servicio puede rechazarla o detenerla ante memoria insuficiente. No se ha activado en producción. Commit de integración `3575d7a7dc973880618906c87b4639efe79c974e`.
 
-Pruebas dirigidas 21/21; flujos HTTP y navegador simulado de ambos motores en escritorio y móvil con workers ficticios; salida Remotion real sintética de seis fotogramas con vídeo, audio y capa de imagen auditada a 1080×1920. En esa prueba real se usó un contenedor aislado con límite de 1,8 GiB y se sustituyó el detector de memoria por una función de prueba: no demuestra estabilidad de un Reel largo ni de la salvaguarda predeterminada. Una segunda comprobación de los mismos seis fotogramas, en un contenedor aislado con límite de 2,2 GiB y la salvaguarda real activa, también produjo MP4 1080 con auditoría técnica PASS. No acredita estabilidad ni capacidad para un Reel largo. No se ha ejecutado aún un plan maestro completo sobre Reel real ni se ha aceptado V1.
+Pruebas dirigidas 21/21; flujos HTTP y navegador simulado de ambos motores en escritorio y móvil con workers ficticios; salida Remotion real sintética de seis fotogramas con vídeo, audio y capa de imagen auditada a 1080×1920. En esa prueba real se usó un contenedor aislado con límite de 1,8 GiB y se sustituyó el detector de memoria por una función de prueba: no demuestra estabilidad de un Reel largo ni de la salvaguarda predeterminada. Una segunda comprobación de los mismos seis fotogramas, en un contenedor aislado con límite de 2,2 GiB y la salvaguarda real activa, también produjo MP4 1080 con auditoría técnica PASS; píxeles de fuente y capa superpuesta coincidieron con el montaje sintético. No acredita estabilidad ni capacidad para un Reel largo. No se ha ejecutado aún un plan maestro completo sobre Reel real ni se ha aceptado V1.
 
 ## ÚLTIMA REGRESIÓN DIRIGIDA · 06/11/2026
 
