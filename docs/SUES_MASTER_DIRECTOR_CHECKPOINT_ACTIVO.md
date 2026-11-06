@@ -1,3 +1,7 @@
+## ÚLTIMA REGRESIÓN DIRIGIDA · 06/11/2026
+
+Tras los cambios de tiempo, encuadre y supervisión: `node --test tests/master-director-*.test.js` en host, 178 PASS, 0 FAIL, 6 SKIP. Cuatro pruebas omitidas se ejecutaron por separado con FFmpeg aislado: etapa nativa+handoff, render nativo de lista, extracción de evidencia y estéreo en contrafase; todas pasaron sobre material sintético. Las dos omitidas de generación local de máscaras no se repitieron en este corte. Los conteos proceden de entornos distintos, no son una única pasada integral verde. No equivalen a aceptación con Reel real.
+
 ## COMPROBACIÓN DE AUDIO SOBRE REEL EXISTENTE · 06/11/2026
 
 Se aplicó el nuevo medidor únicamente al audio de la previsualización real V6B existente (vídeo SHA256 `60642ab2e03fffc24d4704b13320e812d9a1182004cde0f214340e835639a64b`), sin modificarla ni crear otro Reel. El WAV convertido tiene 70,016 s, pico de muestra normalizado 0,7032 y cero muestras por canal en el umbral de 32760/32768; WAV temporal SHA256 `97bbcfdffddbd07da87274325068890aca755d8f19aa14662387f78b40ef01b2`. Estas medidas no son true peak, no prueban calidad de mezcla ni sustituyen escucha. **No es una ejecución de un plan externo nuevo, una auditoría semántica ni aceptación V1.**
