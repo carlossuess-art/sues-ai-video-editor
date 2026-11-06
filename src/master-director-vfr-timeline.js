@@ -42,5 +42,3 @@ export function proposeVfrCfr30Map({sourceSha256,frames,sourceDuration,audioStar
   mappingSha256,duplicateCount,skippedCount,segments,
   requires:['CFR_DERIVED_SHA256','OUTPUT_FRAME_BY_FRAME_CHECK','AUDIO_SYNC_EVIDENCE','REVIEW_AND_NEW_APPROVAL']};
 }
-
-[executed on device: srv1841004 (02556f29-b0ec-42da-81b0-a7ef0e517c98)]
