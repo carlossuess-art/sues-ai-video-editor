@@ -1,3 +1,11 @@
+## MP4 1080 PRIVADO PARA REVISIÓN · 06/11/2026
+
+La rama permite pedir un MP4 1080×1920 privado para revisión desde los flujos Remotion y mixto nativo→Remotion ya admitidos. Se conserva el plan, la aprobación y las versiones editables; el archivo queda sellado, sujeto a auditoría técnica de identidad/decodificación y marcado **no final**. La interfaz permite descargarlo; no constituye publicación ni aceptación creativa. Solicitudes 270p y 1080 tienen claves independientes e inmutables, y el historial indica su calidad. Combinaciones mixtas cuyo orden no puede representarse y máscaras no verificadas continúan bloqueadas.
+
+La opción 1080 mantiene al menos 1 GiB libre observado en host y cgroup durante el trabajo, además de los controles anteriores; el servicio puede rechazarla o detenerla ante memoria insuficiente. No se ha activado en producción. Commit de integración `3575d7a7dc973880618906c87b4639efe79c974e`.
+
+Pruebas dirigidas 21/21; flujos HTTP y navegador simulado de ambos motores en escritorio y móvil con workers ficticios; salida Remotion real sintética de seis fotogramas con vídeo, audio y capa de imagen auditada a 1080×1920. En esa prueba real se usó un contenedor aislado con límite de 1,8 GiB y se sustituyó el detector de memoria por una función de prueba: no demuestra estabilidad de un Reel largo ni de la salvaguarda predeterminada. Una comprobación adicional con la salvaguarda real está en curso. No se ha ejecutado aún un plan maestro completo sobre Reel real ni se ha aceptado V1.
+
 ## ÚLTIMA REGRESIÓN DIRIGIDA · 06/11/2026
 
 Tras los cambios de tiempo, encuadre y supervisión: `node --test tests/master-director-*.test.js` en host, 178 PASS, 0 FAIL, 6 SKIP. Cuatro pruebas omitidas se ejecutaron por separado con FFmpeg aislado: etapa nativa+handoff, render nativo de lista, extracción de evidencia y estéreo en contrafase; todas pasaron sobre material sintético. Las dos omitidas de generación local de máscaras no se repitieron en este corte. Los conteos proceden de entornos distintos, no son una única pasada integral verde. No equivalen a aceptación con Reel real.
