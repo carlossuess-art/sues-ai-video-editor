@@ -239,14 +239,14 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-mask-candidate|master-mask-frame|master-layer-edit|master-operation-edit|master-versions|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-mask-candidate|master-mask-frame|master-layer-edit|master-operation-edit|master-versions|master-current|master-current-operation-edit|master-current-layer-edit|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     // Never expose a private native hybrid stage as a standalone final export.
     const stageInstruction=jobs.get(id).instructions?.at(-1);
     if(stageInstruction?.kind==='master-hybrid-native-stage'&&action&&action!=='cancel')
      return json(res,409,{status:'BLOCKED',error:'Esta versión es una etapa intermedia del montaje mixto; consulta el proyecto principal.'});
-    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-trace','master-supervisor','master-supervisor-evidence','master-mask-candidate','master-mask-frame','master-layer-edit','master-operation-edit','master-versions','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
+    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-trace','master-supervisor','master-supervisor-evidence','master-mask-candidate','master-mask-frame','master-layer-edit','master-operation-edit','master-versions','master-current','master-current-operation-edit','master-current-layer-edit','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
      const source=jobs.get(id);
      const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
@@ -511,6 +511,35 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       return json(res,200,await store.trace(revision,decisionId,manifestRevision));
      }
      if(action==='master-versions'&&req.method==='GET')return json(res,200,{versions:store.listDrafts()});
+     // The only active working revision is server-owned; editing against a stale
+     // head returns 409 instead of silently overwriting another tab/chat edit.
+     if(action==='master-current'&&req.method==='GET'){
+      const current=store.current();
+      return json(res,200,{...current,story:current.revision?store.readDraft(current.revision):null});
+     }
+     if(action==='master-current'&&req.method==='POST'){
+      const b=await body(req,2048,{rejectDuplicates:true});
+      if(Object.keys(b).some(k=>!['revision','expectedRevision'].includes(k))||
+         !Object.hasOwn(b,'expectedRevision'))
+       return json(res,400,{error:'Revisión esperada obligatoria.'});
+      const result=store.setCurrent(b.revision,b.expectedRevision);
+      return json(res,result.status==='CONFLICT'?409:200,result);
+     }
+     if(action==='master-current-operation-edit'&&req.method==='POST'){
+      const b=await body(req,32768,{rejectDuplicates:true});
+      if(Object.keys(b).some(k=>!['expectedRevision','operationId','patch'].includes(k)))
+       return json(res,400,{error:'Edición no permitida.'});
+      const result=store.editCurrentOperation(b.expectedRevision,b.operationId,b.patch);
+      return json(res,result.status==='CONFLICT'?409:201,result);
+     }
+     if(action==='master-current-layer-edit'&&req.method==='POST'){
+      const b=await body(req,32768,{rejectDuplicates:true});
+      if(Object.keys(b).some(k=>!['expectedRevision','operationId','visual'].includes(k)))
+       return json(res,400,{error:'Edición no permitida.'});
+      const result=store.editCurrentVisual(b.expectedRevision,b.operationId,b.visual);
+      return json(res,result.status==='CONFLICT'?409:201,result);
+     }
+
      if(action==='master-draft'&&req.method==='GET')return json(res,200,{story:store.readDraft(url.searchParams.get('revision'))});
      if(action==='master-draft'&&req.method==='POST'){
       const b=await body(req,65536,{rejectDuplicates:true});if(Object.keys(b).some(k=>k!=='story'))return json(res,400,{error:'Solo se admite la historia creativa.'});
