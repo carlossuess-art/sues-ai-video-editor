@@ -5,7 +5,8 @@ import {execFileSync,spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
-import {prepareMasterSupervisorEvidence,openMasterSupervisorEvidence} from '../src/master-director-supervisor-evidence.js';
+import {prepareMasterSupervisorEvidence,openMasterSupervisorEvidence,measureSupervisorStereoWav} from '../src/master-director-supervisor-evidence.js';
+function wav(frames=4){const b=Buffer.alloc(44+frames*4);b.write('RIFF');b.writeUInt32LE(b.length-8,4);b.write('WAVE',8);b.write('fmt ',12);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(2,22);b.writeUInt32LE(48000,24);b.writeUInt32LE(192000,28);b.writeUInt16LE(4,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(frames*4,40);return b;}
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const graph=()=>({schema:'sues-layer-graph/v1',planFingerprint:'a'.repeat(64),fps:30,durationFrames:30,
  nodes:[{id:'op-1',startFrame:2,endFrame:11}]});
@@ -13,7 +14,7 @@ test('supervision stores samples bound to plan and exact output, never declares 
  const dir=mkdtempSync(join(tmpdir(),'master-supervisor-'));
  try{
   const media=Buffer.from('preview'),previewPath=join(dir,'video.mp4');writeFileSync(previewPath,media);
-  const runner=async(_exe,args)=>{const out=args.at(-1);if(out.endsWith('audio.wav'))writeFileSync(out,'wav');
+  const runner=async(_exe,args)=>{const out=args.at(-1);if(out.endsWith('audio.wav'))writeFileSync(out,wav());
    else for(let i=1;i<=Number(args[args.indexOf('-frames:v')+1]);i++)writeFileSync(out.replace('%04d',String(i).padStart(4,'0')),'png-'+i);};
   const root=join(dir,'evidence'),g=graph(),result=await prepareMasterSupervisorEvidence({graph:g,previewPath,root,outputSha256:sha(media),approvalCheck:async()=>true,runner});
   assert.equal(result.status,'SAMPLES_REQUIRE_REVIEW');assert.equal(result.final,false);
@@ -64,9 +65,17 @@ test('stereo evidence accommodates the full 120-second bound without a silent si
  const dir=mkdtempSync(join(tmpdir(),'master-supervisor-limit-'));try{
   const media=Buffer.from('preview'),previewPath=join(dir,'video.mp4');writeFileSync(previewPath,media);
   const g=graph();g.durationFrames=3600;
-  const runner=async(_exe,args)=>{const out=args.at(-1);if(out.endsWith('audio.wav'))writeFileSync(out,Buffer.alloc(48000*2*2*120+128));
+  const runner=async(_exe,args)=>{const out=args.at(-1);if(out.endsWith('audio.wav'))writeFileSync(out,wav(48000*120));
    else for(let i=1;i<=Number(args[args.indexOf('-frames:v')+1]);i++)writeFileSync(out.replace('%04d',String(i).padStart(4,'0')),'png-'+i);};
   const result=await prepareMasterSupervisorEvidence({graph:g,previewPath,root:join(dir,'evidence'),outputSha256:sha(media),approvalCheck:async()=>true,runner});
   assert.equal(result.status,'SAMPLES_REQUIRE_REVIEW');assert.ok(result.report.files.find(x=>x.name==='audio.wav').bytes>12*1024*1024);
  }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+
+test('stereo measurements preserve channel peaks and reject truncated or unsupported audio',()=>{
+ const b=wav(2);b.writeInt16LE(32767,44);b.writeInt16LE(-32768,46);b.writeInt16LE(0,48);b.writeInt16LE(16384,50);
+ const m=measureSupervisorStereoWav(b);assert.equal(m.frames,2);assert.deepEqual(m.clippingSamples,[1,1]);assert.equal(m.notQualityJudgment,true);
+ assert.ok(m.seconds[0].rms[1]>m.seconds[0].rms[0]);assert.throws(()=>measureSupervisorStereoWav(b.subarray(0,47)),/WAV/);
+ const mono=Buffer.from(b);mono.writeUInt16LE(1,22);assert.throws(()=>measureSupervisorStereoWav(mono),/WAV/);
 });
