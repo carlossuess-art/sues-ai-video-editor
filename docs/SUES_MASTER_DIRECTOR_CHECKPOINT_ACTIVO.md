@@ -1,3 +1,7 @@
+## REVISIÓN DE LINAJE DE DERIVADO VFR · 06/11/2026
+
+Se incorporó `src/master-director-vfr-lineage.js` para revisar los informes independientes del derivado CFR30 real, los SHA-256 del original y derivado antes/después y la correspondencia de fotogramas, señal de audio y CFR30. **Su respuesta para el material real** es `DERIVATION_EVIDENCE_READY_REVIEW_REQUIRED` con `canExecute:false`: no altera proyectos, no cambia fuentes ni transfiere aprobaciones. Las herramientas y las tres nuevas pruebas de linaje se publicaron en la rama del PR #27. Suite dirigida local actualizada: **187 PASS, 0 FAIL, 6 SKIP de 193**. Pruebas negativas bloquean reemplazos del derivado, alteraciones del manifiesto, evidencias de audio incoherentes y discrepancias de fotogramas CFR. Falta incorporar el cambio de fuente de forma explícita a versiones editables y al mapa temporal, revisión y aprobación de plan externo, QA de cortes reales y dos auditorías completas. El original VFR continúa bloqueado por el preflight existente y no se ha desplegado producción.
+
 ## DERIVACIÓN CFR30 REAL, EVIDENCIA Y BLOQUEO DE APROBACIÓN · 06/11/2026
 
 Continuidad verificada sobre el Reel real **158404**. El original de solo lectura conserva SHA-256 `9e06f49c30731d8a57aed312cfb46281bcffb7b3d5d62bf5a2164333944ccaad`. FFprobe detectó **2.206 fotogramas VFR**, vídeo 1080×1920 y audio original de 73,747208 s. No se ha modificado el original ni se ha desplegado nada.
