@@ -1,3 +1,9 @@
+## INVESTIGACIÓN DE FUENTE VFR · 06/11/2026
+
+Para estudiar el bloqueo del original real se creó un vídeo **sintético**, con dos huecos irregulares de fotogramas y audio. Sin pasar por el preflight, se renderizaron seis frames con Remotion a 30 fps: la correspondencia visual con los fotogramas fuente fue `[0,0,1,2,2,3]`, igual a la de una conversión de referencia FFmpeg en esta muestra. Se comprobó por comparación de imagen, con la pérdida normal de compresión.
+
+Es una evidencia acotada, no demuestra el comportamiento con tiempos de inicio distintos de cero, múltiples cortes, audio sincronizado ni el vídeo real. La restricción CFR30 **sigue activa** y no se acepta material VFR para ejecución hasta demostrar y conectar un mapa verificable y su sincronía. No se ha modificado el original ni generado un Reel nuevo.
+
 ## COMPROBACIÓN DEL ORIGINAL REAL · 06/11/2026
 
 El original del Reel 158404 identificado por SHA256 `9e06f49c30731d8a57aed312cfb46281bcffb7b3d5d62bf5a2164333944ccaad` se comprobó en modo de solo lectura con el detector de fuente real. Tiene 1080×1920 y audio; el detector lo bloqueó como `SOURCE_NOT_FRAME_ALIGNED_CFR30` desde el fotograma 1. No se ha modificado ni convertido.
