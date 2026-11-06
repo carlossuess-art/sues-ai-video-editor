@@ -1,3 +1,9 @@
+## AUDIO DE SUPERVISIÓN ESTÉREO · 06/11/2026
+
+La extracción de evidencia de audio ya no mezcla sistemáticamente a mono: prepara WAV estéreo PCM de 48 kHz, informa de su conversión y amplía el límite para los 120 segundos permitidos. La conversión puede mezclar fuentes multicanal y no equivale a los bytes originales; sigue siendo una muestra para escucha, no un dictamen de calidad.
+
+Prueba real FFmpeg con audio estéreo sintético en contrafase: ambos canales se conservaron en vez de cancelarse al sumar a mono. Las tres pruebas del módulo pasaron en contenedor con FFmpeg; se verificó aparte con un fixture el límite de 120 segundos. El supervisor audiovisual semántico y las dos auditorías siguen pendientes. Sin despliegue.
+
 ## AJUSTE DE IMAGEN Y VÍDEO EN REMOTION · 06/11/2026
 
 El plan externo puede elegir `fit:"fill"`, `"contain"` o `"cover"` en recursos `image-exact` y `video-exact`, con encuadre centrado: estirar, ajustar dejando transparencia o recortar. Se conserva el valor en compilación y render; no se admite anclaje personalizado. El editor permite cambiarlo y guarda una nueva versión que exige revisión y aprobación renovadas. Contrato actualizado y skill privada 1.5.6 sincronizada sin tocar producción.
