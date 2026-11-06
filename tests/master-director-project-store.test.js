@@ -298,3 +298,75 @@ test('a trusted free generator saves the same master draft and cannot self-appro
   output='{"schema":"sues-master-story/v1","schema":"sues-master-story/v1"}';assert.equal((await request()).status,422);
  }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });
+
+
+test('persisted working head survives restart, preserves untouched layers and prevents stale edits',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'sues-current-project-'));
+ try{
+  const s=new MasterDirectorProjectStore(dir,async()=>null);
+  const visual={rect:{x:20,y:30,width:100,height:80},zIndex:2,opacity:1};
+  const first={schema:'sues-master-story/v1',timeline:{duration:20},
+   operations:[
+    {id:'caption-17',sceneId:'s1',renderer:'remotion',start:17,end:18,parameters:{text:'antes',visual,keyframes:[{atFrame:0,opacity:1}]}},
+    {id:'broll-1',sceneId:'s1',renderer:'remotion',start:4,end:7,parameters:{visual:{...visual,rect:{x:200,y:10,width:500,height:300}},resourceName:'manos'}}
+   ]};
+  const original=s.saveDraft(first);
+  assert.equal(s.current().revision,null);
+  assert.equal(s.setCurrent(original.revision,null).status,'CURRENT');
+  const textChanged=s.editCurrentOperation(original.revision,'caption-17',{parametersPatch:{text:'después'}});
+  assert.equal(textChanged.status,'CURRENT');
+  assert.notEqual(textChanged.revision,original.revision);
+  const changed=s.readDraft(textChanged.revision);
+  assert.equal(changed.operations[0].parameters.text,'después');
+  assert.deepEqual(changed.operations[0].parameters.visual,visual);
+  assert.deepEqual(changed.operations[0].parameters.keyframes,[{atFrame:0,opacity:1}]);
+  assert.deepEqual(changed.operations[1],first.operations[1]);
+  assert.deepEqual(s.readDraft(original.revision),first);
+  const stale=s.editCurrentOperation(original.revision,'caption-17',{parametersPatch:{text:'antiguo'}});
+  assert.equal(stale.status,'CONFLICT');
+  assert.equal(stale.currentRevision,textChanged.revision);
+  const reopened=new MasterDirectorProjectStore(dir,async()=>null);
+  assert.equal(reopened.current().revision,textChanged.revision);
+  assert.equal(reopened.readDraft(reopened.current().revision).operations[0].parameters.text,'después');
+  const repositioned=reopened.editCurrentVisual(textChanged.revision,'caption-17',
+   {...visual,rect:{x:44,y:55,width:100,height:80}});
+  assert.equal(repositioned.status,'CURRENT');
+  assert.deepEqual(reopened.readDraft(repositioned.revision).operations[1],first.operations[1]);
+  assert.equal(reopened.readDraft(repositioned.revision).operations[0].parameters.visual.rect.x,44);
+  assert.equal(reopened.setCurrent(original.revision,repositioned.revision).status,'CURRENT');
+  assert.equal(reopened.current().revision,original.revision);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+test('authenticated project head and targeted edits are conflict-protected over HTTP',async()=>{
+ const f=fixture(),app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles});
+ try{
+  const url=(await app.listen()).split('/#')[0],job=app.jobs.create('test'),root=url+'/api/jobs/'+job.id;
+  assert.equal((await fetch(root+'/master-current')).status,401);
+  const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
+  const headers={Cookie:session.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'};
+  const post=(path,payload)=>fetch(root+path,{method:'POST',headers,body:JSON.stringify(payload)});
+  const story={schema:'sues-master-story/v1',timeline:{duration:20},operations:[
+   {id:'subtitle',renderer:'remotion',start:17,end:18,parameters:{text:'inicial',visual:{opacity:1,rect:{x:1,y:1,width:3,height:3}}}},
+   {id:'graphic',renderer:'remotion',start:1,end:2,parameters:{text:'intacto'}}]};
+  const initial=await (await post('/master-draft',{story})).json();
+  const empty=await (await fetch(root+'/master-current',{headers})).json();
+  assert.equal(empty.revision,null);
+  const active=await post('/master-current',{revision:initial.revision,expectedRevision:null});
+  assert.equal(active.status,200);
+  const edited=await post('/master-current-operation-edit',{
+   expectedRevision:initial.revision,operationId:'subtitle',patch:{parametersPatch:{text:'corregido'}}});
+  assert.equal(edited.status,201);
+  const updated=await edited.json();
+  const stale=await post('/master-current-operation-edit',{
+   expectedRevision:initial.revision,operationId:'subtitle',patch:{parametersPatch:{text:'perdido'}}});
+  assert.equal(stale.status,409);
+  const current=await (await fetch(root+'/master-current',{headers})).json();
+  assert.equal(current.revision,updated.revision);
+  assert.equal(current.story.operations[0].parameters.text,'corregido');
+  assert.equal(current.story.operations[0].parameters.visual.opacity,1);
+  assert.deepEqual(current.story.operations[1],story.operations[1]);
+  assert.equal((await post('/master-current',{revision:initial.revision,expectedRevision:initial.revision})).status,409);
+  assert.equal((await post('/master-current',{revision:initial.revision,expectedRevision:updated.revision})).status,200);
+ }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
+});
