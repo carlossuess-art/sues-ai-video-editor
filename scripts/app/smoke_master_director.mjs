@@ -67,6 +67,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('#master-preview-status').textContent.includes('MP4 1080 privado preparado'),{timeout:30000});
   const download=page.locator('#master-layer-controls a[download]');assert.equal(await download.count(),1);assert.equal(await download.evaluate(e=>e.hidden),false);
   assert.match(await download.getAttribute('href'),/master-preview-media/);
+  const [downloaded]=await Promise.all([page.waitForEvent('download',{timeout:30000}),page.evaluate(()=>document.querySelector('#master-layer-controls a[download]').click())]);assert.equal(downloaded.suggestedFilename(),'sues-master-revision-1080.mp4');assert.equal(readFileSync(await downloaded.path(),'utf8'),'fixture-preview');
   await page.evaluate(()=>document.querySelector('[data-master-supervisor] button').click());
   await page.waitForFunction(()=>document.querySelector('[data-master-supervisor] [role=status]')?.textContent.includes('Muestras preparadas'),{timeout:30000});
   assert.match(await page.locator('[data-master-supervisor]').textContent(),/Medición orientativa del audio convertido/);
