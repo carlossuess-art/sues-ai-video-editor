@@ -1,3 +1,7 @@
+## 06/11/2026 · Ajuste centrado de medios en rama
+
+Las capas Remotion de imagen y vídeo aceptan `fill`, `contain` y `cover` con encuadre centrado. Pruebas dirigidas 37/37, TypeScript y comprobaciones por píxeles en imágenes y un fotograma de vídeo sintéticos; no equivale a QA de movimiento ni Reel real. La skill privada se sincronizó a 1.5.6. [Checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Sin despliegue.
+
 ## 06/11/2026 · Plan externo: fidelidad del montaje mixto
 
 El grafo conserva tiempos originales y el motor mixto detecta solapamientos antes del redondeo. Se bloquean combinaciones con orden visual nativo/Remotion no implementado en vez de alterar el efecto. Regresión dirigida 174 aprobadas y 5 omitidas; una omitida pasó aparte con FFmpeg sobre material sintético. La composición completa, supervisor, exportación y prueba de Reel real siguen pendientes. Véase [checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Sin despliegue.
