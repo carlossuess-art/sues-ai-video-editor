@@ -691,7 +691,7 @@ async function masterDecision(mode){
  if(result.status==='BLOCKED'){resetMasterReview();throw Error('El proyecto, los recursos o las reglas han cambiado. Revisa el plan de nuevo.');}
  state.decisionId=result.decisionId;
  $('master-review-actions').hidden=true;
- const p=document.createElement('p');p.textContent=mode==='review'?'Revisión solicitada. Ajusta la propuesta y vuelve a comprobarla.':'Decisión guardada para esta versión. La edición todavía no se ha iniciado.';$('master-review-result').append(p);
+ const p=document.createElement('p');p.textContent=mode==='review'?'Revisión solicitada. Ajusta la propuesta y vuelve a comprobarla.':'Decisión guardada para la edición actual. Todavía no se ha iniciado el render.';$('master-review-result').append(p);
  if(mode==='review')return;
  const layers=await api('jobs/'+state.jobId+'/master-layers','POST',{revision:state.revision,decisionId:result.decisionId});
  if(layers.status!=='STRUCTURE_READY_NOT_RENDERED'){const p=document.createElement('p');p.textContent='Hay capas o recursos pendientes antes de preparar la edición.';$('master-review-result').append(p);return;}
@@ -699,17 +699,17 @@ async function masterDecision(mode){
  const hasNative=layers.graph.nodes.some(node=>node.renderer==='native'),hasRemotion=layers.graph.nodes.some(node=>node.renderer==='remotion');
  if(hasNative&&!hasRemotion){
   const nativeButton=document.createElement('button'),nativeStatus=document.createElement('p');
-  nativeButton.type='button';nativeButton.textContent='Crear versión editable';nativeStatus.setAttribute('role','status');
+  nativeButton.type='button';nativeButton.textContent='Aplicar a esta edición';nativeStatus.setAttribute('role','status');
   const prepareNative=async()=>{
    if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
    nativeButton.disabled=true;
    try{
     nativeStatus.textContent='Comprobando el plan con el editor…';
     const review=await api('jobs/'+state.jobId+'/master-native-review','POST',{revision:state.revision,decisionId:state.decisionId});
-    if(review.status!=='READY_FOR_EDITOR_PREVIEW'){nativeStatus.textContent='El editor necesita revisar alguna operación antes de crear la versión.';return;}
+    if(review.status!=='READY_FOR_EDITOR_PREVIEW'){nativeStatus.textContent='El editor necesita revisar alguna operación antes de aplicar los cambios.';return;}
     masterNativeRequest??=crypto.randomUUID();
     const version=await api('jobs/'+state.jobId+'/master-native-apply','POST',{revision:state.revision,decisionId:state.decisionId,reviewId:review.preview.reviewId,requestId:masterNativeRequest});
-    nativeStatus.textContent='Versión editable creada y enviada a la cola. Se conserva la versión anterior.';
+    nativeStatus.textContent='Cambios aplicados al mismo proyecto y enviados a la cola. Las demás capas se conservan.';
     await select(version.id);
    }finally{nativeButton.disabled=false;}
   };
@@ -789,6 +789,45 @@ async function masterDecision(mode){
   };
   void watch(launched);
  });generate.onclick=()=>startPreview('preview');fullHD.onclick=()=>startPreview('full-hd');if(!hasNative)area.append(generate,fullHD,previewStatus,player,download);
+ // Native caption and full-screen B-roll operations can be changed losslessly
+ // using the same current-head command bridge as a chat edit. Unsupported
+ // native masks remain blocked until the engine has verified compositing.
+ for(const node of layers.graph.nodes.filter(n=>n.renderer==='native'&&['caption-edit','broll-fullframe'].includes(n.effect))){
+  const original=state.story.operations.find(op=>op.id===node.id);if(!original)continue;
+  const panel=document.createElement('fieldset'),heading=document.createElement('legend'),controlLabel=document.createElement('label');
+  heading.textContent='Modificar en este proyecto · '+node.id;panel.append(heading);
+  let control,buildCommand;
+  if(node.effect==='caption-edit'){
+   control=document.createElement('input');control.type='text';control.maxLength=52;
+   control.value=original.parameters?.text??'';controlLabel.textContent='Corregir solo este subtítulo';
+   buildCommand=()=>({type:'caption-text',operationId:node.id,text:control.value});
+  }else{
+   control=document.createElement('select');controlLabel.textContent='Sustituir únicamente este B-roll';
+   for(const resource of (state.story.resources??[]).filter(r=>r.kind==='video')){
+    const option=document.createElement('option');option.value=resource.id;option.textContent=resource.id;
+    control.append(option);
+   }
+   control.value=original.resourceRef??'';
+   buildCommand=()=>({type:'broll-replace',operationId:node.id,resourceRef:control.value});
+  }
+  controlLabel.append(control);panel.append(controlLabel);
+  const save=document.createElement('button');save.type='button';
+  save.textContent='Guardar cambio en la edición actual';save.disabled=node.effect==='broll-fullframe'&&!control.options.length;
+  save.onclick=()=>work(async()=>{
+   if(current?.id!==state.jobId||masterWorkingRevision!==state.revision||
+      $('external-plan-text').value!==state.raw)throw Error('La edición ha cambiado. Revisa el plan actual antes de modificar la capa.');
+   save.disabled=true;
+   const changed=await api('jobs/'+state.jobId+'/master-current-command','POST',{
+    expectedRevision:state.revision,command:buildCommand()});
+   if(changed.status!=='CURRENT')throw Error('La capa no se ha actualizado. Recarga el proyecto actual.');
+   const head=await api('jobs/'+state.jobId+'/master-current');
+   masterWorkingRevision=head.revision;masterInputDirty=false;
+   $('external-plan-text').value=JSON.stringify(head.story,null,2);
+   resetMasterReview();
+   $('master-review-result').textContent='Capa modificada sin alterar el resto del proyecto. Revisa y aprueba de nuevo antes de renderizar.';
+  });
+  panel.append(save);area.append(panel);
+ }
  for(const node of layers.graph.nodes.filter(n=>n.renderer==='remotion')){
   const original=state.story.operations.find(o=>o.id===node.id);if(!original)continue;
   const box=document.createElement('fieldset'),legend=document.createElement('legend');legend.textContent='Ajustar capa · '+node.id;box.append(legend);
