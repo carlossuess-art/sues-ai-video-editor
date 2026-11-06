@@ -606,6 +606,39 @@ function inspectMasterInput(raw){
   throw Error('El plan maestro supera los 60.000 bytes. No se ha recortado.');
  return story;
 }
+$('master-brief-import').onclick=()=>$('master-brief-file').click();
+async function showMasterBriefs(jobId){
+ const data=await api('jobs/'+jobId+'/master-source-brief');
+ if(current?.id!==jobId)return;
+ const root=$('master-brief-result');root.replaceChildren();
+ if(!data.briefs.length){root.textContent='No hay documentos de Film Director guardados para este proyecto.';return;}
+ const summary=document.createElement('p');summary.textContent=`${data.briefs.length} documento(s) original(es). No son planes ejecutables ni aprobados.`;root.append(summary);
+ for(const item of data.briefs){
+  const details=document.createElement('details'),heading=document.createElement('summary'),body=document.createElement('pre');
+  heading.textContent=`Documento ${item.revision.slice(0,10)} · ${item.stale?'Procedencia anterior: requiere actualizar':'Vinculado a la fuente actual'} · NO APROBADO`;
+  body.textContent=item.text;body.style.whiteSpace='pre-wrap';body.style.overflowWrap='anywhere';
+  details.append(heading,body);root.append(details);
+ }
+}
+$('master-brief-list').onclick=()=>work(async()=>{
+ if(!current)throw Error('Abre el proyecto antes de consultar el documento.');
+ await showMasterBriefs(current.id);
+});
+$('master-brief-file').onchange=()=>work(async()=>{
+ const input=$('master-brief-file'),file=input.files?.[0];input.value='';if(!file)return;
+ if(!/\.(md|txt)$/i.test(file.name)||file.size>60000)throw Error('Adjunta el texto Markdown/TXT original en UTF-8, hasta 60 KB. No se ha importado.');
+ const jobId=current?.id,bytes=await file.arrayBuffer();let text;
+ try{text=new TextDecoder('utf-8',{fatal:true}).decode(bytes);}catch{throw Error('El documento no es UTF-8 válido.');}
+ if(!jobId)throw Error('Abre primero el Reel que corresponde a este documento.');
+ const [head,catalog]=await Promise.all([api('jobs/'+jobId+'/master-current'),api('jobs/'+jobId+'/external-catalog')]);
+ if(current?.id!==jobId||masterWorkingRevision!==head.revision)throw Error('El Reel ha cambiado. Vuelve a abrirlo.');
+ const result=await api('jobs/'+jobId+'/master-source-brief','POST',{
+  text,expectedRevision:head.revision,expectedSourceSha256:catalog.sourceSha256,
+  expectedTimelineFingerprint:catalog.timelineFingerprint});
+ if(current?.id!==jobId)throw Error('El documento se guardó en el Reel anterior. Abre ese Reel para verlo.');
+ await showMasterBriefs(jobId);
+ $('master-review-result').textContent=`Documento original conservado íntegramente (${result.revision.slice(0,10)}). NO APROBADO: aún requiere contrato JSON y recursos verificables.`;
+});
 $('master-import-file').onclick=()=>$('master-plan-file').click();
 $('master-plan-file').onchange=()=>work(async()=>{
  const input=$('master-plan-file'),file=input.files?.[0];input.value='';
