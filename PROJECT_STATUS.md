@@ -1,3 +1,7 @@
+## 06/11/2026 · MP4 1080 privado para revisión en rama
+
+Los flujos Remotion y mixto admitidos pueden solicitar un MP4 privado de 1080×1920, con verificación técnica, trazabilidad y etiqueta de revisión no final. Se han probado la API y la interfaz con datos simulados y una salida sintética Remotion de seis fotogramas; la memoria, un Reel real, el supervisor semántico y la aceptación siguen pendientes. Sin despliegue. Detalle: [checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md).
+
 ## 06/11/2026 · Evidencia de audio para supervisión
 
 La escucha de supervisión usa una conversión estéreo y muestra pico, RMS y muestras próximas al máximo por canal; son medidas objetivas, no QA. Cinco pruebas con FFmpeg pasaron. Se midió también el audio convertido de la previsualización real V6B existente, sin generar otro Reel; la escucha y aceptación completas siguen pendientes. [Checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Sin despliegue.
