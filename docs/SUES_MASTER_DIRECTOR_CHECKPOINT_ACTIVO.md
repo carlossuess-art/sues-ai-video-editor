@@ -1,6 +1,6 @@
 ## REGRESIÓN DE EXPORTACIÓN PRIVADA · 06/11/2026
 
-Tras conectar MP4 1080, suite de Master Director en host: 181 PASS, 0 FAIL, 6 SKIP de 187. Los seis omitidos dependen de FFmpeg o runtime de máscaras; no se ejecutaron en esta pasada. Pruebas dirigidas de exportación, API y journal 21/21, más 10/10 de memoria y renderer; flujo mixto simulado extremo a extremo y navegador simulado a 1440 y 390 con enlace de descarga privada; la descarga como archivo no se ha verificado en dispositivos reales. La salida real 1080 de seis fotogramas fue sintética, no Reel de aceptación. Sin despliegue.
+Tras conectar MP4 1080, suite de Master Director en host: 181 PASS, 0 FAIL, 6 SKIP de 187. Los seis omitidos dependen de FFmpeg o runtime de máscaras; no se ejecutaron en esta pasada. Pruebas dirigidas de exportación, API y journal 21/21, más 10/10 de memoria y renderer; flujo mixto simulado extremo a extremo y navegador simulado a 1440 y 390: descarga del archivo privado comprobada para ambos flujos con contenido ficticio y nombre esperado; no se ha comprobado la descarga en dispositivos reales. La salida real 1080 de seis fotogramas fue sintética, no Reel de aceptación. Sin despliegue.
 
 ## MP4 1080 PRIVADO PARA REVISIÓN · 06/11/2026
 
