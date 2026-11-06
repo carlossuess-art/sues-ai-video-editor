@@ -1,3 +1,7 @@
+## MUESTRA ACOTADA DE VFR REAL · 06/11/2026
+
+Se renderizaron directamente, como diagnóstico fuera del flujo aprobado, seis fotogramas iniciales del original real montado en solo lectura, a 270×480 y 30 fps, con pista de audio. La comparación de esos seis fotogramas con una referencia FFmpeg de muestreo a 30 fps produjo diferencias medias por canal de 3,06 a 5,86 niveles sobre 255, con pérdidas de compresión; no es una prueba de equivalencia ni de sincronía audiovisual. No se generó un Reel ni se modificó el original. El preflight VFR sigue bloqueando la ejecución hasta disponer de mapa temporal verificable y pruebas de sincronía en cortes reales.
+
 ## INVESTIGACIÓN DE FUENTE VFR · 06/11/2026
 
 Para estudiar el bloqueo del original real se creó un vídeo **sintético**, con dos huecos irregulares de fotogramas y audio. Sin pasar por el preflight, se renderizaron seis frames con Remotion a 30 fps: la correspondencia visual con los fotogramas fuente fue `[0,0,1,2,2,3]`, igual a la de una conversión de referencia FFmpeg en esta muestra. Se comprobó por comparación de imagen, con la pérdida normal de compresión.
