@@ -16,5 +16,3 @@ test('VFR proposal never labels its mapping as verified CFR or approval',()=>{
  const r=proposeVfrCfr30Map(make());assert.notEqual(r.status,'SOURCE_CFR30_VERIFIED');
  assert.ok(r.requires.includes('AUDIO_SYNC_EVIDENCE'));
 });
-
-[executed on device: srv1841004 (02556f29-b0ec-42da-81b0-a7ef0e517c98)]
