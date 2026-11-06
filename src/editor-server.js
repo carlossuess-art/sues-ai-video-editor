@@ -255,9 +255,24 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
        }catch{integrityError=true;break;}
        cursor=cursor.parentId?jobs.jobs.get(cursor.parentId):null;
       }
+      // Source lineage is informational; it never transfers creative approval.
+      // Do not reveal media paths, credentials, or raw project configuration.
+      let sourceVersion={kind:'UNVERIFIED',canInheritApproval:false,requiresFreshPlanReview:true};
+      try{
+       const profile=jobs.loadProfile(job.profileId),lineage=JSON.parse(readFileSync(profile.configPath,'utf8')).sourceLineage;
+       if(lineage?.schema==='sues-master-source-lineage/v1'&&lineage.type==='cfr30-derived-from-vfr'&&lineage.derivedSha256===profile.inputs.source.sha256&&lineage.approvalInherited===false&&lineage.originalPreserved===true){
+        sourceVersion={kind:'CFR30_DERIVED',sha256:profile.inputs.source.sha256,
+         originalSha256:lineage.originalSha256,originalPreserved:lineage.originalPreserved===true,
+         canInheritApproval:false,requiresFreshPlanReview:true};
+       }else if(!lineage){
+        sourceVersion={kind:'ORIGINAL',sha256:profile.inputs.source.sha256,
+         canInheritApproval:false,requiresFreshPlanReview:false};
+       }
+      }catch{integrityError=true;}
       return {projectId,title:job.projectTitle??job.title,activeJobId:job.id,
        updatedAt:job.updatedAt??job.createdAt,state:job.state,styleId:job.settings?.styleId??null,
        masterRevision,masterJobId,masterEditable:!!masterRevision&&masterJobId===job.id&&!integrityError,
+       sourceVersion,
        ...(integrityError?{issue:'PROJECT_REVISION_INTEGRITY_ERROR'}:{})};
      }).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)||a.projectId.localeCompare(b.projectId));
     };
