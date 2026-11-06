@@ -17,6 +17,7 @@ test('supervision stores samples bound to plan and exact output, never declares 
    else for(let i=1;i<=Number(args[args.indexOf('-frames:v')+1]);i++)writeFileSync(out.replace('%04d',String(i).padStart(4,'0')),'png-'+i);};
   const root=join(dir,'evidence'),g=graph(),result=await prepareMasterSupervisorEvidence({graph:g,previewPath,root,outputSha256:sha(media),approvalCheck:async()=>true,runner});
   assert.equal(result.status,'SAMPLES_REQUIRE_REVIEW');assert.equal(result.final,false);
+  assert.deepEqual(result.report.audioEvidence,{encoding:'pcm-s16le',sampleRate:48000,channels:2,sourceDownmixPossible:true,notOriginalBytes:true});
   assert.deepEqual(result.report.samples.map(x=>x.frame),[0,2,6,10,29]);assert.ok(result.report.limitations.includes('not-qa-pass'));
   const request={root,inspectionId:result.inspectionId,file:'frame-0001.png',planFingerprint:g.planFingerprint,outputSha256:sha(media)};
   assert.equal(openMasterSupervisorEvidence(request).mime,'image/png');
@@ -39,5 +40,22 @@ test('actual FFmpeg extracts source-bound evidence from a synthetic video',{skip
   const result=await prepareMasterSupervisorEvidence({graph:g,previewPath,root:join(dir,'evidence'),outputSha256:digest,approvalCheck:async()=>true});
   assert.equal(result.status,'SAMPLES_REQUIRE_REVIEW',JSON.stringify(result.issues));assert.equal(result.report.samples.length,5);assert.equal(result.report.files.length,6);
   assert.equal(openMasterSupervisorEvidence({root:join(dir,'evidence'),inspectionId:result.inspectionId,file:'audio.wav',planFingerprint:g.planFingerprint,outputSha256:digest}).mime,'audio/wav');
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+
+test('supervisor audio retains opposing stereo channels instead of cancelling them',{skip:spawnSync('ffmpeg',['-version'],{stdio:'ignore'}).status!==0,timeout:60000},async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'master-stereo-'));try{
+  const previewPath=join(dir,'video.mp4');
+  execFileSync('ffmpeg',['-y','-v','error','-f','lavfi','-i','testsrc2=size=100x100:rate=30:duration=1',
+   '-f','lavfi','-i','aevalsrc=0.4*sin(2*PI*440*t)|-0.4*sin(2*PI*440*t):s=48000:d=1',
+   '-c:v','libx264','-threads','1','-pix_fmt','yuv420p','-c:a','aac','-shortest',previewPath]);
+  const {readFileSync}=await import('node:fs'),digest=sha(readFileSync(previewPath)),g=graph(),root=join(dir,'evidence');
+  const result=await prepareMasterSupervisorEvidence({graph:g,previewPath,root,outputSha256:digest,approvalCheck:async()=>true});
+  assert.equal(result.status,'SAMPLES_REQUIRE_REVIEW');
+  const wav=openMasterSupervisorEvidence({root,inspectionId:result.inspectionId,file:'audio.wav',planFingerprint:g.planFingerprint,outputSha256:digest});
+  const raw=execFileSync('ffmpeg',['-v','error','-i',wav.path,'-f','s16le','-acodec','pcm_s16le','-']);
+  let l=0,r=0,cross=0;for(let i=0;i+3<raw.length;i+=4){const a=raw.readInt16LE(i),b=raw.readInt16LE(i+2);l+=a*a;r+=b*b;cross+=a*b;}
+  assert.ok(l>1e9&&r>1e9);assert.ok(cross/Math.sqrt(l*r)<-.95);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
