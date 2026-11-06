@@ -55,7 +55,7 @@ export function listMasterPreviews(root){
    const seal=JSON.parse(readFileSync(sealPath,'utf8')),r=seal.record,a=seal.audit;
    if(seal.schema!=='sues-master-preview-seal/v1'||!UUID.test(r?.id??'')||!UUID.test(seal.requestId??'')||
       !HASH.test(r?.outputSha256??'')||a?.status!=='TECHNICAL_PASS_HUMAN_QA_PENDING'||a.outputSha256!==r.outputSha256)continue;
-   items.push({previewId:r.id,revision:seal.revision,createdAt:r.createdAt??new Date(st.mtimeMs).toISOString(),durationFrames:r.durationFrames??null,fps:r.fps??null,final:false});
+   items.push({previewId:r.id,revision:seal.revision,createdAt:r.createdAt??new Date(st.mtimeMs).toISOString(),durationFrames:r.durationFrames??null,fps:r.fps??null,quality:r.quality??'preview',width:r.width??null,height:r.height??null,final:false});
   }catch(e){if(e.code!=='ENOENT')throw e;}
  }
  return items.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||a.previewId.localeCompare(b.previewId));

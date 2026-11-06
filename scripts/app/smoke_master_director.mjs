@@ -10,7 +10,7 @@ const f=fixture(),master='b'.repeat(64),context={registry:{brandId:'sues',profil
  rulebook:[{id:'r1',key:'brand.background',scope:'global',authority:'explicit-user-approval',status:'approved',value:'anthracite',supersedes:[]}]};
 function wav(frames=4){const b=Buffer.alloc(44+frames*4);b.write('RIFF');b.writeUInt32LE(b.length-8,4);b.write('WAVE',8);b.write('fmt ',12);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(2,22);b.writeUInt32LE(48000,24);b.writeUInt32LE(192000,28);b.writeUInt16LE(4,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(frames*4,40);return b;}
 let renders=0,probeBlocked=false;
-const renderer=async({composition,workRoot,approvalCheck})=>{assert.equal(await approvalCheck(),true);await new Promise(resolve=>setTimeout(resolve,1200));const dir=join(workRoot,'master-preview-'+String(++renders).padStart(6,'0'));mkdirSync(dir,{recursive:true});const outputPath=join(dir,'preview.mp4');writeFileSync(outputPath,'fixture-preview');const outputSha256=createHash('sha256').update(readFileSync(outputPath)).digest('hex');return {status:'PREVIEW_RENDERED_UNVERIFIED',record:{id:randomUUID(),planFingerprint:composition.planFingerprint,sourceSha256:composition.sourceSha256,outputSha256,bytes:15,final:false},outputPath}};
+const renderer=async({composition,workRoot,approvalCheck,quality='preview'})=>{assert.equal(await approvalCheck(),true);await new Promise(resolve=>setTimeout(resolve,1200));const dir=join(workRoot,'master-preview-'+String(++renders).padStart(6,'0'));mkdirSync(dir,{recursive:true});const outputPath=join(dir,'preview.mp4');writeFileSync(outputPath,'fixture-preview');const outputSha256=createHash('sha256').update(readFileSync(outputPath)).digest('hex');return {status:'PREVIEW_RENDERED_UNVERIFIED',record:{id:randomUUID(),planFingerprint:composition.planFingerprint,sourceSha256:composition.sourceSha256,outputSha256,bytes:15,quality,width:quality==='full-hd'?1080:270,height:quality==='full-hd'?1920:480,final:false},outputPath}};
 const auditor=async({outputPath})=>({status:'TECHNICAL_PASS_HUMAN_QA_PENDING',outputSha256:createHash('sha256').update(readFileSync(outputPath)).digest('hex')});
 const supervisorRunner=async(_executable,args)=>{
  const target=args.at(-1);if(target.endsWith('audio.wav'))writeFileSync(target,wav());
@@ -63,6 +63,10 @@ try{
   await page.waitForFunction(()=>!working,{timeout:30000});assert.equal(app.jobs.previewBusy,true);
   await page.waitForFunction(()=>document.querySelector('#master-preview-status').textContent.includes('preparada'),{timeout:30000});
   assert.match(await page.locator('#master-layer-controls video').getAttribute('src'),/master-preview-media/);
+  await page.evaluate(()=>document.querySelector('#master-generate-full-hd').click());
+  await page.waitForFunction(()=>document.querySelector('#master-preview-status').textContent.includes('MP4 1080 privado preparado'),{timeout:30000});
+  const download=page.locator('#master-layer-controls a[download]');assert.equal(await download.count(),1);assert.equal(await download.evaluate(e=>e.hidden),false);
+  assert.match(await download.getAttribute('href'),/master-preview-media/);
   await page.evaluate(()=>document.querySelector('[data-master-supervisor] button').click());
   await page.waitForFunction(()=>document.querySelector('[data-master-supervisor] [role=status]')?.textContent.includes('Muestras preparadas'),{timeout:30000});
   assert.match(await page.locator('[data-master-supervisor]').textContent(),/Medición orientativa del audio convertido/);
@@ -70,6 +74,7 @@ try{
   const evidence=await page.request.get(base+evidenceHref);assert.equal(evidence.status(),200);assert.ok(evidence.headers()['content-type'].startsWith('audio/wav'));
   await page.evaluate(()=>document.querySelector('#master-preview-history').click());
   await page.waitForFunction(()=>!document.querySelector('#master-preview-history-label').hidden,{timeout:30000});
+  assert.match(await page.locator('#master-preview-history-select').textContent(),/MP4 1080 para revisión/);
   await page.evaluate(()=>document.querySelector('#master-preview-history-open').click());
   assert.match(await page.locator('#master-preview-history-player').getAttribute('src'),/master-preview-media/);
   const dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(dimensions.scroll<=dimensions.width,JSON.stringify(dimensions));

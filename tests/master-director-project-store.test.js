@@ -154,10 +154,10 @@ test('render preflight requires a current approval and server-probed source; it 
 });
 
 test('private preview requires approval, verifies output and is idempotent for the same request',async()=>{
- const f=fixture(),master='b'.repeat(64),font='e'.repeat(64);let renders=0,outputFile='',invalidateDuringRender=false;
+ const f=fixture(),master='b'.repeat(64),font='e'.repeat(64);let renders=0,outputFile='',invalidateDuringRender=false,lastExpected=null;
  const policy={registry:{brandId:'sues',profileId:'DOPAMIN',projectId:'p1',approvedRuleVersion:'rules-v1',approvedRuleIds:['r1'],requiredRuleKeys:['brand.background'],approvedReferenceIds:[],masterHashes:{tapiz:master},lockedMastersByMode:{'brand-sues':[{id:'tapiz',sha256:master}]},rendererCapabilities:{remotion:['text']},licensedAssets:{},canvas:{width:1080,height:1920},verifiedFonts:{'Montserrat:700':{sha256:font}}},rulebook:[{id:'r1',key:'brand.background',scope:'global',authority:'explicit-user-approval',status:'approved',value:'anthracite',supersedes:[]}]};
- const renderer=async({composition,workRoot,approvalCheck})=>{assert.equal(await approvalCheck(),true);await new Promise(resolve=>setTimeout(resolve,120));renders++;const dir=join(workRoot,'master-preview-'+String(renders).padStart(6,'0'));mkdirSync(dir,{recursive:true});outputFile=join(dir,'preview.mp4');writeFileSync(outputFile,'synthetic-preview');if(invalidateDuringRender)policy.registry.approvedReferenceIds.push('changed');const outputSha256=createHash('sha256').update('synthetic-preview').digest('hex');return {status:'PREVIEW_RENDERED_UNVERIFIED',record:{id:'11111111-1111-4111-8111-111111111111',planFingerprint:composition.planFingerprint,sourceSha256:composition.sourceSha256,outputSha256,bytes:17,final:false},outputPath:outputFile}};
- const auditor=async({outputPath})=>({status:'TECHNICAL_PASS_HUMAN_QA_PENDING',outputSha256:createHash('sha256').update(readFileSync(outputPath)).digest('hex')});
+ const renderer=async({composition,workRoot,approvalCheck,quality})=>{assert.equal(await approvalCheck(),true);await new Promise(resolve=>setTimeout(resolve,120));renders++;const dir=join(workRoot,'master-preview-'+String(renders).padStart(6,'0'));mkdirSync(dir,{recursive:true});outputFile=join(dir,'preview.mp4');writeFileSync(outputFile,'synthetic-preview');if(invalidateDuringRender)policy.registry.approvedReferenceIds.push('changed');const outputSha256=createHash('sha256').update('synthetic-preview').digest('hex');return {status:'PREVIEW_RENDERED_UNVERIFIED',record:{id:randomUUID(),planFingerprint:composition.planFingerprint,sourceSha256:composition.sourceSha256,outputSha256,bytes:17,quality,width:quality==='full-hd'?1080:270,height:quality==='full-hd'?1920:480,final:false},outputPath:outputFile}};
+ const auditor=async({outputPath,expected})=>{lastExpected=expected;return {status:'TECHNICAL_PASS_HUMAN_QA_PENDING',outputSha256:createHash('sha256').update(readFileSync(outputPath)).digest('hex')}};
  const app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles,masterDirectorContext:async()=>policy,masterSourceProbe:async project=>({status:'SOURCE_CFR30_VERIFIED',sourceTiming:'cfr30-verified',sourceHasAudio:true,sourceDuration:24,width:1080,height:1920,sourceSha256:project.boundHashes.source}),masterPreviewConfig:{entryFile:'/tmp/a',remotionCli:'/tmp/b',browserExecutable:'/tmp/c'},masterPreviewRenderer:renderer,masterPreviewAuditor:auditor});
  try{const launch=await app.listen(),url=launch.split('/#')[0],job=app.jobs.create('test');const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}}),headers={Cookie:session.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'};
   const root=url+'/api/jobs/'+job.id,post=(p,b)=>fetch(root+p,{method:'POST',headers,body:JSON.stringify(b)}),c=await (await fetch(root+'/external-catalog',{headers})).json();
@@ -177,6 +177,12 @@ test('private preview requires approval, verifies output and is idempotent for t
   assert.equal(app.jobs.previewBusy,false);policy.registry.approvedReferenceIds.pop();invalidateDuringRender=false;
   const media=root+'/master-preview-media?previewId='+result.previewId;assert.equal((await fetch(media)).status,401);
   const range=await fetch(media,{headers:{...headers,Range:'bytes=0-3'}});assert.equal(range.status,206);assert.equal(await range.text(),'synt');
+  assert.equal((await post('/master-preview',{...data,quality:'full-hd'})).status,409);
+  assert.equal((await post('/master-preview',{...data,requestId:randomUUID(),quality:'bad'})).status,400);
+  const full={...data,requestId:randomUUID(),quality:'full-hd'};assert.equal((await post('/master-preview',full)).status,202);
+  const hd=await wait(full.requestId);assert.equal(hd.status,'READY');assert.equal(hd.result.final,false);
+  assert.equal(hd.result.record.quality,'full-hd');assert.equal(hd.result.record.width,1080);assert.equal(hd.result.record.height,1920);
+  assert.equal(lastExpected.width,1080);assert.equal(lastExpected.height,1920);assert.equal((await (await post('/master-preview',full)).json()).status,'READY');
   writeFileSync(firstOutput,'different');assert.equal((await fetch(media,{headers})).status,400);
  }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });

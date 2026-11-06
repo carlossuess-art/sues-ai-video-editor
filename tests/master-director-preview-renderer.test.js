@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,readdirSync,existsSync,rmSync} from 'node:fs';import {join} from 'node:path';import {tmpdir} from 'node:os';import {createHash} from 'node:crypto';
-import {renderMasterDirectorPreview} from '../src/master-director-preview-renderer.js';
+import {renderMasterDirectorPreview,hasFullHDMemoryHeadroom} from '../src/master-director-preview-renderer.js';
 const sha=s=>createHash('sha256').update(s).digest('hex');
 test('preview stages private source, rechecks approval, and removes staged media',async()=>{
  const dir=mkdtempSync(join(tmpdir(),'master-render-'));
@@ -40,4 +40,22 @@ test('missing browser libraries are reported by category without exposing stderr
   assert.equal(result.issues[0].reason,'BROWSER_LIBRARY_UNAVAILABLE');
   assert.ok(!JSON.stringify(result).includes('libexample.so'));
  }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+
+test('full-HD review uses original dimensions and never declares final acceptance',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'master-full-hd-'));try{
+  const bytes=Buffer.from('source'),sourcePath=join(dir,'source'),id=sha(bytes);writeFileSync(sourcePath,bytes);
+  const composition={schema:'sues-remotion-layers/v1',sourceSha256:id,planFingerprint:'b'.repeat(64),canvas:{width:1080,height:1920},fps:30,durationFrames:30,layers:[],source:{assetId:id,spans:[]}};
+  const args={composition,project:{sourcePath,boundHashes:{source:id},fontDirectory:dir,fontHashes:{}},assets:{},workRoot:join(dir,'work'),entryFile:'/tmp/src/index.ts',remotionCli:'/tmp/remotion.js',browserExecutable:'/tmp/chrome',approvalCheck:async()=>true,memoryCheck:()=>true,runner:async(_cmd,argv)=>{assert.ok(argv.includes('--scale=1'));writeFileSync(argv[4],'mp4-fixture')}};
+  const result=await renderMasterDirectorPreview({...args,quality:'full-hd'});assert.equal(result.status,'PREVIEW_RENDERED_UNVERIFIED');assert.equal(result.record.quality,'full-hd');assert.equal(result.record.width,1080);assert.equal(result.record.height,1920);assert.equal(result.record.final,false);
+  assert.equal((await renderMasterDirectorPreview({...args,quality:'unbounded'})).status,'BLOCKED');
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+test('full HD requires at least one GiB free in host and limited container',()=>{
+ const m=1024*1024;assert.equal(hasFullHDMemoryHeadroom(()=>({ok:true,hostAvailableBytes:1500*m,cgroupAvailableBytes:800*m})),false);
+ assert.equal(hasFullHDMemoryHeadroom(()=>({ok:true,hostAvailableBytes:800*m,cgroupAvailableBytes:1500*m})),false);
+ assert.equal(hasFullHDMemoryHeadroom(()=>({ok:true,hostAvailableBytes:1500*m,cgroupAvailableBytes:1200*m})),true);
+ assert.equal(hasFullHDMemoryHeadroom(()=>({ok:false,hostAvailableBytes:1500*m,cgroupAvailableBytes:1200*m})),false);
 });

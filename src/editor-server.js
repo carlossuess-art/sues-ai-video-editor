@@ -275,16 +275,16 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       return json(res,200,record);
      }
      if(action==='master-hybrid-start'&&req.method==='POST'){
-      const b=await body(req,2048);
-      if(Object.keys(b).some(k=>!['revision','decisionId','requestId'].includes(k))||
+      const b=await body(req,2048,{rejectDuplicates:true});
+      if(Object.keys(b).some(k=>!['revision','decisionId','requestId','quality'].includes(k))||!['preview','full-hd'].includes(b.quality??'preview')||
          !/^[a-f0-9]{64}$/.test(b.revision??'')||!/^[a-f0-9]{64}$/.test(b.decisionId??'')||
          !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(b.requestId??''))
        return json(res,400,{error:'Identificadores de proyecto mixto inválidos.'});
       if(!masterPreviewConfig)return json(res,503,{error:'El runtime privado de Remotion no está configurado.'});
-      const requests=new MasterHybridRequests(jobs.dir(id)),old=requests.get(b.requestId),key=id+':'+b.requestId;
+      const quality=b.quality??'preview',requests=new MasterHybridRequests(jobs.dir(id)),old=requests.get(b.requestId),key=id+':'+b.requestId;
       if(old){
-       if(old.revision!==b.revision||old.decisionId!==b.decisionId)
-        return json(res,409,{error:'El identificador pertenece a un plan distinto.'});
+       if(old.revision!==b.revision||old.decisionId!==b.decisionId||(old.quality??'preview')!==quality)
+        return json(res,409,{error:'El identificador pertenece a un plan o formato distinto.'});
        if(old.status==='RUNNING'&&!masterHybridRuns.has(key))
         return json(res,409,{error:'La ejecución anterior quedó interrumpida; necesita diagnóstico.'});
        return json(res,old.status==='RUNNING'?202:200,old);
@@ -298,7 +298,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
        decisionId:b.decisionId,requestId:b.requestId,assets,commandPlanner:planInstructions});
       if(work.status!=='READY_TO_START_NATIVE_STAGE')
        return json(res,409,{status:'BLOCKED',issues:work.issues??[{code:'HYBRID_NOT_READY'}]});
-      const record=requests.create(b),previewRoot=join(jobs.dir(id),'master-director','previews');
+      const record=requests.create({...b,quality}),previewRoot=join(jobs.dir(id),'master-director','previews');
       const task=(async()=>{
        let output=null,locked=false;
        const fail=(status,code,reason)=>{record.status=status;record.step='STOPPED';
@@ -353,13 +353,14 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
         const result=await masterPreviewRenderer({composition:verified.handoff.composition,project:derived,
          assets,workRoot:previewRoot,entryFile:masterPreviewConfig.entryFile,remotionCli:masterPreviewConfig.remotionCli,
          browserExecutable:masterPreviewConfig.browserExecutable,browserLibraryPath:masterPreviewConfig.browserLibraryPath,
-         approvalCheck});
+         approvalCheck,quality});
         if(result.status!=='PREVIEW_RENDERED_UNVERIFIED'){fail('BLOCKED',result.issues?.[0]?.code??'HYBRID_REMOTION_FAILED',result.issues?.[0]?.reason);return;}
         output=result.outputPath;
         const audit=await masterPreviewAuditor({sourcePath:verified.outputPath,
          sourceSha256:verified.mediaAudit.outputSha256,outputPath:output,
-         expected:{width:270,height:480,duration:verified.handoff.composition.durationFrames/30,fps:30}});
+         expected:{width:quality==='full-hd'?1080:270,height:quality==='full-hd'?1920:480,duration:verified.handoff.composition.durationFrames/30,fps:30}});
         if(audit.status!=='TECHNICAL_PASS_HUMAN_QA_PENDING'||audit.outputSha256!==result.record.outputSha256||
+           (quality==='full-hd'&&(result.record.quality!==quality||result.record.width!==1080||result.record.height!==1920))||
            !await approvalCheck()){fail('BLOCKED','HYBRID_REMOTION_AUDIT_OR_APPROVAL_FAILED');return;}
         const seal={schema:'sues-master-preview-seal/v1',requestId:b.requestId,revision:b.revision,
          decisionId:b.decisionId,record:result.record,audit,
@@ -536,10 +537,11 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       return json(res,200,record);
      }
      if(action==='master-preview'&&req.method==='POST'){
-      const b=await body(req,2048);if(Object.keys(b).some(k=>!['revision','decisionId','requestId'].includes(k))||typeof b.requestId!=='string'||! /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(b.requestId))return json(res,400,{error:'Solicitud inválida.'});
+      const b=await body(req,2048,{rejectDuplicates:true});if(Object.keys(b).some(k=>!['revision','decisionId','requestId','quality'].includes(k))||!['preview','full-hd'].includes(b.quality??'preview')||typeof b.requestId!=='string'||! /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(b.requestId))return json(res,400,{error:'Solicitud inválida.'});
+      const quality=b.quality??'preview';
       if(!masterPreviewConfig)return json(res,503,{error:'La previsualización del Director todavía no está configurada.'});
       const requests=new MasterPreviewRequests(jobs.dir(id)),old=requests.get(b.requestId),key=id+':'+b.requestId;
-      if(old){if(old.revision!==b.revision||old.decisionId!==b.decisionId)return json(res,409,{error:'La solicitud pertenece a otra revisión del plan.'});
+      if(old){if(old.revision!==b.revision||old.decisionId!==b.decisionId||(old.quality??'preview')!==quality)return json(res,409,{error:'La solicitud pertenece a otra revisión del plan.'});
        if(old.status==='RUNNING'&&!masterPreviewRuns.has(key))return json(res,409,{error:'La previsualización anterior quedó interrumpida y necesita revisión.'});
        return json(res,old.status==='RUNNING'?202:200,old);}
       // Recover a completed sealed output after restart. If no seal exists,
@@ -553,7 +555,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       if(requests.hasInterrupted())return json(res,409,{error:'Hay una previsualización interrumpida que necesita revisión antes de continuar.'});
       if(jobs.previewBusy||jobs.children.size||jobs.queued().length||jobs.publishing.size||previews.pending.size||adjustmentPreviews.running)
        return json(res,409,{error:'Hay otra edición en proceso. Espera antes de previsualizar.'});
-      const record=requests.create({requestId:b.requestId,revision:b.revision,decisionId:b.decisionId});jobs.previewBusy=true;
+      const record=requests.create({requestId:b.requestId,revision:b.revision,decisionId:b.decisionId,quality});jobs.previewBusy=true;
       const task=(async()=>{
        let output=null,previewRoot=join(jobs.dir(id),'master-director','previews');
        try{
@@ -565,12 +567,13 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
           layers.graph.planFingerprint===ready.composition.planFingerprint&&catalog.timelineFingerprint===ready.projectFingerprint&&catalog.sourceSha256===ready.composition.sourceSha256;
         };
         const result=await masterPreviewRenderer({composition:ready.composition,project:ready.project,assets,workRoot:previewRoot,
-         entryFile:masterPreviewConfig.entryFile,remotionCli:masterPreviewConfig.remotionCli,browserExecutable:masterPreviewConfig.browserExecutable,browserLibraryPath:masterPreviewConfig.browserLibraryPath,approvalCheck});
+         entryFile:masterPreviewConfig.entryFile,remotionCli:masterPreviewConfig.remotionCli,browserExecutable:masterPreviewConfig.browserExecutable,browserLibraryPath:masterPreviewConfig.browserLibraryPath,approvalCheck,quality});
         if(result.status!=='PREVIEW_RENDERED_UNVERIFIED'){record.status='BLOCKED';record.issues=result.issues;requests.save(record);return;}
         output=result.outputPath;
         const audit=await masterPreviewAuditor({sourcePath:ready.project.sourcePath,sourceSha256:ready.composition.sourceSha256,
-         outputPath:output,expected:{width:270,height:480,duration:ready.composition.durationFrames/30,fps:30}});
-        if(audit.status!=='TECHNICAL_PASS_HUMAN_QA_PENDING'||audit.outputSha256!==result.record.outputSha256||!await approvalCheck()){
+         outputPath:output,expected:{width:quality==='full-hd'?1080:270,height:quality==='full-hd'?1920:480,duration:ready.composition.durationFrames/30,fps:30}});
+        if(audit.status!=='TECHNICAL_PASS_HUMAN_QA_PENDING'||audit.outputSha256!==result.record.outputSha256||
+           (quality==='full-hd'&&(result.record.quality!==quality||result.record.width!==1080||result.record.height!==1920))||!await approvalCheck()){
          try{discardUnsealedMasterPreview(previewRoot,output)}catch{}output=null;
          record.status='BLOCKED';record.issues=[{code:'PREVIEW_AUDIT_OR_APPROVAL_FAILED'}];requests.save(record);return;
         }

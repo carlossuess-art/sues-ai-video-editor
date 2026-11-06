@@ -504,8 +504,8 @@ function invalidateExternal(){externalReview=null;externalRequest=null;$('extern
 $('external-plan-text').oninput=()=>{invalidateExternal();resetMasterReview();};
 // SUES Master Director: explicit approval and reversible per-layer layout edits.
 // A saved decision is not execution; the server enforces trust and costs.
-let masterReview=null,masterPreviewRequest=null,masterNativeRequest=null,masterHybridRequest=null;
-function resetMasterReview(){masterReview=null;masterPreviewRequest=null;masterNativeRequest=null;masterHybridRequest=null;$('master-review-actions').hidden=true;$('master-layer-controls').replaceChildren();$('master-review-result').replaceChildren();}
+let masterReview=null,masterPreviewRequest=null,masterFullHDRequest=null,masterNativeRequest=null,masterHybridRequest=null,masterHybridHDRequest=null;
+function resetMasterReview(){masterReview=null;masterPreviewRequest=null;masterFullHDRequest=null;masterNativeRequest=null;masterHybridRequest=null;masterHybridHDRequest=null;$('master-review-actions').hidden=true;$('master-layer-controls').replaceChildren();$('master-review-result').replaceChildren();}
 function showMasterReview(result){
  const target=$('master-review-result');target.replaceChildren();
  if(result.status!=='READY_FOR_CHOICE'){
@@ -539,7 +539,7 @@ function showMasterReview(result){
 }
 $('master-preview-history').onclick=()=>work(async()=>{
  if(!current)throw Error('Abre un proyecto con vídeo preparado.');const jobId=current.id,result=await api('jobs/'+jobId+'/master-previews');if(current?.id!==jobId)return;
- const select=$('master-preview-history-select');select.replaceChildren();for(const preview of result.previews){const option=document.createElement('option');option.value=preview.previewId;option.textContent='Previsualización · '+new Date(preview.createdAt).toLocaleString('es-ES');select.append(option);}
+ const select=$('master-preview-history-select');select.replaceChildren();for(const preview of result.previews){const option=document.createElement('option');option.value=preview.previewId;option.textContent=(preview.quality==='full-hd'?'MP4 1080 para revisión':'Previsualización')+' · '+new Date(preview.createdAt).toLocaleString('es-ES');select.append(option);}
  $('master-preview-history-label').hidden=!result.previews.length;$('master-preview-history-open').hidden=!result.previews.length;
  if(!result.previews.length)$('master-review-result').textContent='Todavía no hay previsualizaciones guardadas.';
 });
@@ -621,7 +621,7 @@ $('master-generate').onclick=()=>work(async()=>{
  const result=await api('jobs/'+jobId+'/master-generate','POST',{brief});
  if(current?.id!==jobId||$('external-plan-text').value.trim()||$('master-generation-brief').value!==brief)throw Error('El proyecto o el encargo han cambiado. La propuesta generada se ha guardado en versiones.');
  const raw=JSON.stringify(result.story,null,2);$('external-plan-text').value=raw;
- masterNativeRequest=null;masterPreviewRequest=null;masterHybridRequest=null;masterReview={jobId,raw,story:result.story,revision:result.revision,fingerprint:result.review.fingerprint};showMasterReview(result.review);
+ masterNativeRequest=null;masterPreviewRequest=null;masterFullHDRequest=null;masterHybridRequest=null;masterHybridHDRequest=null;masterReview={jobId,raw,story:result.story,revision:result.revision,fingerprint:result.review.fingerprint};showMasterReview(result.review);
 });
 $('master-review-button').onclick=()=>work(async()=>{
  if(!current)throw Error('Abre un proyecto con vídeo preparado.');
@@ -629,7 +629,7 @@ $('master-review-button').onclick=()=>work(async()=>{
  const draft=await api('jobs/'+jobId+'/master-draft','POST',{story});
  const result=await api('jobs/'+jobId+'/master-review','POST',{revision:draft.revision});
  if(current?.id!==jobId||$('external-plan-text').value!==raw)throw Error('El proyecto o la propuesta han cambiado. Vuelve a revisarlos.');
- masterNativeRequest=null;masterPreviewRequest=null;masterHybridRequest=null;masterReview={jobId,raw,story,revision:draft.revision,fingerprint:result.fingerprint};showMasterReview(result);
+ masterNativeRequest=null;masterPreviewRequest=null;masterFullHDRequest=null;masterHybridRequest=null;masterHybridHDRequest=null;masterReview={jobId,raw,story,revision:draft.revision,fingerprint:result.fingerprint};showMasterReview(result);
 });
 function addMasterSupervisorControl(area,state,previewId){
  const old=area.querySelector('[data-master-supervisor]');if(old)old.remove();
@@ -689,15 +689,16 @@ async function masterDecision(mode){
   if(mode==='autonomous')setTimeout(()=>void work(prepareNative),0);
  }
  if(hasNative&&hasRemotion){
-  const button=document.createElement('button'),status=document.createElement('p'),player=document.createElement('video');
+  const button=document.createElement('button'),buttonHD=document.createElement('button'),downloadHD=document.createElement('a'),status=document.createElement('p'),player=document.createElement('video');
+  buttonHD.type='button';buttonHD.id='master-hybrid-full-hd';buttonHD.textContent='Crear MP4 mixto 1080 para revisión';downloadHD.hidden=true;downloadHD.download='sues-master-mixto-revision-1080.mp4';downloadHD.textContent='Descargar MP4 mixto de revisión';
   button.type='button';button.textContent='Preparar previsualización mixta';status.setAttribute('role','status');
   player.controls=true;player.playsInline=true;player.hidden=true;player.style.maxWidth='100%';
-  const prepareHybrid=async()=>{
+  const prepareHybrid=async(quality='preview')=>{
    if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
-   masterHybridRequest??=crypto.randomUUID();const requestId=masterHybridRequest;button.disabled=true;
-   status.textContent='Preparando las capas y la previsualización privada…';
-   let launched;try{launched=await api('jobs/'+state.jobId+'/master-hybrid-start','POST',{revision:state.revision,decisionId:state.decisionId,requestId});}
-   catch(e){button.disabled=false;throw e;}
+   const requestId=quality==='full-hd'?(masterHybridHDRequest??=crypto.randomUUID()):(masterHybridRequest??=crypto.randomUUID());button.disabled=true;buttonHD.disabled=true;downloadHD.hidden=true;
+   status.textContent=quality==='full-hd'?'Preparando capas y MP4 mixto 1080 privado…':'Preparando las capas y la previsualización privada…';
+   let launched;try{launched=await api('jobs/'+state.jobId+'/master-hybrid-start','POST',{revision:state.revision,decisionId:state.decisionId,requestId,quality});}
+   catch(e){button.disabled=false;buttonHD.disabled=false;throw e;}
    const watch=async initial=>{
     if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)return;
     try{
@@ -706,16 +707,17 @@ async function masterDecision(mode){
      if(progress.status==='READY'&&progress.result?.previewId){
       player.src='/api/jobs/'+state.jobId+'/master-preview-media?previewId='+encodeURIComponent(progress.result.previewId);player.hidden=false;
       addMasterSupervisorControl(area,state,progress.result.previewId);
-      status.textContent='Previsualización privada preparada. Requiere revisión audiovisual.';button.disabled=false;return;
+      if(quality==='full-hd'){downloadHD.href=player.src;downloadHD.hidden=false;}
+      status.textContent=quality==='full-hd'?'MP4 mixto 1080 preparado para revisión. No está aprobado ni publicado.':'Previsualización privada preparada. Requiere revisión audiovisual.';button.disabled=false;buttonHD.disabled=false;return;
      }
-     status.textContent=progress.status==='INTERRUPTED'?'La preparación se interrumpió y necesita diagnóstico.':'La preparación necesita revisar el plan, los recursos o los motores.';
-     if(['BLOCKED','FAILED'].includes(progress.status)&&masterHybridRequest===requestId)masterHybridRequest=null;
-     button.disabled=false;
-    }catch{status.textContent='Se ha interrumpido la conexión. Puedes volver a comprobar la preparación.';button.disabled=false;}
+     status.textContent=progress.status==='INTERRUPTED'?'La preparación se interrumpió y necesita diagnóstico.':(progress.issues??[]).some(i=>i.code==='PREVIEW_MEMORY_LIMIT')?'No hay memoria suficiente para generar el vídeo. Espera o revisa la capacidad disponible.':'La preparación necesita revisar el plan, los recursos o los motores.';
+     if(['BLOCKED','FAILED'].includes(progress.status)){if(quality==='full-hd'&&masterHybridHDRequest===requestId)masterHybridHDRequest=null;else if(quality==='preview'&&masterHybridRequest===requestId)masterHybridRequest=null;}
+     button.disabled=false;buttonHD.disabled=false;
+    }catch{status.textContent='Se ha interrumpido la conexión. Puedes volver a comprobar la preparación.';button.disabled=false;buttonHD.disabled=false;}
    };
    void watch(launched);
   };
-  button.onclick=()=>work(prepareHybrid);area.append(button,status,player);
+  button.onclick=()=>work(()=>prepareHybrid('preview'));buttonHD.onclick=()=>work(()=>prepareHybrid('full-hd'));area.append(button,buttonHD,status,player,downloadHD);
   if(mode==='autonomous')setTimeout(()=>void work(prepareHybrid),0);
  }
  const checkButton=document.createElement('button'),checkStatus=document.createElement('p');
@@ -726,14 +728,15 @@ async function masterDecision(mode){
   const check=await api('jobs/'+state.jobId+'/master-render-preflight','POST',{revision:state.revision,decisionId:result.decisionId});
   checkStatus.textContent=check.status==='READY_FOR_SOURCE_STAGING'?'Preparación comprobada. Todavía no se ha generado el vídeo.':'Hay elementos del vídeo o del plan pendientes de comprobar antes de generar.';
  });if(!hasNative)area.append(checkButton,checkStatus);
- const generate=document.createElement('button'),previewStatus=document.createElement('p'),player=document.createElement('video');
+ const generate=document.createElement('button'),fullHD=document.createElement('button'),download=document.createElement('a'),previewStatus=document.createElement('p'),player=document.createElement('video');
+ fullHD.type='button';fullHD.id='master-generate-full-hd';fullHD.textContent='Crear MP4 1080 para revisión';download.hidden=true;download.textContent='Descargar MP4 de revisión';download.download='sues-master-revision-1080.mp4';
  generate.type='button';generate.id='master-generate-preview';generate.textContent='Generar previsualización privada';previewStatus.id='master-preview-status';previewStatus.setAttribute('role','status');player.controls=true;player.playsInline=true;player.hidden=true;player.style.maxWidth='100%';
- generate.onclick=()=>work(async()=>{
+ const startPreview=quality=>work(async()=>{
   if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)throw Error('La propuesta ha cambiado. Revísala de nuevo.');
-  masterPreviewRequest??=crypto.randomUUID();const requestId=masterPreviewRequest;generate.disabled=true;
-  previewStatus.textContent='Preparando la previsualización. Puedes seguir trabajando o cerrar esta pantalla.';
-  let launched;try{launched=await api('jobs/'+state.jobId+'/master-preview','POST',{revision:state.revision,decisionId:state.decisionId,requestId});}
-  catch(e){generate.disabled=false;throw e;}
+  const requestId=quality==='full-hd'?(masterFullHDRequest??=crypto.randomUUID()):(masterPreviewRequest??=crypto.randomUUID());generate.disabled=true;fullHD.disabled=true;download.hidden=true;
+  previewStatus.textContent=quality==='full-hd'?'Preparando MP4 1080 privado para revisión. Puede tardar; puedes seguir trabajando.':'Preparando la previsualización. Puedes seguir trabajando o cerrar esta pantalla.';
+  let launched;try{launched=await api('jobs/'+state.jobId+'/master-preview','POST',{revision:state.revision,decisionId:state.decisionId,requestId,quality});}
+  catch(e){generate.disabled=false;fullHD.disabled=false;throw e;}
   const watch=async initial=>{
    if(current?.id!==state.jobId||$('external-plan-text').value!==state.raw)return;
    try{
@@ -742,20 +745,22 @@ async function masterDecision(mode){
     if(progress.status==='READY'&&progress.result?.status==='PREVIEW_READY_FOR_REVIEW'){
      player.src='/api/jobs/'+state.jobId+'/master-preview-media?previewId='+encodeURIComponent(progress.result.previewId);player.hidden=false;
       addMasterSupervisorControl(area,state,progress.result.previewId);
-     previewStatus.textContent='Previsualización privada preparada. Revísala antes de decidir los siguientes ajustes.';generate.disabled=false;return;
+     if(quality==='full-hd'){download.href=player.src;download.hidden=false;}
+     previewStatus.textContent=quality==='full-hd'?'MP4 1080 privado preparado para revisión. No está aprobado ni es una publicación.':'Previsualización privada preparada. Revísala antes de decidir los siguientes ajustes.';generate.disabled=false;fullHD.disabled=false;return;
     }
     const codes=(progress.issues??[]).map(issue=>issue.code);
     previewStatus.textContent=progress.status==='INTERRUPTED'?'La previsualización se interrumpió y necesita una comprobación antes de continuar.':
      codes.includes('SOURCE_GEOMETRY_UNVERIFIED')?'No se ha podido comprobar la proporción o la orientación del vídeo. Conserva el original y revisa sus datos antes de continuar.':
+     codes.includes('PREVIEW_MEMORY_LIMIT')?'No hay memoria suficiente para generar el vídeo. Espera o revisa la capacidad disponible.':
      'La previsualización necesita revisar el vídeo, los recursos o el plan.';
     // A confirmed terminal failure is safe to retry using a fresh idempotency key.
     // Keep the key for interrupted or uncertain requests to avoid duplicate renders.
-    if(['BLOCKED','FAILED'].includes(progress.status)&&masterPreviewRequest===requestId)masterPreviewRequest=null;
-    generate.disabled=false;
-   }catch{previewStatus.textContent='Se ha interrumpido la conexión. Puedes volver a comprobar la previsualización.';generate.disabled=false;}
+    if(['BLOCKED','FAILED'].includes(progress.status)){if(quality==='full-hd'&&masterFullHDRequest===requestId)masterFullHDRequest=null;else if(quality==='preview'&&masterPreviewRequest===requestId)masterPreviewRequest=null;}
+    generate.disabled=false;fullHD.disabled=false;
+   }catch{previewStatus.textContent='Se ha interrumpido la conexión. Puedes volver a comprobar la previsualización.';generate.disabled=false;fullHD.disabled=false;}
   };
   void watch(launched);
- });if(!hasNative)area.append(generate,previewStatus,player);
+ });generate.onclick=()=>startPreview('preview');fullHD.onclick=()=>startPreview('full-hd');if(!hasNative)area.append(generate,fullHD,previewStatus,player,download);
  for(const node of layers.graph.nodes.filter(n=>n.renderer==='remotion')){
   const original=state.story.operations.find(o=>o.id===node.id);if(!original)continue;
   const box=document.createElement('fieldset'),legend=document.createElement('legend');legend.textContent='Ajustar capa · '+node.id;box.append(legend);

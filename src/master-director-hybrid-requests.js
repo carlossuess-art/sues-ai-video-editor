@@ -17,20 +17,20 @@ export class MasterHybridRequests{
   if(r.schema!=='sues-master-hybrid-run/v1'||r.requestId!==requestId||
      !HASH.test(r.revision??'')||!HASH.test(r.decisionId??'')||!STATES.has(r.status)||
      (r.childId!==undefined&&!UUID.test(r.childId))||
-     (r.previewId!==undefined&&!UUID.test(r.previewId)))throw Error('Invalid hybrid request record');
+     (r.previewId!==undefined&&!UUID.test(r.previewId))||(r.quality!==undefined&&!['preview','full-hd'].includes(r.quality)))throw Error('Invalid hybrid request record');
   return r;
  }
- create({requestId,revision,decisionId}){
-  if(!HASH.test(revision??'')||!HASH.test(decisionId??''))throw Error('Invalid hybrid approval');
+ create({requestId,revision,decisionId,quality='preview'}){
+  if(!HASH.test(revision??'')||!HASH.test(decisionId??'')||!['preview','full-hd'].includes(quality))throw Error('Invalid hybrid approval');
   const path=this.path(requestId);mkdirSync(this.root,{recursive:true,mode:0o700});
   if(lstatSync(this.root).isSymbolicLink())throw Error('Unsafe hybrid journal');
-  const record={schema:'sues-master-hybrid-run/v1',requestId,revision,decisionId,status:'RUNNING',step:'NATIVE_STAGE',
+  const record={schema:'sues-master-hybrid-run/v1',requestId,revision,decisionId,quality,status:'RUNNING',step:'NATIVE_STAGE',
    createdAt:new Date().toISOString(),final:false};
   writeFileSync(path,JSON.stringify(record),{flag:'wx',mode:0o600});return record;
  }
  save(record){
   const old=this.get(record.requestId);
-  if(!old||old.revision!==record.revision||old.decisionId!==record.decisionId||
+  if(!old||old.revision!==record.revision||old.decisionId!==record.decisionId||(old.quality??'preview')!==(record.quality??'preview')||
      terminal.has(old.status)||!STATES.has(record.status)||record.final!==false)throw Error('Hybrid run changed or terminal');
   if(old.childId&&old.childId!==record.childId)throw Error('Native child identity changed');
   if(JSON.stringify(record).length>60000)throw Error('Hybrid record too large');
