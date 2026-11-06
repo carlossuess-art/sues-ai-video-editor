@@ -647,7 +647,7 @@ function addMasterSupervisorControl(area,state,previewId){
    const query=new URLSearchParams({revision:state.revision,decisionId:state.decisionId,previewId,inspectionId:result.inspectionId});
    const makeLink=(file,title)=>{const link=document.createElement('a'),q=new URLSearchParams(query);q.set('file',file);
     link.href='/api/jobs/'+state.jobId+'/master-supervisor-evidence?'+q.toString();link.target='_blank';link.rel='noopener noreferrer';link.textContent=title;return link;};
-   const audio=document.createElement('p');audio.append(makeLink('audio.wav','Abrir audio para escuchar'));results.append(audio);
+   const audio=document.createElement('p');audio.append(makeLink('audio.wav',result.report.audioEvidence?.channels===2?'Abrir audio de revisión (estéreo convertido)':'Abrir audio para escuchar'));results.append(audio);
    const list=document.createElement('ol');for(const sample of result.report.samples){const li=document.createElement('li');li.append(makeLink(sample.file,(sample.frame/30).toFixed(2)+' s'+(sample.operationIds.length?' · '+sample.operationIds.join(', '):' · línea temporal')));list.append(li);}results.append(list);
   }finally{button.disabled=false;}
  });section.append(button,status,results);area.append(section);
