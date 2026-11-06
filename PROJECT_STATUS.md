@@ -1,3 +1,7 @@
+## 06/11/2026 · Evidencia de audio para supervisión
+
+La escucha de supervisión usa una conversión estéreo y muestra pico, RMS y muestras próximas al máximo por canal; son medidas objetivas, no QA. Cinco pruebas con FFmpeg pasaron. Se midió también el audio convertido de la previsualización real V6B existente, sin generar otro Reel; la escucha y aceptación completas siguen pendientes. [Checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Sin despliegue.
+
 ## 06/11/2026 · Ajuste centrado de medios en rama
 
 Las capas Remotion de imagen y vídeo aceptan `fill`, `contain` y `cover` con encuadre centrado. Pruebas dirigidas 37/37, TypeScript y comprobaciones por píxeles en imágenes y un fotograma de vídeo sintéticos; no equivale a QA de movimiento ni Reel real. La skill privada se sincronizó a 1.5.6. [Checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Sin despliegue.
