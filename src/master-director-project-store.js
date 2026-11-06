@@ -2,7 +2,7 @@
 // The caller supplies current editor facts and server-owned policy; request bodies
 // cannot assert resources, rules, budget, or user approvals.
 import {createHash,randomBytes} from 'node:crypto';
-import {mkdirSync,readFileSync,writeFileSync,renameSync,unlinkSync,readdirSync,lstatSync,existsSync} from 'node:fs';
+import {mkdirSync,readFileSync,writeFileSync,renameSync,unlinkSync,rmdirSync,readdirSync,lstatSync,existsSync} from 'node:fs';
 import {join} from 'node:path';
 import {prepareMasterDirectorSession} from './master-director-orchestration.js';
 import {buildMasterDirectorReview} from './master-director-workflow.js';
@@ -111,19 +111,26 @@ export class MasterDirectorProjectStore{
   if(!HASH.test(revision??'')||!(expectedRevision===null||HASH.test(expectedRevision??'')))
    throw Error('Invalid project head');
   this.readDraft(revision);
-  const previous=this.current();
-  if(previous.revision!==expectedRevision)
-   return {status:'CONFLICT',code:'STALE_PROJECT_REVISION',currentRevision:previous.revision};
-  if(previous.revision===revision)
-   return {status:'CURRENT',revision,updatedAt:previous.updatedAt};
   mkdirSync(this.root,{recursive:true,mode:0o700});
-  const updatedAt=new Date().toISOString();
-  const tmp=join(this.root,'current-'+randomBytes(12).toString('hex')+'.tmp');
+  // Atomic filesystem lock keeps the compare-and-swap valid even if two
+  // editor processes happen to share this project directory.
+  const lock=join(this.root,'current.lock');
+  try{mkdirSync(lock,{mode:0o700});}
+  catch(e){if(e.code==='EEXIST')return {status:'CONFLICT',code:'PROJECT_HEAD_BUSY',currentRevision:this.current().revision};throw e;}
   try{
-   writeFileSync(tmp,JSON.stringify({schema:'sues-master-current/v1',revision,updatedAt}),{mode:0o600,flag:'wx'});
-   renameSync(tmp,join(this.root,'current.json'));
-  }finally{try{unlinkSync(tmp);}catch(e){if(e.code!=='ENOENT')throw e;}}
-  return {status:'CURRENT',revision,parentRevision:expectedRevision,updatedAt,requiresNewReview:true};
+   const previous=this.current();
+   if(previous.revision!==expectedRevision)
+    return {status:'CONFLICT',code:'STALE_PROJECT_REVISION',currentRevision:previous.revision};
+   if(previous.revision===revision)
+    return {status:'CURRENT',revision,updatedAt:previous.updatedAt};
+   const updatedAt=new Date().toISOString();
+   const tmp=join(this.root,'current-'+randomBytes(12).toString('hex')+'.tmp');
+   try{
+    writeFileSync(tmp,JSON.stringify({schema:'sues-master-current/v1',revision,updatedAt}),{mode:0o600,flag:'wx'});
+    renameSync(tmp,join(this.root,'current.json'));
+   }finally{try{unlinkSync(tmp);}catch(e){if(e.code!=='ENOENT')throw e;}}
+   return {status:'CURRENT',revision,parentRevision:expectedRevision,updatedAt,requiresNewReview:true};
+  }finally{rmdirSync(lock);}
  }
  editCurrentOperation(expectedRevision,operationId,patch){
   const head=this.current();
