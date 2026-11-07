@@ -1,3 +1,15 @@
+## AVANCE · 07/11/2026 · hashes, identidad de motion y pruebas 29/29
+
+- Se recuperó en el servidor de staging `real-film-director-158404.md` y se confirmó que su contenido editorial coincide **línea por línea** con el anexo de 148 líneas; el archivo tiene un salto de línea final adicional. SHA del archivo `d8b6cffcce6280c767bbf69584bca6df01c580a225bbb52401ab563200a31c16`; SHA del texto exacto registrado en anexo `e411990eba13662249e7bd9ce75684ba0dd772d4b35ea4d1cc4671ab903ba8ca`. No son hashes intercambiables: **el gate de identidad exacta sigue obligatorio**.
+- Se añadió `src/master-director-brief-provenance.js` y prueba `tests/master-director-brief-provenance.test.js` (commits `02c05ea`, `abe0de3`) para informar `FORMAT_ONLY_DIFFERENCE` frente a un cambio creativo real, sin autorizar ejecución ni revisión creativa.
+- Se endureció `master-director-brief-semantic.js` para que los recursos Mxx de biblioteca también requieran un tipo visual válido; un audio no puede sustituir motion gráfico (commits `470f5cc`, `8ef1ec7`, corrección de fixture `f876d6f`).
+- En una **copia privada aislada** en el VPS se ejecutó `node --test tests/master-director-brief-*.test.js tests/master-director-broll-fades.test.js` sobre los módulos nuevos de GitHub y dependencias del proyecto: **29 PASS, 0 FAIL, 0 SKIP** al finalizar. Una primera ejecución detectó que el fixture anterior no declaraba `kind:'motion'`; se reparó el fixture y se volvió a ejecutar todo.
+- Sin cierre de Fase 1: todavía 8 recursos no verificables y 120 intenciones sin equivalencia ejecutable demostrada según el auditor del Reel real; QA render y aprobación artística pendiente.
+- Regla: la comprobación de diferencia solo de salto de línea sirve para diagnosticar, **jamás** para eludir revisión, firma, derechos o coincidencia exacta. No se inventaron licencias ni recursos.
+- El siguiente paso debe incorporar recursos reales verificables y equivalencia de las composiciones de M01–M03; no reabrir pruebas anteriormente aceptadas sin cambios.
+
+---
+
 ## FASE 1 · Activación controlada de la primitiva M01/M03 en contexto de servidor · 07/11/2026
 
 Se ha ampliado **solo el registro de capacidades de confianza del servidor**, `src/master-director-context.js`, con `remotion:'solid-rect'` (commit `b2be452`), después de verificar el compilador estricto y la salida de Remotion. Test `tests/master-director-context.test.js` (commit `b7491a1`) comprueba que la capacidad procede del contexto autorizado, no de la solicitud libre. Checkout limpio actualizado, prueba conjunta `tests/master-director-context.test.js`, `master-director-solid-shapes`, `master-director-remotion-compiler` y toda la familia `master-director-brief*.test.js` + B-roll fades: **50 PASS, 0 FAIL, 0 SKIP**. La nueva figura no sustituye máscaras verificadas ni materiales 2.5D/3D de M01–M03, que siguen pendientes cuando se exigen. La capacidad permite iniciar composición procedural fiel de bloques sin justificar derechos de vídeos ajenos. Material visual sintético probado por píxeles anteriormente; **no se ha renderizado el Reel completo**.
