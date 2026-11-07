@@ -60,6 +60,23 @@ export function translateFilmDirectorBrief({text,sourceSha256,originalSha256,tim
     conditions.push(...reasons.map(code=>({code,subject:id,sourceLines:[entry.line]})));
    }else if(entry.text.trim())notes.push({sourceLine:entry.line,verbatim:entry.text});
   }
+  // Explicitly described short returns to Carlos can be embedded in a resource
+  // paragraph instead of a bullet. Preserve them as independent camera shots.
+  for(const entry of section.lines){
+   const back=/\b(?:retorno breve|regreso) a c[aá]mara\s+([\d:,]+)\s*[–-]\s*([\d:,]+)\s*s\b/i.exec(entry.text);
+   if(!back)continue;
+   const a=time(back[1]),b=time(back[2]);
+   if(!finite(a)||!finite(b)||b<=a||a<section.sourceStart-.01||b>section.sourceEnd+.01){
+    conditions.push({code:'EXPLICIT_CAMERA_RETURN_TIMING_UNVERIFIED',subject:section.id,sourceLines:[entry.line]});continue;
+   }
+   if(shots.some(x=>Math.abs(x.sourceStart-a)<.001&&Math.abs(x.sourceEnd-b)<.001))continue;
+   const id=`${section.id}-shot-${String(shots.length+1).padStart(2,'0')}`;
+   shots.push({id,sceneId:section.id,kind:'camera',base:'CARLOS',resourceHint:null,overlayResourceHints:[],
+    sourceStart:a,sourceEnd:b,editStart:Math.round(a*fps)/fps,editEnd:Math.round(b*fps)/fps,
+    sourceLine:entry.line,verbatim:entry.text,implicitFromExplicitDirection:true,
+    blockingReasons:['CAMERA_COMPOSITION_NOT_VERIFIED_AT_FRAME'],approved:false});
+   conditions.push({code:'CAMERA_COMPOSITION_NOT_VERIFIED_AT_FRAME',subject:id,sourceLines:[entry.line]});
+  }
   if(shots.length===0)conditions.push({code:'SCENE_SHOTS_MISSING',subject:section.id,sourceLines:[section.startLine]});
   const instructions=fields.filter(f=>/Audio\/transcripción|Recurso y máscara|Posición|Animación y audio|Estado/.test(f.name));
   for(const f of instructions){

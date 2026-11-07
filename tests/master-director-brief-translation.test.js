@@ -80,3 +80,15 @@ test('a source camera shot with M01 is preserved as camera plus a real overlay i
  assert.ok(a.operationIntents.some(x=>x.id===camera.id+'-overlay-M01'));
  assert.ok(a.resourceReferences.some(x=>x.role==='overlay'&&x.resourceHint==='M01'));
 });
+
+test('preserves a camera return described only inside a resource paragraph',()=>{
+ const input=text.replace('**Recurso y máscara:** B01 pendiente.', '**Recurso y máscara:** B01 pendiente; retorno breve a cámara 2,5–3 s.');
+ const result=translateFilmDirectorBrief({text:input,sourceSha256:H,originalSha256:O,timelineFingerprint:T,duration:6});
+ assert.equal(result.scenes[0].shots.length,3);
+ const returned=result.scenes[0].shots.at(-1);
+ assert.equal(returned.kind,'camera');assert.equal(returned.base,'CARLOS');
+ assert.equal(returned.sourceStart,2.5);assert.equal(returned.sourceEnd,3);
+ assert.equal(returned.implicitFromExplicitDirection,true);
+ assert.ok(result.operationIntents.some(i=>i.id===returned.id+'-base'));
+ assert.equal(result.instructionCoverage.unaccountedNonemptyLines.length,0);
+});
