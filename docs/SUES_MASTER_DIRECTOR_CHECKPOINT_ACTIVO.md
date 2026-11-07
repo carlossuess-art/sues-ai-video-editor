@@ -1,3 +1,9 @@
+## Validación ampliada · 07/11/2026 · 247 pruebas descubiertas
+
+En copia aislada de integración del VPS, `node --test tests/master-director-*.test.js` terminó con **241 PASS, 0 FAIL, 6 SKIP** (247 en total; exit code 0). La selección `tests/master-director-brief-*.test.js tests/master-director-broll-fades.test.js tests/master-director-phase1-acceptance.test.js` terminó **42/42 PASS**. No confundir cobertura de tests con aceptación audiovisual. Los seis SKIP incluyen ejecución nativa/handoff real, generación local con FFmpeg, máscaras reales, render MP4 de lista aprobada y pruebas FFmpeg/audio; no declarar esas verificaciones completas. La Fase 1 sigue pendiente de recursos, equivalencia de operaciones y QA creativo real. El Roadmap Maestro en Drive se actualizó antes de esta anotación.
+
+---
+
 ## Continuidad Fase 1 · 07/11/2026 · captions fieles y QA multimedia
 
 Se añadió `src/master-director-brief-caption-layers.js` y pruebas (`51f2233`, `89af91d`) para obtener capas **propuestas, no ejecutables**, de subtítulo progresivo palabra a palabra sin reescribir el ASR ni inventar geometría/fuentes. El endpoint autenticado de solo lectura `GET /api/jobs/:id/master-brief-caption-layers?briefRevision=<sha>` se incorporó al servidor (`ca749f9`) con prueba HTTP `6a1463a`: exige fuente/timeline/revisión exactos, preserva el Reel y bloquea las dudas. **Resultado real Reel 158404**: 168 palabras → 168 candidatos con safe zone propuesta x90, y1470, w900, h190. Hay **72 señales a revisar**: 32 confidencias ASR bajas, 22 posibles solapes de cues, 13 palabras no plenamente dentro de un plano, 4 que cruzan escena y 1 mismo fotograma; estas señales se pueden superponer, NO equivalen a 72 palabras erróneas. Sin aprobación de ASR, tipografía o QA visual: `approved:false`, `canExecute:false`.
