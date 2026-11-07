@@ -1,5 +1,5 @@
 /** Loopback-only FableCut adapter. Never expose the upstream REST port publicly. */
-const DEFAULT_BASE='http://127.0.0.1:7779';
+const DEFAULT_BASE='http://127.0.0.1:7780';
 export class FableCutConflict extends Error { constructor(message, detail){super(message);this.name='FableCutConflict';this.detail=detail;} }
 export class FableCutClient {
   constructor({baseUrl=DEFAULT_BASE,fetchImpl=globalThis.fetch}={}) {
