@@ -8,7 +8,7 @@ const fixture=()=>({name:'SUES B02 Native Export QA ONLY',revision:3,width:1080,
  {id:'sues_hyperframes_gold_3d_review_only',track:'V4',kind:'video',start:4,duration:1.2,disabled:true,props:{opacity:1}}
  ]});
 test('uses independent V5 foreground leaving V4 temporal matte intact',()=>{
- const p=fixture(),n=stageNativeB02Foreground(p,{expectedRevision:3});assert.equal(p.tracks.length,4);assert.equal(n.tracks[0].id,'V5');assert.equal(n.clips.at(-1).track,'V5');assert.equal(n.clips.at(-1).start,10.6);assert.equal(n.clips.at(-1).disabled,undefined);
+ const p=fixture(),n=stageNativeB02Foreground(p,{expectedRevision:3});assert.equal(p.tracks.length,4);assert.equal(n.tracks[0].id,'V5');assert.equal(n.clips.at(-1).track,'V5');assert.equal(n.clips.at(-1).start,10.6);assert.equal(n.clips.at(-1).props.x,-390);assert.equal(n.clips.at(-1).props.y,-650);assert.equal(n.clips.at(-1).disabled,undefined);
  assert.equal(n.clips.at(-2).props.matteTrack,'V4');assert.equal(n.clips[1].track,'V4');
 });
 test('refuses production, bad revision, missing matte, duplicate V5 or altered alpha source',()=>{
