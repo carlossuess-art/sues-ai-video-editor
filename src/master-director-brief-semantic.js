@@ -5,7 +5,7 @@ const is=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const slot=x=>typeof x==='string'&&/^[BM]0\d+$/.test(x);
 const declaredMotion=(story,hint)=>slot(hint)&&hint.startsWith('M')&&
  Array.isArray(story.resources)&&story.resources.some(r=>r?.id===hint&&
- (r.source==='library'||(r.source==='generate'&&['motion','graphic','video','image'].includes(r.kind))));
+ (['library','generate'].includes(r.source)&&['motion','graphic','video','image'].includes(r.kind)));
 export function checkFilmBriefIntentMapping(intent,op,story){
  if(!is(intent)||!is(op)||!is(story))return 'INVALID_INTENT_OR_OPERATION';
  const details=intent.detail??{};
