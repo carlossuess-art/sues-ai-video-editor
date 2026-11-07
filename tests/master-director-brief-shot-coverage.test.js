@@ -31,3 +31,15 @@ test('invalid annex metadata, negative frames, duplicate IDs fail closed',()=>{
  const a=make();a.scenes[1].shots[0].id=a.scenes[0].shots[0].id;
  assert.ok(inspectFilmBriefShotCoverage(a).issues.some(x=>x.code==='INVALID_SHOT'));
 });
+
+test('source-to-CFR30 lineage rejects implicit time shifting or inverted original timestamps',()=>{
+ const annex=make();
+ const shifted=structuredClone(annex);
+ shifted.scenes[0].shots[0].sourceStart=1/30;
+ const result=inspectFilmBriefShotCoverage(shifted);
+ assert.ok(result.issues.some(x=>x.code==='SHOT_SOURCE_TO_CFR30_TIME_DRIFT'));
+ assert.equal(result.canExecute,false);
+ const reversed=structuredClone(annex);
+ reversed.scenes[0].shots[1].sourceStart=3;
+ assert.ok(inspectFilmBriefShotCoverage(reversed).issues.some(x=>x.code==='SHOT_SOURCE_TO_CFR30_TIME_DRIFT'));
+});
