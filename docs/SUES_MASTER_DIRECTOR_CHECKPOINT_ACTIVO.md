@@ -1,3 +1,7 @@
+### Evidencia de biblioteca activa · 07/11/2026 (lectura únicamente)
+
+La biblioteca viva en el VPS `/opt/sues-video-setup/editor/jobs/library/official-library-v1.json` contiene **214 entradas almacenadas**: 49 vídeos, 125 overlays, 31 SFX, 4 audios y 5 imágenes; `approvedForProduction:true` en **0** y `needsCreativeReview:true` en **214**. Búsqueda simple por conceptos del Reel: aplauso, niño, límite, rechazo y espejo no ofrecen coincidencias nominales útiles; no se consideraron aprobados recursos por similitud de nombre. Los 8 slots B01–B05/M01–M03 continúan sin vínculo autenticado ni licencia validada para el Reel. **No recurrir a un recurso no aprobado para simular cierre.**
+
 ## AVANCE · 07/11/2026 · hashes, identidad de motion y pruebas 29/29
 
 - Se recuperó en el servidor de staging `real-film-director-158404.md` y se confirmó que su contenido editorial coincide **línea por línea** con el anexo de 148 líneas; el archivo tiene un salto de línea final adicional. SHA del archivo `d8b6cffcce6280c767bbf69584bca6df01c580a225bbb52401ab563200a31c16`; SHA del texto exacto registrado en anexo `e411990eba13662249e7bd9ce75684ba0dd772d4b35ea4d1cc4671ab903ba8ca`. No son hashes intercambiables: **el gate de identidad exacta sigue obligatorio**.
