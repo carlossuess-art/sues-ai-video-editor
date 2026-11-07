@@ -45,3 +45,13 @@ test('fully mapped structured intent still needs the trusted skill plan review b
  candidate.operations[0].track='graphics';
  assert.equal(auditMasterBriefCrosswalk({annex,story:candidate,links}).code,'INTENT_OPERATION_SEMANTIC_OR_TIME_MISMATCH');
 });
+
+test('crosswalk does not map a corrupted storyboard with uncovered frames',()=>{
+ const broken=structuredClone(annex);
+ broken.scenes[0].shots[0].editEnd=2;
+ const response=auditMasterBriefCrosswalk({annex:broken,story:empty,links:[]});
+ assert.equal(response.status,'BLOCKED');
+ assert.equal(response.code,'BRIEF_BASE_SHOT_COVERAGE_INVALID');
+ assert.ok(response.shotCoverage.issues.some(x=>x.code==='SCENE_BASE_COVERAGE_INCOMPLETE'));
+ assert.equal(response.canExecute,false);
+});
