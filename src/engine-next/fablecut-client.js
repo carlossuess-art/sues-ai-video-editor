@@ -48,6 +48,7 @@ export class FableCutClient {
     if(!changed || typeof changed!=='object'||Array.isArray(changed))throw TypeError('transform must return project object');
     if(changed.revision!==current.revision)throw Error('Transform cannot change revision; adapter owns it');
     if(!Array.isArray(changed.tracks)||!Array.isArray(changed.clips)||!Array.isArray(changed.media))throw Error('Cannot save a project lacking its tracks, clips or media');
+    for(const name of ['tracks','clips','media']){const existing=new Set(current[name]?.map(x=>x.id));const next=new Set(changed[name].map(x=>x.id));if(!existing||existing.has(undefined)||[...existing].some(id=>!next.has(id)))throw Error('Cannot silently remove existing '+name);}
     changed.revision=current.revision+1;
     const saved=await this.request('/api/project',{method:'PUT',body:changed,projectId:active});
     return {revision:saved.data.revision,projectId:active,project:changed};
