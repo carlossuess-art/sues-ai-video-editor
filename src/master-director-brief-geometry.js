@@ -16,10 +16,18 @@ export function inspectFilmBriefGeometry(annex,{width=1080,height=1920}={}){
   if(!xs.length&&!ys.length)continue;
   const invalid=[...xs].some(r=>r.start<0||r.end<=r.start||r.end>width)||
    [...ys].some(r=>r.start<0||r.end<=r.start||r.end>height);
-  const pairs=xs.length===ys.length&&!invalid?
-   xs.map((x,i)=>({x:x.start,y:ys[i].start,width:x.end-x.start,height:ys[i].end-ys[i].start})):null;
+  // In the Film Director wording "columnas x=110–500 y x=580–980, y=740–1150",
+  // the single explicitly written y interval belongs to BOTH named columns.
+  // Do not apply this rule without the exact two-column conjunction.
+  const sharedColumnY=xs.length===2&&ys.length===1&&!invalid&&
+   /\\bcolumnas\\b/i.test(raw)&&
+   /x\\s*=\\s*\\d+\\s*[–-]\\s*\\d+\\s+y\\s+x\\s*=\\s*\\d+\\s*[–-]\\s*\\d+/i.test(raw);
+  const pairs=!invalid&&xs.length===ys.length?
+   xs.map((x,i)=>({x:x.start,y:ys[i].start,width:x.end-x.start,height:ys[i].end-ys[i].start})):
+   sharedColumnY?xs.map(x=>({x:x.start,y:ys[0].start,width:x.end-x.start,height:ys[0].end-ys[0].start})):null;
   placements.push({intentId:intent.id,sceneId:intent.sceneId,sourceLine:intent.sourceLine,
    sourceText:raw,axes:{x:xs,y:ys},rectangles:pairs,
+   ...(sharedColumnY?{axisBinding:'EXPLICIT_SHARED_Y_FOR_TWO_COLUMNS'}:{}),
    status:invalid?'OUTSIDE_CANVAS_OR_INVALID_RANGE':!pairs?'AXES_AMBIGUOUS_REQUIRES_DIRECTOR':'POSITION_PROPOSED_FRAME_QA_REQUIRED',
    canExecute:false});
  }
