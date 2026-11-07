@@ -30,7 +30,7 @@ test('private HTTP capability audit is read-only and rejects stale or unauthoriz
   const headers={Cookie:login.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'};
   const cat=await(await fetch(path+'/external-catalog',{headers})).json();
   const receipt=await fetch(path+'/master-source-brief',{method:'POST',headers,body:JSON.stringify({
-   text:text.replace(O,cat.sourceSha256),expectedRevision:null,expectedSourceSha256:cat.sourceSha256,
+   text:text.replace(O,cat.sourceSha256).replace('00:00–00:04','00:00–00:24').replace('2–4 s','2–24 s'),expectedRevision:null,expectedSourceSha256:cat.sourceSha256,
    expectedTimelineFingerprint:cat.timelineFingerprint})});
   assert.equal(receipt.status,201);const {revision}=await receipt.json();
   const before=JSON.stringify(app.jobs.get(job.id));
