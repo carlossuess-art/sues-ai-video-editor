@@ -35,3 +35,22 @@ test('refuses a visual/timeline change that occurs while a browser captures',asy
  const r=new ProgramFrameRenderer({client:changedClient,puppeteer:changedPuppeteer,executablePath:'/chrome'});
  await assert.rejects(r.capture({time:4.5,expectedRevision:3}),/contents changed/);
 });
+test('waits for decoded source before accepting a native program frame',async()=>{
+ const original=await client.getProject();
+ original.data.tracks=[{id:'V1',kind:'video',hidden:false}];
+ original.data.clips=[{id:'source',kind:'video',track:'V1',start:0,duration:10,disabled:false}];
+ let waited=false;
+ const readyPuppeteer={...puppeteer,async launch(){
+  const browser=await puppeteer.launch();const newPage=browser.newPage;
+  browser.newPage=async()=>{const page=await newPage();page.waitForFunction=async(_predicate,_opts,ids)=>{if(ids){waited=true;assert.deepEqual(ids,['source']);}};return page;};return browser;
+ }};
+ const renderer=new ProgramFrameRenderer({client:{...client,async getProject(){return structuredClone(original);}},puppeteer:readyPuppeteer,executablePath:'/chrome'});
+ await renderer.capture({time:2.5,expectedRevision:3});assert.equal(waited,true);
+});
+test('refuses a blank program when the source never decodes',async()=>{
+ const original=await client.getProject();original.data.tracks=[{id:'V1',kind:'video',hidden:false}];
+ original.data.clips=[{id:'source',kind:'video',track:'V1',start:0,duration:10,disabled:false}];
+ const broken={...puppeteer,async launch(){const b=await puppeteer.launch();const create=b.newPage;b.newPage=async()=>{const p=await create();p.waitForFunction=async(_fn,_opts,ids)=>{if(ids)throw Error('source not decoded');};return p;};return b;}};
+ const renderer=new ProgramFrameRenderer({client:{...client,async getProject(){return structuredClone(original);}},puppeteer:broken,executablePath:'/chrome'});
+ await assert.rejects(renderer.capture({time:2.5,expectedRevision:3}),/source not decoded/);
+});
