@@ -1,3 +1,4 @@
+import {inspectFilmBriefShotCoverage} from './master-director-brief-shot-coverage.js';
 // Conservative capability inventory for an unapproved Film Director annex.
 // Reports only what the strict Remotion adapter can model in its schema;
 // all rows still require trusted source, fonts, masks, rights and human QA.
@@ -15,6 +16,9 @@ export function auditFilmBriefCapabilities(annex){
     typeof x.sourceLine!=='number'||!Number.isInteger(x.sourceLine)||x.sourceLine<1)||
   new Set(annex.operationIntents.map(x=>x.id)).size!==annex.operationIntents.length)
   return block('INVALID_SOURCE_TECHNICAL_ANNEX');
+ const shotCoverage=inspectFilmBriefShotCoverage(annex);
+ if(shotCoverage.issues?.length||shotCoverage.status==='BLOCKED')
+  return {...block('FILM_BRIEF_BASE_SHOT_COVERAGE_INVALID'),shotCoverage};
  const bySlot=new Map(annex.resourceReferences.map(x=>[x.resourceHint,x.resourceHint[0]==='B'?'video':'motion']));
  const rows=annex.operationIntents.map(x=>{
   let model='NOT_MODELLED_BY_CURRENT_STRICT_REMOTION_ADAPTER';let blockers=[];let suggestedCapability=null;
@@ -61,5 +65,5 @@ export function auditFilmBriefCapabilities(annex){
   sourceBriefSha256:annex.sourceBriefSha256,sourceSha256:annex.sourceSha256,
   timelineFingerprint:annex.timelineFingerprint,intents:rows,counts:grouped,
   unresolved:rows.filter(r=>r.model!=='DOCUMENTATION_ONLY').length,
-  sourceLineLoss:0,resourceSlots:slots,approved:false,canExecute:false};
+  sourceLineLoss:0,resourceSlots:slots,shotCoverage:{frameCount:shotCoverage.frameCount,shotCount:shotCoverage.shotCount,issues:0,status:shotCoverage.status},approved:false,canExecute:false};
 }
