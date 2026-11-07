@@ -43,3 +43,21 @@ test('private HTTP capability audit is read-only and rejects stale or unauthoriz
   assert.equal((await fetch(path+'/master-brief-capabilities?briefRevision=bad',{headers})).status,400);
  }finally{await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });
+
+test('capability audit fails closed for missing, malformed and duplicated technical evidence',()=>{
+ const annex=translateFilmDirectorBrief({text,originalSha256:O,sourceSha256:H,timelineFingerprint:T,duration:4});
+ const invalid=[
+  {...annex,resourceReferences:undefined},
+  {...annex,resourceReferences:[{resourceHint:'../untrusted'}]},
+  {...annex,operationIntents:[...annex.operationIntents,annex.operationIntents[0]]},
+  {...annex,operationIntents:[...annex.operationIntents,{...annex.operationIntents[0],id:null}]},
+  {...annex,instructionCoverage:{unaccountedNonemptyLines:null}},
+ ];
+ for(const candidate of invalid){
+  const audit=auditFilmBriefCapabilities(candidate);
+  assert.equal(audit.status,'BLOCKED');
+  assert.equal(audit.code,'INVALID_SOURCE_TECHNICAL_ANNEX');
+  assert.equal(audit.approved,false);
+  assert.equal(audit.canExecute,false);
+ }
+});
