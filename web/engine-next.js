@@ -10,6 +10,13 @@ function draw(data){project=data;el('status').textContent=`Proyecto ${data.proje
  if(selected&&!data.clips.some(c=>c.id===selected))selected=null;choose(selected);
 }
 function choose(id){selected=id;const clip=project?.clips.find(c=>c.id===id);if(clip && !el('source-video').hidden){const player=el('source-video');if(Number.isFinite(clip.start)&&Number.isFinite(player.duration)&&clip.start<=player.duration)player.currentTime=clip.start;}el('info').textContent=clip?`${clip.name||clip.id} · ${clip.kind}`:'Selecciona una capa del timeline';const ok=clip?.kind==='text';el('fontSize').disabled=!ok;el('apply').disabled=!ok;el('fontSize').value=ok?(clip.fontSize||72):72;el('fontValue').textContent=ok?`${clip.fontSize||72} px`:'—';const transform=!!clip&&['video','image'].includes(clip.kind)&&!clip.locked;el('transformControls').hidden=!transform;if(transform){for(const [id,value] of [['posX',clip.x],['posY',clip.y],['scale',clip.scale]]){el(id).value=String(value);}updateTransformOutputs();}for(const b of el('tracks').querySelectorAll('.clip'))b.setAttribute('aria-pressed',String(b.title===selected));}
+el('view-program').addEventListener('click',()=>{
+ if(!project)return;const img=el('program-frame'),video=el('source-video');
+ img.onload=()=>{img.hidden=false;video.hidden=true;el('view-source').hidden=false;el('preview-warning').textContent='Fotograma compuesto nativo · no equivale a reproducción continua ni exportación QA.';void load();};
+ img.onerror=()=>{el('preview-warning').textContent='No se ha podido obtener el fotograma compuesto. El bruto original sigue disponible.';};
+ img.src='/api/engine-next/program-frame?time='+encodeURIComponent(video.currentTime.toFixed(3))+'&revision='+encodeURIComponent(project.revision);
+});
+el('view-source').addEventListener('click',()=>{el('program-frame').hidden=true;el('source-video').hidden=false;el('view-source').hidden=true;el('preview-warning').textContent='Vista del bruto original (sin capas). La revisión compuesta debe superar QA.';});
 el('source-video').addEventListener('timeupdate',e=>el('playhead').textContent=`Tiempo del bruto: ${e.target.currentTime.toFixed(2)} s`);
 function updateTransformOutputs(){el('posXValue').textContent=el('posX').value+' px';el('posYValue').textContent=el('posY').value+' px';el('scaleValue').textContent=Number(el('scale').value).toFixed(2)+'×';}
 for(const id of ['posX','posY','scale'])el(id).addEventListener('input',updateTransformOutputs);
