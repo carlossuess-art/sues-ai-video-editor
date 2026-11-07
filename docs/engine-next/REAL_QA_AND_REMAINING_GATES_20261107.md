@@ -30,3 +30,12 @@
 6. Migración sin pérdida de las 49 operaciones aprobables, control de licencias, dos pasadas de QA audiovisual y aceptación estética de Carlos.
 
 **Último resultado automático dirigido:** 24/24 pruebas pasan en `node --test tests/editor-server.test.js tests/engine-next/*.test.js`. No equivale a suite completa ni a la aprobación de usuario.
+
+## Ampliación: fotograma compuesto autenticado y revisión estable (07/11/2026)
+
+- Nuevo adaptador `src/engine-next/program-frame.js`: usa un único Chromium de corta duración para obtener un PNG del **canvas Program real de FableCut** en el instante solicitado; se rechazan tiempos/revisiones inválidos, fotogramas aún negros/no decodificados, ediciones simultáneas y discrepancias de contenido. Se permite exclusivamente un incremento de revisión producido por normalización de propiedades por defecto si la semántica de pistas, medios, clips, posiciones, visibilidad y texto continúa idéntica; cachea usando la revisión FINAL, no la anterior.
+- Ruta privada opt-in `GET /api/engine-next/program-frame?time=4.5&revision=...` bajo sesión SUES y validación de origen. Requiere configurar explícitamente `SUES_ENGINE_NEXT_FABLECUT_URL`, `SUES_ENGINE_NEXT_PUPPETEER_CORE` y `SUES_ENGINE_NEXT_CHROME_PATH`; no se ha activado en producción.
+- El Studio SUES dispone de un botón **«Ver fotograma compuesto»**, con retorno al visor del bruto. Se rotula claramente como fotograma de revisión, nunca exportación o vídeo final. La nueva capa de código se conecta al visor nativo sin simular la composición.
+- **Prueba completa HTTP autenticada en VPS:** código 200, `image/png`, 69.283 bytes, cabecera `X-Sues-Frame-Revision: 37`, `X-Sues-Cinematic-QA: not-approved`. PNG privado en `/srv/sues-fablecut-next/data/qa/20261107/native-frame-sues-auth-http.png`. La doble captura de la misma revisión devolvió cache hit. Pruebas automatizadas del módulo cubren cache, bloqueo de concurrencia, revisión normalizada y rechazo de mutaciones reales mientras se obtiene el frame.
+- **29/29 tests dirigidos superados** tras sincronizar GitHub a HEAD `1c1d7c8`. Editor público y FableCut devuelven HTTP 200, 19 GB libres, RAM 3,8 GiB sin swap. La seguridad de los servicios principales no ha sido alterada.
+- Quedan pendientes: streaming compositor con reproducción continua, frontend multipista completo de FableCut dentro de SUES y paridad comprobada con exportación 1080×1920; máscaras dinámicas del niño/grupo y QA de todos los planos, derechos y voz/subtítulos reales.
