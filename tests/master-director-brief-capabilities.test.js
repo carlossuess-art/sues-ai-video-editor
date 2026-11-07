@@ -6,7 +6,7 @@ import {fixture} from './helpers/editor-fixture.js';
 import {createEditorServer} from '../src/editor-server.js';
 import {translateFilmDirectorBrief} from '../src/master-director-brief-translation.js';
 import {auditFilmBriefCapabilities} from '../src/master-director-brief-capabilities.js';
-const H='a'.repeat(64),O='b'.repeat(64),T='timeline-a';
+const H='a'.repeat(64),O='b'.repeat(64),T='c'.repeat(64);
 const text=`# Film Director\n> NO APROBADO / NO EJECUTAR ${O}\n### Escena 01 · GANCHO · 00:00–00:04\n- \`0–1 s\`: base **CARLOS**; gráfico M01; texto editorial **VIDA**; S en zona inferior.\n- \`1–2 s\`: base **B01**; voz continúa; texto editorial **MIEDO**; S en zona inferior.\n- \`2–4 s\`: base **M02**; motion de alto nivel; texto editorial **AMOR**; S en zona inferior.\n`;
 test('actual strict renderer capabilities are separated from visual storytelling demands',()=>{
  const annex=translateFilmDirectorBrief({text,originalSha256:O,sourceSha256:H,timelineFingerprint:T,duration:4});
@@ -19,6 +19,10 @@ test('actual strict renderer capabilities are separated from visual storytelling
  assert.ok(audit.intents.find(x=>x.intentId.endsWith('editorial-title')).suggestedCapability==='remotion:graphics:text');
  assert.ok(audit.intents.find(x=>x.intentId.includes('overlay-M')).model==='CINEMATIC_COMPOSITION_NOT_PROVEN_REPRESENTABLE');
  assert.ok(audit.resourceSlots.some(x=>x.slot==='B01'&&x.verified===false));
+ assert.equal(audit.baseTrack.status,'PREPARED_NOT_EXECUTABLE');
+ assert.equal(audit.baseTrack.shotCount,3);
+ assert.equal(audit.baseTrack.resourceRequirements.length,3);
+ assert.equal(audit.baseTrack.canExecute,false);
  assert.equal(auditFilmBriefCapabilities({schema:'unknown'}).code,'INVALID_SOURCE_TECHNICAL_ANNEX');
 });
 test('private HTTP capability audit is read-only and rejects stale or unauthorized calls',async()=>{
