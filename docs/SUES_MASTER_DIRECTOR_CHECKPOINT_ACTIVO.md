@@ -1,3 +1,13 @@
+## FASE 1 · Validación de rama limpia y regresión completa · 07/11/2026
+
+Se recuperó directamente de GitHub un checkout LIMPIO de `feat/master-director-story-orchestration-20261104` (HEAD `41f48b07dcfa341636ec5363995472954deba161`) en `/tmp/sues-phase1-clean-checkout-20261107/repo`, sin superponer cambios locales de staging. Tras `npm ci --ignore-scripts --no-audit --no-fund`, la batería dirigida `node --test tests/master-director-brief*.test.js tests/master-director-broll-fades.test.js` terminó **30 PASS, 0 FAIL, 0 SKIP**. Incluye conversión del plan cinematográfico, conservación de huellas, recursos, geometría, endpoint HTTP autenticado, UI preparada y cruces de intención (la UI gráfica sigue pendiente de prueba de navegador).
+
+**Regresión general en Docker aislado, FFmpeg disponible, sin red y RAM 1900 MB:** `npm test`, **688 tests: 684 PASS, 2 FAIL, 2 SKIP**. Los dos fallos están localizados en `tests/deploy-service.test.js` (Git no ejecutable de igual modo en contenedor de otro usuario) y `tests/master-director-local-generator.test.js` (subproceso de generador local restringido). Ejecutadas ambas baterías en host directamente: **4 PASS, 0 FAIL**. No convertirlas en 688 PASS globales: los resultados del contenedor se mantienen explícitos. La ejecución integral tardó 251887 ms. No certifica QA cinematográfica, audio perceptivo ni un Reel exportado íntegro.
+
+**Pendientes reales de cierre Fase 1:** licencias y contenido de B01–B05, los 3 motion composites M01–M03 y las otras instrucciones editoriales por representar en operaciones fieles; ASR de 32 palabras de confianza baja, revisión perceptiva y de posicionamiento sobre fotogramas; render maestro íntegro y dos auditorías QA audiovisuales completas; aceptación creativa de Carlos al final. No declarar fase cerrada con solo tests de software.
+
+---
+
 ## FASE 1 · Geometría integrada en la interfaz de revisión · 07/11/2026
 
 El editor de la rama del PR #27 dispone ahora de botón **«Ver posiciones exactas del storyboard»** en `web/index.html`, asociado en `web/app.js` a la ruta autenticada `master-brief-geometry`: muestra el número de rectángulos propuestos, ejes ambiguos, rangos inválidos y filas por escena/línea, sin modificar el Reel. El botón de **«Descargar anexo técnico para Work»** conserva también la ficha `geometry` junto a anexo, recursos, capacidades y captions, y comprueba identidad del `sourceBriefSha256`. Commits `2437183`, `ec30cc5`.
