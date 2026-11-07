@@ -43,4 +43,5 @@ test('motion base and overlay must retain their exact declared asset references'
  assert.equal(checkFilmBriefIntentMapping(overlay,{track:'graphics',effect:'video-exact',resourceRef:'M02'},rich),'MOTION_OVERLAY_RESOURCE_ID_NOT_PRESERVED');
  assert.equal(checkFilmBriefIntentMapping(overlay,{track:'graphics',effect:'image-exact'},rich),'MOTION_OVERLAY_RESOURCE_ID_NOT_PRESERVED');
  assert.equal(checkFilmBriefIntentMapping(base,{track:'graphics',effect:'video-exact',resourceRef:'M02'},{resources:[]}), 'MOTION_BASE_RESOURCE_ID_NOT_PRESERVED');
+ assert.equal(checkFilmBriefIntentMapping(base,{track:'graphics',effect:'video-exact',resourceRef:'M02'},{resources:[{id:'M02',source:'library',kind:'audio'}]}),'MOTION_BASE_RESOURCE_ID_NOT_PRESERVED');
 });
