@@ -18,4 +18,16 @@ test('rejects wrong open project',async()=>{const f=fake();await assert.rejects(
 test('restricts uploaded media names and binary limits',async()=>{
  const f=fake();await assert.rejects(f.client.uploadMedia(new Uint8Array([1]),{name:'../evil.webm'}));
  await assert.rejects(f.client.uploadMedia(new Uint8Array(0),{name:'okay.webm'}));
+});test('media lookup refuses foreign clip ids, unsafe ranges and redirects',async()=>{
+ const client=new FableCutClient({fetchImpl:async(url,opts={})=>{
+   if(url.endsWith('/api/project'))return new Response(JSON.stringify({...base,media:[{id:'m1',kind:'video',src:'/media/clip.mp4'}]}),{headers:{'x-fablecut-project':'a'}});
+   return new Response('bytes',{status:206,headers:{'content-type':'video/mp4','content-range':'bytes 0-3/4'}});
+ }});
+ await assert.rejects(client.getMediaStream('wrong'));
+ await assert.rejects(client.getMediaStream('m1',{range:'bytes=0-1,3-4'}));
+ const r=await client.getMediaStream('m1',{range:'bytes=0-3'});assert.equal(r.response.status,206);
+});
+test('project cannot serve foreign media paths or URL-tricks',async()=>{
+ const client=new FableCutClient({fetchImpl:async()=>new Response(JSON.stringify({...base,media:[{id:'m1',kind:'video',src:'/media/../private.txt'}]}),{headers:{'x-fablecut-project':'a'}})});
+ await assert.rejects(client.getMediaStream('m1'));
 });
