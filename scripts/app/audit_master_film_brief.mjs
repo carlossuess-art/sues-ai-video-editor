@@ -6,6 +6,7 @@ import {dirname,resolve} from 'node:path';
 import {translateFilmDirectorBrief} from '../../src/master-director-brief-translation.js';
 import {auditFilmBriefCapabilities} from '../../src/master-director-brief-capabilities.js';
 import {buildMasterBriefRequirements} from '../../src/master-director-brief-requirements.js';
+import {inspectFilmBriefGeometry} from '../../src/master-director-brief-geometry.js';
 
 const options={};
 for(let i=2;i<process.argv.length;i+=2){
@@ -27,7 +28,8 @@ if(annex.status==='BLOCKED'){
 }
 const capabilities=auditFilmBriefCapabilities(annex);
 const requirements=buildMasterBriefRequirements(annex);
-if(capabilities.status==='BLOCKED'||requirements.status==='BLOCKED'||annex.translationCoverage.lostLines||
+const geometry=inspectFilmBriefGeometry(annex);
+if(capabilities.status==='BLOCKED'||requirements.status==='BLOCKED'||geometry.status==='BLOCKED'||geometry.invalid||annex.translationCoverage.lostLines||
  annex.instructionCoverage.unaccountedNonemptyLines.length){
  console.error('AUDIT_INTEGRITY_FAILURE');process.exit(4);
 }
@@ -40,10 +42,12 @@ const report={
  unaccountedNonemptyLines:annex.instructionCoverage.unaccountedNonemptyLines,
  resources:requirements.resources.map(r=>({slot:r.slot,kind:r.kind,status:r.status,issues:r.issues})),
  capabilityCounts:capabilities.counts,unresolved:capabilities.unresolved,
+ proposedGeometryRectangles:geometry.proposedRectangles,
+ ambiguousGeometryDirections:geometry.ambiguous,
  status:'AUDITED_NOT_APPROVED_NOT_EXECUTABLE',approved:false,canExecute:false
 };
 if(options['--out']){
  const target=resolve(options['--out']);mkdirSync(dirname(target),{recursive:true});
- writeFileSync(target,JSON.stringify({report,annex,capabilities,requirements},null,2)+'\n',{flag:'wx',mode:0o600});
+ writeFileSync(target,JSON.stringify({report,annex,capabilities,requirements,geometry},null,2)+'\n',{flag:'wx',mode:0o600});
 }
 console.log(JSON.stringify(report));
