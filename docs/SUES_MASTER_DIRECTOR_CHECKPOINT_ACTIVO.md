@@ -1,3 +1,15 @@
+## Continuidad Fase 1 · 07/11/2026 · captions fieles y QA multimedia
+
+Se añadió `src/master-director-brief-caption-layers.js` y pruebas (`51f2233`, `89af91d`) para obtener capas **propuestas, no ejecutables**, de subtítulo progresivo palabra a palabra sin reescribir el ASR ni inventar geometría/fuentes. El endpoint autenticado de solo lectura `GET /api/jobs/:id/master-brief-caption-layers?briefRevision=<sha>` se incorporó al servidor (`ca749f9`) con prueba HTTP `6a1463a`: exige fuente/timeline/revisión exactos, preserva el Reel y bloquea las dudas. **Resultado real Reel 158404**: 168 palabras → 168 candidatos con safe zone propuesta x90, y1470, w900, h190. Hay **72 señales a revisar**: 32 confidencias ASR bajas, 22 posibles solapes de cues, 13 palabras no plenamente dentro de un plano, 4 que cruzan escena y 1 mismo fotograma; estas señales se pueden superponer, NO equivalen a 72 palabras erróneas. Sin aprobación de ASR, tipografía o QA visual: `approved:false`, `canExecute:false`.
+
+La auditoría CLI real se reejecutó y pasó sobre 158404 usando la fuente/huellas registradas, sin crear plan JSON importable. Se conservaron sendos informes privados en el VPS bajo `/tmp/sues-phase1-real-handoff-G9z7e4qI/master-brief-audit.json` y `caption-layer-candidates.json` (permisos privados). El paquete muestra EDL base 21 planos/2213 frames y requisitos exactos de B01–B05/M01–M03.
+
+**Pruebas:** paquete Master Director + briefs actualizado: **245 casos, 239 PASS, 6 SKIP, 0 FAIL**. Batería real multimedia selectiva con FFmpeg 6.1 extraído en QA privado de paquetes oficiales Ubuntu: **26/26 PASS**; prueba concreta de estructura native → MP4 decodificado usando metraje sintético: **1/1 PASS**. Las pruebas de 3 flujos históricos del editor sincronizados con la semántica ya vigente de **una única edición activa**: 10/10 PASS. No declarar la suite global completa como pasada: ejecución completa agotó 190 s, mientras algunos tests en la instantánea estaban desactualizados; se recuperaron las pruebas actualizadas de GitHub. No se usó el Reel real para generar el vídeo final ni se aprobaron recursos.
+
+**Gates abiertos:** aceptación de ASR/72 riesgos de cues, licencias y ubicación de 8 recursos concretos, ejecución efectiva de composiciones M01–M03, render integral del Reel real con 2 auditorías, aceptación creativa de Carlos. La Fase 1 permanece abierta. El siguiente trabajo técnico debe resolver las operaciones y evidencias de medios pendientes, sin considerar 168 candidatos equivalentes a subtítulos aprobados.
+
+---
+
 ## Continuidad técnica Fase 1 · 07/11/2026 · base EDL y ejecución segura
 
 **Trabajo real comprobado sobre Reel 158404, rama PR #27.** Se añadió el auditor determinista de cobertura de plano `src/master-director-brief-shot-coverage.js` y se integró en la auditoría de capacidades y en el crosswalk. Resultado con anexo real: **7 escenas, 21 planos, 2213 fotogramas CFR30, sin huecos ni solapamientos de base**. Bloquea storyboard alterado aunque conserve las líneas de origen. Commits `59dfee9`, `52faa12`, `661f33b`, `e3cbcbb` y pruebas; fixtures HTTP corregidos a duración real `15046fd`, `cddf52d`.
