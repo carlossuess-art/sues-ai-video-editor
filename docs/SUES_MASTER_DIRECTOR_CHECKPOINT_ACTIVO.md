@@ -1,3 +1,11 @@
+## 07/11/2026 · QA real de capa 3D transparente, escena aislada
+
+- Realizado experimento en segunda instancia FableCut 127.0.0.1:7781 (YA DETENIDA), clon privado del proyecto 158404, sin tocar producción ni la instancia persistente 7780. En la copia se activó únicamente el clip `sues_hyperframes_gold_3d_review_only` en V4 a 4,5 s, capturando PNG nativos 1080×1920 con capa ON y OFF.
+- Comparación PSNR entre ambas imágenes: cuadrante superior derecho 18,290612 dB (cambió); superior izquierdo, inferior izquierdo e inferior derecho PSNR infinito (píxeles idénticos). Prueba concreta de que el motor compuso el objeto 3D en el cuadrante esperado y no alteró el resto del fotograma. **No valida bordes alfa, movimiento temporal, máscaras, ni exportación.**
+- Pruebas y auditor reutilizables añadidos a la PR27: `src/engine-next/layer-isolation-audit.js`, `scripts/engine-next/audit-layer-delta.mjs`, `tests/engine-next/layer-isolation-audit.test.js`; commits ff5da87, 2b165ac y c0a8a64. Suite dirigida **37/37 PASS**. Imágenes comparadas e informe en `/srv/sues-fablecut-next/data/qa/alpha-3d-spatial-proof-20261107/`. El proyecto original en 7780 mantiene clip 3D DESACTIVADO; editor público HTTP 200.
+- Investigada fase de máscaras: existen generador estricto `src/master-director-mask-candidate.js` y modelo MODNet de 25 MB en `/opt/sues-video-setup/editorial-fresh-20261028/modnet.onnx`, pero Python estándar y contenedores de edición no cuentan con cv2/mediapipe; no se ha certificado recorte dinámico para esta escena. Evitar marcar la fase como completada por esa presencia.
+- Próximas puertas: generar evidencia temporal real de recorte de Carlos en todos los fotogramas, composición niño detrás, objeto alfa delante, títulos/captions, audio y exportación/preview misma línea temporal. Necesaria QA humana final.
+
 ## 07/11/2026 · QA cuantitativa repetible del visor nativo
 
 - Ejecutada auditoría real solo de lectura contra FableCut privado y vídeo original 158404: marcas temporales 0,4; 2,5 y 10,5 s. Capturas nativas 1080x1920, referencia extraída con FFmpeg del mismo bruto. Informe JSON y PNGs preservados en `/srv/sues-fablecut-next/data/qa/native-frame-audit-20261107/` (audit.json, tres parejas de imágenes).
