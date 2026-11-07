@@ -1,3 +1,9 @@
+## 07/11/2026 · POC EDITABLE FableCut, PR27: prueba MCP → UI real
+
+El plan maestro se ha ampliado con sección 11 (commit `911c5d5a0b899989cda1310123fc9458dafc4693`). En directorio aislado se realizó una prueba de mutación atómica mediante `fablecut_patch_project`: título `sues_title_after_word` pasó de 72 a 84 px, proyecto revisión 1 → 2. Un segundo cambio con baseRevision=1 fue rechazado `CONFLICT`, sin mutar el documento. `GET /api/project` del editor local 127.0.0.1:7779 confirmó **misma revisión 2 y título 84 px**, conservando 5 clips y 4 medios. Prueba registrada en `/tmp/sues-engine-next-fablecut-poc-158404-20261107/real-mcp-ui-shared-edit-proof.json`. SOLO demuestra **MCP/IA y UI comparten proyecto, CAS y cambios atómicos**: todavía falta comprobar preview/export del fotograma compuesto, matting 100%, motion HyperFrames, QA artístico, integración/autenticación del estudio SUES y Reel final. No se tocó producción ni se publicó instancia de FableCut en internet.
+
+---
+
 ## 07/11/2026 · PLAN MAESTRO MOTOR NUEVO PR27 · ejecución aislada real
 
 Carlos autoriza diseñar/reconstruir el editor, reaprovechando o sustituyendo código según necesidad, e integrar herramientas open source en **la PR 27**. Pide un plan exhaustivo de cómo conectar FableCut, HyperFrames, IA directora, máscaras, subtítulos y QA para conseguir finalmente el Reel 158404 en el **mismo editor editable**.
