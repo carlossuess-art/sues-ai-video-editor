@@ -33,7 +33,7 @@ test('transition, camera and captions keep their distinct purpose',()=>{
 test('motion base and overlay must retain their exact declared asset references',()=>{
  const rich={resources:[
   {id:'M01',source:'generate',kind:'motion',creationBrief:'Layered objects'},
-  {id:'M02',source:'library',assetId:'verified-motion-02'}]};
+  {id:'M02',source:'library',kind:'motion',assetId:'verified-motion-02'}]};
  const base={id:'scene-04-shot-03-base',track:'graphics',detail:{base:'M02'}};
  const overlay={id:'scene-03-shot-01-overlay-M01',track:'graphics',detail:{resourceHint:'M01'}};
  assert.equal(checkFilmBriefIntentMapping(base,{track:'graphics',effect:'video-exact',resourceRef:'M02'},rich),null);
