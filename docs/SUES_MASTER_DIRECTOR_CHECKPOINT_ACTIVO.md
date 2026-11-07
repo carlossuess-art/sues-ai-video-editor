@@ -1,3 +1,11 @@
+## FASE 1 · E2E UI auténtico en Chromium de rama limpia · 07/11/2026
+
+**Botón «Ver posiciones exactas del storyboard» probado con navegador real**, sesión autenticada, Reel sintético y un documento original marcado `NO APROBADO` previamente guardado. `scripts/app/smoke_master_geometry.mjs` (commit `c7053c1`) pasa **escritorio 1440×900 y móvil 393×852** en Chromium real de Docker aislado, sin red, sin servicios de pago. Abre el editor, carga el Reel de prueba, despliega sección y pulsa el botón; verifica `2 rectángulos propuestos`, coordenadas exactas de M02 `x=110 y=740 390×410`, 0 errores JavaScript y 0 desbordamiento horizontal. El script usa `SUES_PLAYWRIGHT_MODULE` y `SUES_CHROMIUM_PATH` para reproducirlo con las dependencias existentes. Hubo un primer error de entorno host por `libatk` y un primer intento con el panel colapsado; ambos se corrigieron al correr Docker con bibliotecas Chromium y abrir el panel de forma explícita. La repetición final sobre el archivo publicado en GitHub, en checkout actualizado, dio **BROWSER_GEOMETRY_PASS 1440** y **BROWSER_GEOMETRY_PASS 393**.
+
+La prueba es real de **UI y API sobre fuente sintética**, NO demuestra que las 139 operaciones del Reel real ya sean ejecutables, ni licencias, QA cinematográfica ni aceptación artística. Mantener Fase 1 abierta.
+
+---
+
 ## FASE 1 · Validación de rama limpia y regresión completa · 07/11/2026
 
 Se recuperó directamente de GitHub un checkout LIMPIO de `feat/master-director-story-orchestration-20261104` (HEAD `41f48b07dcfa341636ec5363995472954deba161`) en `/tmp/sues-phase1-clean-checkout-20261107/repo`, sin superponer cambios locales de staging. Tras `npm ci --ignore-scripts --no-audit --no-fund`, la batería dirigida `node --test tests/master-director-brief*.test.js tests/master-director-broll-fades.test.js` terminó **30 PASS, 0 FAIL, 0 SKIP**. Incluye conversión del plan cinematográfico, conservación de huellas, recursos, geometría, endpoint HTTP autenticado, UI preparada y cruces de intención (la UI gráfica sigue pendiente de prueba de navegador).
