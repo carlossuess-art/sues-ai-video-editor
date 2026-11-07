@@ -18,3 +18,14 @@ Enlaces verificables: https://www.pexels.com/video/a-person-clapping-her-hand-85
 **No confundir:** candidatos descargados en carpeta de pruebas con assets verificados registrados `approvedForProduction`, ni la licencia del sitio con aceptación creativa. No se han alterado inventarios oficiales. B01 y B03 siguen pendientes de crop de fotograma, selección de tramo, duración exacta, prueba cromática, y decisión creativa. B02, B04, B05 permanecen pendientes de encontrar recursos fieles o autorizar creación. M01–M03 son **composiciones motion**, no clips de stock y no deben resolverse mediante textos aislados. El soundtrack y las transiciones son operaciones aparte.
 
 **Próxima fase técnica:** encontrar B02/B04/B05 aceptables, verificar jurídicamente cada candidato y ejecutar previsualizaciones + dos QA audiovisuales tras aprobar storyboard; desarrollar las 52 instrucciones todavía sin equivalencia concreta en el motor o marcar las capacidades genuinamente pendientes. La fase 1 no puede declararse 100%.
+
+## Verificación de encuadre vertical de B01
+
+El clip 8513575, originalmente 3840×2160 horizontal, se muestreó mediante FFmpeg en un entorno Docker sin red con recorte centrado 1215×2160 y reducción diagnóstica a 270×480. Se inspeccionaron tres muestras de la secuencia: manos aplaudiendo visibles en las tres, con fondo oscuro desenfocado y luz progresivamente magenta. **Técnicamente permite una lectura vertical de aplausos**, sin que eso demuestre QA del plano final, safe zones, color final, transición ni aceptación artística. Prueba temporal en staging: `/tmp/sues-film-director-candidates-20261107/8513575-vertical-crop-sheet.jpg`; no es un material de biblioteca persistente.
+
+## Otros candidatos encontrados mediante búsqueda, no auditados en media
+
+- **B05**: https://www.pexels.com/video/man-reflecting-in-mirror-7671931/ ; ficha promete mirada introspectiva. **Pendiente** descarga/inspección visual, calidad de encuadre y licencia de retrato en contexto.
+- **B04**: https://www.pexels.com/video/a-woman-feeling-isolated-8410083/ ; ficha describe persona apartada mientras otras interactúan. **NO SELECCIONAR** automáticamente: caras reconocibles, narrativa de rechazo, potencial conflicto de licencia Pexels sobre personas en posición desfavorable. Solo considerar con acreditación específica de derechos del uso.
+- **B02**: https://www.pexels.com/video/children-walking-on-a-paved-pathway-with-their-backpacks-3191109/ ; describe un grupo caminando, pero NO confirma un menor aislado que se incorpora; sigue faltando la acción requerida.
+
