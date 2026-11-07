@@ -1,3 +1,17 @@
+## 07/11/2026 · DECISIÓN DE CARLOS: replanteamiento profundo del MOTOR, investigación repetida hasta convergencia
+
+**INSTRUCCIÓN PRIORITARIA:** Carlos rechaza la calidad del motor de edición actual y autoriza investigar arquitectura alternativa y proyectos de otros creadores. NO continuar entregando renders auxiliares pobres como "edición mejorada". Conservar repo, proyectos, medios originales y skill Film Director, pero reconsiderar el núcleo ejecutor. **Investigación abierta, no autorización para instalar, comprar, licenciar ni migrar a producción.**
+
+Se completaron rondas de descubrimiento general, autores/demos, tecnologías, licencias y redescubrimiento con consultas independientes. **Convergencia arquitectónica**: un único proyecto multipista editable compartido humano/IA (no MP4 aparte), comandos transaccionales comunes GUI/MCP, vista del fotograma realmente compuesto, captions ligados a audio con revelación semántica sin anticipar, crítico de calidad cinematográfica y máscara temporal/rectangles fieles. Los nombres de proyectos siguen apareciendo, pero las pautas técnicas dejaron de aportar principios de diseño nuevos. Se verificaron además metadatos públicos de actividad/licencia de 9 repositorios mediante GitHub API en la VPS, y el código actual de staging (ajv y compilador Remotion/FFmpeg), sin ejecutar ni copiar proyectos ajenos.
+
+**INFORME MAESTRO DE INVESTIGACIÓN:** `docs/SUES_ENGINE_REPLANTEAMIENTO_INVESTIGACION_20261107.md`, commit `998643d00d1e1a78e65ecc4a1cf78dbc5f55ae90`. Incluye 12+ candidatos, autores, fuentes, debilidades, licencias MIT/AGPL/Remotion y POC con criterios de fallo sobre Reel 158404.
+
+Referencias prioritarias: Timeline Studio (MartinDelophy MIT, web), Lumen (Mas-Inx MIT, inspección de render), OpenChatCut (0xsline AGPL, integración de agente real), AutoBroll (andriidrok1 MIT, captions y b-roll), Claude Reelsmith (Lalita MIT, director de reels), OpenMontage (Guy Ronnen, orquestación), Agentcut (deifos MIT). Alternativas revisadas: Cutline, WeftCut, Pireel, cuttingfloor, Velorn, OpenEdit, Renderly, Diffusion Studio, OpenReelio, Kaestral.
+
+**SIGUIENTE PUERTA OBLIGATORIA ANTES DE MIGRACIÓN:** prototipo aislado y reproducible con el MISMO fragmento real del Reel 158404: niño y grupo claramente visibles detrás de silueta Carlos con matte temporal continuo, GIF sobre pecho, subtítulos palabra-a-palabra grandes bajo barbilla, títulos posteriores a frase, motion con significado, música, cambios desde timeline GUI reflejados exactamente en fotogramas exportados. Comparar candidatos bajo misma carga, 1080x1920 y frames reales, licencias y consumo de recursos. Solo elegir motor tras esto; no reabrir la rutina anterior de sustituir calidad por tests de integridad.
+
+---
+
 ## AVANCE VERIFICADO · 07/11/2026 · Reedición cinematográfica con skill 1.5.7 y QA de 2.213 fotogramas
 
 Carlos ordena **reeditar todos los incumplimientos del Reel 158404**, priorizando subtítulos grandes, palabra a palabra, máximo 2 líneas y bajo barbilla, jerarquía de palabras importantes, títulos SOLO cuando la frase revela el significado (nunca anticiparlo), B-roll narrativo con máscaras de tamaño perceptible, GIF/elementos en primer plano, motion de significado. Autoriza aplicar SKILL Film Director 1.5.7 y normativa V2 D01–D77 y revisar el plan mediante la skill.
