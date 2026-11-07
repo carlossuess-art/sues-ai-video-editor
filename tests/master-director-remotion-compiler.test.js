@@ -124,3 +124,33 @@ test('image and video preserve only explicit centered fit modes and reject all o
   g.nodes[0].sourceParameters.fit='none';assert.equal(compileMasterDirectorRemotion(g,options).status,'BLOCKED');
  }
 });
+test('animation keyframes are finite, strictly ordered and limited to the layer lifespan',()=>{
+ const options={verifiedFonts:{'Montserrat:700':{sha256:'e'.repeat(64)}}};
+ const make=()=>{const g=graph();g.nodes[0].sourceParameters.visual=structuredClone(g.nodes[0].visual);return g;};
+ const invalid=[
+  [{atFrame:0,opacity:0},{atFrame:0,opacity:1}],
+  [{atFrame:20,opacity:1},{atFrame:0,opacity:0}],
+  [{atFrame:-1,opacity:1}],
+  [{atFrame:57,opacity:1}], // layer [3,60) is 57 local frames
+  [{atFrame:2.5,opacity:1}],
+  [{atFrame:2,opacity:1.5}],
+  [{atFrame:2,opacity:-.1}],
+  [{atFrame:2,scale:9}],
+  [{atFrame:2,scale:-1}],
+  [{atFrame:2,x:Infinity}],
+  [{atFrame:2,y:NaN}],
+  [{atFrame:2,x:10001}],
+  [{atFrame:2,rotation:-10001}],
+  [{atFrame:2,easing:'linear'}],
+ ];
+ for(const keys of invalid){
+  const g=make();g.nodes[0].visual.keyframes=keys;g.nodes[0].sourceParameters.visual=structuredClone(g.nodes[0].visual);
+  const r=compileMasterDirectorRemotion(g,options);
+  assert.equal(r.status,'BLOCKED',JSON.stringify(keys));
+  assert.ok(r.issues.some(i=>i.code==='ANIMATION_UNSUPPORTED'),JSON.stringify(keys));
+ }
+ const valid=make();
+ valid.nodes[0].visual.keyframes=[{atFrame:0,x:-200,opacity:0},{atFrame:20,x:0,opacity:1,easing:'ease-out'},{atFrame:56,rotation:20}];
+ valid.nodes[0].sourceParameters.visual=structuredClone(valid.nodes[0].visual);
+ assert.equal(compileMasterDirectorRemotion(valid,options).status,'READY_FOR_REMOTION_STAGING');
+});
