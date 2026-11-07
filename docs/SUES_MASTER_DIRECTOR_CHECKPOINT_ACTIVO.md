@@ -1,3 +1,9 @@
+## 07/11/2026 · QA de decodificación real: bloqueos corregidos, no aprobación cinematográfica
+
+- Se diagnosticó mediante Chromium y `runtime.clipEls` de FableCut que el clip original `sues_video_source` podía estar en `readyState=0`, `videoWidth=0` a 1,5 s del seek, mientras el lienzo ya devolvía PNG 1080×1920. A 8 s, `readyState=4`, `videoWidth=1080` y PNG de 1.992.899 bytes; el problema era captura prematura, no falta de archivo. El origen de 141.412.175 bytes sirve HTTP 206 Range y es H.264 1080×1920.
+- Se añadió a `ProgramFrameRenderer` espera acotada de decodificación (`readyState>=2`, no `seeking`, `videoWidth>0`) para cada clip de vídeo activo/habilitado, antes de capturar el canvas nativo. El visor falla explícitamente cuando el bruto no está listo en vez de presentar una imagen de fondo como composición terminada. Smoke real del segundo 2,5: PNG 1080×1920, 1.992.899 bytes. Commits f8d7f23, 17e545a; 31/31 pruebas dirigidas PASS. El proyecto alcanzó revisión 47 por normalizaciones del navegador; revisar la evolución de revisión en cada captura.
+- Pendiente: verificación humana de fotogramas, continuidad de máscaras y subtítulos, render final con alpha y audio, QA del mismo compositor para preview/export, integración frontend autenticada en VPS sin publicar hasta aceptación. Sin aprobación estética ni publicación de Reel.
+
 ## 07/11/2026 21:58 CET · Continuación: prueba real del compositor y corrección de resolución
 
 - Se probó `ProgramFrameRenderer` con Chromium 155 y Puppeteer Core en VPS contra FableCut privado 127.0.0.1:7780, proyecto 158404; dos tiempos reales 0,4 s y 2,5 s produjeron PNG distintos. La captura original `canvas.screenshot()` era de solo 154×272 (CSS), a pesar de informar metadatos 1080×1920: defecto confirmado con ffprobe.
