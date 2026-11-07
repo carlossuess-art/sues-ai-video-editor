@@ -1,3 +1,24 @@
+## 07/11/2026 · PLAN MAESTRO MOTOR NUEVO PR27 · ejecución aislada real
+
+Carlos autoriza diseñar/reconstruir el editor, reaprovechando o sustituyendo código según necesidad, e integrar herramientas open source en **la PR 27**. Pide un plan exhaustivo de cómo conectar FableCut, HyperFrames, IA directora, máscaras, subtítulos y QA para conseguir finalmente el Reel 158404 en el **mismo editor editable**.
+
+**Plan detallado versionado:** `docs/SUES_ENGINE_NEXT_PLAN_MAESTRO_PR27_20261107.md` commit `ff38d81b1ec8b22de7ea9097f2165623c895ead9` (329 líneas). Especifica arquitectura única de datos/proyecto, riesgos, 9 fases con gates, matriz de aceptación cinematográfica por escena y rollback. Se leyó skill Film Director 1.5.7 y normativa V2 antes de diseñar.
+
+**POC ejecutado, seguro y no productivo:**
+- Ya existía trabajo **sin confirmar, probablemente concurrente**, bajo `docs/engine-next/`, `src/engine-next/`, `scripts/engine-next/`, `tests/engine-next/` en el staging de la PR. No se sobrescribió ni borró ni se incluyó en GitHub sin examen. El generador `scripts/engine-next/prepare-fablecut-poc.mjs` fue reutilizado y revisado.
+- FableCut MIT en clon temporal `/tmp/sues-engine-research-20261107-round2/FableCut`, commit `579b08e`, tests **506 PASS/0 FAIL/30 SKIP** + 34 focales **34 PASS/0 FAIL/0 SKIP** con FFmpeg aislado.
+- POC materializado con el **bruto auténtico** SHA `9e06f49c30731d8a57aed312cfb46281bcffb7b3d5d62bf5a2164333944ccaad`, voz AAC separada, imagen B02 generada y GIF alpha real, bajo `/tmp/sues-engine-next-fablecut-poc-158404-20261107`. `project.json` de FableCut **1080×1920/30fps, 5 clips, 4 medios, revision 1**, manifest explícito **49 operaciones originales conservadas en ledger, NO ejecutadas**; B02 y GIF quedan desactivados sin matte/paridad, para no aparentar acabado.
+- Servicio real FableCut levantado SOLO en loopback `127.0.0.1:7779`, `GET /api/project` devolvió 200 y el proyecto esperado, `GET /` 200. NO se ha expuesto a internet ni tocado productivo. No se ha probado export del Reel ni render alpha complejo.
+- HyperFrames de HeyGen Apache-2.0 clonado commit `a3b8f52` y analizados paquetes `producer/engine/sdk/player/studio/cli`: necesita entorno Bun 1.4.4 y Chromium/GPU; integración preferente como **motion renderer de fuente editable con output alpha**, no segundo editor. No se ejecutó todavía proyecto cinematic 3D.
+- FireRed OpenStoryline Apache-2.0 clonado commit `c9e9452`, solo referencia de orquestación/skills. No incorporar por defecto otro editor completo.
+- Remotion licencia actual verificada en docs oficiales; riesgo comercial y de modelo pesos. No gastos nuevos autorizados ni realizados.
+
+**Alcance REAL, sin inflación:** primera fase de POC editable demostrada por servidor/API. NO están integradas 49/49 capas reales, NO se ha aceptado FableCut como motor definitivo, NO se ha resuelto matte ni CTA maestro, NO se ha integrado HyperFrames operativo, NO hay preview multimodal/codec completo ni Reel nuevo cinematográficamente aprobado. Gates pendientes obligatorios.
+
+**Siguiente trabajo técnico coherente:** test render/frame-parity directo FableCut con escenario recortado, encapsular endpoint tras autenticación de SUES, primer asset motion HyperFrames 3D con fuente + transparencia reproducible, matte 100% intervalo, captions anclados a sentido, QA real por fotograma compuesto, extender el mapper sin borrar operaciones y finalmente solo entonces sustituir rutas antiguas. Preservar siempre activos de trabajo sin confirmar de otras sesiones.
+
+---
+
 ## 2026-11-07 · ENGINE NEXT · FableCut + HyperFrames reconstrucción PR27 (iniciado, NO desplegado)
 
 Carlos autoriza replantear el motor, reutilizar herramientas open source, integrar en rama PR27, retirar lo que sobre **una vez demuestre seguridad y equivalencia**, y reconstruir desde cero si realmente hiciera falta. Rechaza el editor FFmpeg auxiliar como núcleo. Se activó skill SUES Film Director 1.5.7 y normativa V2 D01–D77.
