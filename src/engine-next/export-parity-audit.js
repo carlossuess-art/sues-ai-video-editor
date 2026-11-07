@@ -12,3 +12,14 @@ export function checkExportParityEvidence({video,ssim,expectedFrames,expectedWid
   'H.264 is lossy; SSIM does not verify correct character occlusion, alpha edges, or semantic quality',
   'Audio true peak and user approval must be audited independently']};
 }
+
+/** Diagnostics only: adjacent repeated decoded frames may be intentional holds. */
+export function summarizeDecodedFrameHashes(framemd5,{expectedFrames}={}) {
+ if(typeof framemd5!=="string" || !Number.isInteger(expectedFrames)||expectedFrames<1)throw Error('Expected frame stream and count');
+ const hashes=framemd5.split('\n').filter(x=>/^\s*\d+\s*,/.test(x)).map(line=>line.split(',').at(-1)?.trim()).filter(Boolean);
+ if(hashes.length!==expectedFrames||hashes.some(h=>!/^[a-f0-9]{32}$/.test(h)))throw Error('Decoded frame hashes incomplete');
+ const unique=new Set(hashes).size;
+ const adjacentDuplicates=hashes.reduce((n,x,i)=>n+(i>0&&x===hashes[i-1]?1:0),0);
+ return {decodedFrames:hashes.length,distinctFrames:unique,adjacentDuplicateFrames:adjacentDuplicates,
+  cinematicQA:false,notes:'Repeated frames are diagnostic, not automatically a failure; deliberate static shots may repeat.'};
+}
