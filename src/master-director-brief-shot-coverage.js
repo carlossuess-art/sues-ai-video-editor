@@ -38,6 +38,15 @@ export function inspectFilmBriefShotCoverage(annex){
      }
      seen.add(shot.id);
      const a=Math.round(shot.editStart*annex.fps),b=Math.round(shot.editEnd*annex.fps);
+     // The brief is expressed on the original VFR source clock. A verified
+     // no-cut CFR30 stage may only quantize each edge to the nearest frame.
+     // Anything else means the shot was retimed without a sourceTimeMap.
+     if(shot.sourceEnd<=shot.sourceStart||
+        Math.round(shot.sourceStart*annex.fps)!==a||
+        Math.round(shot.sourceEnd*annex.fps)!==b)
+       issues.push({code:'SHOT_SOURCE_TO_CFR30_TIME_DRIFT',sceneId:scene.id,
+        shotId:shot.id,sourceStart:shot.sourceStart,sourceEnd:shot.sourceEnd,
+        editStartFrame:a,editEndFrame:b});
      if(a!==cursor)issues.push({code:'BASE_SHOT_GAP_OR_OVERLAP',
        sceneId:scene.id,shotId:shot.id,expectedStartFrame:cursor,actualStartFrame:a});
      if(b<=a||b>end||a<start)issues.push({code:'SHOT_OUTSIDE_SCENE',
