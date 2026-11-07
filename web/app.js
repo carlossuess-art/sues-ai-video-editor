@@ -624,6 +624,25 @@ async function currentBriefRevision(jobId){
  const records=await api('jobs/'+jobId+'/master-source-brief');
  return records.briefs.filter(x=>!x.stale).at(-1)?.revision??null;
 }
+$('master-brief-captions').onclick=()=>work(async()=>{
+ if(!current)throw Error('Abre el Reel antes de revisar los subtítulos.');
+ const jobId=current.id,revision=await currentBriefRevision(jobId);
+ if(!revision)throw Error('Falta el documento original de Film Director.');
+ const report=await api('jobs/'+jobId+'/master-brief-caption-draft?briefRevision='+encodeURIComponent(revision));
+ if(current?.id!==jobId)throw Error('El Reel ha cambiado.');
+ const root=$('master-brief-analysis');root.replaceChildren();
+ const intro=document.createElement('p');intro.textContent=`${report.wordCount} palabras del ASR · ${report.groups} grupos provisionales · ${report.risks.length} incidencias por revisar. NO APROBADO.`;root.append(intro);
+ const cues=document.createElement('details'),heading=document.createElement('summary'),list=document.createElement('ul');
+ heading.textContent='Ver subtítulos progresivos propuestos con sus tiempos';
+ for(const cue of report.captionCues){
+  const entry=document.createElement('li');entry.textContent=`${cue.startFrame}–${cue.endFrame} fotogramas · ${cue.sceneId} · ${cue.text}`;list.append(entry);
+ }
+ cues.append(heading,list);root.append(cues);
+ const risks=document.createElement('details'),riskHead=document.createElement('summary'),riskList=document.createElement('ul');
+ riskHead.textContent=`${report.risks.length} incidencias de sincronía/ASR pendientes`;
+ for(const issue of report.risks){const line=document.createElement('li');line.textContent=`${issue.wordId} · ${issue.code}`;riskList.append(line);}
+ risks.append(riskHead,riskList);root.append(risks);
+});
 $('master-brief-capabilities').onclick=()=>work(async()=>{
  if(!current)throw Error('Abre primero el Reel.');
  const jobId=current.id,revision=await currentBriefRevision(jobId);
@@ -661,15 +680,16 @@ $('master-brief-download-report').onclick=()=>work(async()=>{
  if(!current)throw Error('Abre primero el Reel.');
  const jobId=current.id,revision=await currentBriefRevision(jobId);
  if(!revision)throw Error('No existe un documento original vigente.');
- const [annex,requirements,capabilities]=await Promise.all([
+ const [annex,requirements,capabilities,captions]=await Promise.all([
   api('jobs/'+jobId+'/master-brief-translation?briefRevision='+encodeURIComponent(revision)),
   api('jobs/'+jobId+'/master-brief-requirements?briefRevision='+encodeURIComponent(revision)),
-  api('jobs/'+jobId+'/master-brief-capabilities?briefRevision='+encodeURIComponent(revision))]);
+  api('jobs/'+jobId+'/master-brief-capabilities?briefRevision='+encodeURIComponent(revision)),
+  api('jobs/'+jobId+'/master-brief-caption-draft?briefRevision='+encodeURIComponent(revision))]);
  if(current?.id!==jobId)throw Error('El Reel ha cambiado. No se ha descargado ningún informe.');
- if(annex.sourceBriefSha256!==requirements.sourceBriefSha256||annex.sourceBriefSha256!==capabilities.sourceBriefSha256||capabilities.canExecute!==false||requirements.canExecute!==false||annex.canExecute!==false)
+ if(annex.sourceBriefSha256!==requirements.sourceBriefSha256||annex.sourceBriefSha256!==capabilities.sourceBriefSha256||annex.sourceBriefSha256!==captions.sourceBriefSha256||captions.canExecute!==false||capabilities.canExecute!==false||requirements.canExecute!==false||annex.canExecute!==false)
   throw Error('Las auditorías no coinciden o no son de solo lectura.');
  const payload={schema:'sues-film-director-handoff-non-executable/v1',
-  canExecute:false,approved:false,sourceBriefRevision:revision,annex,requirements,capabilities};
+  canExecute:false,approved:false,sourceBriefRevision:revision,annex,requirements,capabilities,captions};
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob);
  const link=document.createElement('a');link.href=url;link.download='SUES_FILM_DIRECTOR_'+jobId.slice(0,8)+'_ANEXO_NO_EJECUTABLE.json';
  document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);

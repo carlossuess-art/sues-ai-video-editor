@@ -3,6 +3,7 @@
 // A successful mapping is only structural review; it does not grant render rights.
 import {createHash} from 'node:crypto';
 import {checkFilmBriefIntentMapping} from './master-director-brief-semantic.js';
+import {inspectBrollFadeLink} from './master-director-broll-fades.js';
 const hash=x=>createHash('sha256').update(x).digest('hex');
 const blocked=(code,details={})=>({status:'BLOCKED',code,...details,approved:false,canExecute:false});
 export function auditMasterBriefCrosswalk({annex,story,links}={}){
@@ -53,11 +54,13 @@ export function auditMasterBriefCrosswalk({annex,story,links}={}){
    if(!ids.has(id))return blocked('INTENT_MAPPED_TO_UNKNOWN_OPERATION',{intentId:link.intentId,operationId:id});
    const operation=story.operations.find(op=>op.id===id),intent=intentById.get(link.intentId);
    if(intent.sceneId&&operation.sceneId!==intent.sceneId||
-      intent.track!=='editorial-direction'&&operation.track!==intent.track||
+      intent.track!=='editorial-direction'&&intent.track!=='transition'&&operation.track!==intent.track||
       Number.isFinite(intent.editStart)&&(operation.start<intent.editStart-1/30-1e-6||
        operation.end>intent.editEnd+1/30+1e-6))
     return blocked('INTENT_OPERATION_SEMANTIC_OR_TIME_MISMATCH',{intentId:link.intentId,operationId:id});
-   const semanticIssue=checkFilmBriefIntentMapping(intent,operation,story);
+   const semanticIssue=intent.track==='transition'
+    ?inspectBrollFadeLink(intent,operation,link,annex)
+    :checkFilmBriefIntentMapping(intent,operation,story);
    if(semanticIssue)return blocked(semanticIssue,{intentId:link.intentId,operationId:id});
    usedOps.add(id);
   }

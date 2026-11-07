@@ -18,10 +18,17 @@ export function auditFilmBriefCapabilities(annex){
   }else if(x.track==='broll'){
    model='STRUCTURALLY_MODELABLE_AFTER_TRUSTED_EVIDENCE';
    suggestedCapability='remotion:broll:video-exact';
-   blockers=['REAL_VIDEO_ID_SHA_LICENSE_RIGHTS','VIDEO_START_FRAME_AND_DURATION','IN_OUT_TRANSITIONS_UNSUPPORTED_BY_STRICT_REMOTION'];
+   blockers=['REAL_VIDEO_ID_SHA_LICENSE_RIGHTS','VIDEO_START_FRAME_AND_DURATION','IN_OUT_TRANSITIONS_MUST_BE_EXPLICIT_AND_MATCH_ENGINE'];
   }else if(x.track==='transition'){
-   model='NOT_MODELLED_BY_CURRENT_STRICT_REMOTION_ADAPTER';
-   blockers=['TRANSITION_TYPE_DURATION_CURVE_AND_ENGINE_MISSING'];
+   // The strict adapter has no independent transition track, but its existing
+   // video layer can animate opacity at exact frames for an EXPLICIT fade.
+   // Never auto-choose a fade when Film Director has not specified its kind.
+   model='CONDITIONAL_VIDEO_OPACITY_FADE_CAPABILITY';
+   suggestedCapability='remotion:broll:video-exact:opacity-keyframes';
+   blockers=['DIRECTOR_MUST_SPECIFY_IN_OUT_TRANSITION_KIND_DURATION_AND_CURVE',
+    'SAME_VERIFIED_BROLL_VIDEO_AND_FULL_FRAME_OPACITY_KEYS',
+    'TRUSTED_ASSET_RIGHTS_AND_FRAME_RENDER_QA_REQUIRED',
+    'OTHER_TRANSITION_STYLES_NOT_PROVEN_SUPPORTED'];
   }else if(x.track==='graphics'&&x.id.endsWith('-editorial-title')){
    model='STRUCTURALLY_MODELABLE_AFTER_TRUSTED_EVIDENCE';
    suggestedCapability='remotion:graphics:text';

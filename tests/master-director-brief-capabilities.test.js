@@ -14,7 +14,7 @@ test('actual strict renderer capabilities are separated from visual storytelling
  assert.equal(audit.status,'BLOCKED_PENDING_EXECUTABLE_EQUIVALENCE');
  assert.equal(audit.sourceLineLoss,0);assert.equal(audit.canExecute,false);assert.equal(audit.approved,false);
  assert.ok(audit.intents.find(x=>x.track==='broll').suggestedCapability==='remotion:broll:video-exact');
- assert.ok(audit.intents.find(x=>x.track==='transition').blockers.includes('TRANSITION_TYPE_DURATION_CURVE_AND_ENGINE_MISSING'));
+ assert.ok(audit.intents.find(x=>x.track==='transition').blockers.includes('DIRECTOR_MUST_SPECIFY_IN_OUT_TRANSITION_KIND_DURATION_AND_CURVE'));
  assert.ok(audit.intents.find(x=>x.track==='captions').blockers.includes('VERIFIED_WORD_BY_WORD_TRANSCRIPT'));
  assert.ok(audit.intents.find(x=>x.intentId.endsWith('editorial-title')).suggestedCapability==='remotion:graphics:text');
  assert.ok(audit.intents.find(x=>x.intentId.includes('overlay-M')).model==='CINEMATIC_COMPOSITION_NOT_PROVEN_REPRESENTABLE');
