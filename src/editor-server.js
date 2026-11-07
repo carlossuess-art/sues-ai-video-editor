@@ -641,7 +641,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       const annex=translateFilmDirectorBrief({text:entry.text,sourceSha256:entry.sourceSha256,
        originalSha256:entry.originalSha256,timelineFingerprint:entry.timelineFingerprint,
        duration:catalog.duration,fps:30});
-      const result=inspectFilmBriefGeometry(annex,{width:project.source.width,height:project.source.height});
+      const result=inspectFilmBriefGeometry(annex,{width:project.inputs?.source?.width,height:project.inputs?.source?.height});
       return json(res,result.status==='BLOCKED'?422:200,result);
      }
      if(action==='master-brief-capabilities'&&req.method==='GET'){
