@@ -620,6 +620,24 @@ async function showMasterBriefs(jobId){
   details.append(heading,body);root.append(details);
  }
 }
+$('master-brief-analyze').onclick=()=>work(async()=>{
+ if(!current)throw Error('Abre el Reel correspondiente.');
+ const jobId=current.id,briefs=await api('jobs/'+jobId+'/master-source-brief');
+ const latest=briefs.briefs.filter(b=>!b.stale).at(-1);
+ if(!latest)throw Error('No hay un documento original vigente. Guarda primero el Markdown de Film Director.');
+ const result=await api('jobs/'+jobId+'/master-brief-translation?briefRevision='+encodeURIComponent(latest.revision));
+ if(current?.id!==jobId)throw Error('Has cambiado de Reel.');
+ const root=$('master-brief-analysis');root.replaceChildren();
+ const summary=document.createElement('p');summary.textContent=`${result.scenes.length} escenas · ${result.shotCount} planos · ${result.translationCoverage.lostLines} líneas perdidas. Documento íntegro, NO IMPORTABLE y NO APROBADO.`;
+ root.append(summary);
+ for(const scene of result.scenes){
+  const section=document.createElement('details'),heading=document.createElement('summary'),lines=document.createElement('ul');
+  heading.textContent=`${scene.id}: ${scene.title} · ${scene.shots.length} planos`;
+  for(const shot of scene.shots){const row=document.createElement('li');row.textContent=`${shot.id} · ${shot.kind} · ${shot.verbatim} · PENDIENTE: ${shot.blockingReasons.join(', ')}`;lines.append(row);}
+  section.append(heading,lines);root.append(section);
+ }
+ const note=document.createElement('p');note.textContent=`${result.operationIntents.length} intenciones técnicas identificadas; ${result.blockingConditions.length} comprobaciones pendientes. Las ${result.instructionCoverage.nonemptySourceLines} líneas con instrucciones están documentadas sin pérdidas; faltan recursos y equivalencia ejecutable. Nada aprobado.`;root.append(note);
+});
 $('master-brief-list').onclick=()=>work(async()=>{
  if(!current)throw Error('Abre el proyecto antes de consultar el documento.');
  await showMasterBriefs(current.id);
