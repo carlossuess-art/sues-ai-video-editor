@@ -1,25 +1,69 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import http from 'node:http';
 import {fixture} from '../helpers/editor-fixture.js';
 import {createEditorServer} from '../../src/editor-server.js';
 import {rmSync} from 'node:fs';
 import {join} from 'node:path';
 
-test('staging media gate requires SUES session and supports range requests',async()=>{
- const f=fixture(),prev=process.env.SUES_ENGINE_NEXT_FABLECUT_URL;
- process.env.SUES_ENGINE_NEXT_FABLECUT_URL='http://127.0.0.1:7780';
+const firstProject={name:'SUES 158404 private study',revision:2,width:1080,height:1920,
+ tracks:[{id:'V1',kind:'video'},{id:'V4',kind:'video'}],
+ clips:[{id:'source',mediaId:'m1',kind:'video',track:'V1',start:0,duration:15,locked:true,props:{}},
+        {id:'graphic',mediaId:'m3d',kind:'video',track:'V4',start:4,duration:1,disabled:true,props:{x:200,y:-300,scale:0.5}},
+        {id:'title',kind:'text',track:'V4',start:2,duration:1,props:{fontSize:84}}],
+ media:[{id:'m1',kind:'video',src:'/media/original.mp4',name:'Original'},{id:'m3d',kind:'video',src:'/media/alpha.webm',name:'3D'}]};
+async function startFakeFableCut(){
+ let project=structuredClone(firstProject);
+ const source=Buffer.from('fablecut-real-byte-range-proof');
+ const server=http.createServer(async(req,res)=>{
+  const url=new URL(req.url,'http://localhost');
+  if(url.pathname==='/api/project'){
+   res.setHeader('Content-Type','application/json');res.setHeader('X-FableCut-Project','p_158404');
+   if(req.method==='GET')return res.end(JSON.stringify(project));
+   const chunks=[];for await(const c of req)chunks.push(c);
+   const changed=JSON.parse(Buffer.concat(chunks).toString());
+   if(req.headers['x-fablecut-project']!=='p_158404'||changed.revision<=project.revision){res.writeHead(409);return res.end(JSON.stringify({error:'stale revision'}));}
+   project=changed;return res.end(JSON.stringify({ok:true,revision:project.revision}));
+  }
+  if(url.pathname==='/media/original.mp4'||url.pathname==='/media/alpha.webm'){
+   const range=/^bytes=(\d+)-(\d+)$/.exec(req.headers.range||'');
+   res.setHeader('Content-Type','video/mp4');res.setHeader('Accept-Ranges','bytes');
+   if(range){const start=Number(range[1]),end=Number(range[2]);res.writeHead(206,{'Content-Range':`bytes ${start}-${end}/${source.length}`});return res.end(source.subarray(start,end+1));}
+   return res.end(source);
+  }
+  res.writeHead(404);res.end();
+ });
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ return {origin:`http://127.0.0.1:${server.address().port}`,close:()=>new Promise(resolve=>server.close(resolve)),read:()=>project};
+}
+test('authenticated source proxy and revisioned transform preserve disabled clip and protect source',async()=>{
+ const f=fixture(),fake=await startFakeFableCut(),prev=process.env.SUES_ENGINE_NEXT_FABLECUT_URL;
+ process.env.SUES_ENGINE_NEXT_FABLECUT_URL=fake.origin;
  let app;
  try{
   app=createEditorServer({directory:join(f.dir,'nle-jobs'),profiles:f.profiles});
   const base=(await app.listen()).split('/#')[0];
-  assert.equal((await fetch(base+'/api/engine-next/media/m_sues_158404_video')).status,401);
+  assert.equal((await fetch(base+'/api/engine-next/media/m1')).status,401);
+  assert.equal((await fetch(base+'/api/engine-next/project')).status,401);
   const sess=await fetch(base+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
-  const headers={cookie:sess.headers.get('set-cookie').split(';')[0]};
+  const headers={cookie:sess.headers.get('set-cookie').split(';')[0], 'content-type':'application/json','x-sues-request':'editor'};
   const proj=await fetch(base+'/api/engine-next/project',{headers});assert.equal(proj.status,200);
-  const parsed=await proj.json();assert.ok(parsed.media.some(m=>m.id==='m_sues_158404_video'));
-  const part=await fetch(base+'/api/engine-next/media/m_sues_158404_video',{headers:{...headers,range:'bytes=0-63'}});
-  assert.equal(part.status,206);assert.equal((await part.arrayBuffer()).byteLength,64);
+  const initial=await proj.json();assert.equal(initial.clips.length,3);assert.equal(initial.revision,2);
+  const part=await fetch(base+'/api/engine-next/media/m1',{headers:{...headers,range:'bytes=0-7'}});
+  assert.equal(part.status,206);assert.equal((await part.arrayBuffer()).byteLength,8);
   assert.equal((await fetch(base+'/api/engine-next/media/unknown',{headers})).status,404);
-  assert.equal((await fetch(base+'/api/engine-next/media/m_sues_158404_video',{headers:{...headers,range:'bytes=abc'}})).status,404);
- }finally{await app?.close();rmSync(f.dir,{recursive:true,force:true});if(prev===undefined)delete process.env.SUES_ENGINE_NEXT_FABLECUT_URL;else process.env.SUES_ENGINE_NEXT_FABLECUT_URL=prev;}
+  assert.equal((await fetch(base+'/api/engine-next/media/m1',{headers:{...headers,range:'bytes=abc'}})).status,404);
+  const write=(path,body,override={})=>fetch(base+path,{method:'POST',headers:{...headers,...override},body:JSON.stringify(body)});
+  assert.equal((await write('/api/engine-next/clip-transform',{expectedRevision:2,clipId:'source',x:0,y:0,scale:1})).status,422);
+  assert.equal(fake.read().revision,2);
+  const changed=await write('/api/engine-next/clip-transform',{expectedRevision:2,clipId:'graphic',x:340,y:-400,scale:0.65});
+  assert.equal(changed.status,200);assert.equal(fake.read().revision,3);
+  assert.equal(fake.read().clips.find(c=>c.id==='graphic').disabled,true);
+  assert.equal(fake.read().clips.find(c=>c.id==='graphic').props.x,340);
+  assert.equal((await write('/api/engine-next/clip-transform',{expectedRevision:2,clipId:'graphic',x:360,y:0,scale:1})).status,409);
+  assert.equal((await write('/api/engine-next/clip-transform',{expectedRevision:3,clipId:'graphic',x:0,y:0,scale:0})).status,400);
+  const title=await write('/api/engine-next/title-size',{expectedRevision:3,clipId:'title',fontSize:92});
+  assert.equal(title.status,200);assert.equal(fake.read().clips.find(c=>c.id==='title').props.fontSize,92);
+  assert.equal((await write('/api/engine-next/clip-transform',{expectedRevision:4,clipId:'graphic',x:5,y:5,scale:1},{'x-sues-request':'none'})).status,403);
+ }finally{await app?.close();await fake.close();rmSync(f.dir,{recursive:true,force:true});if(prev===undefined)delete process.env.SUES_ENGINE_NEXT_FABLECUT_URL;else process.env.SUES_ENGINE_NEXT_FABLECUT_URL=prev;}
 });
