@@ -17,6 +17,7 @@ test('HTTP app protects sessions, origins and paths; persists edits and forbids 
  try{
   const launch=await app.listen(),url=launch.split('/#')[0],token=launch.split('#')[1];
   assert.equal((await fetch(url+'/api/jobs')).status,401);assert.equal((await fetch(url+'/api/health')).status,401);
+  assert.equal((await fetch(url+'/api/engine-next/project')).status,401);
   assert.equal((await fetch(url+'/',{headers:{Origin:'https://evil.example'}})).status,403);
   assert.equal(await new Promise((r,j)=>http.get(url+'/',{headers:{Host:'evil.example'}},res=>{res.resume();r(res.statusCode);}).on('error',j)),403);
   assert.equal((await fetch(url+'/%2e%2e/package.json')).status,404);
@@ -24,6 +25,10 @@ test('HTTP app protects sessions, origins and paths; persists edits and forbids 
   const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+token}});assert.equal(session.status,200);
   const cookie=session.headers.get('set-cookie').split(';')[0],headers={Cookie:cookie,'Content-Type':'application/json','X-Sues-Request':'editor'};
   assert.equal((await fetch(url+'/api/jobs',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:'{}'})).status,403);
+  assert.equal((await fetch(url+'/api/engine-next/project',{headers})).status,503);
+  assert.equal((await fetch(url+'/api/engine-next/title-size',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:'{}'})).status,403);
+  assert.equal((await fetch(url+'/engine-next.html')).status,200);
+  assert.equal((await fetch(url+'/engine-next.js')).status,200);
   const health=await (await fetch(url+'/api/health',{headers})).json();assert.equal(health.mode,'local-worker');assert.equal(health.queue.waiting,0);assert.equal(health.storage.remote,false);
   const create=await fetch(url+'/api/jobs',{method:'POST',headers,body:JSON.stringify({profileId:'test'})});assert.equal(create.status,201);
   const design=await (await fetch(url+'/api/design?profileId=test',{headers})).json();assert.equal(design.styles.filter(s=>s.available).length,5);assert.equal(design.motions.filter(m=>m.rendered).length,6);assert.equal(design.brand.fonts.primary,'Montserrat');
