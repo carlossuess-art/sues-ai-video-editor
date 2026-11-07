@@ -78,8 +78,25 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
      asset?.rightsVerified!==true||asset?.commercialUseAllowed!==true||!Number.isFinite(asset.duration)||
      (p.sourceInFrame+node.endFrame-node.startFrame)/graph.fps>asset.duration+0.000001))
    {fail(issues,node,'VIDEO_RESOURCE_UNVERIFIED');continue;}
-  if(!Array.isArray(v.keyframes)||v.keyframes.some(k=>!only(k,['atFrame','easing','x','y','opacity','scale','rotation'])||
-      !['linear','ease-in','ease-out','ease-in-out'].includes(k.easing??'linear'))){fail(issues,node,'ANIMATION_UNSUPPORTED');continue;}
+  // Keyframes are local to the layer. Reject duplicate, non-monotonic,
+  // out-of-bounds or non-finite values before reaching the renderer. The
+  // compositor interpolates between adjacent frames and cannot recover from
+  // two keys at the same frame or a NaN transform.
+  let lastKeyFrame=-1;
+  const layerDuration=node.endFrame-node.startFrame;
+  if(!Array.isArray(v.keyframes)||v.keyframes.length>300||v.keyframes.some(k=>{
+    if(!only(k,['atFrame','easing','x','y','opacity','scale','rotation'])||
+       !Number.isInteger(k.atFrame)||k.atFrame<=lastKeyFrame||k.atFrame<0||
+       k.atFrame>=layerDuration||
+       !['linear','ease-in','ease-out','ease-in-out'].includes(k.easing??'linear'))return true;
+    lastKeyFrame=k.atFrame;
+    if(!['x','y','opacity','scale','rotation'].some(key=>k[key]!==undefined))return true;
+    if(['x','y','rotation'].some(key=>k[key]!==undefined&&
+       (!Number.isFinite(k[key])||Math.abs(k[key])>10000)))return true;
+    if(k.opacity!==undefined&&(!Number.isFinite(k.opacity)||k.opacity<0||k.opacity>1))return true;
+    if(k.scale!==undefined&&(!Number.isFinite(k.scale)||k.scale<0||k.scale>8))return true;
+    return false;
+  })){fail(issues,node,'ANIMATION_UNSUPPORTED');continue;}
   if(!Number.isInteger(node.startFrame)||!Number.isInteger(node.endFrame)||node.startFrame<0||
      node.endFrame<=node.startFrame||node.endFrame>graph.durationFrames)
    {fail(issues,node,'TIMELINE_INVALID');continue;}
