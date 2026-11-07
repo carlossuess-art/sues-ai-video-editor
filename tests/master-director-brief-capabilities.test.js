@@ -61,3 +61,14 @@ test('capability audit fails closed for missing, malformed and duplicated techni
   assert.equal(audit.canExecute,false);
  }
 });
+
+test('capability report rejects changed base-shot coverage before offering executable suggestions',()=>{
+ const annex=translateFilmDirectorBrief({text,originalSha256:O,sourceSha256:H,timelineFingerprint:T,duration:4});
+ const bad=structuredClone(annex);
+ bad.scenes[0].shots[1].editStart+=.2;
+ const audit=auditFilmBriefCapabilities(bad);
+ assert.equal(audit.status,'BLOCKED');
+ assert.equal(audit.code,'FILM_BRIEF_BASE_SHOT_COVERAGE_INVALID');
+ assert.ok(audit.shotCoverage.issues.some(x=>x.code==='BASE_SHOT_GAP_OR_OVERLAP'));
+ assert.equal(audit.canExecute,false);
+});
