@@ -54,3 +54,11 @@ test('refuses a blank program when the source never decodes',async()=>{
  const renderer=new ProgramFrameRenderer({client:{...client,async getProject(){return structuredClone(original);}},puppeteer:broken,executablePath:'/chrome'});
  await assert.rejects(renderer.capture({time:2.5,expectedRevision:3}),/source not decoded/);
 });
+
+test('rejects a native matte or mask edit during an in-flight capture',async()=>{
+ let changed=false;
+ const mClient={...client,async getProject(){const x=await client.getProject();x.data.clips=[{id:'subject',start:0,duration:10,props:{matte:'luma',matteTrack:'V4',masks:changed?[{shape:'rect',feather:20}]:null}}];return x;}};
+ const mPuppeteer={...puppeteer,async launch(){changed=true;return puppeteer.launch();}};
+ const renderer=new ProgramFrameRenderer({client:mClient,puppeteer:mPuppeteer,executablePath:'/chrome'});
+ await assert.rejects(renderer.capture({time:2.5,expectedRevision:3}),/contents changed/);
+});
