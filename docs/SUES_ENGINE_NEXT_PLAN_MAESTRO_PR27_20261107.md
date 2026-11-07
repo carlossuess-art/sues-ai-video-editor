@@ -326,3 +326,16 @@ No se da el proyecto por terminado por número de commits, porcentaje ficticio, 
 6. Hay rollback y la producción anterior sigue operativa hasta decisión de despliegue.
 
 **Siguiente unidad de trabajo:** no otro MP4 parcial de 73 segundos. Hacer POC end-to-end sobre **la escena del niño y el grupo con máscara real + título semántico + subtítulos**, y una composición HyperFrames 3D de **DECIR NO / CULPA**. Deben compartir timeline, tiempo y export, y demostrar la diferencia visual.
+
+## 11. Comprobación adicional: la IA y el editor ya modifican el mismo POC
+
+Tras crear el POC se ejecutó una sesión MCP real contra el proceso FableCut aislado (`FABLECUT_NO_AUTOSTART=1`), sin tocar producción:
+
+- El proyecto estaba en revisión 1 y contenía 5 clips / 4 medios.
+- La herramienta `fablecut_patch_project` aplicó una edición transaccional: el título `sues_title_after_word` cambió de 72 a 84 píxeles.
+- Un intento posterior contra la revisión antigua 1 fue **rechazado con CONFLICT** sin guardar el cambio incorrecto.
+- `GET /api/project` del mismo servidor web mostró revisión **2**, el título a **84 px** y los 5 clips preservados.
+- Evidencia local: `/tmp/sues-engine-next-fablecut-poc-158404-20261107/real-mcp-ui-shared-edit-proof.json`.
+- Alcance de la prueba: **sí prueba integración MCP → mismo documento que consume la UI** y política CAS; **no prueba** que todos los píxeles compuestos sean iguales en exportación, calidad de máscaras, motion 3D ni pantalla SUES productiva.
+
+La siguiente prueba ya no debería limitarse a JSON/API: debe abrir el compositor real, capturar un frame de la edición en pantalla, modificar una capa desde MCP, capturar el mismo frame de nuevo y exportar la escena para comparar resultados. Exponer el editor al usuario exige primero un wrapper de autenticación; la instancia actual seguirá solo en loopback.
