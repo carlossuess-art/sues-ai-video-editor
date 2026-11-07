@@ -41,14 +41,21 @@ test('authenticated source proxy and revisioned transform preserve disabled clip
  process.env.SUES_ENGINE_NEXT_FABLECUT_URL=fake.origin;
  let app;
  try{
-  app=createEditorServer({directory:join(f.dir,'nle-jobs'),profiles:f.profiles});
+  app=createEditorServer({directory:join(f.dir,'nle-jobs'),profiles:f.profiles,engineNextFrameRenderer:{async capture({time,expectedRevision}){if(expectedRevision!==fake.read().revision)throw Error('stale');return {revision:expectedRevision,time,png:Buffer.from([137,80,78,71,4,5,6])};}}});
   const base=(await app.listen()).split('/#')[0];
   assert.equal((await fetch(base+'/api/engine-next/media/m1')).status,401);
   assert.equal((await fetch(base+'/api/engine-next/project')).status,401);
+  assert.equal((await fetch(base+'/api/engine-next/program-frame?time=4.5&revision=2')).status,401);
   const sess=await fetch(base+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
   const headers={cookie:sess.headers.get('set-cookie').split(';')[0], 'content-type':'application/json','x-sues-request':'editor'};
   const proj=await fetch(base+'/api/engine-next/project',{headers});assert.equal(proj.status,200);
   const initial=await proj.json();assert.equal(initial.clips.length,3);assert.equal(initial.revision,2);
+  const native=await fetch(base+'/api/engine-next/program-frame?time=4.5&revision=2',{headers});
+  assert.equal(native.status,200);assert.equal(native.headers.get('content-type'),'image/png');
+  assert.equal(native.headers.get('x-sues-cinematic-qa'),'not-approved');
+  assert.equal((await native.arrayBuffer()).byteLength,7);
+  assert.equal((await fetch(base+'/api/engine-next/program-frame?time=-1&revision=2',{headers})).status,400);
+  assert.equal((await fetch(base+'/api/engine-next/program-frame?time=4.5&revision=22',{headers})).status,503);
   const part=await fetch(base+'/api/engine-next/media/m1',{headers:{...headers,range:'bytes=0-7'}});
   assert.equal(part.status,206);assert.equal((await part.arrayBuffer()).byteLength,8);
   assert.equal((await fetch(base+'/api/engine-next/media/unknown',{headers})).status,404);
