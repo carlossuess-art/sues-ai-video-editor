@@ -1,0 +1,1453 @@
+{
+  "schema": "sues-master-story/v1",
+  "sourceSha256": "9e06f49c30731d8a57aed312cfb46281bcffb7b3d5d62bf5a2164333944ccaad",
+  "timeline": {
+    "fingerprint": "cf1ba47057550e0f0e119b3209aa2223df7010beefaf4759bc631d32ac96c805",
+    "timeSpace": "edit-timeline",
+    "fps": 30,
+    "duration": 73.753467
+  },
+  "visual": {
+    "mode": "brand-sues"
+  },
+  "narrative": {
+    "centralMessage": "El precio de ser quien no eres · Plan Film Director aprobado con cambios",
+    "intendedExperience": "Conmover y reforzar autonomía, límites y autenticidad con recursos audiovisuales cinematográficos",
+    "scenes": [
+      {
+        "id": "scene-01",
+        "start": 0,
+        "end": 7.73,
+        "purpose": "El gancho · respetar discurso auténtico"
+      },
+      {
+        "id": "scene-02",
+        "start": 7.73,
+        "end": 16.83,
+        "purpose": "Aprender a encajar · respetar discurso auténtico"
+      },
+      {
+        "id": "scene-03",
+        "start": 16.83,
+        "end": 26.67,
+        "purpose": "El conflicto · respetar discurso auténtico"
+      },
+      {
+        "id": "scene-04",
+        "start": 26.67,
+        "end": 43.33,
+        "purpose": "Miedo a perder el amor · respetar discurso auténtico"
+      },
+      {
+        "id": "scene-05",
+        "start": 43.33,
+        "end": 55.83,
+        "purpose": "Volver a reconocerte · respetar discurso auténtico"
+      },
+      {
+        "id": "scene-06",
+        "start": 55.83,
+        "end": 65.17,
+        "purpose": "La decisión diaria · respetar discurso auténtico"
+      },
+      {
+        "id": "scene-07",
+        "start": 65.17,
+        "end": 73.753467,
+        "purpose": "Cierre maestro · respetar discurso auténtico"
+      }
+    ],
+    "motifs": []
+  },
+  "resources": [
+    {
+      "id": "B01",
+      "source": "generate",
+      "kind": "video",
+      "creationBrief": "Aplausos a la máscara social; B-roll real a pantalla completa con transición IN y OUT",
+      "narrativePurpose": "Aplausos a la máscara social; B-roll real a pantalla completa con transición IN y OUT"
+    },
+    {
+      "id": "B02",
+      "source": "generate",
+      "kind": "video",
+      "creationBrief": "Niño intentando encajar visible detrás de la silueta de Carlos; mantener el niño despejado con tracking y feather",
+      "narrativePurpose": "Niño intentando encajar visible detrás de la silueta de Carlos; mantener el niño despejado con tracking y feather"
+    },
+    {
+      "id": "B04",
+      "source": "generate",
+      "kind": "video",
+      "creationBrief": "Metáfora del rechazo; B-roll de grupo con persona excluida a pantalla completa; no sustituir por manos genéricas",
+      "narrativePurpose": "Metáfora del rechazo; B-roll de grupo con persona excluida a pantalla completa; no sustituir por manos genéricas"
+    },
+    {
+      "id": "B05",
+      "source": "generate",
+      "kind": "video",
+      "creationBrief": "Persona y su reflejo lateral detrás de Carlos, con máscara difuminada, espejo siempre visible",
+      "narrativePurpose": "Persona y su reflejo lateral detrás de Carlos, con máscara difuminada, espejo siempre visible"
+    },
+    {
+      "id": "M02",
+      "source": "generate",
+      "kind": "motion",
+      "creationBrief": "Composición AMOR frente a MIEDO A PERDERLO sobre tapiz antracita; cada idea sincronizada con la voz",
+      "narrativePurpose": "Composición AMOR frente a MIEDO A PERDERLO sobre tapiz antracita; cada idea sincronizada con la voz"
+    },
+    {
+      "id": "M03",
+      "source": "generate",
+      "kind": "motion",
+      "creationBrief": "Transformación NO CONVERTIRTE EN OTRO hacia RECONOCERTE con diseño cinematográfico en pantalla completa",
+      "narrativePurpose": "Transformación NO CONVERTIRTE EN OTRO hacia RECONOCERTE con diseño cinematográfico en pantalla completa"
+    },
+    {
+      "id": "M01",
+      "source": "generate",
+      "kind": "motion",
+      "creationBrief": "DECIR NO frente a SENTIR CULPA como motion gráfico delante de Carlos",
+      "narrativePurpose": "DECIR NO frente a SENTIR CULPA como motion gráfico delante de Carlos"
+    },
+    {
+      "id": "GIF-STOP",
+      "source": "generate",
+      "kind": "graphic",
+      "creationBrief": "Mano STOP transparente generada con ChatGPT; sobreponer delante del pecho de Carlos en poner límites",
+      "narrativePurpose": "Mano STOP transparente generada con ChatGPT; sobreponer delante del pecho de Carlos en poner límites"
+    },
+    {
+      "id": "MUSIC",
+      "source": "generate",
+      "kind": "music",
+      "creationBrief": "Música musical continua con ducking bajo la voz, licencia y mezcla verificadas",
+      "narrativePurpose": "Música musical continua con ducking bajo la voz, licencia y mezcla verificadas"
+    },
+    {
+      "id": "IMPACT",
+      "source": "generate",
+      "kind": "sfx",
+      "creationBrief": "Whoosh y golpe grave al primer frame sin tapar la voz",
+      "narrativePurpose": "Whoosh y golpe grave al primer frame sin tapar la voz"
+    }
+  ],
+  "operations": [
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-1-1",
+      "sceneId": "scene-01",
+      "start": 0,
+      "end": 3.2,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-1-2",
+      "sceneId": "scene-01",
+      "start": 3.2,
+      "end": 5.6,
+      "track": "broll",
+      "renderer": "film-director-pending",
+      "effect": "video-full-frame",
+      "reason": "Aplausos a la máscara social; B-roll real a pantalla completa con transición IN y OUT",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "B01",
+        "layout": "full-frame",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": {
+          "in": "required",
+          "out": "required"
+        },
+        "noSilentSubstitutions": true
+      },
+      "resourceRef": "B01"
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-1-3",
+      "sceneId": "scene-01",
+      "start": 5.6,
+      "end": 7.73,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-2-1",
+      "sceneId": "scene-02",
+      "start": 7.73,
+      "end": 9.5,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-2-2",
+      "sceneId": "scene-02",
+      "start": 9.5,
+      "end": 13.5,
+      "track": "broll",
+      "renderer": "film-director-pending",
+      "effect": "mask-behind-carlos-child-visible",
+      "reason": "Niño intentando encajar visible detrás de la silueta de Carlos; mantener el niño despejado con tracking y feather",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "B02",
+        "layout": "behind-subject-matte-child-always-visible",
+        "requiresTracking": true,
+        "alphaLayered": true,
+        "transitions": {
+          "in": "required",
+          "out": "required"
+        },
+        "noSilentSubstitutions": true
+      },
+      "resourceRef": "B02"
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-2-3",
+      "sceneId": "scene-02",
+      "start": 13.5,
+      "end": 16.83,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-3-1",
+      "sceneId": "scene-03",
+      "start": 16.83,
+      "end": 20.8,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-3-2",
+      "sceneId": "scene-03",
+      "start": 20.8,
+      "end": 24.1,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-3-3",
+      "sceneId": "scene-03",
+      "start": 24.1,
+      "end": 26.67,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-4-1",
+      "sceneId": "scene-04",
+      "start": 26.67,
+      "end": 30,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-4-2",
+      "sceneId": "scene-04",
+      "start": 30,
+      "end": 35.2,
+      "track": "broll",
+      "renderer": "film-director-pending",
+      "effect": "video-full-frame",
+      "reason": "Metáfora del rechazo; B-roll de grupo con persona excluida a pantalla completa; no sustituir por manos genéricas",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "B04",
+        "layout": "full-frame",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": {
+          "in": "required",
+          "out": "required"
+        },
+        "noSilentSubstitutions": true
+      },
+      "resourceRef": "B04"
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-4-3",
+      "sceneId": "scene-04",
+      "start": 35.2,
+      "end": 42.6,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "cinematic-motion-full-frame",
+      "reason": "Composición AMOR frente a MIEDO A PERDERLO sobre tapiz antracita; cada idea sincronizada con la voz",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "M02",
+        "layout": "full-screen-motion",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": {
+          "in": "required",
+          "out": "required"
+        },
+        "noSilentSubstitutions": true
+      },
+      "resourceRef": "M02"
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-4-4",
+      "sceneId": "scene-04",
+      "start": 42.6,
+      "end": 43.33,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-5-1",
+      "sceneId": "scene-05",
+      "start": 43.33,
+      "end": 47,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-5-2",
+      "sceneId": "scene-05",
+      "start": 47,
+      "end": 50.5,
+      "track": "broll",
+      "renderer": "film-director-pending",
+      "effect": "mask-behind-carlos-feather",
+      "reason": "Persona y su reflejo lateral detrás de Carlos, con máscara difuminada, espejo siempre visible",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "B05",
+        "layout": "behind-subject-feather-reflection-visible",
+        "requiresTracking": true,
+        "alphaLayered": true,
+        "transitions": {
+          "in": "required",
+          "out": "required"
+        },
+        "noSilentSubstitutions": true
+      },
+      "resourceRef": "B05"
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-5-3",
+      "sceneId": "scene-05",
+      "start": 50.5,
+      "end": 55.83,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "cinematic-motion-full-frame",
+      "reason": "Transformación NO CONVERTIRTE EN OTRO hacia RECONOCERTE con diseño cinematográfico en pantalla completa",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "M03",
+        "layout": "full-screen-motion",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": {
+          "in": "required",
+          "out": "required"
+        },
+        "noSilentSubstitutions": true
+      },
+      "resourceRef": "M03"
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-6-1",
+      "sceneId": "scene-06",
+      "start": 55.83,
+      "end": 60,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-6-2",
+      "sceneId": "scene-06",
+      "start": 60,
+      "end": 63.7,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-6-3",
+      "sceneId": "scene-06",
+      "start": 63.7,
+      "end": 65.17,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-7-1",
+      "sceneId": "scene-07",
+      "start": 65.17,
+      "end": 70,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "shot-7-2",
+      "sceneId": "scene-07",
+      "start": 70,
+      "end": 73.753467,
+      "track": "camera",
+      "renderer": "film-director-pending",
+      "effect": "original-camera-visual",
+      "reason": "Conservar rostro y voz originales en el plano",
+      "parameters": {
+        "sourceTimes": "original-VFR",
+        "kind": "camera",
+        "layout": "camera-clean",
+        "requiresTracking": false,
+        "alphaLayered": false,
+        "transitions": null,
+        "noSilentSubstitutions": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "M01-overlay",
+      "sceneId": "scene-03",
+      "start": 16.83,
+      "end": 20.8,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "cinematic-two-block-motion-on-camera",
+      "reason": "DECIR NO frente a SENTIR CULPA como motion gráfico delante de Carlos",
+      "resourceRef": "M01",
+      "parameters": {
+        "placement": "front-over-camera",
+        "noFaceOcclusion": true,
+        "activation": "DECIR NO at spoken words; SENTIR CULPA at culpable"
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "GIF-STOP-overlay",
+      "sceneId": "scene-03",
+      "start": 22.85,
+      "end": 23.95,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "alpha-animated-gif-on-chest",
+      "reason": "Mano STOP transparente generada con ChatGPT; sobreponer delante del pecho de Carlos en poner límites",
+      "resourceRef": "GIF-STOP",
+      "parameters": {
+        "geometry": {
+          "approxCenterX": 540,
+          "approxCenterY": 950,
+          "desiredWidthPx": 270
+        },
+        "layer": "in-front-of-Carlos",
+        "source": "ChatGPT generated transparent GIF",
+        "libraryPath": "/SUES AI VIDEO EDITOR/sues_158404_mano_stop_chatgpt.gif",
+        "speechAnchor": "poner límites at 23.04",
+        "neverCoverFace": true,
+        "actualPositionPendingObservedFrames": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "title-1",
+      "sceneId": "scene-01",
+      "start": 1.4,
+      "end": 3.2,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "spoken-semantic-keyword-reveal",
+      "reason": "El título solo es legible cuando la voz llega a la idea: perderte a ti mismo",
+      "parameters": {
+        "text": "PERDERTE A TI MISMO",
+        "semanticAnchor": "perderte a ti mismo",
+        "position": "nonfacial",
+        "color": "identity-white-orange-fire",
+        "font": "Montserrat Bold exact weight if verified",
+        "wordByWord": true,
+        "noFaceOcclusion": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "title-2",
+      "sceneId": "scene-01",
+      "start": 6.04,
+      "end": 7,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "spoken-semantic-keyword-reveal",
+      "reason": "El título solo es legible cuando la voz llega a la idea: aplaudirte",
+      "parameters": {
+        "text": "APLAUSOS",
+        "semanticAnchor": "aplaudirte",
+        "position": "nonfacial",
+        "color": "identity-white-orange-fire",
+        "font": "Montserrat Bold exact weight if verified",
+        "wordByWord": true,
+        "noFaceOcclusion": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "title-3",
+      "sceneId": "scene-02",
+      "start": 9.5,
+      "end": 11.5,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "spoken-semantic-keyword-reveal",
+      "reason": "El título solo es legible cuando la voz llega a la idea: molestar",
+      "parameters": {
+        "text": "NO MOLESTAR",
+        "semanticAnchor": "molestar",
+        "position": "nonfacial",
+        "color": "identity-white-orange-fire",
+        "font": "Montserrat Bold exact weight if verified",
+        "wordByWord": true,
+        "noFaceOcclusion": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "title-4",
+      "sceneId": "scene-03",
+      "start": 23.04,
+      "end": 24.1,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "spoken-semantic-keyword-reveal",
+      "reason": "El título solo es legible cuando la voz llega a la idea: límites",
+      "parameters": {
+        "text": "LÍMITES",
+        "semanticAnchor": "límites",
+        "position": "nonfacial",
+        "color": "identity-white-orange-fire",
+        "font": "Montserrat Bold exact weight if verified",
+        "wordByWord": true,
+        "noFaceOcclusion": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "title-5",
+      "sceneId": "scene-04",
+      "start": 27.38,
+      "end": 29,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "spoken-semantic-keyword-reveal",
+      "reason": "El título solo es legible cuando la voz llega a la idea: miedo",
+      "parameters": {
+        "text": "MIEDO",
+        "semanticAnchor": "miedo",
+        "position": "nonfacial",
+        "color": "identity-white-orange-fire",
+        "font": "Montserrat Bold exact weight if verified",
+        "wordByWord": true,
+        "noFaceOcclusion": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "title-6",
+      "sceneId": "scene-04",
+      "start": 29.3,
+      "end": 30,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "spoken-semantic-keyword-reveal",
+      "reason": "El título solo es legible cuando la voz llega a la idea: y si",
+      "parameters": {
+        "text": "¿Y SI...?",
+        "semanticAnchor": "y si",
+        "position": "nonfacial",
+        "color": "identity-white-orange-fire",
+        "font": "Montserrat Bold exact weight if verified",
+        "wordByWord": true,
+        "noFaceOcclusion": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "title-7",
+      "sceneId": "scene-04",
+      "start": 40.2,
+      "end": 41.75,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "spoken-semantic-keyword-reveal",
+      "reason": "El título solo es legible cuando la voz llega a la idea: amor",
+      "parameters": {
+        "text": "AMOR",
+        "semanticAnchor": "amor",
+        "position": "nonfacial",
+        "color": "identity-white-orange-fire",
+        "font": "Montserrat Bold exact weight if verified",
+        "wordByWord": true,
+        "noFaceOcclusion": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "title-8",
+      "sceneId": "scene-04",
+      "start": 41.78,
+      "end": 42.6,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "spoken-semantic-keyword-reveal",
+      "reason": "El título solo es legible cuando la voz llega a la idea: miedo a perderlo",
+      "parameters": {
+        "text": "MIEDO A PERDERLO",
+        "semanticAnchor": "miedo a perderlo",
+        "position": "nonfacial",
+        "color": "identity-white-orange-fire",
+        "font": "Montserrat Bold exact weight if verified",
+        "wordByWord": true,
+        "noFaceOcclusion": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "title-9",
+      "sceneId": "scene-05",
+      "start": 48.72,
+      "end": 50.5,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "spoken-semantic-keyword-reveal",
+      "reason": "El título solo es legible cuando la voz llega a la idea: reconocer",
+      "parameters": {
+        "text": "RECONOCERTE",
+        "semanticAnchor": "reconocer",
+        "position": "nonfacial",
+        "color": "identity-white-orange-fire",
+        "font": "Montserrat Bold exact weight if verified",
+        "wordByWord": true,
+        "noFaceOcclusion": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "title-10",
+      "sceneId": "scene-06",
+      "start": 60.82,
+      "end": 63.7,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "spoken-semantic-keyword-reveal",
+      "reason": "El título solo es legible cuando la voz llega a la idea: traicionarte",
+      "parameters": {
+        "text": "DEJAR DE TRAICIONARTE",
+        "semanticAnchor": "traicionarte",
+        "position": "nonfacial",
+        "color": "identity-white-orange-fire",
+        "font": "Montserrat Bold exact weight if verified",
+        "wordByWord": true,
+        "noFaceOcclusion": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "title-11",
+      "sceneId": "scene-07",
+      "start": 71.78,
+      "end": 73.753467,
+      "track": "graphics",
+      "renderer": "film-director-pending",
+      "effect": "spoken-semantic-keyword-reveal",
+      "reason": "El título solo es legible cuando la voz llega a la idea: sígueme",
+      "parameters": {
+        "text": "SÍGUEME",
+        "semanticAnchor": "sígueme",
+        "position": "nonfacial",
+        "color": "identity-white-orange-fire",
+        "font": "Montserrat Bold exact weight if verified",
+        "wordByWord": true,
+        "noFaceOcclusion": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "captions-1",
+      "sceneId": "scene-01",
+      "start": 0,
+      "end": 7.73,
+      "track": "captions",
+      "renderer": "film-director-pending",
+      "effect": "speech-aligned-progressive-words",
+      "reason": "Conservar toda la voz con subtítulos fieles, acumulados palabra a palabra",
+      "parameters": {
+        "source": "168 ASR provisional tokens, verification required",
+        "maxLines": 2,
+        "belowChin": true,
+        "requireActualASRAlignment": true,
+        "protectNegations": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "captions-2",
+      "sceneId": "scene-02",
+      "start": 7.73,
+      "end": 16.83,
+      "track": "captions",
+      "renderer": "film-director-pending",
+      "effect": "speech-aligned-progressive-words",
+      "reason": "Conservar toda la voz con subtítulos fieles, acumulados palabra a palabra",
+      "parameters": {
+        "source": "168 ASR provisional tokens, verification required",
+        "maxLines": 2,
+        "belowChin": true,
+        "requireActualASRAlignment": true,
+        "protectNegations": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "captions-3",
+      "sceneId": "scene-03",
+      "start": 16.83,
+      "end": 26.67,
+      "track": "captions",
+      "renderer": "film-director-pending",
+      "effect": "speech-aligned-progressive-words",
+      "reason": "Conservar toda la voz con subtítulos fieles, acumulados palabra a palabra",
+      "parameters": {
+        "source": "168 ASR provisional tokens, verification required",
+        "maxLines": 2,
+        "belowChin": true,
+        "requireActualASRAlignment": true,
+        "protectNegations": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "captions-4",
+      "sceneId": "scene-04",
+      "start": 26.67,
+      "end": 43.33,
+      "track": "captions",
+      "renderer": "film-director-pending",
+      "effect": "speech-aligned-progressive-words",
+      "reason": "Conservar toda la voz con subtítulos fieles, acumulados palabra a palabra",
+      "parameters": {
+        "source": "168 ASR provisional tokens, verification required",
+        "maxLines": 2,
+        "belowChin": true,
+        "requireActualASRAlignment": true,
+        "protectNegations": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "captions-5",
+      "sceneId": "scene-05",
+      "start": 43.33,
+      "end": 55.83,
+      "track": "captions",
+      "renderer": "film-director-pending",
+      "effect": "speech-aligned-progressive-words",
+      "reason": "Conservar toda la voz con subtítulos fieles, acumulados palabra a palabra",
+      "parameters": {
+        "source": "168 ASR provisional tokens, verification required",
+        "maxLines": 2,
+        "belowChin": true,
+        "requireActualASRAlignment": true,
+        "protectNegations": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "captions-6",
+      "sceneId": "scene-06",
+      "start": 55.83,
+      "end": 65.17,
+      "track": "captions",
+      "renderer": "film-director-pending",
+      "effect": "speech-aligned-progressive-words",
+      "reason": "Conservar toda la voz con subtítulos fieles, acumulados palabra a palabra",
+      "parameters": {
+        "source": "168 ASR provisional tokens, verification required",
+        "maxLines": 2,
+        "belowChin": true,
+        "requireActualASRAlignment": true,
+        "protectNegations": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "captions-7",
+      "sceneId": "scene-07",
+      "start": 65.17,
+      "end": 73.753467,
+      "track": "captions",
+      "renderer": "film-director-pending",
+      "effect": "speech-aligned-progressive-words",
+      "reason": "Conservar toda la voz con subtítulos fieles, acumulados palabra a palabra",
+      "parameters": {
+        "source": "168 ASR provisional tokens, verification required",
+        "maxLines": 2,
+        "belowChin": true,
+        "requireActualASRAlignment": true,
+        "protectNegations": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "impact-0000",
+      "sceneId": "scene-01",
+      "start": 0,
+      "end": 1.1,
+      "track": "sfx",
+      "renderer": "film-director-pending",
+      "effect": "intro-whoosh-thunder",
+      "reason": "Whoosh y golpe grave al primer frame sin tapar la voz",
+      "resourceRef": "IMPACT",
+      "parameters": {
+        "at": 0,
+        "avoidCoveringFirstWord": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "music-scene-01",
+      "sceneId": "scene-01",
+      "start": 0,
+      "end": 7.73,
+      "track": "music",
+      "renderer": "film-director-pending",
+      "effect": "continuous-licensed-music-ducked",
+      "reason": "Música musical continua con ducking bajo la voz, licencia y mezcla verificadas",
+      "resourceRef": "MUSIC",
+      "parameters": {
+        "continuousAcrossScenes": true,
+        "voiceAboveMusic": true,
+        "emotionalCurve": "tension-then-release",
+        "licenseNotYetVerified": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "music-scene-02",
+      "sceneId": "scene-02",
+      "start": 7.73,
+      "end": 16.83,
+      "track": "music",
+      "renderer": "film-director-pending",
+      "effect": "continuous-licensed-music-ducked",
+      "reason": "Música musical continua con ducking bajo la voz, licencia y mezcla verificadas",
+      "resourceRef": "MUSIC",
+      "parameters": {
+        "continuousAcrossScenes": true,
+        "voiceAboveMusic": true,
+        "emotionalCurve": "tension-then-release",
+        "licenseNotYetVerified": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "music-scene-03",
+      "sceneId": "scene-03",
+      "start": 16.83,
+      "end": 26.67,
+      "track": "music",
+      "renderer": "film-director-pending",
+      "effect": "continuous-licensed-music-ducked",
+      "reason": "Música musical continua con ducking bajo la voz, licencia y mezcla verificadas",
+      "resourceRef": "MUSIC",
+      "parameters": {
+        "continuousAcrossScenes": true,
+        "voiceAboveMusic": true,
+        "emotionalCurve": "tension-then-release",
+        "licenseNotYetVerified": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "music-scene-04",
+      "sceneId": "scene-04",
+      "start": 26.67,
+      "end": 43.33,
+      "track": "music",
+      "renderer": "film-director-pending",
+      "effect": "continuous-licensed-music-ducked",
+      "reason": "Música musical continua con ducking bajo la voz, licencia y mezcla verificadas",
+      "resourceRef": "MUSIC",
+      "parameters": {
+        "continuousAcrossScenes": true,
+        "voiceAboveMusic": true,
+        "emotionalCurve": "tension-then-release",
+        "licenseNotYetVerified": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "music-scene-05",
+      "sceneId": "scene-05",
+      "start": 43.33,
+      "end": 55.83,
+      "track": "music",
+      "renderer": "film-director-pending",
+      "effect": "continuous-licensed-music-ducked",
+      "reason": "Música musical continua con ducking bajo la voz, licencia y mezcla verificadas",
+      "resourceRef": "MUSIC",
+      "parameters": {
+        "continuousAcrossScenes": true,
+        "voiceAboveMusic": true,
+        "emotionalCurve": "tension-then-release",
+        "licenseNotYetVerified": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "music-scene-06",
+      "sceneId": "scene-06",
+      "start": 55.83,
+      "end": 65.17,
+      "track": "music",
+      "renderer": "film-director-pending",
+      "effect": "continuous-licensed-music-ducked",
+      "reason": "Música musical continua con ducking bajo la voz, licencia y mezcla verificadas",
+      "resourceRef": "MUSIC",
+      "parameters": {
+        "continuousAcrossScenes": true,
+        "voiceAboveMusic": true,
+        "emotionalCurve": "tension-then-release",
+        "licenseNotYetVerified": true
+      }
+    },
+    {
+      "dependsOn": [],
+      "requiredQA": [
+        "rendered-frame",
+        "motion-playback",
+        "audio-playback",
+        "time-sync",
+        "narrative-review"
+      ],
+      "id": "music-scene-07",
+      "sceneId": "scene-07",
+      "start": 65.17,
+      "end": 73.753467,
+      "track": "music",
+      "renderer": "film-director-pending",
+      "effect": "continuous-licensed-music-ducked",
+      "reason": "Música musical continua con ducking bajo la voz, licencia y mezcla verificadas",
+      "resourceRef": "MUSIC",
+      "parameters": {
+        "continuousAcrossScenes": true,
+        "voiceAboveMusic": true,
+        "emotionalCurve": "tension-then-release",
+        "licenseNotYetVerified": true
+      }
+    }
+  ]
+}
