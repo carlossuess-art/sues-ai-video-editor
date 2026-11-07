@@ -1,3 +1,24 @@
+## 2026-11-07 · ENGINE NEXT · FableCut + HyperFrames reconstrucción PR27 (iniciado, NO desplegado)
+
+Carlos autoriza replantear el motor, reutilizar herramientas open source, integrar en rama PR27, retirar lo que sobre **una vez demuestre seguridad y equivalencia**, y reconstruir desde cero si realmente hiciera falta. Rechaza el editor FFmpeg auxiliar como núcleo. Se activó skill SUES Film Director 1.5.7 y normativa V2 D01–D77.
+
+**Implementación real añadida a la rama mediante GitHub connector:**
+- `src/engine-next/engine-capabilities.js` commit `d50ab11`: manifiesto con SHAs de FableCut/HyperFrames/FireRed, clasificación fail-closed de operaciones y criterios QA cinematográficos.
+- `tests/engine-next/engine-capabilities.test.js` commit `d76b26c`: 4 tests nuevos PASS; validación de conservación del plan y errores de IDs/escena/recursos.
+- `scripts/engine-next/prepare-fablecut-poc.mjs` commit `c29da800`: crea proyecto FableCut nativo 1080×1920 desde Reel 158404 real, SHA original, audio original, imagen B02 y GIF alpha; no sustituye capa sin matte aprobada.
+- `docs/engine-next/README.md` commit `7c685b4` y `docs/engine-next/REEL_158404_ENGINE_GAP_LEDGER.json` commit `96e2d57`: preserva las **49 operaciones / 7 escenas / 10 recursos** sin eliminación silenciosa. Clases: 24 adaptador NLE, 2 matte, 3 HyperFrames, 1 alpha/GIF, 11 título semántico y 8 audio/rights (total 49).
+- Plan completo en `docs/SUES_ENGINE_NEXT_PLAN_INTEGRACION_20261107.md` commit `ead24ffc`: fases F0–F7, licencias, arquitectura, protocolos y prueba 158404.
+
+**Ensayo FableCut externo controlado:** repo `ronak-create/FableCut` MIT commit `579b08ec1a789baec5cbf06d7430373460508d09`, clonado `/tmp/sues-engine-research-20261107-round2/FableCut`; suite externa 506 pass/0 fail/30 skip, subset FFmpeg+captions+frame+masks+MCP 34 pass/0 fail/0 skip. HTTP 200 desde FableCut `127.0.0.1:7787`, **nunca expuesto públicamente**. Proyecto POC creado en `/tmp/sues-engine-next-fablecut-poc/project.json` con fuente real `9e06f49c30731d8a57aed312cfb46281bcffb7b3d5d62bf5a2164333944ccaad`, 5 clips, assets verdaderos, validado por API nativa `checkProject()`. B02 y GIF se mantienen *disabled* a falta de matte/alpha auditadas; es solo un prototipo editable, NO el Reel final.
+
+**HyperFrames** Apache-2 repo `heygen-com/hyperframes` commit `a3b8f521d9114286fa410a49bfd07ccf7d541689` fuente de 412 MB aislada; aún no se han instalado todos sus paquetes ni se ha generado motion 3D real del Reel. FireRed Apache-2 `c9e9452` inspeccionado, no se instaló ni habilitó IA de pago. La ausencia de GPU probada, ~3,8GiB RAM y solo ~4,2GiB de disco libre desaconseja paquetes/procesos pesados simultáneos en VPS.
+
+**Test general de SUES en snapshot staging:** primer intento 65 fallos por faltar AJV/FFmpeg en ambiente y no vinculados al adaptador; se instaló AJV 8.20.0 en staging aislado y se preparó PATH FFmpeg. Segundo intento sin fallos hasta test 615, interrumpido al quedarse bloqueado >2 min en prueba FFmpeg de render separado. No afirmar que la suite integral pasó. Test nuevo limitado 4/4 PASS.
+
+**PENDIENTE obligatoriamente:** pruebas NLE GUI/agent/frame/export de paridad en el mismo video, integración segura mediante backend SUES, subtítulos grandes y semánticos en visor real, matte completo, motion HyperFrames 3D fuente+alpha, crítico visual capaz de detectar defectos, QA 1080×1920 y aceptación Carlos. **No se borró código antiguo ni se tocó producción**. El adaptador solo inventaría falsos éxitos si declarase completado lo que actualmente está marcado pendiente.
+
+---
+
 ## 07/11/2026 · DECISIÓN DE CARLOS: replanteamiento profundo del MOTOR, investigación repetida hasta convergencia
 
 **INSTRUCCIÓN PRIORITARIA:** Carlos rechaza la calidad del motor de edición actual y autoriza investigar arquitectura alternativa y proyectos de otros creadores. NO continuar entregando renders auxiliares pobres como "edición mejorada". Conservar repo, proyectos, medios originales y skill Film Director, pero reconsiderar el núcleo ejecutor. **Investigación abierta, no autorización para instalar, comprar, licenciar ni migrar a producción.**
