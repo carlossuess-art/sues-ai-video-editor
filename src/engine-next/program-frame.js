@@ -40,6 +40,16 @@ export class ProgramFrameRenderer {
    await page.goto(this.client.baseUrl+'/',{waitUntil:'domcontentloaded',timeout:this.timeoutMs});
    await page.waitForFunction(()=>typeof setTime==='function'&&!!document.querySelector('#preview'),{timeout:this.timeoutMs});
    await page.evaluate(t=>setTime(t),frame/(project.fps||30));
+   // Native FableCut creates video elements lazily. A ready canvas can still
+   // contain only its background while the large source is decoding.
+   // Wait for every active, enabled video clip to have decoded a frame.
+   const activeVideoIds=(project.clips||[]).filter(c=>c.kind==='video'&&!c.disabled&&
+     (project.tracks||[]).some(t=>t.id===c.track&&!t.hidden)&&
+     frame/(project.fps||30)>=c.start&&frame/(project.fps||30)<c.start+c.duration).map(c=>c.id);
+   if(activeVideoIds.length)await page.waitForFunction(ids=>{
+     if(typeof runtime==='undefined'||!runtime.clipEls)return false;
+     return ids.every(id=>{const el=runtime.clipEls.get(id);return !!el&&el.readyState>=2&&!el.seeking&&el.videoWidth>0;});
+   },{timeout:this.timeoutMs},activeVideoIds);
    const canvas=await page.$('#preview');if(!canvas)throw Error('No native program canvas');
    // CSS element screenshots shrink the 1080x1920 program to ~154x272.
    // Read the native backing pixels, not the displayed preview rectangle.
