@@ -1,3 +1,4 @@
+import {FableCutClient,FableCutConflict} from './engine-next/fablecut-client.js';
 import {auditMasterPauseCandidates,suggestMasterPauseCandidates} from './master-director-pause-audit.js';
 import {saveMasterSourceBrief,listMasterSourceBriefs} from './master-director-brief-evidence.js';
 import {translateFilmDirectorBrief} from './master-director-brief-translation.js';
@@ -112,6 +113,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const adjustmentPreviews=new AdjustmentPreviews(join(directory,'adjustment-previews'),jobs,{playbackBusy:()=>previews.pending.size>0});
  const livePreviews=new LivePreviews(join(directory,'live-previews'),jobs,{busy:()=>previews.pending.size>0||!!adjustmentPreviews.running});
  const analysis=new LocalAnalysis(intake);
+ const engineNextClient=process.env.SUES_ENGINE_NEXT_FABLECUT_URL?new FableCutClient({baseUrl:process.env.SUES_ENGINE_NEXT_FABLECUT_URL}):null;
  const masterContextProvider=masterDirectorContext??createMasterDirectorContextProvider(directory);
  const masterPreviewRuns=new Map();
  const masterHybridRuns=new Map();
@@ -181,6 +183,36 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(!eq(cookie,token)&&!sessions.valid(cookie))return json(res,401,{error:'Session required'});
     if(!['GET','HEAD'].includes(req.method)&&req.headers['x-sues-request']!=='editor')return json(res,403,{error:'Request header required'});
     if(path==='/api/logout'&&req.method==='POST'){res.setHeader('Set-Cookie',`sues_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${publicOrigin?'; Secure':''}`);return json(res,200,{ok:true});}
+    // Opt-in staging bridge: authenticated SUES session + same-origin CSRF controls
+    // are already enforced above. Never proxy the unauthenticated FableCut HTTP API.
+    if(path==='/api/engine-next/project' && req.method==='GET'){
+      if(!engineNextClient)return json(res,503,{error:'El nuevo estudio todavía no está activado en este entorno.'});
+      try{
+        const {data:p,projectId}=await engineNextClient.getProject();
+        return json(res,200,{schema:'sues-engine-next-study/v1',projectId,revision:p.revision,name:p.name,width:p.width,height:p.height,
+          tracks:p.tracks,clips:p.clips.map(c=>({id:c.id,name:c.name,kind:c.kind,track:c.track,start:c.start,duration:c.duration,disabled:!!c.disabled,fontSize:c.kind==='text'?c.props?.fontSize:null})),
+          media:p.media.map(m=>({id:m.id,name:m.name,kind:m.kind})),editable:true,cinematicQA:false});
+      }catch{return json(res,503,{error:'El motor NLE no responde; no se han realizado cambios.'});}
+    }
+    if(path==='/api/engine-next/title-size' && req.method==='POST'){
+      if(!engineNextClient)return json(res,503,{error:'Motor NLE no activado.'});
+      const b=await body(req,1024);
+      if(Object.keys(b).some(k=>!['expectedRevision','clipId','fontSize'].includes(k)) ||
+          !Number.isInteger(b.expectedRevision)||b.expectedRevision<0 ||
+          typeof b.clipId!=='string'||!/^[-a-zA-Z0-9_]{1,100}$/.test(b.clipId)||
+          !Number.isInteger(b.fontSize)||b.fontSize<20||b.fontSize>140)
+        return json(res,400,{error:'Propiedades del título no válidas.'});
+      try{
+        const result=await engineNextClient.updateProject(p=>{
+          const clip=p.clips.find(c=>c.id===b.clipId&&c.kind==='text');
+          if(!clip)throw Error('Title not found');
+          clip.props={...clip.props,fontSize:b.fontSize};return p;
+        },{expectedRevision:b.expectedRevision});
+        return json(res,200,{ok:true,revision:result.revision,projectId:result.projectId,clipId:b.clipId,fontSize:b.fontSize});
+      }catch(e){
+        return json(res,e instanceof FableCutConflict?409:422,{error:e instanceof FableCutConflict?'Otro cambio modificó el proyecto. Actualiza y vuelve a intentarlo.':'El cambio no se ha podido aplicar.'});
+      }
+    }
     if(path==='/api/fonts'&&req.method==='GET')return json(res,200,fontCatalog());
     const fontMatch=/^\/api\/fonts\/([a-z-]+)\/(file|license)$/.exec(path);
     if(fontMatch&&['GET','HEAD'].includes(req.method)){const f=fontDownload(fontMatch[1],fontMatch[2]);if(!f)return json(res,404,{error:'Font not found'});const bytes=readFileSync(f.path);res.setHeader('Content-Type',f.contentType);res.setHeader('Content-Disposition',`attachment; filename="${f.filename}"`);res.setHeader('Content-Length',bytes.length);res.writeHead(200);return res.end(req.method==='HEAD'?undefined:bytes);}
@@ -1053,7 +1085,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
    }
    const liveVendors=['subtitles-octopus.js','subtitles-octopus-worker.js','subtitles-octopus-worker.wasm','LICENSE','COPYRIGHT','source.json'];
    if(req.method==='GET'&&liveVendors.some(f=>path==='/vendor/libass-wasm/'+f)){const f=path.split('/').at(-1);res.setHeader('Content-Type',f.endsWith('.wasm')?'application/wasm':f.endsWith('.js')?'text/javascript; charset=utf-8':'text/plain; charset=utf-8');return res.end(readFileSync(join(WEB,'vendor/libass-wasm',f)));}
-   const files={'/pwa.js':['pwa.js','text/javascript; charset=utf-8'],'/pwa.css':['pwa.css','text/css; charset=utf-8'],'/icon-192.png':['icon-192.png','image/png'],'/icon-512.png':['icon-512.png','image/png'],'/icon-maskable.png':['icon-maskable.png','image/png'],'/apple-touch-icon.png':['apple-touch-icon.png','image/png'],'/live-preview.js':['live-preview.js','text/javascript; charset=utf-8'],'/live-preview.css':['live-preview.css','text/css; charset=utf-8'],'/':['index.html','text/html; charset=utf-8'],'/playback-buffer.js':['playback-buffer.js','text/javascript; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8'],'/studio.css':['studio.css','text/css; charset=utf-8'],'/manual-adjust.css':['manual-adjust.css','text/css; charset=utf-8'],'/source-cuts.css':['source-cuts.css','text/css; charset=utf-8'],'/manual-adjust.js':['manual-adjust.js','text/javascript; charset=utf-8'],'/source-cuts-ui.js':['source-cuts-ui.js','text/javascript; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon.svg':['icon.svg','image/svg+xml']};
+   const files={'/pwa.js':['pwa.js','text/javascript; charset=utf-8'],'/pwa.css':['pwa.css','text/css; charset=utf-8'],'/icon-192.png':['icon-192.png','image/png'],'/icon-512.png':['icon-512.png','image/png'],'/icon-maskable.png':['icon-maskable.png','image/png'],'/apple-touch-icon.png':['apple-touch-icon.png','image/png'],'/live-preview.js':['live-preview.js','text/javascript; charset=utf-8'],'/live-preview.css':['live-preview.css','text/css; charset=utf-8'],'/':['index.html','text/html; charset=utf-8'],'/engine-next.html':['engine-next.html','text/html; charset=utf-8'],'/engine-next.js':['engine-next.js','text/javascript; charset=utf-8'],'/engine-next.css':['engine-next.css','text/css; charset=utf-8'],'/playback-buffer.js':['playback-buffer.js','text/javascript; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8'],'/studio.css':['studio.css','text/css; charset=utf-8'],'/manual-adjust.css':['manual-adjust.css','text/css; charset=utf-8'],'/source-cuts.css':['source-cuts.css','text/css; charset=utf-8'],'/manual-adjust.js':['manual-adjust.js','text/javascript; charset=utf-8'],'/source-cuts-ui.js':['source-cuts-ui.js','text/javascript; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon.svg':['icon.svg','image/svg+xml']};
    if(req.method!=='GET'||!Object.hasOwn(files,path))return json(res,404,{error:'Not found'});
    const [file,type]=files[path];res.setHeader('Content-Type',type);res.end(readFileSync(join(WEB,file)));
   }catch(error){if(res.headersSent)return res.destroy();const safe=/not found|Unknown profile/i.test(error.message)?404:/busy|ready|changed|ha cambiado|render activo|Espera a que termine|transition|owned|Adjustments|queue full|closing/.test(error.message)?409:400;json(res,safe,{error:error.code?'No se pudo acceder al recurso local configurado':error.message.replaceAll(directory,'[local]')});}
