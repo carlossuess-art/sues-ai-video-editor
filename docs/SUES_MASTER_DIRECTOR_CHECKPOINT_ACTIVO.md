@@ -1,3 +1,9 @@
+## 07/11/2026 · B01 VERTICAL Y CANDIDATOS NO APROBADOS
+
+Prueba real FFmpeg/Docker de encuadre centrado 9:16 del Pexels 8513575 (B01) comprobó mediante tres fotogramas que las manos aplaudiendo continúan claramente visibles tras recorte vertical. El clip sigue siendo **candidato**, sin cierre creativo ni QA de montaje. `docs/SUES_158404_BROLL_CANDIDATOS_AUDITADOS_20261107.md` contiene fuente, SHA, contactos y descartes; actualización commit `3529cae`. B02/B04/B05 continúan sin recurso fiel/aceptado. Registro sincronizado con Roadmap Maestro de Drive. No duplicar auditorías anteriores.
+
+---
+
 ## 07/11/2026 · FASE 1 · PRUEBA REAL HTTP Y PRESELECCIÓN VISUAL CON RASTRO
 
 **NUEVA PRUEBA EJECUTADA:** `scripts/app/smoke_master_brief_real.mjs` (commit `f34a6da`) ejecuta el Markdown privado auténtico contra el servidor autenticado en directorio temporal aislado y perfil derivado CFR30 real. Resultado `HTTP_AUDIT_PASS_NOT_CREATIVE_APPROVAL`: HTTP guardar 201, traducir 200, capacidades 200, requisitos 200, sin sesión 401, revisión inexistente 404. Verificadas **7 escenas, 21 planos, 139 intenciones, 148 líneas, 0 perdidas, 0 sin contabilizar**, 8 ranuras de recursos, proyecto vigente sin mutación; `approved:false`, `canExecute:false` permanecen protegidos. Los tests previos de módulos: **21/21 PASS**, 0 fail/skip. Este hito valida el circuito HTTP real y su control de seguridad, no la interpretación cinematográfica ni una exportación del Reel.
