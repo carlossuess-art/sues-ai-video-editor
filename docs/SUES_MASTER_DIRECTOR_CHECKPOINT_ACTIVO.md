@@ -1,3 +1,11 @@
+## FASE 1 · Geometría integrada en la interfaz de revisión · 07/11/2026
+
+El editor de la rama del PR #27 dispone ahora de botón **«Ver posiciones exactas del storyboard»** en `web/index.html`, asociado en `web/app.js` a la ruta autenticada `master-brief-geometry`: muestra el número de rectángulos propuestos, ejes ambiguos, rangos inválidos y filas por escena/línea, sin modificar el Reel. El botón de **«Descargar anexo técnico para Work»** conserva también la ficha `geometry` junto a anexo, recursos, capacidades y captions, y comprueba identidad del `sourceBriefSha256`. Commits `2437183`, `ec30cc5`.
+
+**Verificación ejecutada:** sintaxis JavaScript de `web/app.js` analizada sin ejecutar (PASS); un solo botón y un solo handler, entrega de ficha en el anexo y guardia de SHA verificados sobre el contenido recuperado de GitHub. La ruta HTTP y los tests del motor habían superado **26/26** en copia aislada (registro anterior). **No se completó el smoke de navegador gráfico para este botón nuevo**; debe hacerse antes de aceptación final. Nada de esto aprueba licencias, ubicación sobre el rostro ni la composición final. Fase 1 abierta.
+
+---
+
 ## FASE 1 · Auditoría espacial accesible por API del editor · 07/11/2026
 
 **Implementación en PR #27:** nueva ruta autenticada `GET /api/jobs/:id/master-brief-geometry?briefRevision=<sha>` en `src/editor-server.js` (commits `9bc4b77`, `5318377`). La ruta usa la misma verificación de revisión, huella del vídeo y fingerprint que la auditoría cinematográfica existente y lee dimensiones verdaderas de `project.inputs.source`, evitando autorizar posiciones no vinculadas a su fuente. Retorna rectángulos propuestos del plan y bloqueos sin modificar versión activa ni conceder `canExecute`. Nuevo test HTTP `tests/master-director-brief-geometry-http.test.js` (commits `934c3f3`, `ec0d956`) verifica que peticiones no autenticadas, revisiones inexistentes o mal formadas se bloquean y el informe no altera la edición.
