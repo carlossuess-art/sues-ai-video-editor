@@ -1,3 +1,17 @@
+## FASE 1 · VERIFICACIÓN REAL EN VPS Y LIBRARY · 07/11/2026
+
+**Código ejecutado, no solo leído:** se reconstruyó en `/tmp/sues-phase1-integration-vTulvQyQ` una copia aislada del editor con los módulos y tests vigentes de la rama, más el `editor-server.js` y `master-director-project-store.js` correctos. La suite `node --test tests/master-director-brief-*.test.js tests/master-director-broll-fades.test.js` acabó **21 PASS / 0 FAIL / 0 SKIP**. Los tres errores iniciales (404, luego 400 `store.current is not a function`) eran desfases de componentes del checkout anterior, resueltos al cargar las versiones vigentes; no se alteró el código del servidor activo.
+
+**Prueba con el Markdown auténtico de Library:** `SUES_158404_plan_para_pegar_revision_V1.md`, 148 líneas, vinculado al original y al derivado CFR30/fingerprint reales. La traducción directa recupera **7 escenas, 21 planos, 139 intenciones y 8 referencias únicas B01–B05/M01–M03**; **0 líneas perdidas y 0 líneas con contenido sin contabilizar**. Clasificación: 14 cámara nativa, 21 visuales estructurales, 20 captions, 10 transiciones, 3 motion completos pendientes de equivalencia, 52 direcciones por concretar, 19 contexto. `canExecute:false`, `approved:false`: no simular aceptación.
+
+**Inspección actual del inventario privado real:** `/opt/sues-video-setup/editor/jobs/library/official-library-v1.json` registra 214 entradas, 49 vídeos y **0 vídeos con `approvedForProduction:true`**. No se encontraron títulos/etiquetas que acrediten los cinco B-roll concretos; el inventario no representa todos los proveedores externos. No adjudicar licencias o coincidencias de forma implícita.
+
+**Corrección específica:** commits `2988e77` y `41f1f9b` exigen preservar el ID de los motion base/overlays, con regresión verificada dentro de las 21 pruebas.
+
+**Pendientes objetivos de cierre:** materiales B01–B05 y masters M01–M03 con procedencia, licencia y correspondencia creativa verificadas; traducción ejecutable de las 52 direcciones cinematográficas y sus capas/efectos sin pérdidas; transcripción/pausas y QA de imagen/audio; consentimiento creativo sobre storyboard vigente. No repetir las pruebas ya PASS salvo cambios afecten su ámbito. El original y los datos de producción no se han modificado.
+
+---
+
 ## AVANCE DE FASE 1 · 07/11/2026 · protección de identidad de M01–M03
 
 Se detectó que el chequeo semántico de `src/master-director-brief-semantic.js` permitía considerar modelable una composición motion como `video-exact` o `image-exact` sin verificar que la operación conservara el ID lógico del motion pedido en el plan. Ahora exige el recurso Mxx exacto declarado en `story.resources` y `op.resourceRef`, tanto para la base de motion como para overlays; bloquea sustituciones de identidad. Commits: `2988e77` (protección) y `41f1f9b` (regresión específica en `tests/master-director-brief-semantic.test.js`). **No afirmar pruebas PASS:** se añadió la prueba, pero aún no se ha ejecutado en este turno ni se ha desplegado. El roadmap maestro de Drive se actualizó en la misma sesión. No cambia la aceptación de la fase 1, que aún requiere licencias, operaciones reales completas y QA audiovisual.
