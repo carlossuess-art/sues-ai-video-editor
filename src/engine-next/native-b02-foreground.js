@@ -18,6 +18,8 @@ export function stageNativeB02Foreground(project,{expectedRevision}={}){
  const result=structuredClone(project);result.tracks.unshift({id:'V5',kind:'video'});
  const gold=result.clips.find(x=>x.id==='sues_hyperframes_gold_3d_review_only');
  gold.track='V5';gold.start=10.6;gold.duration=1.2;gold.in=0;gold.name='Gold 3D above Carlos · STAGING NOT APPROVED';
- delete gold.disabled;gold.props={...gold.props,x:390,y:-370,scale:.5,opacity:1};
+ delete gold.disabled;
+ // Place the object above Carlos on the left; never obscure the child scene on the right.
+ gold.props={...gold.props,x:-390,y:-650,scale:.6,opacity:1};
  return result;
 }
