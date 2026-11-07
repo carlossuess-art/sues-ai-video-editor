@@ -1,3 +1,4 @@
+import {inspectFilmBriefShotCoverage} from './master-director-brief-shot-coverage.js';
 // Fail-closed bridge between the Film Director technical annex and a separately
 // authored sues-master-story/v1. No guessed visual effects or assets are inserted.
 // A successful mapping is only structural review; it does not grant render rights.
@@ -15,6 +16,9 @@ export function auditMasterBriefCrosswalk({annex,story,links}={}){
     !Array.isArray(annex.allSourceLines)||annex.instructionCoverage?.unaccountedNonemptyLines?.length!==0||
     annex.translationCoverage.preservedLines!==annex.allSourceLines.length)
   return blocked('UNTRUSTED_OR_INCOMPLETE_ANNEX');
+ const coverage=inspectFilmBriefShotCoverage(annex);
+ if(coverage.status==='BLOCKED')
+  return blocked('BRIEF_BASE_SHOT_COVERAGE_INVALID',{shotCoverage:coverage});
  if(story?.schema!=='sues-master-story/v1'||
     story.sourceSha256!==annex.sourceSha256||story.timeline?.fingerprint!==annex.timelineFingerprint||
     story.timeline?.fps!==annex.fps||story.timeline?.timeSpace!=='edit-timeline'||
