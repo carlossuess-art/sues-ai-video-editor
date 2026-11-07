@@ -31,13 +31,15 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
   const text=node?.renderer==='remotion'&&['captions','graphics'].includes(node.track)&&node.effect==='text';
   const image=node?.renderer==='remotion'&&['broll','graphics'].includes(node.track)&&node.effect==='image-exact';
   const video=node?.renderer==='remotion'&&['broll','graphics'].includes(node.track)&&node.effect==='video-exact';
-  if(!text&&!image&&!video){fail(issues,node,'REMOTION_OPERATION_UNSUPPORTED');continue;}
-  if(!only(p,text?['text','visual']:video?['fit','visual','sourceInFrame','muted']:['fit','visual'])||JSON.stringify(p.visual)!==JSON.stringify(v)||
+  const shape=node?.renderer==='remotion'&&node.track==='graphics'&&node.effect==='solid-rect';
+  if(!text&&!image&&!video&&!shape){fail(issues,node,'REMOTION_OPERATION_UNSUPPORTED');continue;}
+  if(!only(p,text?['text','visual']:video?['fit','visual','sourceInFrame','muted']:shape?['fill','cornerRadius','visual']:['fit','visual'])||JSON.stringify(p.visual)!==JSON.stringify(v)||
      !only(v,text?['rect','zIndex','opacity','typography','keyframes','mask','dropShadow','glow']:['rect','zIndex','opacity','keyframes','mask','dropShadow','glow'])||
      (v.dropShadow!==undefined&&(!validShadow(v.dropShadow)||v.glow!==undefined))||
      (v.glow!==undefined&&!validGlow(v.glow))||
      !only(v.rect,['x','y','width','height'])||
      (text&&(!only(v.typography,['family','sizePx','weight','color'])||typeof p.text!=='string'||!p.text.length||p.text.length>500))||
+     (shape&&(!/^#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?$/.test(p.fill??'')||!Number.isInteger(p.cornerRadius)||p.cornerRadius<0||p.cornerRadius>200||v.mask!==undefined||v.typography!==undefined))||
      ((image||video)&&!['fill','contain','cover'].includes(p.fit))||
      (video&&(!Number.isInteger(p.sourceInFrame)||p.sourceInFrame<0||p.muted!==true))){fail(issues,node,'LAYER_PARAMETERS_UNSUPPORTED');continue;}
   const font=text?verifiedFonts[v.typography.family+':'+v.typography.weight]:null;
@@ -81,8 +83,8 @@ export function compileMasterDirectorRemotion(graph,{verifiedFonts={},verifiedAs
   if(!Number.isInteger(node.startFrame)||!Number.isInteger(node.endFrame)||node.startFrame<0||
      node.endFrame<=node.startFrame||node.endFrame>graph.durationFrames)
    {fail(issues,node,'TIMELINE_INVALID');continue;}
-  layers.push({id:node.id,kind:text?'text':video?'video':'image',startFrame:node.startFrame,endFrame:node.endFrame,
-   ...(text?{text:p.text,fontAssetId:font.sha256}:video?{assetId:id,sourceInFrame:p.sourceInFrame,muted:true,fit:p.fit}:{assetId:id,fit:p.fit}),...(maskAssetId?{maskAssetId}:{}),...(maskFrameAssetIds?{maskFrameAssetIds}:{}),visual:structuredClone(v)});
+  layers.push({id:node.id,kind:text?'text':video?'video':shape?'shape':'image',startFrame:node.startFrame,endFrame:node.endFrame,
+   ...(shape?{fill:p.fill,cornerRadius:p.cornerRadius}:text?{text:p.text,fontAssetId:font.sha256}:video?{assetId:id,sourceInFrame:p.sourceInFrame,muted:true,fit:p.fit}:{assetId:id,fit:p.fit}),...(maskAssetId?{maskAssetId}:{}),...(maskFrameAssetIds?{maskFrameAssetIds}:{}),visual:structuredClone(v)});
  }
  if(issues.length)return {status:'BLOCKED',issues,composition:null};
  return {status:'READY_FOR_REMOTION_STAGING',issues:[],composition:{schema:'sues-remotion-layers/v1',
