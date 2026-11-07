@@ -1,4 +1,6 @@
 import {FableCutClient,FableCutConflict} from './engine-next/fablecut-client.js';
+import {ProgramFrameRenderer,ProgramFrameBusy} from './engine-next/program-frame.js';
+import {createRequire} from 'node:module';
 import {auditMasterPauseCandidates,suggestMasterPauseCandidates} from './master-director-pause-audit.js';
 import {saveMasterSourceBrief,listMasterSourceBriefs} from './master-director-brief-evidence.js';
 import {translateFilmDirectorBrief} from './master-director-brief-translation.js';
@@ -92,7 +94,7 @@ async function body(req,maxBytes=65536,{rejectDuplicates=false}={}){
  if(rejectDuplicates)rejectDuplicateJsonKeys(raw);
  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia,engineNextFrameRenderer=null}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -114,6 +116,9 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const livePreviews=new LivePreviews(join(directory,'live-previews'),jobs,{busy:()=>previews.pending.size>0||!!adjustmentPreviews.running});
  const analysis=new LocalAnalysis(intake);
  const engineNextClient=process.env.SUES_ENGINE_NEXT_FABLECUT_URL?new FableCutClient({baseUrl:process.env.SUES_ENGINE_NEXT_FABLECUT_URL}):null;
+ const nativeFrame=(engineNextClient&&engineNextFrameRenderer)||
+  (engineNextClient&&process.env.SUES_ENGINE_NEXT_PUPPETEER_CORE&&process.env.SUES_ENGINE_NEXT_CHROME_PATH?
+   new ProgramFrameRenderer({client:engineNextClient,puppeteer:createRequire(import.meta.url)(process.env.SUES_ENGINE_NEXT_PUPPETEER_CORE),executablePath:process.env.SUES_ENGINE_NEXT_CHROME_PATH}):null);
  const masterContextProvider=masterDirectorContext??createMasterDirectorContextProvider(directory);
  const masterPreviewRuns=new Map();
  const masterHybridRuns=new Map();
@@ -208,6 +213,18 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
         const {Readable}=await import('node:stream');
         return Readable.fromWeb(response.body).on('error',()=>res.destroy()).pipe(res);
       }catch{return json(res,404,{error:'Media del proyecto no disponible.'});}
+    }
+    if(path==='/api/engine-next/program-frame' && req.method==='GET'){
+      if(!engineNextClient||!nativeFrame)return json(res,503,{error:'Vista compuesta nativa no activada para este entorno.'});
+      const time=Number(url.searchParams.get('time')),revision=Number(url.searchParams.get('revision'));
+      if(!url.searchParams.has('time')||!url.searchParams.has('revision')||!Number.isFinite(time)||time<0||time>300||!Number.isInteger(revision)||revision<0)
+        return json(res,400,{error:'Tiempo o revisión inválidos.'});
+      try{
+        const frame=await nativeFrame.capture({time,expectedRevision:revision});
+        res.setHeader('Content-Type','image/png');res.setHeader('Content-Length',frame.png.length);
+        res.setHeader('X-Sues-Frame-Revision',String(frame.revision));res.setHeader('X-Sues-Frame-Time',String(frame.time));
+        res.setHeader('X-Sues-Cinematic-QA','not-approved');res.writeHead(200);return res.end(frame.png);
+      }catch(error){return json(res,error instanceof ProgramFrameBusy?429:503,{error:error instanceof ProgramFrameBusy?'El visor nativo está ocupado.':'No se pudo obtener un fotograma nativo verificable.'});}
     }
     if(path==='/api/engine-next/clip-transform' && req.method==='POST'){
       if(!engineNextClient)return json(res,503,{error:'Motor NLE no activado.'});
