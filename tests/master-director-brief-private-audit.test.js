@@ -24,6 +24,7 @@ test('private Film Director audit reports full line coverage but never authorize
   assert.equal(result.preservedLines,5);
   assert.equal(result.status,'AUDITED_NOT_APPROVED_NOT_EXECUTABLE');
   assert.equal(result.canExecute,false);assert.equal(result.approved,false);
+  assert.equal(result.proposedGeometryRectangles,0);assert.equal(result.ambiguousGeometryDirections,0);
   assert.deepEqual(result.resources.map(r=>r.slot),['B01']);
   assert.equal(run([...base,'--out',out]).status,1,'must not overwrite existing evidence');
   assert.equal(run(base.map((arg,i)=>i===5?'f'.repeat(64):arg)).status,3,'wrong original hash blocks');
