@@ -34,7 +34,8 @@ test('authenticated HTTP translates saved brief, rejects stale source and does n
   const a=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
   const headers={Cookie:a.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'};
   const cat=await (await fetch(url+'/api/jobs/'+job.id+'/external-catalog',{headers})).json();
-  const briefText=text.replaceAll(O,cat.sourceSha256);
+  const briefText=text.replaceAll(O,cat.sourceSha256)
+   .replace('00:03–00:06','00:03–00:24').replace('3–6 s','3–24 s');
   const saved=await fetch(url+'/api/jobs/'+job.id+'/master-source-brief',{method:'POST',headers,
    body:JSON.stringify({text:briefText,expectedRevision:null,expectedSourceSha256:cat.sourceSha256,expectedTimelineFingerprint:cat.timelineFingerprint})});
   assert.equal(saved.status,201);const receipt=await saved.json();
