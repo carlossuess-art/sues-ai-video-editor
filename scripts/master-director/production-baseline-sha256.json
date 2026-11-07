@@ -1,0 +1,11 @@
+{
+  "src/editor-server.js": "c8ea78d9401ffa99d8270d7f6b4925f5dc7a636688d0e5a6016cd9e3e89da9e4",
+  "src/live-preview.js": "daa9c47487645e3dbe6053572e1817a2b7890287b12529880bd59b3ec328ffbf",
+  "src/external-edit-plan.js": "3a8420b894dcd4304fd207763bfc439c90b30ac8aff00c4dafbfaeadc7c9f401",
+  "scripts/app/start.mjs": "1a36cd5d20c2b328e31c0957ac7f7273be6aa9c452ac9a1c8d3872b1664c24e1",
+  "web/app.js": "2eb97eb2392e10f042efc263d6d984e38ecb9e44456f4c229903c905378a5cd6",
+  "web/index.html": "8f29a0071016db63e4bd708a7ded4df25a7e779a94d6055736094cf34809ac63",
+  "tests/adjustment-previews.test.js": "d11154df250d3a21a4939c7ad7810a6ee516307104414d349d6cbc1accb22d42",
+  "tests/video-intake.test.js": "88a85f23af2007a4082bee00d2c5f74aa4fd820a451a4d989f99e44d2f7a6ff8",
+  "tests/live-preview.test.js": "5ab62ce9ac8a8ff6a0f3091128451712f6a8d6ee796d0d49d3883e57b8360078"
+}

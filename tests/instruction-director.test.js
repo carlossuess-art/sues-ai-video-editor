@@ -22,7 +22,7 @@ test('instruction plans preserve manual settings, identify unsupported clauses a
  assert.equal(planInstructions('',base).canApply,true);assert.throws(()=>planInstructions('x'.repeat(4001),base));
 });
 
-test('HTTP director rejects unknown requests without mutation; project ancestry, instructions and idempotency survive restart',async()=>{
+test('HTTP director rejects unknown requests without mutation; single live project, instructions and idempotency survive restart',async()=>{
  const f=fixture(),directory=join(f.dir,'jobs'),app=createEditorServer({directory,profiles:f.profiles});let restarted;
  app.jobs.autoStart=false;
  try{
@@ -42,8 +42,15 @@ test('HTTP director rejects unknown requests without mutation; project ancestry,
   assert.equal(app.jobs.list().length,count);assert.equal(JSON.stringify(app.jobs.get(a.id)),snapshot);
   const request={prompt:'sin música; menos zoom',requestId:randomUUID()},path='jobs/'+a.id+'/direct';
   const response=await post(path,request);assert.equal(response.status,202);const result=await response.json();
-  assert.equal(result.projectId,a.projectId);assert.equal(result.parentId,a.id);assert.equal(result.settings.musicEnabled,false);assert.equal(result.settings.zoomIntensity,.75);assert.equal(result.instructions[0].text,request.prompt);
-  assert.equal((await (await post(path,request)).json()).id,result.id);assert.equal(app.jobs.list().length,count+1);assert.equal(JSON.stringify(app.jobs.get(a.id)),snapshot);
+  assert.equal(result.projectId,a.projectId);assert.equal(result.id,a.id);assert.equal(result.parentId,null);assert.equal(result.settings.musicEnabled,false);assert.equal(result.settings.zoomIntensity,.75);assert.equal(result.instructions[0].text,request.prompt);
+  assert.equal((await (await post(path,request)).json()).id,result.id);assert.equal(app.jobs.list().length,count);
+  const responseProjects=await fetch(url+'/api/projects',{headers});assert.equal(responseProjects.status,200);
+  const projects=(await responseProjects.json()).projects;
+  assert.equal(projects.filter(p=>p.projectId===a.projectId).length,1);
+  assert.equal(projects.find(p=>p.projectId===a.projectId).activeJobId,a.id);
+  const exact=await (await fetch(url+'/api/projects/'+a.projectId+'/current',{headers})).json();
+  assert.equal(exact.activeJobId,a.id);
+  assert.equal((await fetch(url+'/api/projects')).status,401);assert.notEqual(JSON.stringify(app.jobs.get(a.id)),snapshot);assert.equal((await post(path,{...request,prompt:'menos zoom'})).status,409);
   assert.equal((await fetch(url+'/api/jobs/'+a.id+'/direct-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).status,401);
   await app.close();restarted=new EditorJobs({directory,profiles:f.profiles,autoStart:false});assert.equal(restarted.view(restarted.get(result.id)).instructions[0].text,request.prompt);assert.equal(restarted.view(restarted.get(old.id)).projectId,'test');
  }finally{if(app.server.listening)await app.close();await restarted?.close();rmSync(f.dir,{recursive:true,force:true});}

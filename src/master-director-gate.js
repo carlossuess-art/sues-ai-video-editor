@@ -89,8 +89,9 @@ export function reviewMasterDirectorPlan(plan,registry={}){
     if(op?.resourceId!==undefined){
       const asset=registry.licensedAssets?.[op?.resourceId];
       if(!validId(op.resourceId)||!asset||asset.rightsVerified!==true||
-         asset.commercialUseAllowed!==true||!SHA.test(asset.sha256??''))
-        issue(issues,'ASSET_RIGHTS_UNVERIFIED',op?.id??'unknown');
+         asset.commercialUseAllowed!==true||!SHA.test(asset.sha256??'')||
+         !SHA.test(op.resourceSha256??'')||asset.sha256!==op.resourceSha256)
+        issue(issues,'ASSET_RIGHTS_OR_VERSION_UNVERIFIED',op?.id??'unknown');
     }
   }
   const visiting=new Set(),visited=new Set();
@@ -98,7 +99,7 @@ export function reviewMasterDirectorPlan(plan,registry={}){
     if(visited.has(id))return;
     if(visiting.has(id)){issue(issues,'DEPENDENCY_CYCLE',id);return;}
     visiting.add(id);
-    for(const dependency of byId.get(id)?.dependsOn??[]){
+    for(const dependency of (Array.isArray(byId.get(id)?.dependsOn)?byId.get(id).dependsOn:[])){
       if(!byId.has(dependency))issue(issues,'MISSING_DEPENDENCY',id);
       else walk(dependency);
     }
@@ -115,7 +116,7 @@ export function auditMasterDirectorExecution(plan,registry={},execution={}){
   const preflight=reviewMasterDirectorPlan(plan,registry);
   if(preflight.status!=='READY_TO_EXECUTE')return preflight;
   const issues=[],fingerprint=preflight.fingerprint,ops=plan.operations;
-  if(execution.fingerprint!==fingerprint||!Array.isArray(execution.operations)||
+  if(execution.fingerprint!==fingerprint||!SHA.test(execution.outputSha256??'')||!Array.isArray(execution.operations)||
      execution.operations.length!==ops.length)
     issue(issues,'EXECUTION_MANIFEST_MISMATCH');
   else{
@@ -133,23 +134,25 @@ export function auditMasterDirectorExecution(plan,registry={},execution={}){
   // acceptance is separate from the technical audit.
   const passes=registry.qaPasses;
   if(!Array.isArray(passes)||passes.length!==2||
-     !passes.every(p=>p?.fingerprint===fingerprint&&p?.completed===true&&
+     !passes.every(p=>p?.fingerprint===fingerprint&&p?.completed===true&&SHA.test(execution.outputSha256??'')&&p?.outputSha256===execution.outputSha256&&
        validId(p?.verifierId)&&registry.trustedVerifierIds?.includes(p.verifierId)&&validId(p?.runId))||
      (Array.isArray(passes)&&passes.length===2&&passes[0]?.runId===passes[1]?.runId))
     issue(issues,'TWO_INDEPENDENT_QA_PASSES_REQUIRED');
   else for(let i=0;i<2;i++){
     const evidence=new Map((Array.isArray(passes[i].evidence)?passes[i].evidence:[]).filter(obj).map(e=>[e.operationId,e]));
-    if(!Array.isArray(passes[i].evidence)||evidence.size!==ops.length)
+    if(!Array.isArray(passes[i].evidence)||passes[i].evidence.length!==ops.length||evidence.size!==ops.length)
       issue(issues,'QA_EVIDENCE_INCOMPLETE','pass-'+(i+1));
     for(const op of ops){
       const entry=evidence.get(op.id);
+      if(!Array.isArray(entry?.proofs)||new Set(entry.proofs.map(p=>p?.kind)).size!==entry.proofs.length)
+        issue(issues,'QA_PROOFS_INVALID',op.id+':pass-'+(i+1));
       for(const kind of op.requiredQA){
-        const proof=entry?.proofs?.find(p=>p.kind===kind);
+        const proof=Array.isArray(entry?.proofs)?entry.proofs.find(p=>p?.kind===kind):null;
         if(!proof||proof.passed!==true||!SHA.test(proof.artifactSha256??''))
           issue(issues,'QA_PROOF_MISSING_OR_FAILED',op.id+':'+kind+':pass-'+(i+1));
       }
     }
   }
   if(issues.length)return {status:'QA_REJECTED',fingerprint,issues};
-  return {status:registry.creativeAcceptedFingerprint===fingerprint?'READY_FOR_RELEASE':'AWAITING_CREATIVE_ACCEPTANCE',fingerprint,issues:[]};
+  return {status:registry.creativeAcceptedFingerprint===fingerprint&&registry.creativeAcceptedOutputSha256===execution.outputSha256?'READY_FOR_RELEASE':'AWAITING_CREATIVE_ACCEPTANCE',fingerprint,issues:[]};
 }
