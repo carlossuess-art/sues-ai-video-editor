@@ -41,10 +41,15 @@ export class ProgramFrameRenderer {
    await page.waitForFunction(()=>typeof setTime==='function'&&!!document.querySelector('#preview'),{timeout:this.timeoutMs});
    await page.evaluate(t=>setTime(t),frame/(project.fps||30));
    const canvas=await page.$('#preview');if(!canvas)throw Error('No native program canvas');
+   // CSS element screenshots shrink the 1080x1920 program to ~154x272.
+   // Read the native backing pixels, not the displayed preview rectangle.
    let png;
    for(let attempt=0;attempt<12;attempt++){
     await new Promise(resolve=>setTimeout(resolve,350));
-    png=Buffer.from(await canvas.screenshot({type:'png'}));
+    const frame=await canvas.evaluate(el=>({width:el.width,height:el.height,data:el.toDataURL('image/png')}));
+    if(frame.width!==project.width||frame.height!==project.height)throw Error('Native canvas resolution differs from project');
+    if(typeof frame.data!=='string'||!frame.data.startsWith('data:image/png;base64,'))throw Error('Invalid native canvas encoding');
+    png=Buffer.from(frame.data.slice('data:image/png;base64,'.length),'base64');
     if(png.length>5000)break;
    }
    if(!png||png.length<=5000)throw Error('Native program did not decode a valid frame');
