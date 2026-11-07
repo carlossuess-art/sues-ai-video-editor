@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {ProgramFrameRenderer,ProgramFrameBusy} from '../../src/engine-next/program-frame.js';
 const client={baseUrl:'http://127.0.0.1:7780',async getProject(){return {projectId:'p158404',data:{revision:3,width:1080,height:1920,fps:30,clips:[{start:0,duration:10}]}}}};
 let launched=0;
-const puppeteer={async launch(){launched++;return {async newPage(){return {goto:async()=>{},waitForFunction:async()=>{},evaluate:async()=>{},async $(id){return id==='#preview'?{screenshot:async()=>Buffer.alloc(7000,1)}:null;}}},close:async()=>{}}}};
+const puppeteer={async launch(){launched++;return {async newPage(){return {goto:async()=>{},waitForFunction:async()=>{},evaluate:async()=>{},async $(id){return id==='#preview'?{evaluate:async()=>({width:1080,height:1920,data:'data:image/png;base64,'+Buffer.alloc(7000,1).toString('base64')})}:null;}}},close:async()=>{}}}};
 test('rejects invalid requests without launching a browser',async()=>{
  const r=new ProgramFrameRenderer({client,puppeteer,executablePath:'/chrome'});
  await assert.rejects(r.capture({time:2,expectedRevision:2}));
