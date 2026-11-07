@@ -1,3 +1,9 @@
+## AVANCE DE FASE 1 · 07/11/2026 · protección de identidad de M01–M03
+
+Se detectó que el chequeo semántico de `src/master-director-brief-semantic.js` permitía considerar modelable una composición motion como `video-exact` o `image-exact` sin verificar que la operación conservara el ID lógico del motion pedido en el plan. Ahora exige el recurso Mxx exacto declarado en `story.resources` y `op.resourceRef`, tanto para la base de motion como para overlays; bloquea sustituciones de identidad. Commits: `2988e77` (protección) y `41f1f9b` (regresión específica en `tests/master-director-brief-semantic.test.js`). **No afirmar pruebas PASS:** se añadió la prueba, pero aún no se ha ejecutado en este turno ni se ha desplegado. El roadmap maestro de Drive se actualizó en la misma sesión. No cambia la aceptación de la fase 1, que aún requiere licencias, operaciones reales completas y QA audiovisual.
+
+---
+
 # CONTINUIDAD ENTRE CHATS · 07/11/2026 · ESTADO CONSOLIDADO
 
 > Este bloque es un **handoff de contexto**, no un avance técnico nuevo ni una certificación de cierre. No sobreescribe pruebas ni decisiones posteriores; contrastar siempre con HEAD y la evidencia más reciente.
