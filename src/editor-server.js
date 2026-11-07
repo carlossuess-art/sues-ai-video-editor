@@ -190,7 +190,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       try{
         const {data:p,projectId}=await engineNextClient.getProject();
         return json(res,200,{schema:'sues-engine-next-study/v1',projectId,revision:p.revision,name:p.name,width:p.width,height:p.height,
-          tracks:p.tracks,clips:p.clips.map(c=>({id:c.id,name:c.name,kind:c.kind,track:c.track,start:c.start,duration:c.duration,disabled:!!c.disabled,fontSize:c.kind==='text'?c.props?.fontSize:null})),
+          tracks:p.tracks,clips:p.clips.map(c=>({id:c.id,name:c.name,kind:c.kind,track:c.track,start:c.start,duration:c.duration,disabled:!!c.disabled,locked:!!c.locked,x:c.props?.x??0,y:c.props?.y??0,scale:c.props?.scale??1,fontSize:c.kind==='text'?c.props?.fontSize:null})),
           media:p.media.map(m=>({id:m.id,name:m.name,kind:m.kind,playable:['video','audio','image'].includes(m.kind)})),editable:true,cinematicQA:false});
       }catch{return json(res,503,{error:'El motor NLE no responde; no se han realizado cambios.'});}
     }
@@ -208,6 +208,24 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
         const {Readable}=await import('node:stream');
         return Readable.fromWeb(response.body).on('error',()=>res.destroy()).pipe(res);
       }catch{return json(res,404,{error:'Media del proyecto no disponible.'});}
+    }
+    if(path==='/api/engine-next/clip-transform' && req.method==='POST'){
+      if(!engineNextClient)return json(res,503,{error:'Motor NLE no activado.'});
+      const b=await body(req,1024);
+      if(Object.keys(b).some(k=>!['expectedRevision','clipId','x','y','scale'].includes(k)) ||
+          !Number.isInteger(b.expectedRevision)||b.expectedRevision<0 ||
+          typeof b.clipId!=='string'||!/^[-a-zA-Z0-9_]{1,100}$/.test(b.clipId)||
+          !Number.isInteger(b.x)||Math.abs(b.x)>1080||!Number.isInteger(b.y)||Math.abs(b.y)>1920||
+          typeof b.scale!=='number'||!Number.isFinite(b.scale)||b.scale<0.1||b.scale>2)
+        return json(res,400,{error:'Posición o escala inválidas.'});
+      try{
+        const result=await engineNextClient.updateProject(p=>{
+          const clip=p.clips.find(c=>c.id===b.clipId&&['video','image'].includes(c.kind)&&!c.locked);
+          if(!clip)throw Error('Locked or unsupported clip');
+          clip.props={...clip.props,x:b.x,y:b.y,scale:b.scale};return p;
+        },{expectedRevision:b.expectedRevision});
+        return json(res,200,{ok:true,revision:result.revision,clipId:b.clipId,x:b.x,y:b.y,scale:b.scale,cinematicQA:false});
+      }catch(e){return json(res,e instanceof FableCutConflict?409:422,{error:e instanceof FableCutConflict?'Revisión desactualizada; recarga antes de editar.':'No se puede transformar esta capa.'});}
     }
     if(path==='/api/engine-next/title-size' && req.method==='POST'){
       if(!engineNextClient)return json(res,503,{error:'Motor NLE no activado.'});
