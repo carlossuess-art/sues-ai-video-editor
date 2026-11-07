@@ -1,3 +1,10 @@
+## 07/11/2026 · QA cuantitativa repetible del visor nativo
+
+- Ejecutada auditoría real solo de lectura contra FableCut privado y vídeo original 158404: marcas temporales 0,4; 2,5 y 10,5 s. Capturas nativas 1080x1920, referencia extraída con FFmpeg del mismo bruto. Informe JSON y PNGs preservados en `/srv/sues-fablecut-next/data/qa/native-frame-audit-20261107/` (audit.json, tres parejas de imágenes).
+- SSIM RGB cuantitativo con bruto original: 0,875780, 0,860999 y 0,882708; media 0,8731623. **No es prueba de fidelidad del Reel editado ni de preview/export**: las diferencias pueden proceder de composición, timing de fotogramas, color, escala, overlays y decodificación. No aprobar estética con SSIM.
+- Código reutilizable subido a PR27: `src/engine-next/frame-audit.js` parser y protección contra informes incompletos; `scripts/engine-next/audit-native-frames.mjs` auditoría local con parámetros absolutos `--source`, `--output`, `--times` y Chrome/Puppeteer; `tests/engine-next/frame-audit.test.js`. Commits 894f63f, f836e32 y 9845c4e. Suite dirigida **34/34 PASS**; rama local sincronizada con GitHub; producción pública no tocada.
+- Pendiente prioritario: escena real con vídeo frente/niño detrás y máscara temporal, objeto animado alfa delante, captions y prueba de exportación vs visor con QA perceptual. Las capas con requisitos visuales siguen desactivadas para revisión.
+
 ## 07/11/2026 · QA de decodificación real: bloqueos corregidos, no aprobación cinematográfica
 
 - Se diagnosticó mediante Chromium y `runtime.clipEls` de FableCut que el clip original `sues_video_source` podía estar en `readyState=0`, `videoWidth=0` a 1,5 s del seek, mientras el lienzo ya devolvía PNG 1080×1920. A 8 s, `readyState=4`, `videoWidth=1080` y PNG de 1.992.899 bytes; el problema era captura prematura, no falta de archivo. El origen de 141.412.175 bytes sirve HTTP 206 Range y es H.264 1080×1920.
