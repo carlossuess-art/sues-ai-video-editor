@@ -20,7 +20,7 @@ export function inspectFilmBriefGeometry(annex,{width=1080,height=1920}={}){
   // the single explicitly written y interval belongs to BOTH named columns.
   // Do not apply this rule without the exact two-column conjunction.
   const sharedColumnY=xs.length===2&&ys.length===1&&!invalid&&
-   /\\bcolumnas\\b/i.test(raw)&&
+   /\bcolumnas\b/i.test(raw)&&
    /x\\s*=\\s*\\d+\\s*[–-]\\s*\\d+\\s+y\\s+x\\s*=\\s*\\d+\\s*[–-]\\s*\\d+/i.test(raw);
   const pairs=!invalid&&xs.length===ys.length?
    xs.map((x,i)=>({x:x.start,y:ys[i].start,width:x.end-x.start,height:ys[i].end-ys[i].start})):
