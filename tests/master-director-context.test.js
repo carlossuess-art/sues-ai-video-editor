@@ -17,7 +17,7 @@ test('server context checks exact rules, policy file, asset evidence and edit ti
  const dir=mkdtempSync(join(tmpdir(),'sues-master-policy-')),path=join(dir,'master-director-policy.json');
  try{const provider=createMasterDirectorContextProvider(dir);assert.equal(await provider(request()),null);
   writeFileSync(path,JSON.stringify(policy()),{mode:0o600});const v=await provider(request());
-  assert.equal(v.registry.arcPolicy,'reel-observed-v2');assert.equal(v.registry.masterHashes['sues-tapiz-1'],ids[0]);assert.equal(v.registry.licensedAssets[ids[0]].rightsVerified,true);
+  assert.equal(v.registry.arcPolicy,'reel-observed-v2');assert.ok(v.registry.rendererCapabilities.remotion.includes('solid-rect'));assert.equal(v.registry.masterHashes['sues-tapiz-1'],ids[0]);assert.equal(v.registry.licensedAssets[ids[0]].rightsVerified,true);
   assert.equal(v.registry.wordAnchors['word-0-span-0'].time,.2);assert.equal(v.registry.wordAnchors['word-2-span-1'].time,2.5);
   assert.equal(v.registry.wordAnchors['word-1-span-0'],undefined);assert.deepEqual(v.registry.maskEvidence,{});
   chmodSync(dir,0o777);assert.equal(await provider(request()),null);chmodSync(dir,0o700);
