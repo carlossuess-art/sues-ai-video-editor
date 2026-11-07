@@ -11,7 +11,7 @@ export function auditFilmBriefCapabilities(annex){
   !Array.isArray(annex.resourceReferences)||
   annex.resourceReferences.some(r=>!r||typeof r.resourceHint!=='string'||!/^[BM][0-9]{2,}$/.test(r.resourceHint))||
   annex.operationIntents.some(x=>!x||typeof x.id!=='string'||!x.id||
-    typeof x.track!=='string'||!x.track||typeof x.sceneId!=='string'||
+    typeof x.track!=='string'||!x.track||(x.sceneId!==null&&typeof x.sceneId!=='string')||
     typeof x.sourceLine!=='number'||!Number.isInteger(x.sourceLine)||x.sourceLine<1)||
   new Set(annex.operationIntents.map(x=>x.id)).size!==annex.operationIntents.length)
   return block('INVALID_SOURCE_TECHNICAL_ANNEX');
