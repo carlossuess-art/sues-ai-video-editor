@@ -1,3 +1,10 @@
+## 07/11/2026 21:58 CET · Continuación: prueba real del compositor y corrección de resolución
+
+- Se probó `ProgramFrameRenderer` con Chromium 155 y Puppeteer Core en VPS contra FableCut privado 127.0.0.1:7780, proyecto 158404; dos tiempos reales 0,4 s y 2,5 s produjeron PNG distintos. La captura original `canvas.screenshot()` era de solo 154×272 (CSS), a pesar de informar metadatos 1080×1920: defecto confirmado con ffprobe.
+- Corrección integrada en `src/engine-next/program-frame.js`: obtener `canvas.toDataURL('image/png')` del backing store y exigir dimensiones intrínsecas iguales al proyecto, con mock actualizado en tests. Repetición real: PNG 1080×1920 en ambos tiempos. Commits 8d72003 y 55c0218; tests dirigidos 29/29 PASS después de sincronizar GitHub. Proyecto real alcanzó revisión 43 por normalizaciones del navegador; los clips y medios no se eliminaron.
+- **Advertencia QA:** el fotograma de 0,4 s presenta varianza visual muy baja (luma YMIN 37, YMAX 40) y el de 2,5 s varianza mayor (YMIN 27, YMAX 126). Resolución correcta NO demuestra decodificación/visibilidad correcta en todos los tiempos. Pendiente sincronizar carga de vídeo y comprobar fotogramas visualmente, máscaras, texto, transparencia y paridad de exportación. No declarar compositor cinematográfico validado.
+- La instancia pública de SUES no se ha modificado. El servicio FableCut privado permanece activo; la rama de desarrollo está sincronizada y no hay cambios locales pendientes.
+
 ## 07/11/2026 · Engine Next: puente local real + interfaz de staging, SIN despliegue público
 
 - FableCut 1.18.0 instalado como servicio persistente `sues-fablecut-next.service` en /srv/sues-fablecut-next, usuario dedicado `suesnle`, bind únicamente 127.0.0.1:7780, HTTP 200. Proyecto real 158404 conservado: revisión 3, seis clips, cinco medios. Instancia efímera original en 127.0.0.1:7779 todavía existe, no usar como autoridad durable.
