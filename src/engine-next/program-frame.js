@@ -11,7 +11,8 @@ function visualSemantics(p){
   clips:(p.clips||[]).map(c=>[c.id,c.mediaId,c.kind,c.track,c.start,c.in,c.duration,!!c.disabled,!!c.locked,
     c.props?.x??0,c.props?.y??0,c.props?.scale??1,c.props?.rotation??0,c.props?.opacity??1,
     c.props?.fit??'contain',c.props?.text??'',c.props?.fontSize??72,c.props?.font??'Segoe UI',
-    c.props?.color??'#ffffff',c.props?.blur??0,c.props?.volume??1])});
+    c.props?.color??'#ffffff',c.props?.blur??0,c.props?.volume??1,
+    c.props?.matte??null,c.props?.matteTrack??null,JSON.stringify(c.props?.masks??null),JSON.stringify(c.keyframes??null)])});
 }
 export class ProgramFrameBusy extends Error {constructor(){super('Program frame renderer busy');this.name='ProgramFrameBusy';}}
 export class ProgramFrameRenderer {
