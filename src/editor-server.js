@@ -3,6 +3,7 @@ import {saveMasterSourceBrief,listMasterSourceBriefs} from './master-director-br
 import {translateFilmDirectorBrief} from './master-director-brief-translation.js';
 import {auditMasterBriefCrosswalk} from './master-director-brief-crosswalk.js';
 import {buildMasterBriefRequirements} from './master-director-brief-requirements.js';
+import {auditFilmBriefCapabilities} from './master-director-brief-capabilities.js';
 import {prepareMasterMaskCandidate,openMasterMaskCandidate} from './master-director-mask-candidate.js';
 import {prepareMasterSupervisorEvidence,openMasterSupervisorEvidence} from './master-director-supervisor-evidence.js';
 import {reviewMasterDirectorNative} from './master-director-native-review.js';
@@ -291,14 +292,14 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-mask-candidate|master-mask-frame|master-layer-edit|master-operation-edit|master-versions|master-current|master-current-operation-edit|master-current-layer-edit|master-current-command|master-pause-audit|master-source-brief|master-brief-translation|master-brief-crosswalk|master-brief-requirements|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-mask-candidate|master-mask-frame|master-layer-edit|master-operation-edit|master-versions|master-current|master-current-operation-edit|master-current-layer-edit|master-current-command|master-pause-audit|master-source-brief|master-brief-translation|master-brief-crosswalk|master-brief-requirements|master-brief-capabilities|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     // Never expose a private native hybrid stage as a standalone final export.
     const stageInstruction=jobs.get(id).instructions?.at(-1);
     if(stageInstruction?.kind==='master-hybrid-native-stage'&&action&&action!=='cancel')
      return json(res,409,{status:'BLOCKED',error:'Esta versión es una etapa intermedia del montaje mixto; consulta el proyecto principal.'});
-    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-trace','master-supervisor','master-supervisor-evidence','master-mask-candidate','master-mask-frame','master-layer-edit','master-operation-edit','master-versions','master-current','master-current-operation-edit','master-current-layer-edit','master-current-command','master-pause-audit','master-source-brief','master-brief-translation','master-brief-crosswalk','master-brief-requirements','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
+    if(['master-draft','master-generate','master-review','master-decision','master-layers','master-trace','master-supervisor','master-supervisor-evidence','master-mask-candidate','master-mask-frame','master-layer-edit','master-operation-edit','master-versions','master-current','master-current-operation-edit','master-current-layer-edit','master-current-command','master-pause-audit','master-source-brief','master-brief-translation','master-brief-crosswalk','master-brief-requirements','master-brief-capabilities','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
      const source=jobs.get(id);
      const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
       // Provider is injected only by trusted server startup, never request JSON.
@@ -612,6 +613,20 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
        originalSha256:entry.originalSha256,timelineFingerprint:entry.timelineFingerprint,duration:catalog.duration});
       const audit=auditMasterBriefCrosswalk({annex,story:b.story,links:b.links});
       return json(res,audit.status==='BLOCKED'?422:200,audit);
+     }
+     if(action==='master-brief-capabilities'&&req.method==='GET'){
+      const revision=url.searchParams.get('briefRevision');
+      if(!/^[a-f0-9]{64}$/.test(revision??''))return json(res,400,{status:'BLOCKED',code:'BRIEF_REVISION_REQUIRED'});
+      const entry=listMasterSourceBriefs(jobs.dir(id)).find(x=>x.revision===revision);
+      if(!entry)return json(res,404,{status:'BLOCKED',code:'SOURCE_BRIEF_NOT_FOUND'});
+      const project=jobs.loadProfile(source.profileId),catalog=externalCatalog(project,source.settings,assets.list());
+      if(entry.sourceSha256!==catalog.sourceSha256||entry.timelineFingerprint!==catalog.timelineFingerprint)
+       return json(res,409,{status:'BLOCKED',code:'STALE_SOURCE_BRIEF',canExecute:false});
+      const annex=translateFilmDirectorBrief({text:entry.text,sourceSha256:entry.sourceSha256,
+       originalSha256:entry.originalSha256,timelineFingerprint:entry.timelineFingerprint,
+       duration:catalog.duration,fps:30});
+      const result=auditFilmBriefCapabilities(annex);
+      return json(res,result.status==='BLOCKED'?422:200,result);
      }
      if(action==='master-brief-requirements'&&req.method==='GET'){
       const revision=url.searchParams.get('briefRevision');

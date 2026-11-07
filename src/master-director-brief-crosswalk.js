@@ -2,6 +2,7 @@
 // authored sues-master-story/v1. No guessed visual effects or assets are inserted.
 // A successful mapping is only structural review; it does not grant render rights.
 import {createHash} from 'node:crypto';
+import {checkFilmBriefIntentMapping} from './master-director-brief-semantic.js';
 const hash=x=>createHash('sha256').update(x).digest('hex');
 const blocked=(code,details={})=>({status:'BLOCKED',code,...details,approved:false,canExecute:false});
 export function auditMasterBriefCrosswalk({annex,story,links}={}){
@@ -56,6 +57,8 @@ export function auditMasterBriefCrosswalk({annex,story,links}={}){
       Number.isFinite(intent.editStart)&&(operation.start<intent.editStart-1/30-1e-6||
        operation.end>intent.editEnd+1/30+1e-6))
     return blocked('INTENT_OPERATION_SEMANTIC_OR_TIME_MISMATCH',{intentId:link.intentId,operationId:id});
+   const semanticIssue=checkFilmBriefIntentMapping(intent,operation,story);
+   if(semanticIssue)return blocked(semanticIssue,{intentId:link.intentId,operationId:id});
    usedOps.add(id);
   }
  }

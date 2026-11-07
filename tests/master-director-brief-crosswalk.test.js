@@ -24,12 +24,16 @@ test('crosswalk rejects spurious approvals, unknown operations, missing scenes o
 test('fully mapped structured intent still needs the trusted skill plan review before any render',()=>{
  const operations=[],links=[];
  for(const intent of annex.operationIntents){
+  if(intent.track==='document-context'){
+   links.push({intentId:intent.id,status:'context',operationIds:[],reason:'Encabezado conservado sin acción ejecutable'});
+   continue;
+  }
   const id=`op-${intent.id}`;
   operations.push({id,sceneId:intent.sceneId,
    start:Math.max(0,intent.editStart??0),end:Math.min(3,intent.editEnd??3),
    track:intent.track==='editorial-direction'?'graphics':intent.track,
    renderer:'remotion',effect:'text',reason:'Preservación de instrucciones de ejemplo',
-   parameters:{text:'Provisional'},dependsOn:[],requiredQA:['rendered-frame','motion-playback','narrative-review']});
+   parameters:{text:intent.detail?.text??'Provisional'},dependsOn:[],requiredQA:['rendered-frame','motion-playback','narrative-review']});
   links.push({intentId:intent.id,status:'mapped',operationIds:[id]});
  }
  const candidate={...empty,operations};
