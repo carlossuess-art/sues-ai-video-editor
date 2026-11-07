@@ -620,6 +620,41 @@ async function showMasterBriefs(jobId){
   details.append(heading,body);root.append(details);
  }
 }
+async function currentBriefRevision(jobId){
+ const records=await api('jobs/'+jobId+'/master-source-brief');
+ return records.briefs.filter(x=>!x.stale).at(-1)?.revision??null;
+}
+$('master-brief-requirements').onclick=()=>work(async()=>{
+ if(!current)throw Error('Abre primero un Reel.');
+ const jobId=current.id,revision=await currentBriefRevision(jobId);
+ if(!revision)throw Error('No hay documento original vigente.');
+ const report=await api('jobs/'+jobId+'/master-brief-requirements?briefRevision='+encodeURIComponent(revision));
+ if(current?.id!==jobId)return;
+ const root=$('master-brief-analysis');root.replaceChildren();
+ const title=document.createElement('p');title.textContent=`${report.resourceCount} recursos pendientes · ${report.intentCount} intenciones técnicas · Ninguna ejecución autorizada.`;root.append(title);
+ for(const item of report.resources){
+  const details=document.createElement('details'),heading=document.createElement('summary'),body=document.createElement('p');
+  heading.textContent=`${item.slot} · ${item.kind} · ${item.references.length} referencia(s) · SIN VERIFICAR`;
+  body.textContent=item.issues.join(' · ');
+  details.append(heading,body);root.append(details);
+ }
+});
+$('master-brief-download-report').onclick=()=>work(async()=>{
+ if(!current)throw Error('Abre primero el Reel.');
+ const jobId=current.id,revision=await currentBriefRevision(jobId);
+ if(!revision)throw Error('No existe un documento original vigente.');
+ const [annex,requirements]=await Promise.all([
+  api('jobs/'+jobId+'/master-brief-translation?briefRevision='+encodeURIComponent(revision)),
+  api('jobs/'+jobId+'/master-brief-requirements?briefRevision='+encodeURIComponent(revision))]);
+ if(current?.id!==jobId)throw Error('El Reel ha cambiado. No se ha descargado ningún informe.');
+ if(annex.sourceBriefSha256!==requirements.sourceBriefSha256||requirements.canExecute!==false||annex.canExecute!==false)
+  throw Error('Las auditorías no coinciden o no son de solo lectura.');
+ const payload={schema:'sues-film-director-handoff-non-executable/v1',
+  canExecute:false,approved:false,sourceBriefRevision:revision,annex,requirements};
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob);
+ const link=document.createElement('a');link.href=url;link.download='SUES_FILM_DIRECTOR_'+jobId.slice(0,8)+'_ANEXO_NO_EJECUTABLE.json';
+ document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
 $('master-brief-analyze').onclick=()=>work(async()=>{
  if(!current)throw Error('Abre el Reel correspondiente.');
  const jobId=current.id,briefs=await api('jobs/'+jobId+'/master-source-brief');
