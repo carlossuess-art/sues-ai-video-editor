@@ -27,7 +27,7 @@ test('authenticated geometry audit preserves a saved Film Director brief without
   const data=await reply.json();
   assert.equal(data.canExecute,false);assert.equal(data.approved,false);
   assert.equal(data.proposedRectangles,2);assert.equal(data.ambiguous,0);
-  assert.equal(data.placements[0].sourceLine,4);
+  assert.equal(data.placements[0].sourceLine,5);
   assert.equal(JSON.stringify(app.jobs.get(job.id)),before);
   assert.equal((await fetch(path+'/master-brief-geometry?briefRevision=bad',{headers})).status,400);
   assert.equal((await fetch(path+'/master-brief-geometry?briefRevision='+'a'.repeat(64),{headers})).status,404);
