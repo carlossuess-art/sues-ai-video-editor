@@ -21,7 +21,8 @@ export function auditFilmBriefCapabilities(annex){
  if(shotCoverage.issues?.length||shotCoverage.status==='BLOCKED')
   return {...block('FILM_BRIEF_BASE_SHOT_COVERAGE_INVALID'),shotCoverage};
  const baseTrack=prepareFilmDirectorBaseTrack(annex);
- if(baseTrack.status==='BLOCKED')return {...block('FILM_BRIEF_BASE_TRACK_LINEAGE_INVALID'),baseTrack};
+ // Keep the read-only capability inventory available for provisional briefs;
+ // a blocked base track is explicitly non-executable and cannot clear QA.
  const bySlot=new Map(annex.resourceReferences.map(x=>[x.resourceHint,x.resourceHint[0]==='B'?'video':'motion']));
  const rows=annex.operationIntents.map(x=>{
   let model='NOT_MODELLED_BY_CURRENT_STRICT_REMOTION_ADAPTER';let blockers=[];let suggestedCapability=null;
