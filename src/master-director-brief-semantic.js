@@ -22,7 +22,7 @@ export function checkFilmBriefIntentMapping(intent,op,story){
   if(op.track!=='broll'||op.effect!=='video-exact')return 'BROLL_REPLACED_WITH_OTHER_EFFECT';
   if(!slot(details.resourceHint)||op.resourceRef!==details.resourceHint||
      !Array.isArray(story.resources)||
-     !story.resources.some(r=>r.id===details.resourceHint&&(r.kind==='video'||r.source==='library')))
+     !story.resources.some(r=>r.id===details.resourceHint&&r.kind==='video'&&['library','generate'].includes(r.source)))
    return 'BROLL_RESOURCE_ID_NOT_PRESERVED';
  }
  if(intent.track==='graphics'&&intent.id.endsWith('-base')&&details.base?.startsWith('M')){
