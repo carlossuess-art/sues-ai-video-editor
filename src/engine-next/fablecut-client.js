@@ -24,6 +24,17 @@ export class FableCutClient {
     if(!r.ok || data.ok!==true || typeof data.src!=='string' || !data.src.startsWith('/media/'))throw Error('FableCut media upload failed');
     return data.src;
   }
+  async getMediaStream(mediaId,{range}={}) {
+    if(typeof mediaId!=='string' || !/^[a-zA-Z0-9_:-]{1,120}$/.test(mediaId))throw Error('Invalid media identifier');
+    const {data:p}=await this.getProject();
+    const item=p.media?.find(m=>m.id===mediaId);
+    if(!item || !['video','audio','image'].includes(item.kind) || typeof item.src!=='string' ||
+      !/^\/media\/[a-zA-Z0-9][a-zA-Z0-9_.-]{0,160}$/.test(item.src))throw Error('Media not in current FableCut project');
+    if(range!==undefined && (typeof range!=='string'||!/^bytes=\d{0,12}-\d{0,12}$/.test(range)))throw Error('Invalid media byte range');
+    const r=await this.fetch(this.baseUrl+item.src,{method:'GET',redirect:'manual',headers:range?{range}:{},signal:AbortSignal.timeout(20000)});
+    if(![200,206,416].includes(r.status))throw Error('FableCut refused media');
+    return {response:r,item};
+  }
   async getProject(){return this.request('/api/project');}
   async listProjects(){return this.request('/api/projects');}
   async getVersions(){return this.request('/api/versions');}
