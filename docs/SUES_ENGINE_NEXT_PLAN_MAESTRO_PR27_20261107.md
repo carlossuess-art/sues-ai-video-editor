@@ -243,7 +243,7 @@ Este ejemplo es deliberadamente un **diseño de contrato futuro**, NO una extens
 **Gate:** revisión de palabras y sentido sin títulos anticipados; fotogramas visibles en móvil real.
 
 ### Fase 6 · Música, SFX, pausas y CTA
-- Voz original como pista protegida y separada,音 exacto de audio fuente. Evitar duplicar stems.
+- Voz original como pista protegida y separada, con el audio exacto de la fuente. Evitar duplicar stems.
 - Música sin tapar voz, mezcla y LUFS, intro impacto, sonido motivado por escena y transiciones.
 - CTA maestro en audio solo si existe grabación exacta autorizada. No reutilizar un CTA cuyo audio pronuncia otro guion.
 **Gate:** prueba auditiva completa, phoneme-safe, sincronía con captions y control de derechos.
