@@ -3,7 +3,7 @@
  */
 import fs from 'node:fs/promises';import path from 'node:path';import {createHash} from 'node:crypto';import {spawnSync} from 'node:child_process';
 import {parseSsim} from '../../src/engine-next/frame-audit.js';
-import {checkExportParityEvidence} from '../../src/engine-next/export-parity-audit.js';
+import {checkExportParityEvidence,summarizeDecodedFrameHashes} from '../../src/engine-next/export-parity-audit.js';
 const [video,reference,out,framesStr]=process.argv.slice(2),frames=Number(framesStr);
 if(![video,reference,out].every(s=>typeof s==='string'&&path.isAbsolute(s))||!Number.isInteger(frames)||frames<1)throw Error('Absolute input and output paths, positive integer frame count required');
 if(await fs.stat(out).then(()=>true).catch(()=>false))throw Error('Report already exists');
@@ -16,7 +16,9 @@ try{
  run('/usr/bin/ffmpeg',['-hide_banner','-v','error','-i',video,'-frames:v','1','-y',extract]);
  const ssim=parseSsim(run('/usr/bin/ffmpeg',['-hide_banner','-i',reference,'-i',extract,'-lavfi','[0:v][1:v]ssim','-f','null','-']).stderr);
  const evidence=checkExportParityEvidence({video:info,ssim,expectedFrames:frames});
+ const hashes=run('/usr/bin/ffmpeg',['-hide_banner','-v','error','-i',video,'-map','0:v:0','-f','framemd5','-']).stdout;
+ const decodedFrameEvidence=summarizeDecodedFrameHashes(hashes,{expectedFrames:frames});
  const sha=async p=>createHash('sha256').update(await fs.readFile(p)).digest('hex');
- const report={...evidence,exportSha256:await sha(video),nativeFrameSha256:await sha(reference),comparedFrameSha256:await sha(extract)};
+ const report={...evidence,decodedFrameEvidence,exportSha256:await sha(video),nativeFrameSha256:await sha(reference),comparedFrameSha256:await sha(extract)};
  await fs.writeFile(out,JSON.stringify(report,null,2));console.log(JSON.stringify({report:out,...report}));
 }finally{await fs.unlink(extract).catch(()=>{});}
