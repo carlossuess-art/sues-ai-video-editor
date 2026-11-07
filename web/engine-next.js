@@ -1,0 +1,13 @@
+'use strict';
+const el=id=>document.getElementById(id);let project=null,selected=null;
+async function api(path,method='GET',body){const r=await fetch(path,{method,credentials:'same-origin',headers:{'x-sues-request':'editor','content-type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});const data=await r.json();if(!r.ok)throw Error(data.error||`HTTP ${r.status}`);return data;}
+function draw(data){project=data;el('status').textContent=`Proyecto ${data.projectId} · revisión ${data.revision}`;
+ const media=el('media');media.replaceChildren();for(const m of data.media){const div=document.createElement('div');div.className='media';div.textContent=`${m.kind} · ${m.name}`;media.append(div);}
+ const tracks=el('tracks');tracks.replaceChildren();for(const t of data.tracks){const row=document.createElement('div');row.className='track';const label=document.createElement('label');label.textContent=t.id;row.append(label);for(const clip of data.clips.filter(c=>c.track===t.id)){const b=document.createElement('button');b.className='clip'+(clip.disabled?' disabled':'');b.textContent=`${clip.name||clip.id} · ${clip.start.toFixed(1)}–${(clip.start+clip.duration).toFixed(1)} s`;b.title=clip.id;b.setAttribute('aria-pressed',String(selected===clip.id));b.addEventListener('click',()=>choose(clip.id));row.append(b);}tracks.append(row);}
+ if(selected&&!data.clips.some(c=>c.id===selected))selected=null;choose(selected);
+}
+function choose(id){selected=id;const clip=project?.clips.find(c=>c.id===id);el('info').textContent=clip?`${clip.name||clip.id} · ${clip.kind}`:'Selecciona una capa del timeline';const ok=clip?.kind==='text';el('fontSize').disabled=!ok;el('apply').disabled=!ok;el('fontSize').value=ok?(clip.fontSize||72):72;el('fontValue').textContent=ok?`${clip.fontSize||72} px`:'—';for(const b of el('tracks').querySelectorAll('.clip'))b.setAttribute('aria-pressed',String(b.title===selected));}
+el('fontSize').addEventListener('input',e=>el('fontValue').textContent=`${e.target.value} px`);
+el('apply').addEventListener('click',async()=>{if(!project||!selected)return;el('apply').disabled=true;el('notice').textContent='Guardando…';try{await api('/api/engine-next/title-size','POST',{expectedRevision:project.revision,clipId:selected,fontSize:Number(el('fontSize').value)});el('notice').textContent='Revisión guardada';await load();}catch(e){el('notice').textContent=e.message;await load().catch(()=>{});}});
+async function load(){try{draw(await api('/api/engine-next/project'));}catch(e){el('status').textContent=e.message;el('notice').textContent='Es necesario iniciar sesión en SUES y activar el motor de pruebas.';}}
+load();
