@@ -16,6 +16,9 @@ test('B-roll cannot be silently swapped with another resource, still or placehol
  assert.equal(checkFilmBriefIntentMapping(i,{...op,resourceRef:'B02'},story),'BROLL_RESOURCE_ID_NOT_PRESERVED');
  assert.equal(checkFilmBriefIntentMapping(i,{...op,effect:'image-exact'},story),'BROLL_REPLACED_WITH_OTHER_EFFECT');
  assert.equal(checkFilmBriefIntentMapping(i,op,{resources:[]}), 'BROLL_RESOURCE_ID_NOT_PRESERVED');
+ assert.equal(checkFilmBriefIntentMapping(i,op,{resources:[{id:'B01',source:'library',kind:'audio'}]}),'BROLL_RESOURCE_ID_NOT_PRESERVED');
+ assert.equal(checkFilmBriefIntentMapping(i,op,{resources:[{id:'B01',source:'library',kind:'image'}]}),'BROLL_RESOURCE_ID_NOT_PRESERVED');
+ assert.equal(checkFilmBriefIntentMapping(i,op,{resources:[{id:'B01',source:'library',kind:'video'}]}),null);
 });
 test('cinematic motion cannot be silently certified by one text object',()=>{
  const i={id:'scene-04-shot-03-base',track:'graphics',detail:{base:'M02'}};
