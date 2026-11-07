@@ -1,3 +1,17 @@
+## Continuidad técnica Fase 1 · 07/11/2026 · base EDL y ejecución segura
+
+**Trabajo real comprobado sobre Reel 158404, rama PR #27.** Se añadió el auditor determinista de cobertura de plano `src/master-director-brief-shot-coverage.js` y se integró en la auditoría de capacidades y en el crosswalk. Resultado con anexo real: **7 escenas, 21 planos, 2213 fotogramas CFR30, sin huecos ni solapamientos de base**. Bloquea storyboard alterado aunque conserve las líneas de origen. Commits `59dfee9`, `52faa12`, `661f33b`, `e3cbcbb` y pruebas; fixtures HTTP corregidos a duración real `15046fd`, `cddf52d`.
+
+Se creó `src/master-director-brief-base-track.js` con su prueba (`dec418f`, `42a617f`), una EDL **no ejecutable aún**, reproducible y fiel: 21 segmentos con reloj CFR30 y voz original continua, 8 necesidades de recursos y duración mínima. B01=72f, B02=120f, M01 overlay=119f, B03=99f, B04=156f, M02=222f, B05=105f, M03=160f. Muestra los requisitos en `auditFilmBriefCapabilities().baseTrack` (`0ec5df0`, `0e21a33`, `2d6e78f`). No inventa transiciones, licencias, recortes ni aprobación estética.
+
+También se endureció la identidad B-roll: un elemento de biblioteca de tipo audio/imagen ya no acredita un vídeo (`fe24b06`, `7c73fdf`); el compilador Remotion ahora rechaza keyframes duplicados, no finitos, fuera de orden, fuera de duración o fuera de rangos numéricos (`ccc4276`, `c3e26f1`, corrección de fixture `acf11b5`).
+
+**Pruebas confirmadas:** en copia aislada de la rama con dependencias sincronizadas, `node --test --test-concurrency=4 tests/master-director*.test.js`: **242 casos, 236 PASS, 6 SKIP, 0 FAIL**, más suite focal de brief/fades **36/36 PASS**. Los casos saltados no equivalen a ejecutados. Pruebas de tres flujos legacy del editor sincronizadas con GitHub corriente: **10/10 PASS**; respetan edición única activa, sin versiones D paralelas. La suite global de 676 casos *no* está certificada: primera ejecución sin FFmpeg terminó con fallos de dependencia; se preparó FFmpeg 6.1 de repositorios Ubuntu **aislado en /tmp**, sin instalarlo en el host, y una ejecución completa posterior alcanzó un límite de 190 s, encontrando al principio cuatro fixtures antiguos que se están sincronizando. No presentar esa suite como PASS.
+
+**Bloqueos restantes:** 8 recursos reales sin aprobación/licencia/identificador verificable, 120 intenciones sin equivalencia ejecutable demostrada en el corte real, ASR/pausas y revisión creativa, render integral real y QA audiovisual doble. No cerrar Fase 1 ni afirmar un render real. Siguiente: terminar regresiones de integración media con FFmpeg aislado, verificar captura de EDL y priorizar composición motion M01–M03 sin pérdida de capas.
+
+---
+
 ### Evidencia de biblioteca activa · 07/11/2026 (lectura únicamente)
 
 La biblioteca viva en el VPS `/opt/sues-video-setup/editor/jobs/library/official-library-v1.json` contiene **214 entradas almacenadas**: 49 vídeos, 125 overlays, 31 SFX, 4 audios y 5 imágenes; `approvedForProduction:true` en **0** y `needsCreativeReview:true` en **214**. Búsqueda simple por conceptos del Reel: aplauso, niño, límite, rechazo y espejo no ofrecen coincidencias nominales útiles; no se consideraron aprobados recursos por similitud de nombre. Los 8 slots B01–B05/M01–M03 continúan sin vínculo autenticado ni licencia validada para el Reel. **No recurrir a un recurso no aprobado para simular cierre.**
