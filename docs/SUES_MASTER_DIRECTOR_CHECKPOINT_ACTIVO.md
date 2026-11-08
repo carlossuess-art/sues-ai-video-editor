@@ -1,3 +1,11 @@
+## 08/11/2026 · Continuar integración IA, NO publicar: primer MCP con CAS REAL (87/87)
+
+- Carlos pidió seguir el desarrollo y retomar la publicación más tarde. **NO tocar DNS, Caddy, ni desplegar**. FableCut ORIGINAL sigue como interfaz principal definitiva; el frontend NLE alternativo permanece descartado como estrategia.
+- **Primer contrato guardado para Master Director→MCP**: `src/engine-next/fablecut-director-mcp-guard.js`, 2 tests; obliga identidad de proyecto, rev exacta, no editar V1/locked/tracks bloqueados, rango seguro de x/y/scale; solo `fablecut_patch_project` con `baseRevision` y operación `updateClip`, sin `force`. **No es dispatcher conectado ni IA autónoma**.
+- **E2E MCP NATIVO FableCut 1.18.0 en clon privado**, no simulado: V2 niño x300→311, rev54→55, segundo patch basado en 54 denegado por **CONFLICT**; B02 disabled y fuente V1 locked permanecieron. Producción rev54 6 clips intactos. Evidencias privadas `/srv/sues-fablecut-next/data/qa/fablecut-director-mcp-guard-proof-20261108/evidence/`, copia QA borrada.
+- Suite local **87/87** desde árbol de trabajo, previo a nueva sincronización; reporte `docs/engine-next/FABLECUT_MCP_GUARDED_PATCH_CLONE_QA_20261108.md`. Política de backups: falta pin fijo y una carpeta reciente incompleta, rotación segura bloqueada (guardrail anterior), sin eliminar archivos.
+- **SIGUIENTE**: dispatcher autenticado basado en plan, revisión/CAS, auditoría, control de herramientas, QA y rollback en clon; recuperar/validar respaldos históricos antes de habilitar cambios más amplios. Publicación solo cuando Carlos retome ese tema.
+  
 ## 08/11/2026 · Prioridad actual: desarrollar FableCut+IA, publicación APLAZADA (85/85 PASS)
 
 - **Carlos ha indicado «Sigue el plan, luego continuamos con publicación»**. Suspender intentos de DNS/Caddy/HTTPS/publicación; no reenfocar desarrollo hacia frontend alternativo. Producto SUES Editor con **FableCut original como único editor** y Master Director como cerebro/operador, herramientas SUES como complementos. Publicación retomar solo cuando lo pida.
