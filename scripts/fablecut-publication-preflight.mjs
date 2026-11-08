@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto';
 import {resolve4} from 'node:dns/promises';
 import {join} from 'node:path';
 import {request} from 'node:http';
+import {execFileSync} from 'node:child_process';
 
 const options={snapshot:process.env.SUES_FABLECUT_PUBLICATION_SNAPSHOT||'/srv/sues-fablecut-next/data/qa/studio-publication-preflight-20261108',
  backupRoot:process.env.SUES_VIDEO_SETUP_ROOT||'/opt/sues-video-setup',
@@ -30,11 +31,18 @@ record('native-fablecut-loopback',await getLocal(),{endpoint:'127.0.0.1:7780'});
 try{
  const root=options.backupRoot;
  const updates=readdirSync(root).filter(n=>/^update-backup-\d{8}-\d{6}(?:-\d+)?$/.test(n)&&statSync(join(root,n)).isDirectory()).sort();
- const pin=join(root,'gemini-live-20261026/rollback/editor-before.tar');
- const latest=updates.slice(-2).map(n=>({name:n,archive:existsSync(join(root,n,'editor-state.tar')),manifest:existsSync(join(root,n,'editor-state.manifest.json'))}));
- const ok=existsSync(pin)&&latest.length===2&&latest.every(x=>x.archive&&x.manifest);
- record('legacy-rollback-rotation',ok,{pinnedRollbackPresent:existsSync(pin),updateBackups:updates.length,latest});
-}catch(e){record('legacy-rollback-rotation',false,{reason:e.message});}
+ const pinDir=join(root,'retention-baselines/baseline-created-20261108-from-update-20261029-182329-365998');
+ const pin=join(pinDir,'editor-state.tar'),pinManifest=join(pinDir,'editor-state.manifest.json');
+ const complete=updates.filter(n=>existsSync(join(root,n,'editor-state.tar'))&&existsSync(join(root,n,'editor-state.manifest.json')));
+ const incomplete=updates.filter(n=>!complete.includes(n));
+ const raw=execFileSync('systemctl',['show','sues-backup-rotation.service','--property=Result','--property=ExecMainStatus'],{encoding:'utf8',timeout:4000});
+ const succeeded=/^Result=success$/m.test(raw)&&/^ExecMainStatus=0$/m.test(raw);
+ const ok=existsSync(pin)&&existsSync(pinManifest)&&complete.length>=2&&succeeded;
+ record('legacy-backup-integrity-monitor',ok,{pinnedBaselinePresent:existsSync(pin),
+   completeUpdateArchives:complete.length,incompleteHistoryRetained:incomplete,
+   lastServiceRunSucceeded:succeeded,automaticPruningEnabled:false,
+   note:'Last successful service run verified pin and two newest complete archives; incomplete history remains.'});
+}catch(e){record('legacy-backup-integrity-monitor',false,{reason:e.message});}
 try{
  const ips=await resolve4(options.host);
  record('public-studio-dns',!!options.expectedIPv4&&ips.includes(options.expectedIPv4),{resolved:ips,expectedIPv4:options.expectedIPv4??'not-configured'});
