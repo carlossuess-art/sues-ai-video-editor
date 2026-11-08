@@ -8,7 +8,7 @@ function fixture(){return {name:'SUES 158404 · NATIVE LUMA MATTE PROOF · NOT A
 const args={matteSrc:'/media/b02-alpha-luma.mp4',matteBytes:123456,expectedRevision:7};
 test('builds three independently editable native tracks while preserving original',()=>{
  const x=fixture(),p=stageNativeB02Matte(x,args);assert.equal(x.clips.length,4);assert.equal(p.clips.length,6);
- assert.equal(p.clips[1].locked,true);assert.equal(p.clips[2].props.masks[0].feather,90);assert.equal(p.clips[0].props.volume,0.8);assert.equal(p.clips[1].props.volume,0);assert.equal(p.clips.at(-2).props.volume,0);assert.equal(p.clips.at(-2).props.matte,'luma');assert.equal(p.clips.at(-2).props.matteTrack,'V4');assert.equal(p.clips.at(-1).track,'V4');
+ assert.equal(p.clips[1].locked,true);assert.equal(p.clips[2].props.masks[0].feather,240);assert.equal(p.clips[0].props.volume,0.8);assert.equal(p.clips[1].props.volume,0);assert.equal(p.clips.at(-2).props.volume,0);assert.equal(p.clips.at(-2).props.matte,'luma');assert.equal(p.clips.at(-2).props.matteTrack,'V4');assert.equal(p.clips.at(-1).track,'V4');
 });
 test('blocks production, incorrect revision and overlapping active clips',()=>{
  for(const x of [{...fixture(),name:'SUES production'}, {...fixture(),revision:8}, {...fixture(),clips:[...fixture().clips,{id:'other',kind:'video',track:'V3',start:10,duration:2}]}])assert.throws(()=>stageNativeB02Matte(x,args));
@@ -20,4 +20,10 @@ test('prevents duplicated staging and disabled original source',()=>{
 test('refuses a second active audio narration or an absent dedicated voice track',()=>{
  const p=fixture();p.clips.push({id:'other-narration',kind:'audio',track:'A1',start:10,duration:2,props:{volume:1}});assert.throws(()=>stageNativeB02Matte(p,args));
  const v=fixture();v.clips=v.clips.filter(c=>c.id!=='sues_audio_original');assert.throws(()=>stageNativeB02Matte(v,args));
+});
+
+test('supports bounded candidate feather without changing source or child count',()=>{
+ const p=stageNativeB02Matte(fixture(),{...args,childFeather:180});
+ assert.equal(p.clips.find(x=>x.id==='sues_b02_child_review_only').props.masks[0].feather,180);
+ for(const childFeather of [-1,89,301,600,240.5,'240'])assert.throws(()=>stageNativeB02Matte(fixture(),{...args,childFeather}));
 });
