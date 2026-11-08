@@ -2,6 +2,7 @@ import {FableCutClient,FableCutConflict} from './engine-next/fablecut-client.js'
 import {summarizeNativeHistory} from './engine-next/native-history-summary.js';
 import {dispatchDirectorNativeTransform} from './engine-next/fablecut-director-dispatcher.js';
 import {DirectorApprovalLedger} from './engine-next/fablecut-director-approval-ledger.js';
+import {createBoundDirectorPlanVerifier} from './engine-next/fablecut-director-job-binding.js';
 import {prepareDirectorNativeTransform} from './engine-next/fablecut-director-mcp-guard.js';
 import {retimeNativeTextClip} from './engine-next/clip-timing.js';
 import {ProgramFrameRenderer,ProgramFrameBusy} from './engine-next/program-frame.js';
@@ -99,7 +100,7 @@ async function body(req,maxBytes=65536,{rejectDuplicates=false}={}){
  if(rejectDuplicates)rejectDuplicateJsonKeys(raw);
  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia,engineNextFrameRenderer=null,nativeDirectorInvoker=null,nativePlanVerifier=null}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia,engineNextFrameRenderer=null,nativeDirectorInvoker=null,nativePlanVerifier=null,nativeProjectBindingResolver=null}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -126,6 +127,37 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
   (engineNextClient&&process.env.SUES_ENGINE_NEXT_PUPPETEER_CORE&&process.env.SUES_ENGINE_NEXT_CHROME_PATH?
    new ProgramFrameRenderer({client:engineNextClient,puppeteer:createRequire(import.meta.url)(process.env.SUES_ENGINE_NEXT_PUPPETEER_CORE),executablePath:process.env.SUES_ENGINE_NEXT_CHROME_PATH}):null);
  const masterContextProvider=masterDirectorContext??createMasterDirectorContextProvider(directory);
+ const masterStoreForJob=id=>{
+  return new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
+      // Provider is injected only by trusted server startup, never request JSON.
+      if(typeof masterContextProvider!=='function')return null;
+      const current=jobs.get(id),project=jobs.loadProfile(current.profileId);
+      const catalog=externalCatalog(project,current.settings,assets.list());
+      const verified=await masterContextProvider({jobId:id,project,job:current,assets,catalog,story});
+      if(!verified)return null;
+      return {...verified,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration,
+        // Internal logical preflight only: never records approval or launches work.
+        nativePreflight:(plan,registry)=>reviewMasterDirectorNative({plan,registry,catalog,project,
+         settings:current.settings,assets:assets.list(),commandPlanner:planInstructions})};
+  });
+ };
+ // Only an administrator-provided native-to-job binding can enable the real
+ // Master Director store verifier. No client-provided job ID or path is used.
+ const boundNativePlanVerifier=typeof nativeProjectBindingResolver==='function'?createBoundDirectorPlanVerifier({
+  resolveBinding:nativeProjectBindingResolver,
+  getJob:async id=>jobs.get(id),
+  getStore:async id=>masterStoreForJob(id)
+ }):null;
+ const activeNativePlanVerifier=boundNativePlanVerifier??nativePlanVerifier;
+ const verifiedPlanProvenance=(proof,projectId)=>{
+  const base={storyRevision:proof.storyRevision,decisionId:proof.decisionId,operationId:proof.operationId,
+   planFingerprint:proof.planFingerprint,projectFingerprint:proof.projectFingerprint};
+  if(!boundNativePlanVerifier)return base;
+  if(!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(proof.jobId??'')||
+     proof.nativeProjectId!==projectId||typeof proof.suesProjectId!=='string'||!proof.suesProjectId)
+   throw Error('Unverified native-to-SUES-job plan association');
+  return {...base,jobId:proof.jobId,suesProjectId:proof.suesProjectId,nativeProjectId:proof.nativeProjectId};
+ };
  const masterPreviewRuns=new Map();
  const masterHybridRuns=new Map();
  const masterGeneratorRuns=new Set();
@@ -199,18 +231,18 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/engine-next/director/approve-transform'&&req.method==='POST'){
       // Only an authenticated SUES administrator session can issue an exact,
       // short-lived, single-use approval. No native edit is executed here.
-      if(!nativeApprovals||typeof nativePlanVerifier!=='function')return json(res,503,{error:'Aprobaciones creativas del director desactivadas.'});
+      if(!nativeApprovals||typeof activeNativePlanVerifier!=='function')return json(res,503,{error:'Aprobaciones creativas del director desactivadas.'});
       let payload;try{payload=await body(req,2048,{rejectDuplicates:true});}catch{return json(res,400,{error:'Solicitud de aprobación no válida.'});}
       if(Object.keys(payload).some(k=>!['projectId','revision','clipId','x','y','scale','storyRevision','decisionId','operationId'].includes(k)))return json(res,400,{error:'La aprobación debe limitarse a una transformación.'});
       try{
         const {data:p,projectId}=await engineNextClient.getProject();
         const actor='sues-authenticated-admin';
         const {storyRevision,decisionId,operationId,...transform}=payload;
-        const proof=await nativePlanVerifier({storyRevision,decisionId,operationId,request:transform});
+        const proof=await activeNativePlanVerifier({storyRevision,decisionId,operationId,request:transform});
         if(!proof?.ok||proof.storyRevision!==storyRevision||proof.decisionId!==decisionId||
            proof.operationId!==operationId||!(/^[a-f0-9]{64}$/).test(proof.planFingerprint??'')||
            !(/^[a-f0-9]{64}$/).test(proof.projectFingerprint??''))throw Error('No verified creative plan');
-        const planProof={storyRevision,decisionId,operationId,planFingerprint:proof.planFingerprint,projectFingerprint:proof.projectFingerprint};
+        const planProof=verifiedPlanProvenance(proof,transform.projectId);
         const intended={...transform,actor,planProof};
         prepareDirectorNativeTransform({project:p,projectId,expectedProjectId:payload.projectId,
           revision:payload.revision,clipId:payload.clipId,x:payload.x,y:payload.y,scale:payload.scale});
@@ -220,17 +252,17 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       }catch{return json(res,409,{error:'No se puede aprobar esta edición: proyecto o revisión incorrectos, o capa protegida.'});}
     }
     if(path==='/api/engine-next/director/execute-transform'&&req.method==='POST'){
-      if(!nativeApprovals||!engineNextClient||typeof nativeDirectorInvoker!=='function'||typeof nativePlanVerifier!=='function')return json(res,503,{error:'Ejecución nativa no activada.'});
+      if(!nativeApprovals||!engineNextClient||typeof nativeDirectorInvoker!=='function'||typeof activeNativePlanVerifier!=='function')return json(res,503,{error:'Ejecución nativa no activada.'});
       let request;
       try{
         const b=await body(req,2048,{rejectDuplicates:true});
         if(Object.keys(b).some(k=>!['approvalId','projectId','revision','clipId','x','y','scale','storyRevision','decisionId','operationId'].includes(k)))return json(res,400,{error:'Orden nativa no válida.'});
         const {storyRevision,decisionId,operationId,...transform}=b;
-        const proof=await nativePlanVerifier({storyRevision,decisionId,operationId,request:transform});
+        const proof=await activeNativePlanVerifier({storyRevision,decisionId,operationId,request:transform});
         if(!proof?.ok||proof.storyRevision!==storyRevision||proof.decisionId!==decisionId||
            proof.operationId!==operationId||!(/^[a-f0-9]{64}$/).test(proof.planFingerprint??'')||
            !(/^[a-f0-9]{64}$/).test(proof.projectFingerprint??''))return json(res,403,{error:'Plan creativo no aprobado o modificado.'});
-        request={...transform,actor:'sues-authenticated-admin',planProof:{storyRevision,decisionId,operationId,planFingerprint:proof.planFingerprint,projectFingerprint:proof.projectFingerprint}};
+        request={...transform,actor:'sues-authenticated-admin',planProof:verifiedPlanProvenance(proof,transform.projectId)};
       }
       catch{return json(res,400,{error:'Orden nativa no válida.'});}
       try{
@@ -473,18 +505,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      return json(res,409,{status:'BLOCKED',error:'Esta versión es una etapa intermedia del montaje mixto; consulta el proyecto principal.'});
     if(['master-draft','master-generate','master-review','master-decision','master-layers','master-trace','master-supervisor','master-supervisor-evidence','master-mask-candidate','master-mask-frame','master-layer-edit','master-operation-edit','master-versions','master-current','master-current-operation-edit','master-current-layer-edit','master-current-command','master-pause-audit','master-source-brief','master-brief-translation','master-brief-crosswalk','master-brief-requirements','master-brief-capabilities','master-brief-geometry','master-brief-caption-draft','master-brief-caption-layers','master-render-preflight','master-preview','master-preview-media','master-previews','master-preview-status','master-native-review','master-native-apply','master-hybrid-start','master-hybrid-status'].includes(action)){
      const source=jobs.get(id);
-     const store=new MasterDirectorProjectStore(jobs.dir(id),async(story)=>{
-      // Provider is injected only by trusted server startup, never request JSON.
-      if(typeof masterContextProvider!=='function')return null;
-      const current=jobs.get(id),project=jobs.loadProfile(current.profileId);
-      const catalog=externalCatalog(project,current.settings,assets.list());
-      const verified=await masterContextProvider({jobId:id,project,job:current,assets,catalog,story});
-      if(!verified)return null;
-      return {...verified,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration,
-        // Internal logical preflight only: never records approval or launches work.
-        nativePreflight:(plan,registry)=>reviewMasterDirectorNative({plan,registry,catalog,project,
-         settings:current.settings,assets:assets.list(),commandPlanner:planInstructions})};
-     });
+     const store=masterStoreForJob(id);
      // Full mixed-engine execution is private and authenticated. A native child is
      // strictly intermediate; only a sealed Remotion preview can reach HUMAN_QA.
      if(action==='master-hybrid-status'&&req.method==='GET'){
