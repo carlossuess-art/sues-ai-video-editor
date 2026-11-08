@@ -66,6 +66,15 @@ function suesPrivateCancelPausedPreview() {
   a.committedTime = null;
   // Keep decoder alive until the current native frame request settles.
   if (!a.running && a.ownsDecoder) { exportDecodeEnd(); a.ownsDecoder = false; }
+  else if (a.running) {
+    // The active decode must complete before releasing WebCodecs; a pending
+    // request must not outlive the cancellation. Its finally block owns cleanup.
+    a.running.finally(() => {
+      if ((state.playing || state.exporting || isSourceMode()) && a.ownsDecoder) {
+        exportDecodeEnd(); a.ownsDecoder = false;
+      }
+    });
+  }
 }
 async function suesPrivateStopPausedPreview() {
   suesPrivateCancelPausedPreview();
@@ -98,20 +107,10 @@ SET_PATCH='''  seekMediaWhilePaused();
   if (state.audioHold) scheduleAudioHoldRefresh();'''
 PLAY_ANCHOR='''function play() {
 '''
-PLAY_PATCH='''function play() {
-  const activeScrub = suesPrivatePausedPreview;
-  const intent = ++activeScrub.playIntent;
-  // A decode may still be in flight. Wait for safe release; do not overlap.
-  // Abort deferred Play if user presses Pause or moves the playhead meanwhile.
-  if (activeScrub.running) {
-    suesPrivateCancelPausedPreview();
-    activeScrub.running.finally(() => {
-      if (intent === activeScrub.playIntent && !state.playing && !state.exporting && !isSourceMode()) play();
-    });
-    return;
-  }
-  suesPrivateCancelPausedPreview();
+PLAY_PATCH='''async function play() {
+  await suesPrivateStopPausedPreview(); // await in-flight decode before playback takes ownership
 '''
+
 FAST_ANCHOR='''async function fastExport(opts = {}) {
   if (state.exporting) return { error: "an export is already running" };'''
 FAST_PATCH='''async function fastExport(opts = {}) {

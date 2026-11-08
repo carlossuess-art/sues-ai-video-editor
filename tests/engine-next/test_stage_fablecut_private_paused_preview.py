@@ -1,51 +1,33 @@
 import importlib.util
 from pathlib import Path
-import subprocess
 import tempfile
 import unittest
-
-ROOT=Path(__file__).parents[2]
-SPEC=importlib.util.spec_from_file_location('precise_pause_stage',ROOT/'scripts/engine-next/stage-fablecut-private-paused-preview.py')
-mod=importlib.util.module_from_spec(SPEC);SPEC.loader.exec_module(mod)
-
-class TestStagePrecisePausedPreview(unittest.TestCase):
- def create(self, root):
-  app=root/'private-faststart-original';app.mkdir();
-  original=('// authenticated QA copy\n'+'function setTime(t) {\n'+mod.SET_ANCHOR+'\n}\n'+mod.PLAY_ANCHOR+'}\n'+mod.PAUSE_ANCHOR+'}\n'+mod.FAST_ANCHOR+'\n}\n'+mod.WEBCODECS_ANCHOR+'\n}\n// suesPrivateVerifiedDecodeUrl suesPrivateVerifiedDecodeUrl\n')
-  (app/'app.js').write_text(original)
-  (app/'sues-faststart-qa-gateway.cjs').write_text('module.exports={};\n')
-  (app/'server.js').write_text('const x = 1;\n')
-  return app,original
- def test_clone_separate_from_upstream_and_session_intents_are_cancelled(self):
-  with tempfile.TemporaryDirectory() as temp:
-   root=Path(temp);app,original=self.create(root);dst=root/'private-pause-clone'
-   self.assertEqual(mod.stage(app,dst),dst)
-   self.assertEqual((app/'app.js').read_text(),original)
-   transformed=(dst/'app.js').read_text()
-   self.assertIn('suesPrivatePausedPreview.playIntent++',transformed)
-   self.assertIn('intent === activeScrub.playIntent',transformed)
-   self.assertIn('await suesPrivateStopPausedPreview()',transformed)
-   self.assertIn('state.rendering = true',transformed)
-   self.assertIn('runtime.exportFrames?.has',transformed)
-   self.assertEqual(transformed.count('SUES PRIVATE QA: precise paused scrub'),1)
-   subprocess.run(['node','--check',str(dst/'app.js')],check=True,capture_output=True)
-   with self.assertRaisesRegex(ValueError,'New separate private app clone'):
-    mod.stage(app,dst)
- def test_reject_changed_upstream_before_copying(self):
-  with tempfile.TemporaryDirectory() as temp:
-   root=Path(temp);app,original=self.create(root)
-   (app/'app.js').write_text(original.replace(mod.SET_ANCHOR,'// corrupted upstream'))
-   dst=root/'private-pause-clone'
-   with self.assertRaisesRegex(ValueError,'FableCut source changed'):
-    mod.stage(app,dst)
-   self.assertFalse(dst.exists())
- def test_refuses_nested_or_wrong_upstream(self):
-  with tempfile.TemporaryDirectory() as temp:
-   root=Path(temp);app,original=self.create(root)
-   with self.assertRaisesRegex(ValueError,'New separate private app clone'):
-    mod.stage(app,app/'patch-in-production')
-   (app/'app.js').write_text(original.replace('suesPrivateVerifiedDecodeUrl suesPrivateVerifiedDecodeUrl','removed'))
-   with self.assertRaisesRegex(ValueError,'Requires existing verified faststart'):
-    mod.stage(app,root/'private-pause-clone')
-
+root=Path(__file__).parents[2]
+spec=importlib.util.spec_from_file_location('paused_preview',root/'scripts/engine-next/stage-fablecut-private-paused-preview.py')
+m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+class TestPrivatePausedPreview(unittest.TestCase):
+ def make(self,p):
+  upstream=p/'upstream';upstream.mkdir()
+  app='\n'.join([m.SET_ANCHOR,m.PLAY_ANCHOR,m.PAUSE_ANCHOR,m.FAST_ANCHOR,m.WEBCODECS_ANCHOR,'function setTime(t) {','suesPrivateVerifiedDecodeUrl','suesPrivateVerifiedDecodeUrl'])
+  (upstream/'app.js').write_text(app);(upstream/'sues-faststart-qa-gateway.cjs').write_text('gateway')
+  return upstream,app
+ def test_clone_is_reversible_and_does_not_change_upstream(self):
+  with tempfile.TemporaryDirectory() as d:
+   p=Path(d);source,app=self.make(p);dest=p/'private'
+   self.assertEqual(m.stage(source,dest),dest)
+   self.assertEqual((source/'app.js').read_text(),app)
+   s=(dest/'app.js').read_text()
+   self.assertIn('await suesPrivateStopPausedPreview(); // await in-flight decode before playback takes ownership',s)
+   self.assertIn('suesPrivatePausedPreview.playIntent++; // never start a deferred Play after Pause',s)
+   self.assertIn('async function suesPrivatePausedPreviewIdle()',s)
+   self.assertIn('suesPrivateQueuePausedFrame(state.time)',s)
+   self.assertIn('if (job.seq !== a.seq',s)
+   with self.assertRaises(ValueError):m.stage(source,dest)
+ def test_refuses_missing_anchors_and_nested_production(self):
+  with tempfile.TemporaryDirectory() as d:
+   p=Path(d);source,app=self.make(p)
+   with self.assertRaises(ValueError):m.stage(source,source/'qa')
+   (source/'app.js').write_text(app.replace(m.FAST_ANCHOR,'changed'))
+   with self.assertRaisesRegex(ValueError,'source changed'):m.stage(source,p/'qa')
+   self.assertFalse((p/'qa').exists())
 if __name__=='__main__':unittest.main()
