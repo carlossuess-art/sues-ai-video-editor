@@ -1,8 +1,8 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {stageNativeB02EdgeRefinement} from '../../src/engine-next/native-b02-edge-refinement.js';
-const sourceSha='a'.repeat(64),refinedSha='b'.repeat(64),params={expectedRevision:8,originalAlphaSha256:sourceSha,refinedSha256:refinedSha,refinedBytes:890000,strength:0.5};
+const sourceSha='252939e06b787a17ef93de159f49f9e86731d7e628ced605b567968bd283fe5e',refinedSha='aac8b173f301df941a5e9e882c17f7231d34b8cdb36e5991326b7313d7213ea0',params={expectedRevision:8,originalAlphaSha256:sourceSha,refinedSha256:refinedSha,refinedBytes:890000,strength:0.5};
 const fixture=()=>({name:'SUES B02 Despill RGB Edge QA ONLY',revision:8,width:1080,height:1920,fps:30,
- media:[{id:'m_sues_child_group_modnet_alpha_qa',src:'/media/sues-b02-child-group-alpha-candidate.png',alphaSha256:sourceSha}],
+ media:[{id:'m_sues_child_group_modnet_alpha_qa',src:'/media/sues-b02-child-group-alpha-candidate.png'}],
  clips:[{id:'sues_b02_child_review_only',mediaId:'m_sues_child_group_modnet_alpha_qa',track:'V2',kind:'image',start:9.5,duration:4,props:{}},
  {id:'sues_b02_carlos_foreground_luma_qa',track:'V3',props:{matte:'luma',matteTrack:'V4'}},
  {id:'sues_b02_temporal_luma_qa',track:'V4'},
@@ -20,4 +20,10 @@ test('refuses production, revision conflicts, forged alpha provenance, aggressiv
  assert.throws(()=>stageNativeB02EdgeRefinement(fixture(),{...params,strength:0.85}));
  assert.throws(()=>stageNativeB02EdgeRefinement(fixture(),{...params,refinedSha256:sourceSha}));
  const staged=stageNativeB02EdgeRefinement(fixture(),params);assert.throws(()=>stageNativeB02EdgeRefinement(staged,params));
+});
+
+test('works after FableCut strips custom SHA fields from persisted media',()=>{
+ const p=fixture();assert.equal(p.media[0].alphaSha256,undefined);
+ const q=stageNativeB02EdgeRefinement(p,params);assert.equal(q.clips[0].mediaId,'m_sues_b02_child_refined50_qa');
+ p.media[0].alphaSha256='f'.repeat(64);assert.throws(()=>stageNativeB02EdgeRefinement(p,params));
 });
