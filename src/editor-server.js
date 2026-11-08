@@ -998,3 +998,148 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(action==='library-cues'&&req.method==='GET'){
      const job=jobs.get(id),limit=url.searchParams.has('limit')?Number(url.searchParams.get('limit')):6;
      if(!Number.isInteger(limit)||limit<1||limit>8)return json(res,400,{error:'Límite de sugerencias no válido'});
+     try{return json(res,200,proposeLibraryCues(directory,jobs.loadProfile(job.profileId).inputs.transcript,{limit}));}
+     catch(error){if(['ENOENT','EACCES','EPERM'].includes(error.code))return json(res,503,{error:'El índice privado de recursos no está disponible'});throw error;}
+    }
+    if(action==='ai-context'&&req.method==='POST'){
+     const b=await body(req,8192),source=jobs.get(id);
+     if(b.fingerprint!==source.fingerprint)return json(res,409,{error:'El proyecto ha cambiado. Guarda y vuelve a preparar la información.'});
+     if(typeof (b.prompt??'')!=='string'||(b.prompt??'').length>4000)return json(res,400,{error:'Encargo demasiado largo.'});
+     const project=jobs.loadProfile(source.profileId),catalog=completeDirectorCatalog(externalCatalog(project,source.settings,directorAssets(assets,directory)),source.settings);
+     const instructions=buildDirectorInstructions(catalog,b.prompt??'');
+     return json(res,200,{provider:'gemini',model:'gemini-3.8-flash',video:'Se enviaría el vídeo original completo con audio.',requestedFramesPerSecond:1,actualFramesVerified:false,reasoningLevel:'medium',catalogAssetCount:catalog.assets.length,captionCount:catalog.captions.length,instructions,sourceFingerprint:source.fingerprint,sent:false});
+    }
+    if(action==='ai-plan'&&req.method==='GET'){
+     const latest=join(jobs.dir(id),'ai-plan-latest.json');
+     if(!existsSync(latest))return json(res,200,{state:'NONE'});
+     const info=JSON.parse(readFileSync(latest,'utf8')),file=join(jobs.dir(id),'ai-plan-result-'+info.requestId+'.json');
+     if(existsSync(file)){const result=JSON.parse(readFileSync(file,'utf8'));return json(res,200,{...result,stale:info.fingerprint!==jobs.get(id).fingerprint});}
+     return json(res,200,{...info,state:cloudRuns.has(id+':'+info.requestId)?'RUNNING':'INTERRUPTED',message:'El análisis quedó interrumpido; no se ha repetido ni cambiado de proveedor.'});
+    }
+    if(action==='ai-plan'&&req.method==='POST'){
+     const b=await body(req,8192),source=jobs.get(id);
+     if(!['PREVIEW_READY','DONE','FAILED','CANCELLED'].includes(source.state))return json(res,409,{error:'Espera a que termine la edición actual.'});
+     if(b.fingerprint!==source.fingerprint)return json(res,409,{error:'El proyecto ha cambiado. Guarda los ajustes y solicita el plan de nuevo.'});
+     if(b.provider!=='gemini')return json(res,409,{error:'Gemini es el proveedor activo. OpenAI sigue pendiente de configuración.'});
+     if(!/^[a-f0-9-]{36}$/.test(b.requestId??'')||typeof (b.prompt??'')!=='string'||(b.prompt??'').length>4000)return json(res,400,{error:'Petición de IA no válida.'});
+     const fingerprint=source.fingerprint;
+     const project=jobs.loadProfile(source.profileId),catalog=completeDirectorCatalog(externalCatalog(project,source.settings,directorAssets(assets,directory)),source.settings);req.setTimeout(600000);
+     const execute=async()=>{
+      const result=await cloud.generate({provider:b.provider,catalog,sourcePath:project.sourcePath,prompt:b.prompt??'',requestId:b.requestId,directory:jobs.dir(id)});
+      const review=reviewExternalPlan(result.text,{project:jobs.loadProfile(source.profileId),settings:source.settings,assets:assets.list(),commandPlanner:planInstructions});
+      const response={...result,review,sourceJobId:id,sourceFingerprint:fingerprint,renderStarted:false};
+      if(jobs.get(id).fingerprint===fingerprint)saveDirectorJSON(join(jobs.dir(id),'external-plan-draft.json'),{text:result.text,updatedAt:new Date().toISOString()});
+      return response;
+     };
+     if(url.searchParams.get('async')==='1'){
+      const key=id+':'+b.requestId,file=join(jobs.dir(id),'ai-plan-result-'+b.requestId+'.json'),latest=join(jobs.dir(id),'ai-plan-latest.json');
+      if(existsSync(file))return json(res,200,JSON.parse(readFileSync(file,'utf8')));
+      if(cloudRuns.has(key))return json(res,202,{state:'RUNNING',requestId:b.requestId});
+      if([...cloudRuns].length)return json(res,409,{error:'Hay otro análisis de Gemini en curso. Espera a que termine.'});
+      cloudRuns.add(key);saveDirectorJSON(latest,{requestId:b.requestId,fingerprint,startedAt:new Date().toISOString()});
+      void execute().then(result=>saveDirectorJSON(file,{state:'COMPLETE',...result})).catch(error=>saveDirectorJSON(file,{state:'FAILED',message:error.message})).finally(()=>cloudRuns.delete(key));
+      return json(res,202,{state:'RUNNING',requestId:b.requestId});
+     }
+     const result=await execute();
+     if(jobs.get(id).fingerprint!==fingerprint)return json(res,409,{error:'Los ajustes cambiaron durante el análisis. El resultado queda guardado; no se ha aplicado.'});
+     return json(res,200,result);
+    }
+    if(action==='external-catalog'&&req.method==='GET'){const source=jobs.get(id);const semantics=new Map(assets.semanticCatalog().assets.map(a=>[a.id,a.metadata]));
+      const described=assets.list().map(a=>({...a,emotions:semantics.get(a.id)?.semantics?.emotionTags??[],
+        narrativeRoles:semantics.get(a.id)?.semantics?.narrativeRoles??[],
+        creativeApproval:semantics.get(a.id)?.approvedForProduction===true?'approved':'review-required'}));
+      return json(res,200,externalCatalog(jobs.loadProfile(source.profileId),source.settings,described));}
+    if(['external-review','external-execute'].includes(action)&&req.method==='POST'){
+     const b=await body(req),source=jobs.get(id);
+     // A duplicate request must be answered before re-evaluating the plan against
+     // a timeline already modified by its first application.
+     let payloadSha256=null;
+     if(action==='external-execute'){
+      if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId))throw Error('Identificador de petición no válido.');
+      payloadSha256=createHash('sha256').update(JSON.stringify({text:b.text,reviewId:b.reviewId})).digest('hex');
+      const prior=source.directReceipts?.find(r=>r.requestId===b.requestId);
+      if(prior){
+       if(prior.payloadSha256!==payloadSha256)return json(res,409,{error:'Petición reutilizada con otro plan.'});
+       if(source.directReceipts.at(-1).requestId!==b.requestId||prior.revision!==source.revision)return json(res,409,{error:'La edición ya evolucionó. Abre el proyecto actual.'});
+       return json(res,200,source.state==='PREVIEW_READY'?jobs.render(id):jobs.view(source));
+      }
+     }
+     if(!['PREVIEW_READY','DONE'].includes(source.state))return json(res,409,{error:'Espera a que termine la edición actual.'});
+     const proposal=reviewExternalPlan(b.text,{project:jobs.loadProfile(source.profileId),settings:source.settings,assets:assets.list(),commandPlanner:planInstructions});
+     if(action==='external-review')return json(res,200,proposal);
+     if(!proposal.canApply)return json(res,422,{error:'Hay operaciones pendientes. La edición actual no se ha modificado.',proposal});
+     if(b.reviewId!==proposal.reviewId)return json(res,409,{error:'El plan o el proyecto han cambiado. Revisa de nuevo.'});
+     const applied=jobs.applyDirected(id,proposal.changes,{requestId:b.requestId,payloadSha256,
+      instruction:{kind:'external-plan',text:b.text,reviewId:proposal.reviewId,actions:proposal.actions,at:new Date().toISOString()}});
+     return json(res,202,jobs.render(applied.job.id));
+    }
+    if(['direct-plan','direct'].includes(action)&&req.method==='POST'){
+     const b=await body(req),source=jobs.get(id);
+     let payloadSha256=null;
+     if(action==='direct'){
+      if(typeof b.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(b.requestId))throw Error('Identificador de petición no válido.');
+      payloadSha256=createHash('sha256').update(JSON.stringify({prompt:b.prompt??'',settings:b.settings??null,confirmReset:b.confirmReset===true})).digest('hex');
+      const prior=source.directReceipts?.find(r=>r.requestId===b.requestId);
+      if(prior){
+       if(prior.payloadSha256!==payloadSha256)return json(res,409,{error:'Petición reutilizada con otro contenido.'});
+       if(source.directReceipts.at(-1).requestId!==b.requestId||prior.revision!==source.revision)return json(res,409,{error:'La edición ya evolucionó. Abre el proyecto actual.'});
+       return json(res,200,source.state==='PREVIEW_READY'?jobs.render(id):jobs.view(source));
+      }
+     }
+     if(!['PREVIEW_READY','DONE'].includes(source.state))return json(res,409,{error:'Espera a que termine la edición actual.'});
+     const base=b.settings??source.settings,proposal=planInstructions(b.prompt??'',base);
+     if(proposal.canApply){const prepared=prepareProject(jobs.loadProfile(source.profileId),{...base,...proposal.changes});Object.assign(proposal,reviewInstructionExecution(proposal,prepared.plan));}
+     if(action==='direct-plan')return json(res,200,proposal);
+     if(!proposal.canApply)return json(res,422,{error:'Hay instrucciones que todavía no puedo ejecutar. Revisa la propuesta antes de generar.',proposal});
+     if(proposal.requiresResetConfirmation&&b.confirmReset!==true)return json(res,409,{error:proposal.warning,proposal});
+     const applied=jobs.applyDirected(id,{...base,...proposal.changes},{requestId:b.requestId,payloadSha256,
+      instruction:{text:(b.prompt??'').trim(),actions:proposal.actions,at:new Date().toISOString()}});
+     return json(res,202,jobs.render(applied.job.id));
+    }
+    if(action==='live-preview'){
+     if(req.method==='POST')return json(res,202,livePreviews.scene(id,await body(req,131072)));
+     if(['GET','HEAD'].includes(req.method)){const key=url.searchParams.get('key'),part=url.searchParams.get('part');if(part){const f=livePreviews.media(id,key,part);return sourceStream(req,res,f.file,f.mime);}return json(res,200,livePreviews.get(id,key));}
+    }
+    if(action==='adjust-preview'){
+     if(req.method==='DELETE')return json(res,202,adjustmentPreviews.cancel(id,url.searchParams.get('key')));
+     if(req.method==='POST')return json(res,202,adjustmentPreviews.start(id,await body(req,131072)));
+     if(['GET','HEAD'].includes(req.method)){const key=url.searchParams.get('key');if(url.searchParams.get('media')==='1')return sourceStream(req,res,adjustmentPreviews.media(id,key));return json(res,200,adjustmentPreviews.view(adjustmentPreviews.get(id,key)));}
+    }
+    if(action==='acceptance'&&req.method==='POST')return json(res,200,await jobs.recordReview(id,await body(req)));
+    if(action==='backup'&&req.method==='POST')return json(res,201,await jobs.backup(id));
+    if(action==='backup'&&['GET','HEAD'].includes(req.method)){
+     const file=jobs.backupMedia(id),size=statSync(file).size;let range;try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
+     res.setHeader('Content-Type','application/x-tar');res.setHeader('Content-Disposition','attachment; filename="SUES_PROYECTO.tar"');res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();const stream=createReadStream(file,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
+    }
+    if(action==='timeline-frames'&&req.method==='GET'){try{const data=await timelineFrames(jobs,id);if(url.searchParams.get('media')==='1'){res.setHeader('Content-Type','image/jpeg');res.setHeader('Cache-Control','private, max-age=3600');return res.end(readFileSync(data.file));}const {file,...metadata}=data;return json(res,200,metadata);}catch(e){return json(res,409,{error:e.message});}}
+    if(action==='poster'&&req.method==='GET'){try{const file=await jobs.poster(id);res.setHeader('Content-Type','image/jpeg');return res.end(readFileSync(file));}catch{return json(res,404,{error:'Poster unavailable'});}}
+    if(action==='review'&&req.method==='GET')return json(res,200,jobs.review(id));
+    if(action==='plan'&&req.method==='GET')return json(res,200,jobs.plan(id));
+    if(action==='audit'&&req.method==='GET')return json(res,200,await jobs.audit(id));
+    if(action==='render'&&req.method==='POST')return json(res,202,jobs.render(id));
+    if(action==='undo'&&req.method==='POST')return json(res,200,jobs.undo(id));
+    if(action==='cancel'&&req.method==='POST')return json(res,202,jobs.cancel(id));
+    if(action==='preview'&&['GET','HEAD'].includes(req.method)){const source=await jobs.media(id),file=await previews.ensure(id,source);return sourceStream(req,res,file);}
+    if(action==='media'&&['GET','HEAD'].includes(req.method)){
+     const source=await jobs.media(id),quality=url.searchParams.get('resolution');
+     if(quality){const job=jobs.get(id);if(!job.editorialReview?.pass||job.editorialReview.fingerprint!==job.fingerprint)return json(res,409,{error:'Valida esta versión antes de descargar la exportación final.'});}
+     if(quality&&!['720','1080'].includes(quality))return json(res,400,{error:'Resolución no compatible'});
+     const file=quality==='720'?await previews.ensure(id,source,{quality:'720'}):source,size=statSync(file).size;let range;
+     try{range=parseRange(req.headers.range,size);}catch{res.setHeader('Content-Range',`bytes */${size}`);res.writeHead(416);return res.end();}
+     res.setHeader('Content-Type','video/mp4');res.setHeader('Accept-Ranges','bytes');res.setHeader('Content-Length',range.end-range.start+1);
+     if(range.partial)res.setHeader('Content-Range',`bytes ${range.start}-${range.end}/${size}`);
+     res.writeHead(range.partial?206:200);if(req.method==='HEAD')return res.end();
+     const stream=createReadStream(file,{start:range.start,end:range.end});res.on('close',()=>stream.destroy());stream.on('error',()=>res.destroy());return stream.pipe(res);
+    }
+    return json(res,405,{error:'Method not allowed'});
+   }
+   const liveVendors=['subtitles-octopus.js','subtitles-octopus-worker.js','subtitles-octopus-worker.wasm','LICENSE','COPYRIGHT','source.json'];
+   if(req.method==='GET'&&liveVendors.some(f=>path==='/vendor/libass-wasm/'+f)){const f=path.split('/').at(-1);res.setHeader('Content-Type',f.endsWith('.wasm')?'application/wasm':f.endsWith('.js')?'text/javascript; charset=utf-8':'text/plain; charset=utf-8');return res.end(readFileSync(join(WEB,'vendor/libass-wasm',f)));}
+   const files={'/pwa.js':['pwa.js','text/javascript; charset=utf-8'],'/pwa.css':['pwa.css','text/css; charset=utf-8'],'/icon-192.png':['icon-192.png','image/png'],'/icon-512.png':['icon-512.png','image/png'],'/icon-maskable.png':['icon-maskable.png','image/png'],'/apple-touch-icon.png':['apple-touch-icon.png','image/png'],'/live-preview.js':['live-preview.js','text/javascript; charset=utf-8'],'/live-preview.css':['live-preview.css','text/css; charset=utf-8'],'/':['index.html','text/html; charset=utf-8'],'/engine-next.html':['engine-next.html','text/html; charset=utf-8'],'/engine-next.js':['engine-next.js','text/javascript; charset=utf-8'],'/engine-next-timeline.js':['engine-next-timeline.js','text/javascript; charset=utf-8'],'/engine-next.css':['engine-next.css','text/css; charset=utf-8'],'/playback-buffer.js':['playback-buffer.js','text/javascript; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/app.css':['app.css','text/css; charset=utf-8'],'/studio.css':['studio.css','text/css; charset=utf-8'],'/manual-adjust.css':['manual-adjust.css','text/css; charset=utf-8'],'/source-cuts.css':['source-cuts.css','text/css; charset=utf-8'],'/manual-adjust.js':['manual-adjust.js','text/javascript; charset=utf-8'],'/source-cuts-ui.js':['source-cuts-ui.js','text/javascript; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon.svg':['icon.svg','image/svg+xml']};
+   if(req.method!=='GET'||!Object.hasOwn(files,path))return json(res,404,{error:'Not found'});
+   const [file,type]=files[path];res.setHeader('Content-Type',type);res.end(readFileSync(join(WEB,file)));
+  }catch(error){if(res.headersSent)return res.destroy();const safe=/not found|Unknown profile/i.test(error.message)?404:/busy|ready|changed|ha cambiado|render activo|Espera a que termine|transition|owned|Adjustments|queue full|closing/.test(error.message)?409:400;json(res,safe,{error:error.code?'No se pudo acceder al recurso local configurado':error.message.replaceAll(directory,'[local]')});}
+ });
+ server.requestTimeout=900000;server.headersTimeout=10000;
+ return {jobs,server,token,async listen(){await new Promise((r,j)=>{server.once('error',j);server.listen(port,'127.0.0.1',r);});origin??=`http://127.0.0.1:${server.address().port}`;expectedHost=new URL(origin).host;return `${origin}/#${token}`;},async close(){jobs.closing=true;await Promise.allSettled([...masterPreviewRuns.values()]);await livePreviews.close();await adjustmentPreviews.close();await previews.close();server.closeIdleConnections();await new Promise(r=>server.close(r));await jobs.close();}};
+}
