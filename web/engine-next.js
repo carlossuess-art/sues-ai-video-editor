@@ -30,7 +30,7 @@ function draw(data){project=data;const total=SuesTimeline.duration(data.clips);
   const marker=document.createElement('span');marker.className='playhead-marker';marker.setAttribute('aria-hidden','true');lane.append(marker);row.append(lane);tracks.append(row);}
  if(selected&&!data.clips.some(c=>c.id===selected))selected=null;choose(selected,{seek:false});setTime(timeSec,{seekSource:false});
 }
-function choose(id,{seek=true}={}){selected=id;const clip=project?.clips.find(c=>c.id===id);if(clip&&seek&&Number.isFinite(clip.start))setTime(clip.start);el('info').textContent=clip?`${clip.name||clip.id} · ${clip.kind}`:'Selecciona una capa del timeline';const ok=clip?.kind==='text';el('fontSize').disabled=!ok;el('apply').disabled=!ok;el('fontSize').value=ok?(clip.fontSize||72):72;el('fontValue').textContent=ok?`${clip.fontSize||72} px`:'—';const transform=!!clip&&['video','image'].includes(clip.kind)&&!clip.locked;el('transformControls').hidden=!transform;if(transform){for(const [id,value] of [['posX',clip.x],['posY',clip.y],['scale',clip.scale]]){el(id).value=String(value);}updateTransformOutputs();}for(const b of el('tracks').querySelectorAll('.clip'))b.setAttribute('aria-pressed',String(b.dataset.clipId===selected));}
+function choose(id,{seek=true}={}){selected=id;const clip=project?.clips.find(c=>c.id===id);if(clip&&seek&&Number.isFinite(clip.start))setTime(clip.start);el('info').textContent=clip?`${clip.name||clip.id} · ${clip.kind}`:'Selecciona una capa del timeline';const ok=clip?.kind==='text';el('fontSize').disabled=!ok;el('apply').disabled=!ok;el('fontSize').value=ok?(clip.fontSize||72):72;el('fontValue').textContent=ok?`${clip.fontSize||72} px`:'—';const editableText=!!clip&&clip.kind==='text'&&!clip.locked;el('timingControls').hidden=!editableText;if(editableText){el('clipStartFrame').value=String(Math.round(clip.start*30));el('clipDurationFrames').value=String(Math.round(clip.duration*30));} const transform=!!clip&&['video','image'].includes(clip.kind)&&!clip.locked;el('transformControls').hidden=!transform;if(transform){for(const [id,value] of [['posX',clip.x],['posY',clip.y],['scale',clip.scale]]){el(id).value=String(value);}updateTransformOutputs();}for(const b of el('tracks').querySelectorAll('.clip'))b.setAttribute('aria-pressed',String(b.dataset.clipId===selected));}
 el('view-program').addEventListener('click',()=>{
  if(!project)return;const img=el('program-frame'),video=el('source-video'),capturedTime=timeSec,capturedRevision=project.revision;
  video.pause();
@@ -52,6 +52,12 @@ el('applyTransform').addEventListener('click',async()=>{
  try{await api('/api/engine-next/clip-transform','POST',{expectedRevision:project.revision,clipId:selected,x:Number(el('posX').value),y:Number(el('posY').value),scale:Number(el('scale').value)});el('transformNotice').textContent='Transformación guardada sin activar las capas bloqueadas';await load();}
  catch(e){el('transformNotice').textContent=e.message;await load().catch(()=>{});}
  finally{button.disabled=false;}
+});
+el('applyTiming').addEventListener('click',async()=>{
+ if(!project||!selected)return;const button=el('applyTiming');button.disabled=true;el('timingNotice').textContent='Guardando tiempo…';
+ try{await api('/api/engine-next/clip-timing','POST',{expectedRevision:project.revision,clipId:selected,startFrame:Number(el('clipStartFrame').value),durationFrames:Number(el('clipDurationFrames').value)});
+   el('timingNotice').textContent='Tiempo guardado en el proyecto FableCut';await load();
+ }catch(e){el('timingNotice').textContent=e.message;await load().catch(()=>{});}finally{button.disabled=false;}
 });
 el('fontSize').addEventListener('input',e=>el('fontValue').textContent=`${e.target.value} px`);
 el('apply').addEventListener('click',async()=>{if(!project||!selected)return;el('apply').disabled=true;el('notice').textContent='Guardando…';try{await api('/api/engine-next/title-size','POST',{expectedRevision:project.revision,clipId:selected,fontSize:Number(el('fontSize').value)});el('notice').textContent='Revisión guardada';await load();}catch(e){el('notice').textContent=e.message;await load().catch(()=>{});}});
