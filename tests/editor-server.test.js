@@ -27,6 +27,8 @@ test('HTTP app protects sessions, origins and paths; persists edits and forbids 
   assert.equal((await fetch(url+'/api/jobs',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:'{}'})).status,403);
   assert.equal((await fetch(url+'/api/engine-next/project',{headers})).status,503);
   assert.equal((await fetch(url+'/api/engine-next/title-size',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:'{}'})).status,403);
+  assert.equal((await fetch(url+'/api/engine-next/clip-timing',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:'{}'})).status,403);
+  assert.equal((await fetch(url+'/api/engine-next/clip-timing',{method:'POST',headers,body:'{}'})).status,503);
   assert.equal((await fetch(url+'/engine-next.html')).status,200);
   assert.equal((await fetch(url+'/engine-next.js')).status,200);
   const laneJs=await fetch(url+'/engine-next-timeline.js');assert.equal(laneJs.status,200);assert.match(await laneJs.text(),/function bounds\(/);
