@@ -16,9 +16,13 @@ test('SUES HTTP session+CSRF allow one exact native approval, dispatch once and 
  try{
   const invoker=async(name,args)=>{invoked++;assert.equal(name,'fablecut_patch_project');assert.equal(args.baseRevision,54);
    const c=project.clips.find(c=>c.id==='child');Object.assign(c.props,args.ops[0].set.props);project.revision++;return 'Patched (revision 55): updated child';};
-  app=createEditorServer({directory,profiles:{},nativeDirectorInvoker:invoker});
+  const proofIds={storyRevision:'a'.repeat(64),decisionId:'b'.repeat(64),operationId:'move-child'};
+  const nativePlanVerifier=async({storyRevision,decisionId,operationId,request})=>({
+   ok:storyRevision===proofIds.storyRevision&&decisionId===proofIds.decisionId&&operationId===proofIds.operationId&&request.clipId==='child',
+   ...proofIds,planFingerprint:'c'.repeat(64),projectFingerprint:'d'.repeat(64)});
+  app=createEditorServer({directory,profiles:{},nativeDirectorInvoker:invoker,nativePlanVerifier});
   const url=(await app.listen()).split('/#')[0],approvalPath='/api/engine-next/director/approve-transform',executePath='/api/engine-next/director/execute-transform';
-  const request={projectId:'p_3c0550a1dd',revision:54,clipId:'child',x:319,y:0,scale:.65};
+  const request={projectId:'p_3c0550a1dd',revision:54,clipId:'child',x:319,y:0,scale:.65,...proofIds};
   const post=(path,data,headers={})=>fetch(url+path,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify(data)});
   assert.equal((await post(approvalPath,request)).status,401);
   const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
@@ -26,10 +30,12 @@ test('SUES HTTP session+CSRF allow one exact native approval, dispatch once and 
   assert.equal((await post(approvalPath,request,{Cookie:cookie})).status,403);
   assert.equal((await post(approvalPath,request,{...h,Origin:'https://evil.example'})).status,403);
   assert.equal((await post(approvalPath,{...request,force:true},h)).status,400);
+  assert.equal((await post(approvalPath,{...request,decisionId:'f'.repeat(64)},h)).status,409);
   const approved=await post(approvalPath,request,h);assert.equal(approved.status,200);
   const issued=await approved.json(),receipt={...request,approvalId:issued.approvalId};assert.match(receipt.approvalId,/^a_/);
   assert.equal(project.revision,54);assert.equal(invoked,0);
   assert.equal((await post(executePath,{...receipt,x:320},h)).status,403);
+  assert.equal((await post(executePath,{...receipt,operationId:'altered'},h)).status,403);
   const executed=await post(executePath,receipt,h);assert.equal(executed.status,200);
   assert.equal((await executed.json()).revision,55);assert.equal(project.revision,55);
   assert.equal(project.clips.find(c=>c.id==='child').props.x,319);
@@ -37,6 +43,7 @@ test('SUES HTTP session+CSRF allow one exact native approval, dispatch once and 
   assert.equal((await post(executePath,receipt,h)).status,403);assert.equal(invoked,1);
   const log=readFileSync(join(directory,'approvals','dispatch-audit.jsonl'),'utf8');
   assert.match(log,/approved-before-dispatch/);assert.match(log,/committed-verified/);
+  assert.match(log,/planFingerprint/);assert.match(log,/decisionId/);
  }finally{await app?.close();await new Promise(resolve=>native.close(resolve));rmSync(directory,{recursive:true,force:true});
   if(prev===undefined)delete process.env.SUES_ENGINE_NEXT_FABLECUT_URL;else process.env.SUES_ENGINE_NEXT_FABLECUT_URL=prev;
   if(oldStore===undefined)delete process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR;else process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR=oldStore;}

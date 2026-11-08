@@ -37,3 +37,27 @@ test('persistent approval and audit support native dispatcher with only one invo
  const stages=readFileSync(join(dir,'dispatch-audit.jsonl'),'utf8').trim().split('\n').map(JSON.parse).map(x=>x.stage);
  assert.deepEqual(stages,['approved-before-dispatch','committed-verified']);
 }));
+
+test('revocation is durable, actor-scoped and races safely with consumption',async()=>withLedger(dir=>{
+ const l=new DirectorApprovalLedger({directory:dir,now:()=>3000000});
+ const first=l.issue(request,{verifiedHumanSession:true}).approvalId;
+ assert.equal(l.revoke({approvalId:first,actor:'other.admin'}),false);
+ assert.equal(l.revoke({approvalId:first,actor:request.actor}),true);
+ assert.equal(l.revoke({approvalId:first,actor:request.actor}),false);
+ assert.equal(l.consume({...request,approvalId:first}),false);
+ const reopened=new DirectorApprovalLedger({directory:dir,now:()=>3000000});
+ assert.equal(reopened.consume({...request,approvalId:first}),false);
+ const second=l.issue(request,{verifiedHumanSession:true}).approvalId;
+ assert.equal(l.consume({...request,approvalId:second}),true);
+ assert.equal(l.revoke({approvalId:second,actor:request.actor}),false);
+ assert.equal(l.revoke({approvalId:'../invalid',actor:request.actor}),false);
+}));
+
+test('approval with creative fingerprint cannot be consumed under a substituted plan',async()=>withLedger(dir=>{
+ const l=new DirectorApprovalLedger({directory:dir,now:()=>1000000});
+ const proof={storyRevision:'a'.repeat(64),decisionId:'b'.repeat(64),operationId:'move-child',planFingerprint:'c'.repeat(64),projectFingerprint:'d'.repeat(64)};
+ const issued=l.issue({...request,planProof:proof},{verifiedHumanSession:true});
+ assert.equal(l.consume({...request,approvalId:issued.approvalId}),false);
+ assert.equal(l.consume({...request,approvalId:issued.approvalId,planProof:{...proof,planFingerprint:'e'.repeat(64)}}),false);
+ assert.equal(l.consume({...request,approvalId:issued.approvalId,planProof:proof}),true);
+}));

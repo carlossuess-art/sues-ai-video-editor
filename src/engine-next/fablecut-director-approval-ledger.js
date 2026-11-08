@@ -8,7 +8,7 @@ import {createHash,randomBytes} from 'node:crypto';
 const ID=/^p_[a-zA-Z0-9_-]{2,96}$/;
 const CLIP=/^[a-zA-Z0-9_-]{1,100}$/;
 const ACTOR=/^[a-zA-Z0-9@._-]{3,100}$/;
-const refOf=r=>createHash('sha256').update(JSON.stringify([r.actor,r.projectId,r.revision,r.clipId,r.x,r.y,r.scale])).digest('hex');
+const refOf=r=>createHash('sha256').update(JSON.stringify([r.actor,r.projectId,r.revision,r.clipId,r.x,r.y,r.scale,r.planProof??null])).digest('hex');
 export class DirectorApprovalLedger{
  constructor({directory,now=Date.now,ttlMs=300000}={}){
   if(typeof directory!=='string'||!directory.startsWith('/')||!Number.isInteger(ttlMs)||ttlMs<1000||ttlMs>600000)throw Error('Private absolute ledger directory and bounded TTL required');
@@ -23,7 +23,7 @@ export class DirectorApprovalLedger{
     !Number.isInteger(request.revision)||request.revision<0||![request.x,request.y,request.scale].every(Number.isFinite))
     throw Error('Approval must specify an exact native transform');
   const id='a_'+randomBytes(16).toString('hex'),record={schema:'sues-director-approval/v1',approvalId:id,requestHash:refOf(request),
-    actor:request.actor,projectId:request.projectId,clipId:request.clipId,revision:request.revision,
+    actor:request.actor,projectId:request.projectId,clipId:request.clipId,revision:request.revision,planProof:request.planProof??null,
     createdAt:this.now(),expiresAt:this.now()+this.ttlMs};
   const path=join(this.directory,id+'.json'),fd=openSync(path,'wx',0o600);
   try{writeSync(fd,JSON.stringify(record)+'\n');fsyncSync(fd);}finally{closeSync(fd);}
@@ -38,6 +38,23 @@ export class DirectorApprovalLedger{
     record.expiresAt<=this.now()||record.createdAt>this.now()||record.expiresAt-record.createdAt>600000||
     record.requestHash!==refOf(request)||record.projectId!==request.projectId||record.actor!==request.actor)return false;
   let fd;try{fd=openSync(join(this.directory,request.approvalId+'.claimed'),'wx',0o600);writeSync(fd,JSON.stringify({at:this.now(),id:request.approvalId})+'\n');fsyncSync(fd);return true;}catch{return false;}finally{if(fd!==undefined)closeSync(fd);}
+ }
+ /** Fail-closed revocation. Competes atomically with consume() for the same claim.
+  * The trusted caller must authenticate the actor and own the request context.
+  */
+ revoke({approvalId,actor}={}){
+  if(typeof approvalId!=='string'||!/^a_[a-f0-9]{32}$/.test(approvalId)||!ACTOR.test(actor||''))return false;
+  let record;try{
+   const path=join(this.directory,approvalId+'.json'),st=lstatSync(path);
+   if(!st.isFile()||st.isSymbolicLink()||st.size>2048)return false;
+   record=JSON.parse(readFileSync(path,'utf8'));
+  }catch{return false;}
+  if(record.schema!=='sues-director-approval/v1'||record.approvalId!==approvalId||record.actor!==actor)return false;
+  let fd;try{
+   fd=openSync(join(this.directory,approvalId+'.claimed'),'wx',0o600);
+   writeSync(fd,JSON.stringify({at:this.now(),id:approvalId,reason:'revoked'})+'\n');
+   fsyncSync(fd);return true;
+  }catch{return false;}finally{if(fd!==undefined)closeSync(fd);}
  }
  /** Each event has a durable append; failure stops dispatch before the native edit. */
  audit(event){

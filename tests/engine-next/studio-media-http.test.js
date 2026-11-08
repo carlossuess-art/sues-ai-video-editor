@@ -47,7 +47,11 @@ test('authenticated source proxy and revisioned transform preserve disabled clip
  process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR=approvalDir;
  let app;
  try{
-  app=createEditorServer({directory:join(f.dir,'nle-jobs'),profiles:f.profiles,engineNextFrameRenderer:{async capture({time,expectedRevision}){if(expectedRevision!==fake.read().revision)throw Error('stale');return {revision:expectedRevision,time,png:Buffer.from([137,80,78,71,4,5,6])};}}});
+  const proofIds={storyRevision:'a'.repeat(64),decisionId:'b'.repeat(64),operationId:'move-graphic'};
+  const nativePlanVerifier=async ({storyRevision,decisionId,operationId,request})=>({
+   ok:storyRevision===proofIds.storyRevision&&decisionId===proofIds.decisionId&&operationId===proofIds.operationId&&request.clipId==='graphic',
+   ...proofIds,planFingerprint:'c'.repeat(64),projectFingerprint:'d'.repeat(64)});
+  app=createEditorServer({directory:join(f.dir,'nle-jobs'),profiles:f.profiles,nativePlanVerifier,engineNextFrameRenderer:{async capture({time,expectedRevision}){if(expectedRevision!==fake.read().revision)throw Error('stale');return {revision:expectedRevision,time,png:Buffer.from([137,80,78,71,4,5,6])};}}});
   const base=(await app.listen()).split('/#')[0];
   assert.equal((await fetch(base+'/api/engine-next/media/m1')).status,401);
   assert.equal((await fetch(base+'/api/engine-next/project')).status,401);
@@ -57,7 +61,7 @@ test('authenticated source proxy and revisioned transform preserve disabled clip
   const sess=await fetch(base+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
   const headers={cookie:sess.headers.get('set-cookie').split(';')[0], 'content-type':'application/json','x-sues-request':'editor'};
   const approvalUrl=base+'/api/engine-next/director/approve-transform';
-  const approveData={projectId:'p_158404',revision:2,clipId:'graphic',x:311,y:-300,scale:.5};
+  const approveData={projectId:'p_158404',revision:2,clipId:'graphic',x:311,y:-300,scale:.5,...proofIds};
   assert.equal((await fetch(approvalUrl,{method:'POST',headers:{cookie:headers.cookie,'content-type':'application/json'},body:JSON.stringify(approveData)})).status,403);
   assert.equal((await fetch(approvalUrl,{method:'POST',headers,body:JSON.stringify({...approveData,force:true})})).status,400);
   assert.equal((await fetch(approvalUrl,{method:'POST',headers,body:JSON.stringify({...approveData,clipId:'source'})})).status,409);

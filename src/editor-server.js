@@ -99,7 +99,7 @@ async function body(req,maxBytes=65536,{rejectDuplicates=false}={}){
  if(rejectDuplicates)rejectDuplicateJsonKeys(raw);
  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia,engineNextFrameRenderer=null,nativeDirectorInvoker=null}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia,engineNextFrameRenderer=null,nativeDirectorInvoker=null,nativePlanVerifier=null}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -199,30 +199,47 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/engine-next/director/approve-transform'&&req.method==='POST'){
       // Only an authenticated SUES administrator session can issue an exact,
       // short-lived, single-use approval. No native edit is executed here.
-      if(!nativeApprovals)return json(res,503,{error:'Aprobaciones del director desactivadas.'});
+      if(!nativeApprovals||typeof nativePlanVerifier!=='function')return json(res,503,{error:'Aprobaciones creativas del director desactivadas.'});
       let payload;try{payload=await body(req,2048,{rejectDuplicates:true});}catch{return json(res,400,{error:'Solicitud de aprobación no válida.'});}
-      if(Object.keys(payload).some(k=>!['projectId','revision','clipId','x','y','scale'].includes(k)))return json(res,400,{error:'La aprobación debe limitarse a una transformación.'});
+      if(Object.keys(payload).some(k=>!['projectId','revision','clipId','x','y','scale','storyRevision','decisionId','operationId'].includes(k)))return json(res,400,{error:'La aprobación debe limitarse a una transformación.'});
       try{
         const {data:p,projectId}=await engineNextClient.getProject();
         const actor='sues-authenticated-admin';
-        const intended={...payload,actor};
+        const {storyRevision,decisionId,operationId,...transform}=payload;
+        const proof=await nativePlanVerifier({storyRevision,decisionId,operationId,request:transform});
+        if(!proof?.ok||proof.storyRevision!==storyRevision||proof.decisionId!==decisionId||
+           proof.operationId!==operationId||!(/^[a-f0-9]{64}$/).test(proof.planFingerprint??'')||
+           !(/^[a-f0-9]{64}$/).test(proof.projectFingerprint??''))throw Error('No verified creative plan');
+        const planProof={storyRevision,decisionId,operationId,planFingerprint:proof.planFingerprint,projectFingerprint:proof.projectFingerprint};
+        const intended={...transform,actor,planProof};
         prepareDirectorNativeTransform({project:p,projectId,expectedProjectId:payload.projectId,
           revision:payload.revision,clipId:payload.clipId,x:payload.x,y:payload.y,scale:payload.scale});
         const issued=nativeApprovals.issue(intended,{verifiedHumanSession:true});
         return json(res,200,{schema:'sues-native-mcp-approval-request/v1',...issued,projectId,revision:p.revision,
-          action:'native-transform',executionStarted:false,expiresInSeconds:300});
+          action:'native-transform',planProof,executionStarted:false,expiresInSeconds:300});
       }catch{return json(res,409,{error:'No se puede aprobar esta edición: proyecto o revisión incorrectos, o capa protegida.'});}
     }
     if(path==='/api/engine-next/director/execute-transform'&&req.method==='POST'){
-      if(!nativeApprovals||!engineNextClient||typeof nativeDirectorInvoker!=='function')return json(res,503,{error:'Ejecución nativa no activada.'});
+      if(!nativeApprovals||!engineNextClient||typeof nativeDirectorInvoker!=='function'||typeof nativePlanVerifier!=='function')return json(res,503,{error:'Ejecución nativa no activada.'});
       let request;
-      try{const b=await body(req,2048,{rejectDuplicates:true});request={...b,actor:'sues-authenticated-admin'};}
+      try{
+        const b=await body(req,2048,{rejectDuplicates:true});
+        if(Object.keys(b).some(k=>!['approvalId','projectId','revision','clipId','x','y','scale','storyRevision','decisionId','operationId'].includes(k)))return json(res,400,{error:'Orden nativa no válida.'});
+        const {storyRevision,decisionId,operationId,...transform}=b;
+        const proof=await nativePlanVerifier({storyRevision,decisionId,operationId,request:transform});
+        if(!proof?.ok||proof.storyRevision!==storyRevision||proof.decisionId!==decisionId||
+           proof.operationId!==operationId||!(/^[a-f0-9]{64}$/).test(proof.planFingerprint??'')||
+           !(/^[a-f0-9]{64}$/).test(proof.projectFingerprint??''))return json(res,403,{error:'Plan creativo no aprobado o modificado.'});
+        request={...transform,actor:'sues-authenticated-admin',planProof:{storyRevision,decisionId,operationId,planFingerprint:proof.planFingerprint,projectFingerprint:proof.projectFingerprint}};
+      }
       catch{return json(res,400,{error:'Orden nativa no válida.'});}
       try{
-        const result=await dispatchDirectorNativeTransform(request,{
+        const {planProof,...nativeRequest}=request;
+        const result=await dispatchDirectorNativeTransform(nativeRequest,{
           authorize:async()=>nativeApprovals.consume(request),
           readProject:()=>engineNextClient.getProject(),
           invokeMcp:nativeDirectorInvoker,
+          auditContext:planProof,
           audit:e=>nativeApprovals.audit(e)});
         return json(res,200,result);
       }catch(e){

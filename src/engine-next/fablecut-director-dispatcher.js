@@ -9,7 +9,7 @@ const safeCause=e=>String(e?.message||'MCP operation failed').slice(0,240);
 export class FableCutDirectorDispatchError extends Error{
  constructor(code,message){super(message);this.name='FableCutDirectorDispatchError';this.code=code;}
 }
-export async function dispatchDirectorNativeTransform(request,{authorize,readProject,invokeMcp,audit}={}){
+export async function dispatchDirectorNativeTransform(request,{authorize,readProject,invokeMcp,audit,auditContext}={}){
  if(typeof authorize!=='function'||typeof readProject!=='function'||typeof invokeMcp!=='function'||typeof audit!=='function')
    throw new FableCutDirectorDispatchError('CONFIG','Authenticated SUES dispatcher dependencies required');
  if(!request||typeof request!=='object'||Object.keys(request).some(k=>!['actor','approvalId','projectId','revision','clipId','x','y','scale'].includes(k))||
@@ -28,6 +28,7 @@ export async function dispatchDirectorNativeTransform(request,{authorize,readPro
  const clip=before.data.clips.find(x=>x.id===request.clipId);
  // Audit before and after. If auditing fails, never dispatch an untraceable edit.
  const stamp={schema:'sues-director-mcp-dispatch/v1',actor:request.actor,approvalId:request.approvalId,
+    ...(auditContext?{planProof:auditContext}:{}),
     projectId:request.projectId,clipId:request.clipId,fromRevision:request.revision,
     from:{x:clip.props?.x??0,y:clip.props?.y??0,scale:clip.props?.scale??1},to:{x:request.x,y:request.y,scale:request.scale}};
  await audit({...stamp,stage:'approved-before-dispatch'});
