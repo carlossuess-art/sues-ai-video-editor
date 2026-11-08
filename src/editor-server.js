@@ -1,4 +1,5 @@
 import {FableCutClient,FableCutConflict} from './engine-next/fablecut-client.js';
+import {retimeNativeTextClip} from './engine-next/clip-timing.js';
 import {ProgramFrameRenderer,ProgramFrameBusy} from './engine-next/program-frame.js';
 import {createRequire} from 'node:module';
 import {auditMasterPauseCandidates,suggestMasterPauseCandidates} from './master-director-pause-audit.js';
@@ -243,6 +244,22 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
         },{expectedRevision:b.expectedRevision});
         return json(res,200,{ok:true,revision:result.revision,clipId:b.clipId,x:b.x,y:b.y,scale:b.scale,cinematicQA:false});
       }catch(e){return json(res,e instanceof FableCutConflict?409:422,{error:e instanceof FableCutConflict?'Revisión desactualizada; recarga antes de editar.':'No se puede transformar esta capa.'});}
+    }
+    if(path==='/api/engine-next/clip-timing' && req.method==='POST'){
+      if(!engineNextClient)return json(res,503,{error:'Motor NLE no activado.'});
+      const b=await body(req,1024);
+      if(Object.keys(b).some(k=>!['expectedRevision','clipId','startFrame','durationFrames'].includes(k))||
+         !Number.isInteger(b.expectedRevision)||b.expectedRevision<0||
+         typeof b.clipId!=='string'||!/^[-a-zA-Z0-9_]{1,100}$/.test(b.clipId)||
+         !Number.isInteger(b.startFrame)||!Number.isInteger(b.durationFrames))
+        return json(res,400,{error:'Tiempo o identificador de clip inválido.'});
+      try{
+        let change=null;
+        const saved=await engineNextClient.updateProject(p=>{
+          const result=retimeNativeTextClip(p,b);change=result.change;return result.project;
+        },{expectedRevision:b.expectedRevision});
+        return json(res,200,{ok:true,revision:saved.revision,clipId:b.clipId,change,cinematicQA:false});
+      }catch(e){return json(res,e instanceof FableCutConflict?409:422,{error:e instanceof FableCutConflict?'El proyecto ha cambiado. Actualiza antes de editar.':'Solo se puede ajustar un título editable y dentro de sus límites.'});}
     }
     if(path==='/api/engine-next/title-size' && req.method==='POST'){
       if(!engineNextClient)return json(res,503,{error:'Motor NLE no activado.'});
