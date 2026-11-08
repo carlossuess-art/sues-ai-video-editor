@@ -14,6 +14,22 @@ function setTime(next,{seekSource=true}={}){
 }
 
 async function api(path,method='GET',body){const r=await fetch(path,{method,credentials:'same-origin',headers:{'x-sues-request':'editor','content-type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});const data=await r.json();if(!r.ok)throw Error(data.error||`HTTP ${r.status}`);return data;}
+async function refreshHistory(){
+ const state=el('history-status'),list=el('history-list');state.textContent='Comprobando historial…';
+ try{
+  const d=await api('/api/engine-next/history');
+  if(!project||d.projectId!==project.projectId||d.currentRevision!==project.revision){
+   list.replaceChildren();state.textContent='Revisión cambiada. Actualiza el proyecto para mostrar su historial.';return;
+  }
+  list.replaceChildren();for(const v of d.versions){
+   const item=document.createElement('div');item.className='history-item';
+   const title=document.createElement('strong');title.textContent='Versión '+v.version+' · revisión '+v.revision;
+   const description=document.createElement('small');description.textContent=' '+v.kind+' · '+v.created.slice(0,16).replace('T',' ');
+   item.append(title,description);list.append(item);
+  }
+  state.textContent=d.versionCount+' versiones verificadas · consulta sin restauración';
+ }catch(e){list.replaceChildren();state.textContent='Historial no disponible: '+e.message;}
+}
 function draw(data){project=data;const total=SuesTimeline.duration(data.clips);
  el('timeline-seek').max=String(total);el('timeline-end').textContent=SuesTimeline.stamp(total);
  el('status').textContent=`Proyecto ${data.projectId} · revisión ${data.revision}`;
@@ -61,5 +77,6 @@ el('applyTiming').addEventListener('click',async()=>{
 });
 el('fontSize').addEventListener('input',e=>el('fontValue').textContent=`${e.target.value} px`);
 el('apply').addEventListener('click',async()=>{if(!project||!selected)return;el('apply').disabled=true;el('notice').textContent='Guardando…';try{await api('/api/engine-next/title-size','POST',{expectedRevision:project.revision,clipId:selected,fontSize:Number(el('fontSize').value)});el('notice').textContent='Revisión guardada';await load();}catch(e){el('notice').textContent=e.message;await load().catch(()=>{});}});
-async function load(){try{draw(await api('/api/engine-next/project'));}catch(e){el('status').textContent=e.message;el('notice').textContent='Es necesario iniciar sesión en SUES y activar el motor de pruebas.';}}
+async function load(){try{draw(await api('/api/engine-next/project'));await refreshHistory();}catch(e){el('status').textContent=e.message;el('notice').textContent='Es necesario iniciar sesión en SUES y activar el motor de pruebas.';}}
+el('history-refresh').addEventListener('click',refreshHistory);
 load();
