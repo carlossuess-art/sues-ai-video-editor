@@ -1,4 +1,5 @@
 import {FableCutClient,FableCutConflict} from './engine-next/fablecut-client.js';
+import {summarizeNativeHistory} from './engine-next/native-history-summary.js';
 import {retimeNativeTextClip} from './engine-next/clip-timing.js';
 import {ProgramFrameRenderer,ProgramFrameBusy} from './engine-next/program-frame.js';
 import {createRequire} from 'node:module';
@@ -199,6 +200,19 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
           tracks:p.tracks,clips:p.clips.map(c=>({id:c.id,name:c.name,kind:c.kind,track:c.track,start:c.start,duration:c.duration,disabled:!!c.disabled,locked:!!c.locked,x:c.props?.x??0,y:c.props?.y??0,scale:c.props?.scale??1,fontSize:c.kind==='text'?c.props?.fontSize:null})),
           media:p.media.map(m=>({id:m.id,name:m.name,kind:m.kind,playable:['video','audio','image'].includes(m.kind)})),editable:true,cinematicQA:false});
       }catch{return json(res,503,{error:'El motor NLE no responde; no se han realizado cambios.'});}
+    }
+    if(path==='/api/engine-next/history' && req.method==='GET'){
+      if(!engineNextClient)return json(res,503,{error:'Motor NLE no activado.'});
+      try{
+        // A revision-safe, read-only view. No history restore, upload or action endpoint.
+        const before=await engineNextClient.getProject();
+        const history=await engineNextClient.getVersions();
+        const after=await engineNextClient.getProject();
+        if(before.projectId!==after.projectId||before.data.revision!==after.data.revision)
+          return json(res,409,{error:'El proyecto cambió durante la consulta. Actualiza el historial.'});
+        const summary=summarizeNativeHistory({project:after.data,projectId:after.projectId,versionResponse:history.data});
+        return json(res,200,summary);
+      }catch{return json(res,503,{error:'No se puede verificar el historial del proyecto actual.'});}
     }
     const engineMediaMatch=/^\/api\/engine-next\/media\/([a-zA-Z0-9_:-]{1,120})$/.exec(path);
     if(engineMediaMatch && ['GET','HEAD'].includes(req.method)){
