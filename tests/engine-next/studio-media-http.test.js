@@ -25,6 +25,10 @@ async function startFakeFableCut(){
    if(req.headers['x-fablecut-project']!=='p_158404'||changed.revision<=project.revision){res.writeHead(409);return res.end(JSON.stringify({error:'stale revision'}));}
    project=changed;return res.end(JSON.stringify({ok:true,revision:project.revision}));
   }
+  if(url.pathname==='/api/versions'){
+   res.setHeader('Content-Type','application/json');
+   return res.end(JSON.stringify({project:'p_158404',versions:[{v:3,name:'Auto-save',kind:'auto',created:'2026-11-08T11:30:00.000Z',revision:project.revision,final:false},{v:2,name:'Manual review',kind:'manual',created:'2026-11-08T10:30:00.000Z',revision:1,final:false}]}));
+  }
   if(url.pathname==='/media/original.mp4'||url.pathname==='/media/alpha.webm'){
    const range=/^bytes=(\d+)-(\d+)$/.exec(req.headers.range||'');
    res.setHeader('Content-Type','video/mp4');res.setHeader('Accept-Ranges','bytes');
@@ -45,11 +49,17 @@ test('authenticated source proxy and revisioned transform preserve disabled clip
   const base=(await app.listen()).split('/#')[0];
   assert.equal((await fetch(base+'/api/engine-next/media/m1')).status,401);
   assert.equal((await fetch(base+'/api/engine-next/project')).status,401);
+  assert.equal((await fetch(base+'/api/engine-next/history')).status,401);
   assert.equal((await fetch(base+'/api/engine-next/program-frame?time=4.5&revision=2')).status,401);
   const sess=await fetch(base+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
   const headers={cookie:sess.headers.get('set-cookie').split(';')[0], 'content-type':'application/json','x-sues-request':'editor'};
   const proj=await fetch(base+'/api/engine-next/project',{headers});assert.equal(proj.status,200);
   const initial=await proj.json();assert.equal(initial.clips.length,3);assert.equal(initial.revision,2);
+  const histResponse=await fetch(base+'/api/engine-next/history',{headers});assert.equal(histResponse.status,200);
+  const history=await histResponse.json();assert.equal(history.currentRevision,2);assert.equal(history.versionCount,2);
+  assert.equal(history.canRestore,false);assert.equal(history.readOnly,true);
+  assert.deepEqual(history.versions.map(v=>v.version),[3,2]);
+  assert.equal((await fetch(base+'/api/engine-next/history',{method:'POST',headers,body:'{}'})).status,404);
   const native=await fetch(base+'/api/engine-next/program-frame?time=4.5&revision=2',{headers});
   assert.equal(native.status,200);assert.equal(native.headers.get('content-type'),'image/png');
   assert.equal(native.headers.get('x-sues-cinematic-qa'),'not-approved');
