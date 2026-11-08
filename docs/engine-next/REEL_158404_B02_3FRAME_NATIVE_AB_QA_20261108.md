@@ -29,3 +29,17 @@ Location: `/srv/sues-fablecut-next/data/qa/reel-158404-milestone1-20261108/`.
 4. Maintain a private reproducible media bundle before enabling any B02 clone, and preserve SHA fingerprint/manifest for all files. Do not substitute flattened video for editable layers.
 
 **Tests:** Node suite 109/109 PASS including 3 new media-dependency tests; separate Python milestone tests 4/4 PASS. PR27 staging only, production HTTPS Studio still unpublished.
+
+## Actualización verificada · exportación NATIVA de FableCut 15f sin oro V5 y paridad de 3 frames
+
+Se ha exportado REALMENTE en FableCut un fragmento nuevo de B02 (11,0–11,5 s), con V5 oro desactivada, desde el mismo proyecto editable aislado y sus pistas V1/V2/V3/V4/A1 intactas. Se mantuvo el original V1 y la voz A1 bloqueados. **No es un Reel completo ni evidencia de subtítulos reales.**
+
+- Primer intento con el motor FableCut sin modificar: trabajo nativo falló con `presented frame timeout` en 25,9 %; error documentado, no escondido.
+- Segundo intento: **copia privada de FableCut 1.18.0**, fuera del código del editor original y dentro de un clon en `127.0.0.1:7784`, con solo tolerancias de presentación ampliadas de `[80,250,600]` a `[600,1600,4000]` ms. Sin alteración de app.js instalado, proxy, servicios o producción.
+- Segundo trabajo nativo `x_gco8k9ed`: `status=done`, `progress=1`, `report.ok=true`; MP4 H264 `yuv420p`, **1080×1920, 30fps, 15 fotogramas, duración 0,5 s**. Audio nativo AAC estéreo 48kHz/0,5 s, reporte FableCut −21,8 LUFS y −11,5 dBTP. `ffprobe` confirmó independientemente las propiedades y el número real de frames. Tamaño ~627 KB, SHA256 **`fd84c2b49d29bcdc30483b7d39d8a54d1388c99f7f34ede592af0295673fab64`**.
+- El screenshot inicial del canvas vía Puppeteer midió 210×372 píxeles de **pantalla CSS**, no 1080×1920. Se corrigió: capturas con el `canvas.toDataURL('image/png')` interno de FableCut, 1080×1920 reales y 0 errores JS, al tiempo absoluto **11,0667, 11,2 y 11,4 s**.
+- Comparación en **igual resolución** de esos fotogramas (índices 2,6,12 del export) frente al compositor FableCut sin oro: SSIM 0,989459 / 0,988556 / 0,988620, **mínimo 0,988556; media 0,988878**. Solo se han comprobado 3 de 15 fotogramas: paridad visual técnica muestreada, no evaluación completa ni QA cinematográfica.
+- Artefactos PRIVADOS (no subir vídeos/voz/fotogramas a GitHub): `/srv/sues-fablecut-next/data/qa/reel-158404-milestone1-20261108/B02-15f-no-gold-FABLECUT-NATIVE-QA.mp4`, `B02-15f-no-gold-FABLECUT-NATIVE-QA-proof.json`, `B02-no-gold-native-preview-export-parity-3frames.json` (3 hashes de export y visor), `B02-goldOFF-native-preview-vs-export-11_2.jpg` y proyecto editable `B02-no-gold-15f-export-project-QA.json`.
+- Al concluir: QA server 7784 sin escucha, FableCut original `127.0.0.1:7780` **revision 54 / 6 clips**, anterior `https://editor.suesholistics.com` HTTP 200. No hay corte del servicio, merge ni despliegue.
+
+**Próxima prueba que puede permitir avanzar:** completar QA del render de los 120 fotogramas de B02 y corregir matte/transiciones. El ASR en bruto de 11 palabras permanece sin revisión humana: títulos semánticos/subtítulos reales no se pueden aprobar; se sigue trabajando en las partes que no dependen de ello. No promocionar a «ejecutadas» las 49 operaciones del contrato por esta prueba de 15 frames.
