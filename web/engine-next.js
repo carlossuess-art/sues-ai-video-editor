@@ -1,5 +1,5 @@
 'use strict';
-const el=id=>document.getElementById(id);let project=null,selected=null,timeSec=0,displayedFrameTime=null,lastUndo=null;
+const el=id=>document.getElementById(id);let project=null,selected=null,timeSec=0,displayedFrameTime=null,lastUndo=null,undoReason=null;
 function setTime(next,{seekSource=true}={}){
  if(!project)return;const total=SuesTimeline.duration(project.clips);timeSec=SuesTimeline.snap(next,total);
  const slider=el('timeline-seek');slider.value=String(timeSec);
@@ -33,17 +33,21 @@ async function refreshHistory(){
 function refreshUndo(){
  const button=el('undoLast');button.disabled=!lastUndo||!project||
    lastUndo.projectId!==project.projectId||lastUndo.savedRevision!==project.revision;
- if(!lastUndo)el('undoStatus').textContent='Sin cambios para deshacer en esta sesión';
+ if(!lastUndo)el('undoStatus').textContent=undoReason||'Sin cambios para deshacer en esta sesión';
  else if(button.disabled)el('undoStatus').textContent='El proyecto cambió; deshacer bloqueado para evitar sobrescribir otra edición';
  else el('undoStatus').textContent='Puedes deshacer tu última edición en el proyecto actual';
 }
 async function saveWithUndo(kind,path,payload){
  const beforeProject=project,beforeClip=beforeProject?.clips?.find(c=>c.id===selected);
  if(!beforeProject||!beforeClip)throw Error('No hay clip seleccionado');
- lastUndo=null;refreshUndo();
+ lastUndo=null;undoReason=null;refreshUndo();
+ let candidate=null;let reason=null;
+ try{candidate=SuesUndo.capture({kind,projectId:beforeProject.projectId,clip:beforeClip,previousRevision:beforeProject.revision,savedRevision:beforeProject.revision+1});}
+ catch(e){reason=e.message;}
  const saved=await api(path,'POST',payload);
  if(!saved?.ok||!Number.isInteger(saved.revision)||saved.revision<=beforeProject.revision)throw Error('Respuesta de guardado no verificable');
- lastUndo=SuesUndo.capture({kind,projectId:beforeProject.projectId,clip:beforeClip,previousRevision:beforeProject.revision,savedRevision:saved.revision});
+ if(saved.revision===beforeProject.revision+1&&candidate)lastUndo=candidate;
+ else undoReason=reason||'La revisión guardada no permite deshacer exacto';
  return saved;
 }
 function draw(data){project=data;const total=SuesTimeline.duration(data.clips);
@@ -62,7 +66,10 @@ function draw(data){project=data;const total=SuesTimeline.duration(data.clips);
   const marker=document.createElement('span');marker.className='playhead-marker';marker.setAttribute('aria-hidden','true');lane.append(marker);row.append(lane);tracks.append(row);}
  if(selected&&!data.clips.some(c=>c.id===selected))selected=null;choose(selected,{seek:false});setTime(timeSec,{seekSource:false});refreshUndo();
 }
-function choose(id,{seek=true}={}){selected=id;const clip=project?.clips.find(c=>c.id===id);if(clip&&seek&&Number.isFinite(clip.start))setTime(clip.start);el('info').textContent=clip?`${clip.name||clip.id} · ${clip.kind}`:'Selecciona una capa del timeline';const ok=clip?.kind==='text';el('fontSize').disabled=!ok;el('apply').disabled=!ok;el('fontSize').value=ok?(clip.fontSize||72):72;el('fontValue').textContent=ok?`${clip.fontSize||72} px`:'—';const editableText=!!clip&&clip.kind==='text'&&!clip.locked;el('timingControls').hidden=!editableText;if(editableText){el('clipStartFrame').value=String(Math.round(clip.start*30));el('clipDurationFrames').value=String(Math.round(clip.duration*30));} const transform=!!clip&&['video','image'].includes(clip.kind)&&!clip.locked;el('transformControls').hidden=!transform;if(transform){for(const [id,value] of [['posX',clip.x],['posY',clip.y],['scale',clip.scale]]){el(id).value=String(value);}updateTransformOutputs();}for(const b of el('tracks').querySelectorAll('.clip'))b.setAttribute('aria-pressed',String(b.dataset.clipId===selected));}
+function choose(id,{seek=true}={}){selected=id;const clip=project?.clips.find(c=>c.id===id);if(clip&&seek&&Number.isFinite(clip.start))setTime(clip.start);el('info').textContent=clip?`${clip.name||clip.id} · ${clip.kind}`:'Selecciona una capa del timeline';const ok=clip?.kind==='text';el('fontSize').disabled=!ok;el('apply').disabled=!ok;el('fontSize').value=ok?(clip.fontSize||72):72;el('fontValue').textContent=ok?`${clip.fontSize||72} px`:'—';const editableText=!!clip&&clip.kind==='text'&&!clip.locked;el('timingControls').hidden=!editableText;if(editableText){el('clipStartFrame').value=String(Math.round(clip.start*30));el('clipDurationFrames').value=String(Math.round(clip.duration*30));
+  const aligned=Math.abs(clip.start-Math.round(clip.start*30)/30)<.00001&&Math.abs(clip.duration-Math.round(clip.duration*30)/30)<.00001;
+  el('timingNotice').textContent=aligned?'Tiempos alineados a 30 fps.':'Aviso: el título original tiene tiempos fraccionarios; al guardar se ajustará a fotogramas y ese primer cambio no tendrá deshacer exacto.';
+ } const transform=!!clip&&['video','image'].includes(clip.kind)&&!clip.locked;el('transformControls').hidden=!transform;if(transform){for(const [id,value] of [['posX',clip.x],['posY',clip.y],['scale',clip.scale]]){el(id).value=String(value);}updateTransformOutputs();}for(const b of el('tracks').querySelectorAll('.clip'))b.setAttribute('aria-pressed',String(b.dataset.clipId===selected));}
 el('view-program').addEventListener('click',()=>{
  if(!project)return;const img=el('program-frame'),video=el('source-video'),capturedTime=timeSec,capturedRevision=project.revision;
  video.pause();
@@ -85,9 +92,9 @@ el('undoLast').addEventListener('click',async()=>{
  try{
    const cmd=SuesUndo.request(lastUndo,project);
    await api(cmd.path,'POST',cmd.payload);
-   lastUndo=null;el('undoStatus').textContent='Edición anterior restablecida; se ha creado otra revisión';
+   lastUndo=null;undoReason='Edición anterior restablecida; se ha creado otra revisión';
    await load();
- }catch(e){lastUndo=null;el('undoStatus').textContent='No se ha podido deshacer sin conflicto: '+e.message;
+ }catch(e){lastUndo=null;undoReason='No se ha podido deshacer sin conflicto: '+e.message;
    await load().catch(()=>{});
  }finally{refreshUndo();}
 });
