@@ -28,7 +28,7 @@ const refs=[];for(const [time,frameIdx,name] of [[10,15,'10'],[11.5,60,'11_5'],[
  const frame=path.join(path.dirname(outFile),`.b02-goldoff-export-index-${frameIdx}-audit-${process.pid}.png`);
  try{
   run('/usr/bin/ffmpeg',['-v','error','-i',video,'-vf',`select=eq(n\\,${frameIdx})`,'-vsync','0','-frames:v','1','-y',frame]);
-  const result=run('/usr/bin/ffmpeg',['-hide_banner','-i',src,'-i',frame,'-lavfi','[0:v]format=yuv444p[a];[1:v]format=yuv444p[b];[a][b]ssim','-f','null','-']);
+  const result=run('/usr/bin/ffmpeg',['-hide_banner','-i',src,'-i',frame,'-lavfi','[0:v]format=gbrp[a];[1:v]format=gbrp[b];[a][b]ssim','-f','null','-']);
   refs.push({time,all:parseSsim(result.stderr).all,nativeFrameSha256:await sha(src),exportFrameSha256:await sha(frame),exportFrameIndex:frameIdx});
  }finally{await fs.unlink(frame).catch(()=>{});}
 }
