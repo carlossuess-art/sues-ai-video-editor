@@ -3,6 +3,7 @@ import {summarizeNativeHistory} from './engine-next/native-history-summary.js';
 import {dispatchDirectorNativeTransform} from './engine-next/fablecut-director-dispatcher.js';
 import {DirectorApprovalLedger} from './engine-next/fablecut-director-approval-ledger.js';
 import {createBoundDirectorPlanVerifier} from './engine-next/fablecut-director-job-binding.js';
+import {createNativeProjectBindingResolver} from './engine-next/fablecut-native-project-binding-registry.js';
 import {prepareDirectorNativeTransform} from './engine-next/fablecut-director-mcp-guard.js';
 import {retimeNativeTextClip} from './engine-next/clip-timing.js';
 import {ProgramFrameRenderer,ProgramFrameBusy} from './engine-next/program-frame.js';
@@ -100,7 +101,7 @@ async function body(req,maxBytes=65536,{rejectDuplicates=false}={}){
  if(rejectDuplicates)rejectDuplicateJsonKeys(raw);
  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia,engineNextFrameRenderer=null,nativeDirectorInvoker=null,nativePlanVerifier=null,nativeProjectBindingResolver=null}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia,engineNextFrameRenderer=null,nativeDirectorInvoker=null,nativePlanVerifier=null,nativeProjectBindingResolver=null,nativeProjectBindingsFile=null}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -143,8 +144,11 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  };
  // Only an administrator-provided native-to-job binding can enable the real
  // Master Director store verifier. No client-provided job ID or path is used.
- const boundNativePlanVerifier=typeof nativeProjectBindingResolver==='function'?createBoundDirectorPlanVerifier({
-  resolveBinding:nativeProjectBindingResolver,
+ if(nativeProjectBindingsFile!==null&&nativeProjectBindingResolver!==null)throw Error('Choose one trusted native binding source');
+ const trustedNativeBindingResolver=nativeProjectBindingsFile===null?nativeProjectBindingResolver:
+  createNativeProjectBindingResolver(nativeProjectBindingsFile);
+ const boundNativePlanVerifier=typeof trustedNativeBindingResolver==='function'?createBoundDirectorPlanVerifier({
+  resolveBinding:trustedNativeBindingResolver,
   getJob:async id=>jobs.get(id),
   getStore:async id=>masterStoreForJob(id)
  }):null;

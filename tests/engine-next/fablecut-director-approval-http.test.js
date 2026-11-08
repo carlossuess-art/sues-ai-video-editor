@@ -48,6 +48,20 @@ test('SUES HTTP session+CSRF allow one exact native approval, dispatch once and 
   if(prev===undefined)delete process.env.SUES_ENGINE_NEXT_FABLECUT_URL;else process.env.SUES_ENGINE_NEXT_FABLECUT_URL=prev;
   if(oldStore===undefined)delete process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR;else process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR=oldStore;}
 });
+test('HTTP native file binding path fails closed without a trusted provisioned registry',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'sues-registry-http-disabled-'));
+ let app;
+ try{
+  app=createEditorServer({directory:dir,profiles:{},nativeProjectBindingsFile:join(dir,'no-such-binding.json')});
+  const url=(await app.listen()).split('/#')[0];
+  const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
+  const response=await fetch(url+'/api/engine-next/director/approve-transform',{
+   method:'POST',headers:{'Content-Type':'application/json','X-Sues-Request':'editor',Cookie:session.headers.get('set-cookie').split(';')[0]},
+   body:JSON.stringify({projectId:'p_3c0550a1dd',revision:54,clipId:'child',x:311,y:0,scale:.65,
+    storyRevision:'a'.repeat(64),decisionId:'b'.repeat(64),operationId:'move-child'})});
+  assert.equal(response.status,503);
+ }finally{await app?.close();rmSync(dir,{recursive:true,force:true});}
+});
 test('HTTP refuses creative approvals when authoritative native-to-job binding is absent',async()=>{
  let invoked=0;
  const native=http.createServer((req,res)=>{
