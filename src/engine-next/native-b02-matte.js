@@ -2,12 +2,13 @@
  * to separate editable FableCut V2 child, V3 Carlos foreground and V4 track matte.
  * No production writes. No review approval. Caller owns asset upload/revision CAS.
  */
-export function stageNativeB02Matte(project,{matteSrc,matteBytes,expectedRevision}={}){
+export function stageNativeB02Matte(project,{matteSrc,matteBytes,expectedRevision,childFeather=240}={}){
  if(!project||!/^SUES 158404 · NATIVE LUMA MATTE PROOF · NOT APPROVED$/.test(project.name||'')||
    project.width!==1080||project.height!==1920||project.fps!==30||
    !Number.isInteger(expectedRevision)||project.revision!==expectedRevision||
    typeof matteSrc!=='string'||!/^\/media\/[a-zA-Z0-9][a-zA-Z0-9_.-]{0,120}\.mp4$/.test(matteSrc)||
    !Number.isSafeInteger(matteBytes)||matteBytes<1000)throw Error('Strict isolated staging contract required');
+ if(!Number.isInteger(childFeather)||childFeather<90||childFeather>300)throw Error('Child edge feather must be 90–300 pixels');
  const ids=new Set(project.tracks?.filter(t=>t.kind==='video').map(t=>t.id));
  if(!['V1','V2','V3','V4'].every(id=>ids.has(id)))throw Error('Required native video tracks absent');
  const base=project.clips.find(c=>c.id==='sues_video_source'),kid=project.clips.find(c=>c.id==='sues_b02_child_review_only');
@@ -28,7 +29,7 @@ export function stageNativeB02Matte(project,{matteSrc,matteBytes,expectedRevisio
  next.clips.find(x=>x.id===base.id).props.volume=0;
  next.clips.find(x=>x.id===voice.id).props={...next.clips.find(x=>x.id===voice.id).props,volume:0.8};
  c.name='B02 kid behind Carlos · native matte staging only';
- c.props={...c.props,fit:'contain',x:340,y:-160,scale:.85,masks:[{shape:'rect',x:.5,y:.5,w:1,h:1,mode:'add',opacity:1,feather:90}]};
+ c.props={...c.props,fit:'contain',x:340,y:-160,scale:.85,masks:[{shape:'rect',x:.5,y:.5,w:1,h:1,mode:'add',opacity:1,feather:childFeather}]};
  next.media.push({id:'m_sues_b02_modnet_luma_qa',kind:'video',name:'MODNet B02 person grayscale 120f',src:matteSrc,width:512,height:896,duration:4,fps:30,size:matteBytes});
  const fg=structuredClone(base);fg.id=proposed[0];fg.name='Carlos foreground · V4 native luma QA';fg.track='V3';fg.start=9.5;fg.in=9.5;fg.duration=4;delete fg.locked;
  fg.props={...fg.props,matte:'luma',matteTrack:'V4',volume:0};
