@@ -23,3 +23,9 @@ test('cannot undo locked clips, wrong schema, missing clip or invent revision ch
  assert.throws(()=>request(c,project(4,'unknown')));
  assert.throws(()=>request({...c,schema:'fake'},project(4,'t1')));
 });
+
+test('never silently rounds legacy subframe text timings during undo',()=>{
+ assert.throws(()=>capture({kind:'timing',projectId,clip:{id:'sues_title_after_word',kind:'text',start:2.28,duration:.85},previousRevision:53,savedRevision:54}),/deshacer exacto/);
+ const aligned=capture({kind:'timing',projectId,clip:{id:'t1',kind:'text',start:2.333333,duration:.9},previousRevision:54,savedRevision:55});
+ assert.equal(aligned.before.startFrame,70);assert.equal(aligned.before.durationFrames,27);
+});
