@@ -1,3 +1,11 @@
+## 08/11/2026 · Fase 2.3: dispatcher MCP con autorización/auditoría inyectadas (91/91 PASS local)
+
+- **Carlos sigue indicando CONTINUAR, publicación APLAZADA**. FableCut original como único NLE; Master Director dirige las operaciones nativas.
+- Implementado `src/engine-next/fablecut-director-dispatcher.js` con contrato estricto: `authorize` (depende de host SUES), `readProject`, `invokeMcp` y `audit`. Solo permite orden aprobada `fablecut_patch_project` de una transformación sobre una capa video/imagen desbloqueada, con ID+revisión exactos, sin `force`. Escribe auditoría antes, ejecuta una vez con `baseRevision`, comprueba respuesta MCP y relectura de estado/clip; no reintenta conflictos. **No existe aún conexión con autorización de producción ni Master Director autónomo**.
+- **E2E contra MCP FableCut REAL en CLON AISLADO**: proyecto original rev54, V2 x300→319 y rev55, segundo intento rev54 bloqueado, permiso denegado no invoca MCP; V1 locked, B02 disabled y 6 clips conservados. Original persistente rev54 intacto. Evidencia privada `/srv/sues-fablecut-next/data/qa/dispatcher-native-e2e-20261108/evidence/`; copia QA borrada.
+- Cuatro tests nuevos, **91/91 pruebas dirigidas PASS desde árbol local**. Informe `docs/engine-next/FABLECUT_MASTER_DIRECTOR_DISPATCHER_REAL_MCP_20261108.md`. Última tarea de cierre: sincronizar GitHub y repetir tests; luego actualizar Google Doc.
+- **PRÓXIMO**: identidad y aprobaciones reales del host SUES, auditoría persistente, permisos por proyecto; después ampliar a otras operaciones nativas (texto, tiempo, máscara, trim) usando normativa cinematográfica al crear planes. Backups históricos pendientes y publicación fuera de alcance de esta tanda.
+
 ## 08/11/2026 · Continuar integración IA, NO publicar: primer MCP con CAS REAL (87/87)
 
 - Carlos pidió seguir el desarrollo y retomar la publicación más tarde. **NO tocar DNS, Caddy, ni desplegar**. FableCut ORIGINAL sigue como interfaz principal definitiva; el frontend NLE alternativo permanece descartado como estrategia.
