@@ -1,5 +1,5 @@
 'use strict';
-const el=id=>document.getElementById(id);let project=null,selected=null,timeSec=0,displayedFrameTime=null;
+const el=id=>document.getElementById(id);let project=null,selected=null,timeSec=0,displayedFrameTime=null,lastUndo=null;
 function setTime(next,{seekSource=true}={}){
  if(!project)return;const total=SuesTimeline.duration(project.clips);timeSec=SuesTimeline.snap(next,total);
  const slider=el('timeline-seek');slider.value=String(timeSec);
@@ -30,6 +30,22 @@ async function refreshHistory(){
   state.textContent=d.versionCount+' versiones verificadas · consulta sin restauración';
  }catch(e){list.replaceChildren();state.textContent='Historial no disponible: '+e.message;}
 }
+function refreshUndo(){
+ const button=el('undoLast');button.disabled=!lastUndo||!project||
+   lastUndo.projectId!==project.projectId||lastUndo.savedRevision!==project.revision;
+ if(!lastUndo)el('undoStatus').textContent='Sin cambios para deshacer en esta sesión';
+ else if(button.disabled)el('undoStatus').textContent='El proyecto cambió; deshacer bloqueado para evitar sobrescribir otra edición';
+ else el('undoStatus').textContent='Puedes deshacer tu última edición en el proyecto actual';
+}
+async function saveWithUndo(kind,path,payload){
+ const beforeProject=project,beforeClip=beforeProject?.clips?.find(c=>c.id===selected);
+ if(!beforeProject||!beforeClip)throw Error('No hay clip seleccionado');
+ lastUndo=null;refreshUndo();
+ const saved=await api(path,'POST',payload);
+ if(!saved?.ok||!Number.isInteger(saved.revision)||saved.revision<=beforeProject.revision)throw Error('Respuesta de guardado no verificable');
+ lastUndo=SuesUndo.capture({kind,projectId:beforeProject.projectId,clip:beforeClip,previousRevision:beforeProject.revision,savedRevision:saved.revision});
+ return saved;
+}
 function draw(data){project=data;const total=SuesTimeline.duration(data.clips);
  el('timeline-seek').max=String(total);el('timeline-end').textContent=SuesTimeline.stamp(total);
  el('status').textContent=`Proyecto ${data.projectId} · revisión ${data.revision}`;
@@ -44,7 +60,7 @@ function draw(data){project=data;const total=SuesTimeline.duration(data.clips);
     const geometry=SuesTimeline.bounds(clip,total);b.style.left=geometry.left+'%';b.style.width=geometry.width+'%';
     b.addEventListener('click',()=>choose(clip.id));lane.append(b);}
   const marker=document.createElement('span');marker.className='playhead-marker';marker.setAttribute('aria-hidden','true');lane.append(marker);row.append(lane);tracks.append(row);}
- if(selected&&!data.clips.some(c=>c.id===selected))selected=null;choose(selected,{seek:false});setTime(timeSec,{seekSource:false});
+ if(selected&&!data.clips.some(c=>c.id===selected))selected=null;choose(selected,{seek:false});setTime(timeSec,{seekSource:false});refreshUndo();
 }
 function choose(id,{seek=true}={}){selected=id;const clip=project?.clips.find(c=>c.id===id);if(clip&&seek&&Number.isFinite(clip.start))setTime(clip.start);el('info').textContent=clip?`${clip.name||clip.id} · ${clip.kind}`:'Selecciona una capa del timeline';const ok=clip?.kind==='text';el('fontSize').disabled=!ok;el('apply').disabled=!ok;el('fontSize').value=ok?(clip.fontSize||72):72;el('fontValue').textContent=ok?`${clip.fontSize||72} px`:'—';const editableText=!!clip&&clip.kind==='text'&&!clip.locked;el('timingControls').hidden=!editableText;if(editableText){el('clipStartFrame').value=String(Math.round(clip.start*30));el('clipDurationFrames').value=String(Math.round(clip.duration*30));} const transform=!!clip&&['video','image'].includes(clip.kind)&&!clip.locked;el('transformControls').hidden=!transform;if(transform){for(const [id,value] of [['posX',clip.x],['posY',clip.y],['scale',clip.scale]]){el(id).value=String(value);}updateTransformOutputs();}for(const b of el('tracks').querySelectorAll('.clip'))b.setAttribute('aria-pressed',String(b.dataset.clipId===selected));}
 el('view-program').addEventListener('click',()=>{
@@ -63,20 +79,32 @@ for(const [id,delta] of [['frame-back',-1],['frame-next',1]])el(id).addEventList
 el('frame-current').addEventListener('click',()=>{if(project)el('view-program').click();});
 function updateTransformOutputs(){el('posXValue').textContent=el('posX').value+' px';el('posYValue').textContent=el('posY').value+' px';el('scaleValue').textContent=Number(el('scale').value).toFixed(2)+'×';}
 for(const id of ['posX','posY','scale'])el(id).addEventListener('input',updateTransformOutputs);
+el('undoLast').addEventListener('click',async()=>{
+ const button=el('undoLast');button.disabled=true;
+ if(!lastUndo||!project)return;
+ try{
+   const cmd=SuesUndo.request(lastUndo,project);
+   await api(cmd.path,'POST',cmd.payload);
+   lastUndo=null;el('undoStatus').textContent='Edición anterior restablecida; se ha creado otra revisión';
+   await load();
+ }catch(e){lastUndo=null;el('undoStatus').textContent='No se ha podido deshacer sin conflicto: '+e.message;
+   await load().catch(()=>{});
+ }finally{refreshUndo();}
+});
 el('applyTransform').addEventListener('click',async()=>{
  if(!project||!selected)return;const button=el('applyTransform');button.disabled=true;el('transformNotice').textContent='Guardando…';
- try{await api('/api/engine-next/clip-transform','POST',{expectedRevision:project.revision,clipId:selected,x:Number(el('posX').value),y:Number(el('posY').value),scale:Number(el('scale').value)});el('transformNotice').textContent='Transformación guardada sin activar las capas bloqueadas';await load();}
+ try{await saveWithUndo('transform','/api/engine-next/clip-transform',{expectedRevision:project.revision,clipId:selected,x:Number(el('posX').value),y:Number(el('posY').value),scale:Number(el('scale').value)});el('transformNotice').textContent='Transformación guardada sin activar las capas bloqueadas';await load();}
  catch(e){el('transformNotice').textContent=e.message;await load().catch(()=>{});}
  finally{button.disabled=false;}
 });
 el('applyTiming').addEventListener('click',async()=>{
  if(!project||!selected)return;const button=el('applyTiming');button.disabled=true;el('timingNotice').textContent='Guardando tiempo…';
- try{await api('/api/engine-next/clip-timing','POST',{expectedRevision:project.revision,clipId:selected,startFrame:Number(el('clipStartFrame').value),durationFrames:Number(el('clipDurationFrames').value)});
+ try{await saveWithUndo('timing','/api/engine-next/clip-timing',{expectedRevision:project.revision,clipId:selected,startFrame:Number(el('clipStartFrame').value),durationFrames:Number(el('clipDurationFrames').value)});
    el('timingNotice').textContent='Tiempo guardado en el proyecto FableCut';await load();
  }catch(e){el('timingNotice').textContent=e.message;await load().catch(()=>{});}finally{button.disabled=false;}
 });
 el('fontSize').addEventListener('input',e=>el('fontValue').textContent=`${e.target.value} px`);
-el('apply').addEventListener('click',async()=>{if(!project||!selected)return;el('apply').disabled=true;el('notice').textContent='Guardando…';try{await api('/api/engine-next/title-size','POST',{expectedRevision:project.revision,clipId:selected,fontSize:Number(el('fontSize').value)});el('notice').textContent='Revisión guardada';await load();}catch(e){el('notice').textContent=e.message;await load().catch(()=>{});}});
+el('apply').addEventListener('click',async()=>{if(!project||!selected)return;el('apply').disabled=true;el('notice').textContent='Guardando…';try{await saveWithUndo('title','/api/engine-next/title-size',{expectedRevision:project.revision,clipId:selected,fontSize:Number(el('fontSize').value)});el('notice').textContent='Revisión guardada';await load();}catch(e){el('notice').textContent=e.message;await load().catch(()=>{});}});
 async function load(){try{draw(await api('/api/engine-next/project'));await refreshHistory();}catch(e){el('status').textContent=e.message;el('notice').textContent='Es necesario iniciar sesión en SUES y activar el motor de pruebas.';}}
 el('history-refresh').addEventListener('click',refreshHistory);
 load();
