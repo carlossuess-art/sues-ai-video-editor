@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import {fixture} from '../helpers/editor-fixture.js';
 import {createEditorServer} from '../../src/editor-server.js';
-import {rmSync} from 'node:fs';
+import {rmSync,mkdtempSync,readdirSync} from 'node:fs';
+import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 
 const firstProject={name:'SUES 158404 private study',revision:2,width:1080,height:1920,
@@ -41,8 +42,9 @@ async function startFakeFableCut(){
  return {origin:`http://127.0.0.1:${server.address().port}`,close:()=>new Promise(resolve=>server.close(resolve)),read:()=>project};
 }
 test('authenticated source proxy and revisioned transform preserve disabled clip and protect source',async()=>{
- const f=fixture(),fake=await startFakeFableCut(),prev=process.env.SUES_ENGINE_NEXT_FABLECUT_URL;
+ const f=fixture(),fake=await startFakeFableCut(),prev=process.env.SUES_ENGINE_NEXT_FABLECUT_URL,approvalPrev=process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR,approvalDir=mkdtempSync(join(tmpdir(),'sues-nle-mcp-approvals-'));
  process.env.SUES_ENGINE_NEXT_FABLECUT_URL=fake.origin;
+ process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR=approvalDir;
  let app;
  try{
   app=createEditorServer({directory:join(f.dir,'nle-jobs'),profiles:f.profiles,engineNextFrameRenderer:{async capture({time,expectedRevision}){if(expectedRevision!==fake.read().revision)throw Error('stale');return {revision:expectedRevision,time,png:Buffer.from([137,80,78,71,4,5,6])};}}});
@@ -50,9 +52,21 @@ test('authenticated source proxy and revisioned transform preserve disabled clip
   assert.equal((await fetch(base+'/api/engine-next/media/m1')).status,401);
   assert.equal((await fetch(base+'/api/engine-next/project')).status,401);
   assert.equal((await fetch(base+'/api/engine-next/history')).status,401);
+  assert.equal((await fetch(base+'/api/engine-next/director/approve-transform',{method:'POST'})).status,401);
   assert.equal((await fetch(base+'/api/engine-next/program-frame?time=4.5&revision=2')).status,401);
   const sess=await fetch(base+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
   const headers={cookie:sess.headers.get('set-cookie').split(';')[0], 'content-type':'application/json','x-sues-request':'editor'};
+  const approvalUrl=base+'/api/engine-next/director/approve-transform';
+  const approveData={projectId:'p_158404',revision:2,clipId:'graphic',x:311,y:-300,scale:.5};
+  assert.equal((await fetch(approvalUrl,{method:'POST',headers:{cookie:headers.cookie,'content-type':'application/json'},body:JSON.stringify(approveData)})).status,403);
+  assert.equal((await fetch(approvalUrl,{method:'POST',headers,body:JSON.stringify({...approveData,force:true})})).status,400);
+  assert.equal((await fetch(approvalUrl,{method:'POST',headers,body:JSON.stringify({...approveData,clipId:'source'})})).status,409);
+  assert.equal((await fetch(approvalUrl,{method:'POST',headers,body:JSON.stringify({...approveData,revision:1})})).status,409);
+  const approvalResponse=await fetch(approvalUrl,{method:'POST',headers,body:JSON.stringify(approveData)});
+  assert.equal(approvalResponse.status,200);const issuedApproval=await approvalResponse.json();
+  assert.match(issuedApproval.approvalId,/^a_[a-f0-9]{32}$/);
+  assert.equal(issuedApproval.executionStarted,false);assert.equal(issuedApproval.revision,2);
+  assert.equal(fake.read().revision,2);assert.equal(readdirSync(approvalDir).filter(x=>x.endsWith('.json')).length,1);
   const proj=await fetch(base+'/api/engine-next/project',{headers});assert.equal(proj.status,200);
   const initial=await proj.json();assert.equal(initial.clips.length,3);assert.equal(initial.revision,2);
   const histResponse=await fetch(base+'/api/engine-next/history',{headers});assert.equal(histResponse.status,200);
@@ -82,5 +96,5 @@ test('authenticated source proxy and revisioned transform preserve disabled clip
   const title=await write('/api/engine-next/title-size',{expectedRevision:3,clipId:'title',fontSize:92});
   assert.equal(title.status,200);assert.equal(fake.read().clips.find(c=>c.id==='title').props.fontSize,92);
   assert.equal((await write('/api/engine-next/clip-transform',{expectedRevision:4,clipId:'graphic',x:5,y:5,scale:1},{'x-sues-request':'none'})).status,403);
- }finally{await app?.close();await fake.close();rmSync(f.dir,{recursive:true,force:true});if(prev===undefined)delete process.env.SUES_ENGINE_NEXT_FABLECUT_URL;else process.env.SUES_ENGINE_NEXT_FABLECUT_URL=prev;}
+ }finally{await app?.close();await fake.close();rmSync(f.dir,{recursive:true,force:true});if(prev===undefined)delete process.env.SUES_ENGINE_NEXT_FABLECUT_URL;else process.env.SUES_ENGINE_NEXT_FABLECUT_URL=prev;if(approvalPrev===undefined)delete process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR;else process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR=approvalPrev;rmSync(approvalDir,{recursive:true,force:true});}
 });
