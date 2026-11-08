@@ -17,3 +17,13 @@ test('unverified inventory or malformed project is not interpreted as media read
  assert.throws(()=>inspect(doc,['original.mp4']),/verified media inventory/);
  assert.throws(()=>inspect({media:[]},new Set()),/verified media inventory/);
 });
+
+test('canonical encoded local filenames with spaces and accents are portable',()=>{
+ const name='Música de fondo - Sues.mp4';const src='/media/'+encodeURIComponent(name);
+ const p={media:[{id:'m',src}],clips:[{id:'clip',mediaId:'m'}]};
+ const r=inspect(p,new Set([name]));assert.equal(r.playbackReady,true);assert.equal(r.editableProjectPortable,true);assert.equal(r.missing.length,0);
+});
+test('encoded path separators, backslash, invalid Unicode and noncanonical encoding are rejected',()=>{
+ for(const src of ['/media/%2Fetc','/media/a%2Fb','/media/a%5Cb','/media/evil%00.mp4','/media/%ZZ','/media/file%2Emp4','/media/..'])
+  assert.throws(()=>inspect({media:[{id:'m',src}],clips:[]},new Set()),/Unsafe/i,src);
+});
