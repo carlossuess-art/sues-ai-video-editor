@@ -19,7 +19,12 @@ const SuesUndo = (()=>{
   }else if(kind==='timing'){
    if(clip.kind!=='text'||clip.locked||![clip.start,clip.duration].every(Number.isFinite))throw Error('Unsafe text timing inverse');
    before={startFrame:Math.round(clip.start*30),durationFrames:Math.round(clip.duration*30)};
-   if(before.startFrame<0||before.durationFrames<1)throw Error('Invalid inverse frames');
+   // Legacy FableCut clips may use subframe seconds (e.g. 2.28s, 0.85s).
+   // Never silently round their original timing when undoing a frame edit.
+   if(before.startFrame<0||before.durationFrames<1||
+      Math.abs(clip.start-before.startFrame/30)>0.00001||
+      Math.abs(clip.duration-before.durationFrames/30)>0.00001)
+     throw Error('El tiempo original no está alineado a fotogramas: deshacer exacto no disponible');
   }else{
    if(clip.kind!=='text'||clip.locked||!Number.isInteger(clip.fontSize)||clip.fontSize<20||clip.fontSize>140)throw Error('Unsafe title inverse');
    before={fontSize:clip.fontSize};
