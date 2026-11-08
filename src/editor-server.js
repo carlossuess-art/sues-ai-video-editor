@@ -1,5 +1,8 @@
 import {FableCutClient,FableCutConflict} from './engine-next/fablecut-client.js';
 import {summarizeNativeHistory} from './engine-next/native-history-summary.js';
+import {dispatchDirectorNativeTransform} from './engine-next/fablecut-director-dispatcher.js';
+import {DirectorApprovalLedger} from './engine-next/fablecut-director-approval-ledger.js';
+import {prepareDirectorNativeTransform} from './engine-next/fablecut-director-mcp-guard.js';
 import {retimeNativeTextClip} from './engine-next/clip-timing.js';
 import {ProgramFrameRenderer,ProgramFrameBusy} from './engine-next/program-frame.js';
 import {createRequire} from 'node:module';
@@ -96,7 +99,7 @@ async function body(req,maxBytes=65536,{rejectDuplicates=false}={}){
  if(rejectDuplicates)rejectDuplicateJsonKeys(raw);
  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia,engineNextFrameRenderer=null}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia,engineNextFrameRenderer=null,nativeDirectorInvoker=null}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -118,6 +121,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const livePreviews=new LivePreviews(join(directory,'live-previews'),jobs,{busy:()=>previews.pending.size>0||!!adjustmentPreviews.running});
  const analysis=new LocalAnalysis(intake);
  const engineNextClient=process.env.SUES_ENGINE_NEXT_FABLECUT_URL?new FableCutClient({baseUrl:process.env.SUES_ENGINE_NEXT_FABLECUT_URL}):null;
+ const nativeApprovals=process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR&&engineNextClient?new DirectorApprovalLedger({directory:process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR}):null;
  const nativeFrame=(engineNextClient&&engineNextFrameRenderer)||
   (engineNextClient&&process.env.SUES_ENGINE_NEXT_PUPPETEER_CORE&&process.env.SUES_ENGINE_NEXT_CHROME_PATH?
    new ProgramFrameRenderer({client:engineNextClient,puppeteer:createRequire(import.meta.url)(process.env.SUES_ENGINE_NEXT_PUPPETEER_CORE),executablePath:process.env.SUES_ENGINE_NEXT_CHROME_PATH}):null);
@@ -192,6 +196,41 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/logout'&&req.method==='POST'){res.setHeader('Set-Cookie',`sues_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${publicOrigin?'; Secure':''}`);return json(res,200,{ok:true});}
     // Opt-in staging bridge: authenticated SUES session + same-origin CSRF controls
     // are already enforced above. Never proxy the unauthenticated FableCut HTTP API.
+    if(path==='/api/engine-next/director/approve-transform'&&req.method==='POST'){
+      // Only an authenticated SUES administrator session can issue an exact,
+      // short-lived, single-use approval. No native edit is executed here.
+      if(!nativeApprovals)return json(res,503,{error:'Aprobaciones del director desactivadas.'});
+      let payload;try{payload=await body(req,2048,{rejectDuplicates:true});}catch{return json(res,400,{error:'Solicitud de aprobación no válida.'});}
+      if(Object.keys(payload).some(k=>!['projectId','revision','clipId','x','y','scale'].includes(k)))return json(res,400,{error:'La aprobación debe limitarse a una transformación.'});
+      try{
+        const {data:p,projectId}=await engineNextClient.getProject();
+        const actor='sues-authenticated-admin';
+        const intended={...payload,actor};
+        prepareDirectorNativeTransform({project:p,projectId,expectedProjectId:payload.projectId,
+          revision:payload.revision,clipId:payload.clipId,x:payload.x,y:payload.y,scale:payload.scale});
+        const issued=nativeApprovals.issue(intended,{verifiedHumanSession:true});
+        return json(res,200,{schema:'sues-native-mcp-approval-request/v1',...issued,projectId,revision:p.revision,
+          action:'native-transform',executionStarted:false,expiresInSeconds:300});
+      }catch{return json(res,409,{error:'No se puede aprobar esta edición: proyecto o revisión incorrectos, o capa protegida.'});}
+    }
+    if(path==='/api/engine-next/director/execute-transform'&&req.method==='POST'){
+      if(!nativeApprovals||!engineNextClient||typeof nativeDirectorInvoker!=='function')return json(res,503,{error:'Ejecución nativa no activada.'});
+      let request;
+      try{const b=await body(req,2048,{rejectDuplicates:true});request={...b,actor:'sues-authenticated-admin'};}
+      catch{return json(res,400,{error:'Orden nativa no válida.'});}
+      try{
+        const result=await dispatchDirectorNativeTransform(request,{
+          authorize:async()=>nativeApprovals.consume(request),
+          readProject:()=>engineNextClient.getProject(),
+          invokeMcp:nativeDirectorInvoker,
+          audit:e=>nativeApprovals.audit(e)});
+        return json(res,200,result);
+      }catch(e){
+        const code=e?.code;
+        return json(res,code==='CONFLICT'?409:code==='FORBIDDEN'?403:code==='INPUT'||code==='INVALID'?422:503,
+          {error:code==='CONFLICT'?'La revisión ha cambiado':code==='FORBIDDEN'?'Aprobación ausente o consumida':'La operación no se ha podido verificar.',code:code||'UNAVAILABLE'});
+      }
+    }
     if(path==='/api/engine-next/project' && req.method==='GET'){
       if(!engineNextClient)return json(res,503,{error:'El nuevo estudio todavía no está activado en este entorno.'});
       try{
