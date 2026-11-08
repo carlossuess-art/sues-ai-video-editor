@@ -31,6 +31,7 @@ test('HTTP app protects sessions, origins and paths; persists edits and forbids 
   assert.equal((await fetch(url+'/api/engine-next/clip-timing',{method:'POST',headers,body:'{}'})).status,503);
   assert.equal((await fetch(url+'/engine-next.html')).status,200);
   assert.equal((await fetch(url+'/engine-next.js')).status,200);
+  assert.equal((await fetch(url+'/engine-next-undo.js')).status,200);
   const laneJs=await fetch(url+'/engine-next-timeline.js');assert.equal(laneJs.status,200);assert.match(await laneJs.text(),/function bounds\(/);
   const html=(await (await fetch(url+'/engine-next.html')).text());assert.ok(html.indexOf('engine-next-timeline.js')<html.indexOf('engine-next.js'));assert.match(html,/id=\"timeline-seek\"/);
   const health=await (await fetch(url+'/api/health',{headers})).json();assert.equal(health.mode,'local-worker');assert.equal(health.queue.waiting,0);assert.equal(health.storage.remote,false);
