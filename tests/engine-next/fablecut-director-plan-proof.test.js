@@ -35,3 +35,24 @@ test('does not infer transform rights from existing B-roll or other native opera
  assert.equal((await verifyDirectorPlanTransform({...input,store:store({...verified,plan:{operations:[extra]}})})).ok,false);
  assert.equal((await verifyDirectorPlanTransform({...input,store:{current:()=>{throw Error('disk unavailable');},approved:async()=>verified}})).ok,false);
 });
+
+test('approval loaded while story head advances is rejected before native authorization',async()=>{
+ let head=revision;const unstable={current:()=>({revision:head}),approved:async()=>{head='e'.repeat(64);return verified;}};
+ const result=await verifyDirectorPlanTransform({...input,store:unstable});
+ assert.deepEqual(result,{ok:false,reason:'STALE_STORY_HEAD'});
+});
+test('native bounds and invalid geometry are rejected even when the creative plan repeats them',async()=>{
+ for(const changed of [{x:3001},{x:-3001},{y:3001},{y:-3001},{scale:.049},{scale:8.01},{revision:-1},
+  {x:Infinity},{y:NaN},{scale:Infinity}]){
+  const requested={...request,...changed};
+  const plan={...verified,plan:{operations:[{...operation,parameters:{...requested}}]}};
+  const result=await verifyDirectorPlanTransform({...input,request:requested,store:store(plan)});
+  assert.equal(result.ok,false,JSON.stringify(changed));
+  assert.equal(result.reason,'INVALID_TRANSFORM_VALUES');
+ }
+ for(const changed of [{x:3000,y:-3000,scale:.05},{x:-3000,y:3000,scale:8}]){
+  const requested={...request,...changed};
+  const plan={...verified,plan:{operations:[{...operation,parameters:{...requested}}]}};
+  assert.equal((await verifyDirectorPlanTransform({...input,request:requested,store:store(plan)})).ok,true);
+ }
+});

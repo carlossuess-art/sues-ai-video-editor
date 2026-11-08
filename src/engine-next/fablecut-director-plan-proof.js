@@ -13,6 +13,9 @@ export async function verifyDirectorPlanTransform({store,storyRevision,decisionI
   const head=store.current();
   if(head.revision!==storyRevision)return {ok:false,reason:'STALE_STORY_HEAD'};
   const approved=await store.approved(storyRevision,decisionId);
+  // The human decision can be read asynchronously. The story may advance
+  // while approval storage is being consulted: never authorize stale edits.
+  if(store.current()?.revision!==storyRevision)return {ok:false,reason:'STALE_STORY_HEAD'};
   if(!approved||approved.mode!=='approve'||approved.view?.status!=='READY_FOR_CHOICE'||
      !SHA.test(approved.view.fingerprint??''))return {ok:false,reason:'PLAN_NOT_EXPLICITLY_APPROVED'};
   const ops=approved.plan?.operations;
@@ -27,10 +30,13 @@ export async function verifyDirectorPlanTransform({store,storyRevision,decisionI
   const p=op.parameters;
   if(!p||typeof p!=='object'||Array.isArray(p))return {ok:false,reason:'MISSING_EXACT_TRANSFORM'};
   const keys=['projectId','revision','clipId','x','y','scale'];
+  // Validate the plan's numerical bounds *before* comparing its values:
+  // NaN !== NaN, so a plan with NaN should be identified as invalid.
+  if(p.revision<0||!Number.isInteger(p.revision)||!Number.isFinite(p.x)||!Number.isFinite(p.y)||
+     !Number.isFinite(p.scale)||Math.abs(p.x)>3000||Math.abs(p.y)>3000||p.scale<.05||p.scale>8)
+   return {ok:false,reason:'INVALID_TRANSFORM_VALUES'};
   if(Object.keys(p).length!==keys.length||keys.some(key=>!Object.hasOwn(p,key)||p[key]!==request[key]))
    return {ok:false,reason:'TRANSFORM_DIFFERS_FROM_PLAN'};
-  if(!Number.isInteger(p.revision)||!Number.isFinite(p.x)||!Number.isFinite(p.y)||!Number.isFinite(p.scale))
-   return {ok:false,reason:'INVALID_TRANSFORM_VALUES'};
   return {ok:true,storyRevision,decisionId,operationId,planFingerprint:approved.view.fingerprint,
    projectFingerprint:approved.view.projectFingerprint};
  }catch{return {ok:false,reason:'PLAN_PROOF_UNVERIFIABLE'};}
