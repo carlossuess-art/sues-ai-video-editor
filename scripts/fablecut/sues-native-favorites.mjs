@@ -1,4 +1,4 @@
-import {realpathSync,statSync,readFileSync} from 'node:fs';
+import {realpathSync,statSync,openSync,readSync,closeSync} from 'node:fs';
 import {resolve,join,sep,extname,basename} from 'node:path';
 import {createHash} from 'node:crypto';
 import {SuesFavorites} from './sues-favorites.mjs';
@@ -16,7 +16,7 @@ export function createNativeFavorites({mediaDir,libraryDir,storeFile}){
   if(!kind)throw Error('UNSUPPORTED_RESOURCE');if(root==='library'&&parts[0]==='sfx'&&kind==='audio')kind='sfx';if(root==='library'&&['templates','project-templates'].includes(parts[0]))kind='composition';
   const signature=[st.dev,st.ino,st.size,st.mtimeMs,st.ctimeMs].join(':');
   let sha=cache.get(file)?.signature===signature?cache.get(file).sha:null;
-  if(!sha){sha=createHash('sha256').update(readFileSync(file)).digest('hex');if(cache.size>1024)cache.clear();cache.set(file,{signature,sha});}
+  if(!sha){const h=createHash('sha256'),fd=openSync(file,'r'),buffer=Buffer.allocUnsafe(1024*1024);try{let n;while((n=readSync(fd,buffer,0,buffer.length,null))>0)h.update(buffer.subarray(0,n));}finally{closeSync(fd)}sha=h.digest('hex');if(cache.size>1024)cache.clear();cache.set(file,{signature,sha});}
   return {sha256:sha,id:sha,kind,title:basename(file),src};
  }
  const state=()=>new SuesFavorites(storeFile,{resolveResource:()=>null}).read();
