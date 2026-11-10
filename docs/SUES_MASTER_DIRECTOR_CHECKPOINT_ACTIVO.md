@@ -1,3 +1,7 @@
+## 10/11/2026 · Puente FableCut por lotes, exportación nativa y MCP real
+
+Adaptador privado generalizado, catálogo de órdenes y búsqueda de recursos; copia V26 169→170 clips, MCP rev124→125 con CAS y autorización técnica. QA 002: export real 1080×1920, 30 frames + AAC estéreo; 28/28 tests dirigidos, negativos y undo. Sin despliegue; aprobación creativa, integración ledger HTTP, mapping completo y reconstrucción V29 pendientes. [Manual y evidencia](engine-next/FABLECUT_COMMAND_ADAPTER_20261110.md).
+
 ## 08/11/2026 · F2.3: AUTORIZACIÓN PERSISTENTE SUES → MCP REAL, 95/95 PASS (publicación aplazada)
 
 - **Avance verificado**: único ledger persistente `src/engine-next/fablecut-director-approval-ledger.js`, permiso de edición de un solo uso y 5 minutos, fingerprint específico de actor/proyecto/revisión/clip/posición-escala, archivos privados `0600` con escritura exclusiva y auditoría fsync a disco. SUES autentica sesión, Host/Origin y cabecera anti-CSRF; el actor se fija del lado del servidor. Dos rutas `/api/engine-next/director/approve-transform` y `/api/engine-next/director/execute-transform`, junto al dispatcher y guard CAS previos. **Desactivado por defecto** sin env de FableCut/ledger y `nativeDirectorInvoker` confiable inyectado. No se expone MCP ni se publica FableCut.

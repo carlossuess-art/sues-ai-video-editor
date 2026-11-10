@@ -1,3 +1,7 @@
+## 10/11/2026 · Puente FableCut por lotes, exportación nativa y MCP real
+
+Adaptador privado generalizado, catálogo de órdenes y búsqueda de recursos; copia V26 169→170 clips, MCP rev124→125 con CAS y autorización técnica. QA 002: export real 1080×1920, 30 frames + AAC estéreo; 28/28 tests dirigidos, negativos y undo. Sin despliegue; aprobación creativa, integración ledger HTTP, mapping completo y reconstrucción V29 pendientes. [Manual y evidencia](docs/engine-next/FABLECUT_COMMAND_ADAPTER_20261110.md).
+
 ## 06/11/2026 · MP4 1080 privado para revisión en rama
 
 Los flujos Remotion y mixto admitidos pueden solicitar un MP4 privado de 1080×1920, con verificación técnica, trazabilidad y etiqueta de revisión no final. Se han probado la API y la interfaz con datos simulados y una salida sintética Remotion de seis fotogramas; la memoria, un Reel real, el supervisor semántico y la aceptación siguen pendientes. Sin despliegue. Detalle: [checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md).
