@@ -128,7 +128,7 @@ export function createMasterDirectorContextProvider(directory){
    const w=words[i];if(!Number.isFinite(w?.start)||!Number.isFinite(w?.end)||w.end<=w.start)continue;
    for(let j=0;j<spans.length;j++){
     const s=spans[j];if(w.start>=s.sourceIn&&w.end<=s.sourceOut){
-     wordAnchors['word-'+i+'-span-'+j]={time:s.editIn+w.start-s.sourceIn,text:String(w.text??'')};
+     wordAnchors['word-'+i+'-span-'+j]={time:s.editIn+w.start-s.sourceIn,end:s.editIn+w.end-s.sourceIn,text:String(w.text??'')};
     }
    }
   }

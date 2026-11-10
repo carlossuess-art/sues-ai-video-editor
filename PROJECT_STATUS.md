@@ -1,3 +1,7 @@
+## 10/11/2026 · Plan canónico → lote aprobado → exportación privada
+
+Conexión real store/ledger/MCP, HTTP privado opt-in, 20 órdenes nativas, subtítulos progresivos, fundido entre capas, efectos visuales. 59/59 regresiones dirigidas; V27 reconstruido 217 clips/1089 frames, V29 completo 72,6 s con filtros históricos y SSIM 0,976504 (no todos efectos editables). Nuevo runner privado prepare/run; QA 015 tres operaciones confirmadas. [Manual y límites](docs/engine-next/FABLECUT_STORY_AUTOMATION_20261110.md). Sin despliegue.
+
 ## 10/11/2026 · Puente FableCut por lotes, exportación nativa y MCP real
 
 Adaptador privado generalizado, catálogo de órdenes y búsqueda de recursos; copia V26 169→170 clips, MCP rev124→125 con CAS y autorización técnica. QA 002: export real 1080×1920, 30 frames + AAC estéreo; 28/28 tests dirigidos, negativos y undo. Sin despliegue; aprobación creativa, integración ledger HTTP, mapping completo y reconstrucción V29 pendientes. [Manual y evidencia](docs/engine-next/FABLECUT_COMMAND_ADAPTER_20261110.md).

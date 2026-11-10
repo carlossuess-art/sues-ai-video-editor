@@ -47,3 +47,26 @@ test('project-local audio discovery recognizes keyboard synonym without assertin
   assert.equal(found.length,1);assert.equal(found[0].license,'UNVERIFIED_PROJECT_LOCAL');assert.equal(found[0].relativePath,'media/TECLAS_REALES.wav');
  }finally{fs.rmSync(root,{recursive:true,force:true})}
 });
+
+run('native progressive caption uses exact word clock and rejects mismatched/overlapping times',()=>{
+ const c={id:'caption1',action:'add_caption',track:'V2',start:1,duration:2,text:'Ahora respira',x:0,y:400,fontSize:70,color:'#ffffff',font:'Montserrat',wordIds:['w1','w2'],wordTimes:[[0,.5],[.5,1]]};
+ const result=applyCommandBatch(p,req([c]),opts),cl=result.project.clips.at(-1);
+ assert.equal(cl.props.textAnim,'word-pop');assert.deepEqual(cl.props.wordTimes,c.wordTimes);assert.equal(cl.props.caption,true);
+ assert.throws(()=>applyCommandBatch(p,req([{...c,wordTimes:[[0,.6],[.5,1]]}]),opts),/CAPTION_WORD_RANGE/);
+ const h='a'.repeat(64),m='b'.repeat(64),registry={sourceSha256:h,timelineFingerprint:'edit-001',projectFingerprint:projectFingerprint(p),approvedRuleVersion:'rules-v1',unresolvedRuleConflicts:[],masterHashes:{tapiz:m},lockedMastersByMode:{'brand-sues':[{id:'tapiz',sha256:m}]},rendererCapabilities:{native:['fablecut-command-exact-v1']},nativeTrackRoles:{V2:'captions'},verifiedFonts:{'Montserrat:700':{sha256:m}},wordAnchors:{w1:{time:1,end:1.5,text:'Ahora'},w2:{time:1.5,end:2,text:'respira'}}};
+ const {id,...command}=c;
+ const story={schema:'sues-master-story/v1',sourceSha256:h,timeline:{fingerprint:'edit-001',timeSpace:'edit-timeline',fps:30,duration:5},visual:{mode:'brand-sues'},narrative:{centralMessage:'Technical caption test',intendedExperience:'Technical test',scenes:[{id:'s1',start:0,end:5,purpose:'Technical test'}]},resources:[],operations:[{id,sceneId:'s1',start:1,end:3,track:'captions',renderer:'native',effect:'fablecut-command-exact-v1',reason:'Verified word timing',parameters:{command},speechAnchor:{wordId:'w1',offsetFrames:0},dependsOn:[],requiredQA:['rendered-frame','time-sync']}]};
+ return (async()=>{const ctx={registry,project:p,authorize:async()=>true};const r=await prepareStoryBatch(story,ctx);assert.equal(r.status,'PREPARED_NOT_EXECUTED',JSON.stringify(r.issues));registry.wordAnchors.w2.text='otra';assert.equal((await prepareStoryBatch(story,ctx)).status,'BLOCKED')})();
+});
+
+run('native dissolve preserves overlapping source times and applies fade to incoming upper track',()=>{
+ const q=structuredClone(p);q.clips.push({id:'incoming',mediaId:'v',kind:'video',track:'V2',start:4,in:0,duration:1,props:{opacity:1}});
+ const r=applyCommandBatch(q,{baseRevision:q.revision,baseFingerprint:projectFingerprint(q),commands:[{id:'dissolve1',action:'dissolve',clipId:'incoming',leftClipId:'base',duration:1}]},opts);
+ assert.equal(r.project.clips[1].transitionIn.duration,1);assert.equal(r.project.clips[0].duration,5);
+ assert.throws(()=>applyCommandBatch(q,{baseRevision:q.revision,baseFingerprint:projectFingerprint(q),commands:[{id:'bad',action:'dissolve',clipId:'incoming',leftClipId:'base',duration:.5}]},opts),/DISSOLVE/);
+});
+run('native visual effect properties retain exact values and reject existing animation',()=>{
+ const r=applyCommandBatch(p,req([{id:'fx',action:'set_visual_effect',clipId:'base',brightness:115,blur:4,shake:7,rotation:3}]),opts);
+ assert.equal(r.project.clips[0].props.brightness,115);assert.equal(r.project.clips[0].props.shake,7);
+ assert.throws(()=>applyCommandBatch(p,req([{id:'bad',action:'set_visual_effect',clipId:'base',blur:120}]),opts),/INVALID_blur/);
+});

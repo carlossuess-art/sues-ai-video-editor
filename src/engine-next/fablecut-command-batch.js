@@ -29,6 +29,9 @@ export const COMMANDS={
  replace:['clipId','assetId','sourceIn'],
  remove:['clipId'],
  add_title:['start','duration','track','text','x','y','fontSize','color','font'],
+ add_caption:['start','duration','track','text','x','y','fontSize','color','font','wordTimes','wordIds'],
+ dissolve:['clipId','leftClipId','duration'],
+ set_visual_effect:['clipId','brightness','contrast','saturation','blur','shake','shakeSpeed','rgbSplit','rotation'],
 };
 export const projectFingerprint=hash;
 export function applyCommandBatch(project,request,{native,resolveAsset}={}){
@@ -61,13 +64,32 @@ export function applyCommandBatch(project,request,{native,resolveAsset}={}){
    const props=audio?{volume:numeric(c.volume,0,1,'volume'),gain:0,duck:0,speed:1}:{...transform(c),volume:0,speed:1,fit:c.fit??'contain',blend:c.blend??'normal'};
    if(!audio&&(!['contain','cover','fill'].includes(props.fit)||!blends.includes(props.blend)))fail('INVALID_COMPOSITION');
    ops.push({op:'addClip',clip:{id:cid,mediaId:mid,kind:a.kind,track:c.track,start:c.start,in:sourceIn,duration:c.duration,name:c.id,props}});assets.push(a);
-  }else if(c.action==='add_title'){
+  }else if(['add_title','add_caption'].includes(c.action)){
    range(c.start,c.duration);lane(c.track,'video');free(c.track,c.start,c.duration);
    if(typeof c.text!=='string'||!c.text.trim()||c.text.length>500||typeof c.font!=='string'||!c.font.trim()||!/^#[0-9a-f]{6}$/i.test(c.color))fail('INVALID_TITLE');
-   ops.push({op:'addClip',clip:{id:cid,kind:'text',track:c.track,start:c.start,in:0,duration:c.duration,name:c.id,props:{...transform(c),text:c.text,font:c.font,fontSize:numeric(c.fontSize,1,500,'fontSize'),color:c.color}}});
+   const props={...transform(c),text:c.text,font:c.font,fontSize:numeric(c.fontSize,1,500,'fontSize'),color:c.color};
+   if(c.action==='add_caption'){
+    const words=c.text.trim().split(/\s+/);
+    if(words.length>9||c.text.split('\n').length>2||!finite(c.x,-10000,10000)||!finite(c.y,-10000,10000)||!Array.isArray(c.wordTimes)||c.wordTimes.length!==words.length||!Array.isArray(c.wordIds)||c.wordIds.length!==words.length||new Set(c.wordIds).size!==words.length||!c.wordIds.every(id))fail('INVALID_CAPTION_CLOCK');
+    let end=0;for(const pair of c.wordTimes){if(!Array.isArray(pair)||pair.length!==2||!aligned(pair[0],fps)||!aligned(pair[1],fps)||pair[0]<end-1e-6||pair[1]<=pair[0]||pair[1]>c.duration+1e-6)fail('INVALID_CAPTION_WORD_RANGE');end=pair[1]}
+    Object.assign(props,{caption:true,textAnim:'word-pop',wordTimes:structuredClone(c.wordTimes),bold:true});
+   }
+   ops.push({op:'addClip',clip:{id:cid,kind:'text',track:c.track,start:c.start,in:0,duration:c.duration,name:c.id,props}});
   }else{
    const cl=clipOf(c.clipId);target=cl.id;const audio=cl.kind==='audio';
    if(c.action==='set_transform'){if(audio)fail('NOT_VISUAL');const props=transform(c);if(!Object.keys(props).length||Object.keys(props).some(k=>cl.keyframes?.[k]?.length))fail('KEYFRAMED_OR_EMPTY_TRANSFORM');ops.push({op:'updateClip',id:target,set:{props}})}
+   if(c.action==='set_visual_effect'){
+    if(audio)fail('NOT_VISUAL');
+    const props={};for(const [k,min,max] of [['brightness',0,200],['contrast',0,200],['saturation',0,300],['blur',0,100],['shake',0,100],['shakeSpeed',0,100],['rgbSplit',0,100],['rotation',-360,360]])if(k in c){if(cl.keyframes?.[k]?.length)fail('EXISTING_EFFECT_KEYFRAMES');props[k]=numeric(c[k],min,max,k)}
+    if(!Object.keys(props).length)fail('EMPTY_VISUAL_EFFECT');
+    ops.push({op:'updateClip',id:target,set:{props}});
+   }
+   if(c.action==='dissolve'){
+    const left=clipOf(c.leftClipId);
+    const a=p.tracks.findIndex(t=>t.id===cl.track),b=p.tracks.findIndex(t=>t.id===left.track);
+    if(!['video','image'].includes(cl.kind)||!['video','image'].includes(left.kind)||cl.id===left.id||a<0||b<0||a>=b||cl.transitionIn||left.transitionOut||cl.props?.matte||left.props?.matte||cl.props?.opacity!==undefined&&cl.props.opacity!==1||left.props?.opacity!==undefined&&left.props.opacity!==1||cl.keyframes?.opacity?.length||left.keyframes?.opacity?.length||!aligned(c.duration,fps)||c.duration<.1||cl.start<=left.start||Math.abs(left.start+left.duration-cl.start-c.duration)>1e-6||cl.duration<c.duration)fail('DISSOLVE_REQUIRES_EXACT_OVERLAPPING_LAYERS');
+    ops.push({op:'updateClip',id:target,set:{transitionIn:{type:'fade',duration:c.duration}}});
+   }
    if(c.action==='set_volume'){if(!audio||cl.keyframes?.volume?.length)fail('NOT_AUDIO_OR_KEYFRAMED');ops.push({op:'updateClip',id:target,set:{props:{volume:numeric(c.volume,0,1,'volume')}}})}
    if(c.action==='animate'){
     const limits={x:[-10000,10000],y:[-10000,10000],scale:[.01,10],opacity:[0,1],volume:[0,1],duck:[-40,0],shake:[0,100]};
@@ -119,14 +141,51 @@ export async function prepareStoryBatch(story,{registry,authorize,project,bindin
  const audit=inspectMasterDirectorStory(story,registry);
  if(audit.status!=='READY_FOR_PLAN_REVIEW') return {status:'BLOCKED',issues:audit.issues,assetRequests:audit.assetRequests,story};
  if(typeof authorize!=='function'||await authorize(story,registry)!==true)return {status:'BLOCKED',issues:[{code:'APPROVAL_REQUIRED'}],story};
- const issues=[],commands=[];
+ const issues=[],commands=[],virtualClips=new Map();
  if(!project||project.fps!==story.timeline.fps||Math.abs(Math.max(0,...project.clips.map(c=>c.start+c.duration))-story.timeline.duration)>1e-6||registry.projectFingerprint!==hash(project))return {status:'BLOCKED',issues:[{code:'NATIVE_PROJECT_BINDING_STALE'}],story};
  const ordered=[],visited=new Set(),byId=new Map(story.operations.map(o=>[o.id,o]));
  function visit(o){if(visited.has(o.id))return;for(const dep of o.dependsOn)visit(byId.get(dep));visited.add(o.id);ordered.push(o)}
  for(const o of story.operations)visit(o);
  for(const o of ordered){
   const b=bindings?.[o.id],p=o.parameters,r=story.resources?.find(r=>r.id===o.resourceRef);
-  if(o.renderer==='native'&&o.effect==='sfx-one-shot'&&o.track==='sfx'&&fields(p,['gain'],['gain'])&&r?.source==='library'&&b?.track&& !o.speechAnchor&&Math.abs((registry.licensedAssets?.[r.assetId]?.duration??-1)-(o.end-o.start))<1e-6){
+  if(o.renderer==='native'&&o.effect==='fablecut-command-exact-v1'){
+   // This extension is capability-gated by the canonical story inspector.
+   // No creative defaults: the complete command is part of approved parameters.
+   const c=p?.command,virtual=virtualClips.get(c?.clipId),cl=project.clips.find(x=>x.id===c?.clipId)??virtual?.clip;
+   const add=['add_sfx','add_music','add_broll','add_vfx','add_image','add_svg','add_title','add_caption'];
+   const allowed={add_sfx:['sfx'],add_music:['music'],add_broll:['broll'],add_vfx:['graphics','transition'],add_image:['graphics'],add_svg:['graphics'],add_title:['graphics'],add_caption:['captions'],dissolve:['transition'],set_visual_effect:['camera','subject','graphics','broll'],set_transform:['camera','subject','graphics','broll'],animate:['camera','subject','graphics','broll','music','sfx','voice'],set_volume:['music','sfx','voice'],duck:['music'],transition:['transition','music','sfx','broll','graphics']};
+   const equal=(a,b)=>Math.abs(a-b)<1e-6;
+   const targetTrack=registry.nativeTrackRoles?.[c?.track??cl?.track];
+   let valid=fields(p,['command'],['command'])&&c&&fields(c,['action',...(COMMANDS[c.action]??[])],['action'])&&allowed[c.action]?.includes(o.track)&&targetTrack===o.track&&(!virtual||o.dependsOn.includes(virtual.operationId));
+   if(c&&add.includes(c.action))valid=valid&&equal(c.start,o.start)&&equal(c.start+c.duration,o.end);
+   else if(c?.action==='duck')valid=valid&&!!cl&&equal(c.start,o.start)&&equal(c.start+c.duration,o.end);
+   else if(c?.action==='dissolve')valid=valid&&!!cl&&equal(cl.start,o.start)&&equal(cl.start+c.duration,o.end);
+   else if(c?.action==='transition')valid=valid&&!!cl&&(c.side==='in'?equal(cl.start,o.start)&&equal(cl.start+c.duration,o.end):equal(cl.start+cl.duration-c.duration,o.start)&&equal(cl.start+cl.duration,o.end));
+   else valid=valid&&!!cl&&equal(cl.start,o.start)&&equal(cl.start+cl.duration,o.end);
+   if(c&&['add_sfx','add_music','add_broll','add_vfx','add_image','add_svg'].includes(c.action)){
+    valid=valid&&r?.source==='library'&&c.assetId===r.assetId;
+   }else if(o.resourceRef){
+    const existing=registry.nativeMediaBindings?.[cl?.mediaId];
+    valid=valid&&r?.source==='library'&&existing?.assetId===r.assetId&&existing?.sha256===r.expectedSha256;
+   }else valid=valid&&!o.resourceRef;
+   if(c?.action==='add_caption'){
+    const words=typeof c.text==='string'?c.text.trim().split(/\s+/):[];
+    valid=valid&&Array.isArray(c.wordIds)&&Array.isArray(c.wordTimes)&&c.wordIds.length===words.length&&c.wordTimes.length===words.length&&
+     !!registry.verifiedFonts?.[c.font+':700']&&c.wordIds.every((id,i)=>{
+      const w=registry.wordAnchors?.[id],pair=c.wordTimes[i],fps=story.timeline.fps;
+      return w&&w.text===words[i]&&Number.isFinite(w.time)&&Number.isFinite(w.end)&&Array.isArray(pair)&&equal(c.start+pair[0],Math.round(w.time*fps)/fps)&&equal(c.start+pair[1],Math.round(w.end*fps)/fps);
+     });
+   }
+   if(o.speechAnchor){
+    const w=registry.wordAnchors?.[o.speechAnchor.wordId],fps=story.timeline.fps;
+    valid=valid&&add.includes(c?.action)&&w&&Number.isFinite(w.time)&&equal(o.start,Math.round(w.time*fps)/fps+o.speechAnchor.offsetFrames/fps);
+   }
+   if(valid){
+    commands.push({id:o.id,...structuredClone(c),...(r&&add.includes(c.action)?{expectedSha256:r.expectedSha256}:{})});
+    if(add.includes(c.action)){const clipId='sues_cmd_'+hash(o.id).slice(0,24);virtualClips.set(clipId,{operationId:o.id,clip:{id:clipId,track:c.track,start:c.start,duration:c.duration}});}
+   }
+   else issues.push({operationId:o.id,code:'EXACT_COMMAND_BINDING_OR_TIMING_INVALID'});
+  }else if(o.renderer==='native'&&o.effect==='sfx-one-shot'&&o.track==='sfx'&&fields(p,['gain'],['gain'])&&r?.source==='library'&&b?.track&& !o.speechAnchor&&Math.abs((registry.licensedAssets?.[r.assetId]?.duration??-1)-(o.end-o.start))<1e-6){
    commands.push({id:o.id,action:'add_sfx',assetId:r.assetId,expectedSha256:r.expectedSha256,start:o.start,duration:o.end-o.start,track:b.track,volume:p.gain});
   }else if(o.renderer==='native'&&o.effect==='zoom-native'&&o.track==='camera'&&fields(p,['scale'],['scale'])&&b?.clipId&&!o.speechAnchor){
    const cl=project.clips.find(c=>c.id===b.clipId);

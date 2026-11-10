@@ -1,3 +1,5 @@
+import {createApprovedBatchService} from './engine-next/fablecut-approved-batch.js';
+import {prepareStoryBatch,applyCommandBatch,projectFingerprint as nativeBatchFingerprint} from './engine-next/fablecut-command-batch.js';
 import {FableCutClient,FableCutConflict} from './engine-next/fablecut-client.js';
 import {summarizeNativeHistory} from './engine-next/native-history-summary.js';
 import {dispatchDirectorNativeTransform} from './engine-next/fablecut-director-dispatcher.js';
@@ -101,7 +103,7 @@ async function body(req,maxBytes=65536,{rejectDuplicates=false}={}){
  if(rejectDuplicates)rejectDuplicateJsonKeys(raw);
  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('JSON object required');return value;
 }
-export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia,engineNextFrameRenderer=null,nativeDirectorInvoker=null,nativePlanVerifier=null,nativeProjectBindingResolver=null,nativeProjectBindingsFile=null}){
+export function createEditorServer({directory,profiles,port=0,token=randomBytes(32).toString('hex'),renderer,storage,publicOrigin,intakeProbe,assetProbe,passwordFile=join(directory,'access','admin-password-hash'),googleOAuthFile=join(dirname(passwordFile),'google-oauth.json'),googleOAuthFetch=fetch,cloudDirector,masterDirectorContext,masterPlanGenerator=null,masterSupervisorRunner,masterMaskConfig=null,masterMaskRunner,masterSourceProbe=probeMasterDirectorSource,masterPreviewConfig,masterPreviewRenderer=renderMasterDirectorPreview,masterPreviewAuditor=auditMasterDirectorMedia,engineNextFrameRenderer=null,nativeDirectorInvoker=null,nativePlanVerifier=null,nativeProjectBindingResolver=null,nativeProjectBindingsFile=null,nativeBatchRuntime=null}){
  let origin;
  if(publicOrigin){
   const parsed=new URL(publicOrigin);
@@ -136,6 +138,24 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       const catalog=externalCatalog(project,current.settings,assets.list());
       const verified=await masterContextProvider({jobId:id,project,job:current,assets,catalog,story});
       if(!verified)return null;
+      // Exact FableCut batch preflight is opt-in and limited to a trusted,
+      // isolated native clone. Legacy / mixed review remains unchanged.
+      if(story?.operations?.some(o=>o.effect==='fablecut-command-exact-v1')){
+       if(!story.operations.every(o=>o.renderer==='native'&&o.effect==='fablecut-command-exact-v1'))
+        return {...verified,blockedIssues:[{code:'EXACT_BATCH_MIXED_ENGINE_UNSUPPORTED'}]};
+       const c=await verifiedBatchContext(id);
+       if(!c)return {...verified,blockedIssues:[{code:'PRIVATE_NATIVE_BATCH_BINDING_UNAVAILABLE'}]};
+       const registry={...verified.registry,rendererCapabilities:{...verified.registry.rendererCapabilities,native:[...new Set([...(verified.registry.rendererCapabilities?.native??[]),'fablecut-command-exact-v1'])]},projectFingerprint:c.nativeFingerprint,nativeTrackRoles:c.nativeTrackRoles,nativeMediaBindings:c.nativeMediaBindings??{}};
+       return {...verified,registry,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration,
+        nativePreflight:async(plan,inspectionRegistry)=>{
+         try{const r=await prepareStoryBatch(story,{registry:{...inspectionRegistry,unresolvedRuleConflicts:[]},project:c.data,authorize:async()=>true});
+          if(r.status!=='PREPARED_NOT_EXECUTED')return r;
+          const result=applyCommandBatch(c.data,r.request,{native:nativeBatchRuntime.native,resolveAsset:nativeBatchRuntime.resolveAsset});
+          if(result.assets.some(a=>a.rightsVerified!==true))return {status:'BLOCKED',issues:[{code:'RESOURCE_RIGHTS_UNVERIFIED'}]};
+          return {status:'READY_FOR_EDITOR_PREVIEW'};
+         }catch(e){return {status:'BLOCKED',issues:[{code:'NATIVE_BATCH_PREFLIGHT_REJECTED',operationId:e.operationId??'plan'}]}}
+        }};
+      }
       return {...verified,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration,
         // Internal logical preflight only: never records approval or launches work.
         nativePreflight:(plan,registry)=>reviewMasterDirectorNative({plan,registry,catalog,project,
@@ -152,7 +172,23 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
   getJob:async id=>jobs.get(id),
   getStore:async id=>masterStoreForJob(id)
  }):null;
- const activeNativePlanVerifier=boundNativePlanVerifier??nativePlanVerifier;
+ const activeNativePlanVerifier=boundNativePlanVerifier??nativePlanVerifier; const verifiedBatchContext=async jobId=>{
+  if(!nativeBatchRuntime||!nativeApprovals||!engineNextClient||typeof trustedNativeBindingResolver!=='function'||typeof nativeBatchRuntime.resolveJobContext!=='function')return null;
+  const c=await nativeBatchRuntime.resolveJobContext(jobId);
+  if(!c||c.privateClone!==true||!/^p_[A-Za-z0-9_-]{2,96}$/.test(c.nativeProjectId??''))return null;
+  const binding=await trustedNativeBindingResolver(c.nativeProjectId),job=jobs.get(jobId);
+  if(!binding||binding.verified!==true||binding.nativeProjectId!==c.nativeProjectId||binding.jobId!==jobId||job.intermediate===true||job.projectId!==binding.suesProjectId)return null;
+  const before=await engineNextClient.getProject();
+  if(before.projectId!==c.nativeProjectId||nativeBatchFingerprint(before.data)!==c.nativeFingerprint)return null;
+  return {...c,data:before.data};
+ };
+ const activeBatchService=nativeBatchRuntime&&nativeApprovals&&engineNextClient&&typeof nativeDirectorInvoker==='function'&&typeof trustedNativeBindingResolver==='function'?
+  createApprovedBatchService({ledger:nativeApprovals,resolveContext:async projectId=>{
+   const binding=await trustedNativeBindingResolver(projectId);
+   if(!binding||binding.verified!==true)return null;
+   const c=await verifiedBatchContext(binding.jobId);return c&&c.nativeProjectId===projectId?{...c,store:masterStoreForJob(binding.jobId)}:null;
+  },readProject:()=>engineNextClient.getProject(),invokeMcp:nativeDirectorInvoker,native:nativeBatchRuntime.native,resolveAsset:nativeBatchRuntime.resolveAsset,stageAssets:nativeBatchRuntime.stageAssets}):null;
+
  const verifiedPlanProvenance=(proof,projectId)=>{
   const base={storyRevision:proof.storyRevision,decisionId:proof.decisionId,operationId:proof.operationId,
    planFingerprint:proof.planFingerprint,projectFingerprint:proof.projectFingerprint};
@@ -232,6 +268,17 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/logout'&&req.method==='POST'){res.setHeader('Set-Cookie',`sues_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${publicOrigin?'; Secure':''}`);return json(res,200,{ok:true});}
     // Opt-in staging bridge: authenticated SUES session + same-origin CSRF controls
     // are already enforced above. Never proxy the unauthenticated FableCut HTTP API.
+    if(['/api/engine-next/director/approve-batch','/api/engine-next/director/execute-batch'].includes(path)&&req.method==='POST'){
+      if(!activeBatchService)return json(res,503,{error:'Lotes nativos privados no activados.'});
+      const issue=path.endsWith('/approve-batch');
+      try{
+       const b=await body(req,2048,{rejectDuplicates:true}),keys=issue?['projectId','storyRevision','decisionId']:['projectId','storyRevision','decisionId','approvalId'];
+       if(!b||Object.keys(b).length!==keys.length||keys.some(k=>typeof b[k]!=='string')||Object.keys(b).some(k=>!keys.includes(k)))return json(res,400,{error:'Referencia de lote no válida.'});
+       const input={...b,actor:'sues-authenticated-admin'};
+       const result=issue?await activeBatchService.issue(input,{verifiedHumanSession:true}):await activeBatchService.execute(input);
+       return json(res,result.status==='BLOCKED'?409:200,result);
+      }catch(e){return json(res,409,{error:'Lote bloqueado o no verificado.',code:String(e.message??'UNAVAILABLE').slice(0,120)});}
+    }
     if(path==='/api/engine-next/director/approve-transform'&&req.method==='POST'){
       // Only an authenticated SUES administrator session can issue an exact,
       // short-lived, single-use approval. No native edit is executed here.
