@@ -14,10 +14,10 @@ export function enrichCatalog(catalog,{sfxIndex,vfxIndex,root}={}){
   return {...a,...index.get(a.relativePath),physicalStatus,intensity:a.intensity??null,compatibility:a.type==='audio'?'native-audio':a.type==='video'||a.type==='image'?'native-visual':a.type==='motion-graphic'?'svg-needs-format-check':'not-media'};
  })};
 }
-export function searchResources(catalog,query,{type,duration,limit=12,availableOnly=false,intensity,compatibility}={}){
- const q=normalize(query).trim();if(!q)return [];
+export function searchResources(catalog,query,{type,duration,limit=12,availableOnly=false,intensity,compatibility,favorites}={}){
+ const q=normalize(query).trim();if(!q)return [];const favoriteIds=new Set((favorites?.items??[]).filter(x=>x.favorite===true).map(x=>x.id));
  const terms=[q,...Object.entries(synonyms).filter(([k,v])=>q===k||v.includes(q)||q.includes(k)).flatMap(([,v])=>v)];
- return catalog.assets.map(a=>{const hay=normalize(a.relativePath+' '+(a.category??'')+' '+(a.tags||[]).join(' '));const score=terms.reduce((s,t)=>s+(hay.includes(normalize(t))?1:0),0);return {...a,score,semanticMatch:'NAME_OR_TAG_INFERENCE_ONLY',physicalStatus:a.physicalStatus??'CATALOG_ONLY',durationStatus:Number.isFinite(a.indexDuration)?'INDEX_RECORDED':'UNPROBED'};}).filter(a=>a.score&&(!type||a.type===type)&&(!availableOnly||a.physicalStatus==='PRESENT')&&(!compatibility||a.compatibility===compatibility)&&(!intensity||a.intensity===intensity)&&(!Number.isFinite(duration)||!Number.isFinite(a.indexDuration)||a.indexDuration>=duration)).sort((a,b)=>b.score-a.score||a.relativePath.localeCompare(b.relativePath)).slice(0,Math.min(50,Math.max(1,limit))).map(a=>({...a,requestedDuration:duration??null}));
+ return catalog.assets.map(a=>{const hay=normalize(a.relativePath+' '+(a.category??'')+' '+(a.tags||[]).join(' '));const score=terms.reduce((s,t)=>s+(hay.includes(normalize(t))?1:0),0);return {...a,score,favorite:favoriteIds.has(a.sha256??a.indexSha256??a.id),semanticMatch:'NAME_OR_TAG_INFERENCE_ONLY',physicalStatus:a.physicalStatus??'CATALOG_ONLY',durationStatus:Number.isFinite(a.indexDuration)?'INDEX_RECORDED':'UNPROBED'};}).filter(a=>a.score&&(!type||a.type===type)&&(!availableOnly||a.physicalStatus==='PRESENT')&&(!compatibility||a.compatibility===compatibility)&&(!intensity||a.intensity===intensity)&&(!Number.isFinite(duration)||!Number.isFinite(a.indexDuration)||a.indexDuration>=duration)).sort((a,b)=>Number(b.favorite)-Number(a.favorite)||b.score-a.score||a.relativePath.localeCompare(b.relativePath)).slice(0,Math.min(50,Math.max(1,limit))).map(a=>({...a,requestedDuration:duration??null}));
 }
 export function resolveCatalogAsset(catalog,root,id){
  const a=catalog.assets.find(x=>x.id===id);if(!a)throw Error('UNKNOWN_ASSET');

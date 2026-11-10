@@ -57,7 +57,7 @@ export function draftFilmDirectorCaptions(annex,transcript){
    // the collision is flagged instead of changing speech timings silently.
    if(next&&next.startFrame<=startFrame)risks.push({code:'WORDS_SAME_FRAME_REVIEW',wordId:current.wordId,nextWordId:next.wordId});
    cues.push({id:`cue-${current.wordId}`,sceneId:group.sceneId,wordId:current.wordId,
-    startFrame,endFrame,text:words.slice(0,i+1).map(w=>w.text).join(' '),
+    startFrame,endFrame,text:words.slice(0,i+1).map(w=>w.text).join(' '),wordIds:words.slice(0,i+1).map(w=>w.wordId),
     originalStart:current.start,originalEnd:current.end,approved:false,renderable:false});
   }
  }

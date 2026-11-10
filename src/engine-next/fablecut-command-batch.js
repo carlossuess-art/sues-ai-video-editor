@@ -1,5 +1,6 @@
 // Private, revision-bound batch adapter. Native project-ops is injected by the
 // host; no arbitrary MCP tool, force flag, file path or creative fallback.
+import {auditRevisionDelta} from '../sues-production-policy.js';
 import {createHash} from 'node:crypto';
 import {inspectMasterDirectorStory} from '../master-director-story.js';
 const hash=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
@@ -164,7 +165,12 @@ export function applyCommandBatch(project,request,{native,resolveAsset}={}){
   receipts.push({operationId:c.id,action:c.action,clipId:target,status:'NATIVE_PROJECT_APPLIED_NOT_RENDERED',notes:result.notes});
   } catch(error) { error.operationId=c?.id??null; throw error; }
  }
- p.revision=project.revision+1;return {project:p,receipts,assets,patchOps,undo:{baseFingerprint:hash(p),project:structuredClone(project)}};
+ p.revision=project.revision+1;
+ const allowed=patchOps.filter(o=>['addClip','updateClip','removeClip','setMask','setMatte'].includes(o.op)).map(o=>'root/'+(o.clip?.id??o.id));
+ const superseded=patchOps.filter(o=>o.op==='removeClip').map(o=>'root/'+o.id);
+ const delta=auditRevisionDelta(project,p,{allowed,allowedProjectFields:patchOps.some(o=>o.op==='addMedia')?['media']:[],superseded});
+ if(!delta.ok)fail('UNAUTHORIZED_REVISION_DELTA:'+delta.issues.join(','));
+ return {project:p,receipts,assets,patchOps,undo:{baseFingerprint:hash(p),project:structuredClone(project)}};
 }
 export function undoCommandBatch(current,undo){if(hash(current)!==undo?.baseFingerprint)fail('STALE_UNDO');const p=structuredClone(undo.project);p.revision=current.revision+1;return p}
 // Only explicit lossless mappings. The approval check is an external dependency,

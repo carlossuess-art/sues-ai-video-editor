@@ -51,6 +51,9 @@ import {googleAuth,readGoogleConfig,GOOGLE_CALLBACK} from './editor-google-auth.
 import {STYLE_VARIANTS} from './style-variants.js';
 import {ProjectRecovery} from './project-recovery.js';
 import {fontCatalog,fontDownload} from './font-catalog.js';
+import {SuesFavorites} from './sues-favorites.js';
+import {SUES_PRODUCTION_POLICY,policyFingerprint,keywordCandidates,resolveKeywordSelection,resolveCaptionEmphasis} from './sues-production-policy.js';
+import {readKeywordSelection,saveKeywordSelection,captionStylePlan} from './sues-keyword-selection.js';
 import {MediaLibrary} from './media-library.js';
 import {searchPrivateLibrary} from './private-library-search.js';
 import {proposeLibraryCues} from './director-library-cues.js';
@@ -123,6 +126,8 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
  const previews=new PlaybackPreviews(join(directory,'playback-previews'),{canBuild:()=>!jobs.children.size&&!jobs.previewBusy});const jobs=new EditorJobs({directory,profiles,renderer,storage});jobs.preparePlayback=(job,source)=>previews.ensure(job.id,source);let intake,assets,recoveries;try{assets=new MediaLibrary(join(directory,'assets'),{probe:assetProbe});jobs.assetResolver=(id,kind)=>assets.resolve(id,kind);jobs.narrativeResolver=transcript=>proposeLibraryCues(directory,transcript);jobs.defaultMusicResolver=duration=>{const rows=assets.list().filter(a=>a.kind==='audio'&&a.duration>=duration&&(()=>{const m=assets.metadata(a.id);return m?.license.rightsStatus==='verified'&&m.license.commercialUseAllowed;})()).sort((a,b)=>(b.id==='55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6')-(a.id==='55fc796a8b8062f55686ef690d724522d0d67f5393d72aade9c6c0d631c8dff6')||a.duration-b.duration);return rows[0]??null;};recoveries=new ProjectRecovery(join(directory,'recoveries'),profiles);intake=new VideoIntake(join(directory,'uploads'),profiles,{probe:intakeProbe});}catch(error){void jobs.close();throw error;}let expectedHost;
  const adjustmentPreviews=new AdjustmentPreviews(join(directory,'adjustment-previews'),jobs,{playbackBusy:()=>previews.pending.size>0});
  const livePreviews=new LivePreviews(join(directory,'live-previews'),jobs,{busy:()=>previews.pending.size>0||!!adjustmentPreviews.running});
+ const favorites=new SuesFavorites(resolve(directory,'sues-favorites.json'),{resolveResource:id=>{const a=assets.resolve(id);return {sha256:a.sha256,kind:a.kind,title:a.title};}});
+ const favoriteAssetRows=()=>{const f=favorites.read(),byId=new Map(f.items.map(x=>[x.id,x]));return assets.list().map(a=>({...a,favorite:byId.get(a.id)?.favorite===true,uses:byId.get(a.id)?.uses??0,favoritesRevision:f.revision})).sort((a,b)=>Number(b.favorite)-Number(a.favorite)||b.uses-a.uses||a.title.localeCompare(b.title));};
  const analysis=new LocalAnalysis(intake);
  const engineNextClient=process.env.SUES_ENGINE_NEXT_FABLECUT_URL?new FableCutClient({baseUrl:process.env.SUES_ENGINE_NEXT_FABLECUT_URL}):null;
  const nativeApprovals=process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR&&engineNextClient?new DirectorApprovalLedger({directory:process.env.SUES_ENGINE_NEXT_DIRECTOR_APPROVALS_DIR}):null;
@@ -437,9 +442,15 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     const fontMatch=/^\/api\/fonts\/([a-z-]+)\/(file|license)$/.exec(path);
     if(fontMatch&&['GET','HEAD'].includes(req.method)){const f=fontDownload(fontMatch[1],fontMatch[2]);if(!f)return json(res,404,{error:'Font not found'});const bytes=readFileSync(f.path);res.setHeader('Content-Type',f.contentType);res.setHeader('Content-Disposition',`attachment; filename="${f.filename}"`);res.setHeader('Content-Length',bytes.length);res.writeHead(200);return res.end(req.method==='HEAD'?undefined:bytes);}
     if(path==='/api/ai/providers'&&req.method==='GET')return json(res,200,{providers:cloud.providers(),automaticFallback:false});
-    if(path==='/api/assets'&&req.method==='GET')return json(res,200,assets.list());
+    if(path==='/api/sues-production-policy'&&req.method==='GET')return json(res,200,{policy:SUES_PRODUCTION_POLICY,fingerprint:policyFingerprint});
+    if(path==='/api/favorites'&&req.method==='GET')return json(res,200,favorites.read());
+    if(path==='/api/favorites'&&req.method==='PUT'){
+      const b=await body(req,4096);if(Object.keys(b).some(k=>!['id','favorite','expectedRevision'].includes(k)))return json(res,400,{error:'Solicitud inválida'});
+      try{const result=favorites.set(b);return json(res,result.status==='CONFLICT'?409:200,result);}catch(e){return json(res,422,{error:String(e.message).slice(0,180)});}
+    }
+    if(path==='/api/assets'&&req.method==='GET')return json(res,200,favoriteAssetRows());
     if(path==='/api/library/capacity'&&req.method==='GET')return json(res,200,assets.capacity());
-    if(path==='/api/resource-catalog'&&req.method==='GET')return json(res,200,assets.semanticCatalog());
+    if(path==='/api/resource-catalog'&&req.method==='GET'){const catalog=assets.semanticCatalog(),f=favorites.read(),ids=new Set(f.items.filter(x=>x.favorite).map(x=>x.id));return json(res,200,{...catalog,favoritesRevision:f.revision,assets:catalog.assets.map(a=>({...a,favorite:ids.has(a.id)})).sort((a,b)=>Number(b.favorite)-Number(a.favorite))});}
     if(path==='/api/library/search'&&req.method==='GET'){
      const q=url.searchParams.get('q')??'',limit=url.searchParams.has('limit')?Number(url.searchParams.get('limit')):8;
      if(!q.trim()||q.length>250||!Number.isInteger(limit)||limit<1||limit>20)return json(res,400,{error:'Consulta o límite no válido'});
@@ -858,7 +869,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       const audit=auditMasterBriefCrosswalk({annex,story:b.story,links:b.links});
       return json(res,audit.status==='BLOCKED'?422:200,audit);
      }
-     if(action==='master-brief-caption-draft'&&req.method==='GET'){
+     if(action==='master-brief-caption-draft'&&['GET','POST'].includes(req.method)){
       const revision=url.searchParams.get('briefRevision');
       if(!/^[a-f0-9]{64}$/.test(revision??''))return json(res,400,{status:'BLOCKED',code:'BRIEF_REVISION_REQUIRED'});
       const entry=listMasterSourceBriefs(jobs.dir(id)).find(x=>x.revision===revision);
@@ -870,7 +881,13 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
        originalSha256:entry.originalSha256,timelineFingerprint:entry.timelineFingerprint,
        duration:catalog.duration,fps:30});
       const result=draftFilmDirectorCaptions(annex,project.inputs?.transcript);
-      return json(res,result.status==='BLOCKED'?422:200,result);
+      if(result.status==='BLOCKED')return json(res,422,result);
+      const folder=jobs.dir(id);
+      if(req.method==='POST'){
+       const b=await body(req,65536);
+       try{const saved=saveKeywordSelection(folder,result,b);return json(res,saved.status==='CONFLICT'?409:200,saved);}catch(e){return json(res,422,{error:String(e.message).slice(0,180)});}
+      }
+      return json(res,200,{...result,keywordSelection:readKeywordSelection(folder,result),keywordCandidates:keywordCandidates(result.words)});
      }
      if(action==='master-brief-caption-layers'&&req.method==='GET'){
       const revision=url.searchParams.get('briefRevision');
@@ -888,7 +905,11 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       const geometry=inspectFilmBriefGeometry(annex,{
        width:project.inputs?.source?.width,height:project.inputs?.source?.height});
       const result=prepareFilmDirectorCaptionLayerCandidates(annex,draft,geometry);
-      return json(res,result.status==='BLOCKED'?422:200,result);
+      if(result.status==='BLOCKED')return json(res,422,result);
+      const selection=readKeywordSelection(jobs.dir(id),draft);
+      const head=store.current().revision;
+      const story=head?store.readDraft(head):null;
+      return json(res,200,{...result,keywordSelection:selection,captionStylePlan:captionStylePlan(draft,selection,story),productionPolicyFingerprint:policyFingerprint});
      }
      if(action==='master-brief-geometry'&&req.method==='GET'){
       const revision=url.searchParams.get('briefRevision');
@@ -1204,7 +1225,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      return json(res,200,result);
     }
     if(action==='external-catalog'&&req.method==='GET'){const source=jobs.get(id);const semantics=new Map(assets.semanticCatalog().assets.map(a=>[a.id,a.metadata]));
-      const described=assets.list().map(a=>({...a,emotions:semantics.get(a.id)?.semantics?.emotionTags??[],
+      const described=favoriteAssetRows().map(a=>({...a,emotions:semantics.get(a.id)?.semantics?.emotionTags??[],
         narrativeRoles:semantics.get(a.id)?.semantics?.narrativeRoles??[],
         creativeApproval:semantics.get(a.id)?.approvedForProduction===true?'approved':'review-required'}));
       return json(res,200,externalCatalog(jobs.loadProfile(source.profileId),source.settings,described));}
