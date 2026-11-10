@@ -1,10 +1,11 @@
 // Private operator entrypoint. One canonical story, one exact creative decision,
 // one MCP batch, one render. No production, no provider generation or auto-publish.
-import fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';import {createRequire} from 'node:module';import {execFileSync,spawn} from 'node:child_process';
+import fs from 'node:fs';import path from 'node:path';import {createHash,randomUUID} from 'node:crypto';import {createRequire} from 'node:module';import {execFileSync,spawn} from 'node:child_process';
 import {MasterDirectorProjectStore} from '../../src/master-director-project-store.js';
 import {DirectorApprovalLedger} from '../../src/engine-next/fablecut-director-approval-ledger.js';
 import {createApprovedBatchService} from '../../src/engine-next/fablecut-approved-batch.js';
 import {prepareStoryBatch,applyCommandBatch,projectFingerprint} from '../../src/engine-next/fablecut-command-batch.js';
+import {assertRenderCopyParity} from '../../src/engine-next/fablecut-render-parity.js';
 const [mode,dir,storyFile,confirmation]=process.argv.slice(2);
 const root=fs.realpathSync('/srv/sues-fablecut-next/data/automation-v1'),out=fs.realpathSync(dir);
 if(path.dirname(out)!==root||!/^test-project-[a-zA-Z0-9_-]+$/.test(path.basename(out)))throw Error('PRIVATE_CLONE_REQUIRED');
@@ -25,7 +26,7 @@ const sourceMedia=before.media.find(m=>m.kind==='video'&&/^\/media\/[A-Za-z0-9_.
  if(!sourceMedia||!before.clips.some(c=>c.mediaId===sourceMedia.id&&c.kind==='video'))throw Error('SOURCE_NOT_BOUND_TO_NATIVE_PROJECT');
  const duration=Math.max(...before.clips.map(c=>c.start+c.duration));
 if(before.fps!==30||before.width!==h.registry.canvas?.width||before.height!==h.registry.canvas?.height||Math.abs(duration-h.duration)>1e-6)throw Error('NATIVE_PROJECT_GEOMETRY_CHANGED');
-const resolveAsset=id=>{const a=h.assets?.[id],rights=h.registry.licensedAssets?.[id];if(!a||rights?.rightsVerified!==true||rights?.commercialUseAllowed!==true||rights.sha256!==a.sha256)return null;const file=safeFile(a.file);if(hash(file)!==a.sha256||!/^\/media\/[A-Za-z0-9_.-]+$/.test(a.src)||fs.statSync(file).size!==a.size)throw Error('ASSET_BYTES_CHANGED');return {...a,id,file,verifiedPhysical:true,rightsVerified:true}};
+const resolveAsset=id=>{const a=h.assets?.[id],rights=h.registry.licensedAssets?.[id];if(!a||rights?.rightsVerified!==true||rights?.commercialUseAllowed!==true||rights.sha256!==a.sha256)return null;const file=safeFile(a.file);if(hash(file)!==a.sha256||!/^\/media\/[A-Za-z0-9_.-]+$/.test(a.src)||fs.statSync(file).size!==a.size)throw Error('ASSET_BYTES_CHANGED');if(a.licenseFile&&(hash(safeFile(a.licenseFile))!==a.licenseSha256||rights.proofSha256!==a.licenseSha256))throw Error('ASSET_LICENSE_CHANGED');return {...a,id,file,verifiedPhysical:true,rightsVerified:true}};
 const stageAssets=async assets=>{for(const a of assets){const f=path.join(out,a.src.slice(1));if(fs.existsSync(f)){if(hash(safeFile(f))!==a.sha256)throw Error('ASSET_COLLISION');continue}fs.symlinkSync(a.file,f);if(hash(safeFile(f))!==a.sha256)throw Error('STAGED_HASH_MISMATCH')}};
 const registry={...h.registry,projectFingerprint:h.nativeFingerprint,nativeTrackRoles:h.nativeTrackRoles,nativeMediaBindings:h.nativeMediaBindings??{}};
 const store=new MasterDirectorProjectStore(out,async story=>({sourceSha256:h.sourceSha256,timelineFingerprint:h.timelineFingerprint,duration:h.duration,registry,rulebook:h.rulebook,nativePreflight:async(_plan,r)=>{
@@ -69,8 +70,15 @@ if(mode==='run'){
  // Reject an existing listener; own the entire temporary server lifetime.
  try{await fetch(base,{signal:AbortSignal.timeout(500)});throw Error('PRIVATE_QA_PORT_BUSY')}catch(e){if(e.message==='PRIVATE_QA_PORT_BUSY')throw e}
  const qaApp='/srv/sues-fablecut-next/qa-export-app-20261109';
+ // A browser may autosave its normalized defaults. Render a private child
+ // copy, so the authoritative, approved editable revision cannot change.
+ const renderDir=path.join(out,'render-work-'+randomUUID());fs.mkdirSync(renderDir,{mode:0o700});fs.mkdirSync(renderDir+'/media',{mode:0o700});
+ for(const m of before.media){if(!/^\/media\/[A-Za-z0-9_.-]+$/.test(m.src??''))throw Error('UNSAFE_RENDER_MEDIA');const f=renderDir+m.src;if(!fs.existsSync(f))fs.symlinkSync(safeFile(out+m.src),f);}
+ fs.writeFileSync(renderDir+'/project.json',JSON.stringify(before),{mode:0o600,flag:'wx'});
+ const qaLibrary=path.join(root,'test-project-009','library');if(fs.existsSync(qaLibrary))fs.symlinkSync(qaLibrary,renderDir+'/library');
+
  const log=fs.openSync(out+'/render-server.log','a',0o600);
- const server=spawn('node',['server.js'],{cwd:qaApp,env:{...process.env,HOST:'127.0.0.1',PORT:String(port),FABLECUT_DATA_DIR:out,FABLECUT_NO_FS_WATCH:'1'},stdio:['ignore',log,log]});fs.closeSync(log);
+ const server=spawn('node',['server.js'],{cwd:qaApp,env:{...process.env,HOST:'127.0.0.1',PORT:String(port),FABLECUT_DATA_DIR:renderDir,FABLECUT_NO_FS_WATCH:'1'},stdio:['ignore',log,log]});fs.closeSync(log);
  let browser;
  try{
   for(let i=0;i<40;i++){try{if((await fetch(base+'/api/project',{signal:AbortSignal.timeout(1000)})).ok)break}catch{}if(i===39)throw Error('SERVER_NOT_READY');await new Promise(r=>setTimeout(r,250))}
@@ -78,7 +86,8 @@ if(mode==='run'){
   const require=createRequire(import.meta.url),puppeteer=require('/opt/sues-video-setup/hyperframes-engine-next/node_modules/puppeteer-core');
   browser=await puppeteer.launch({headless:true,executablePath:'/root/.cache/puppeteer/chrome/linux-155.0.8059.84/chrome-linux64/chrome',args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']});
   const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:60000});await page.waitForFunction(()=>state.connected===true,{timeout:60000});
-  const exportsDir=out+'/exports',previous=new Set(fs.existsSync(exportsDir)?fs.readdirSync(exportsDir):[]);
+  const defaults=await page.evaluate(()=>DEFAULT_PROPS);
+  const exportsDir=renderDir+'/exports',previous=new Set(fs.existsSync(exportsDir)?fs.readdirSync(exportsDir):[]);
   const ticket=await (await fetch(base+'/api/export/request',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({range:'in-out',delivery:{width:1080,height:1920,fps:30,video:{codec:'h264',crf:19},audio:{codec:'aac'}}})})).json();if(!ticket.id)throw Error('EXPORT_REQUEST_FAILED '+JSON.stringify(ticket));
   let job;const until=Date.now()+20*60*1000;
   while(Date.now()<until){job=await (await fetch(base+'/api/export/job?id='+ticket.id)).json();if(['done','failed','cancelled'].includes(job.status))break;await new Promise(r=>setTimeout(r,1500))}
@@ -92,7 +101,10 @@ if(mode==='run'){
   const story=store.readDraft(receipt.storyRevision),operationAudit=story.operations.map(o=>({operationId:o.id,start:o.start,end:o.end,requiredQA:o.requiredQA,execution:receipt.result.receipts.find(r=>r.operationId===o.id)?.status??'MISSING',visualOrAudioReview:'PENDING_HUMAN_OR_SEMANTIC_SUPERVISOR'}));
   if(operationAudit.some(o=>o.execution==='MISSING'))throw Error('MISSING_OPERATION_RECEIPT');
   if(projectFingerprint((await readProject()).data)!==receipt.projectFingerprint)throw Error('PROJECT_CHANGED_DURING_RENDER');
-  write(out+'/render-proof.json',{schema:'sues-private-story-render/v1',status:'TECHNICAL_QA_PASS_NOT_ARTISTIC_APPROVAL',scope:h.scope,storyRevision:receipt.storyRevision,decisionId:receipt.decisionId,job:ticket.id,file,sha256:hash(file),probe,audioStats,operationAudit,operationCount:receipt.result.receipts.length});
-  console.log(JSON.stringify({status:'TECHNICAL_QA_PASS_NOT_ARTISTIC_APPROVAL',file,frames:v.nb_read_frames,duration:v.duration,scope:h.scope}));
+  const renderCopy=JSON.parse(fs.readFileSync(renderDir+'/project.json','utf8'));assertRenderCopyParity(before,renderCopy,defaults);
+  const deliveredDir=out+'/exports';fs.mkdirSync(deliveredDir,{recursive:true,mode:0o700});const delivered=path.join(deliveredDir,'rendered-'+hash(file).slice(0,12)+'.mp4');fs.linkSync(file,delivered);
+
+  write(out+'/render-proof.json',{schema:'sues-private-story-render/v1',status:'TECHNICAL_QA_PASS_NOT_ARTISTIC_APPROVAL',scope:h.scope,storyRevision:receipt.storyRevision,decisionId:receipt.decisionId,job:ticket.id,file:delivered,sha256:hash(file),probe,audioStats,operationAudit,renderCopyRevision:renderCopy.revision,renderCopyParity:true,operationCount:receipt.result.receipts.length});
+  console.log(JSON.stringify({status:'TECHNICAL_QA_PASS_NOT_ARTISTIC_APPROVAL',file:delivered,frames:v.nb_read_frames,duration:v.duration,scope:h.scope}));
  }finally{await browser?.close();server.kill('SIGTERM')}
 }else throw Error('Use prepare | run | execute | render');

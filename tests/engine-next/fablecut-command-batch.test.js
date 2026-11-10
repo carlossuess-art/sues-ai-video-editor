@@ -70,3 +70,19 @@ run('native visual effect properties retain exact values and reject existing ani
  assert.equal(r.project.clips[0].props.brightness,115);assert.equal(r.project.clips[0].props.shake,7);
  assert.throws(()=>applyCommandBatch(p,req([{id:'bad',action:'set_visual_effect',clipId:'base',blur:120}]),opts),/INVALID_blur/);
 });
+
+run('editable shape motion layer and native rect mask preserve the requested values',()=>{
+ const shape={type:'rect',name:'box',x:0,y:0,w:300,h:150,fill:'#ff7733',opacity:1,keys:[{t:0,x:-100},{t:1,x:100,ease:'linear'}]};
+ const r=applyCommandBatch(p,req([{id:'motion',action:'add_shape',track:'V2',start:1,duration:2,x:0,y:0,scale:1,opacity:1,shapes:[shape]}]),opts);
+ const cl=r.project.clips.at(-1);assert.equal(cl.kind,'shape');assert.equal(cl.props.shapes[0].keys[1].x,100);
+ const q=r.project,mask={name:'crop',shape:'rect',mode:'add',x:.5,y:.5,w:.8,h:.7,opacity:1,feather:32,keys:[{t:0,x:.4},{t:1,x:.6}]};
+ const a=applyCommandBatch(q,{baseRevision:q.revision,baseFingerprint:projectFingerprint(q),commands:[{id:'mask',action:'set_mask',clipId:cl.id,mask}]},opts);
+ assert.equal(a.project.clips.at(-1).props.masks[0].feather,32);assert.equal(a.project.clips.at(-1).props.masks[0].keys[1].x,.6);
+ assert.throws(()=>applyCommandBatch(q,{baseRevision:q.revision,baseFingerprint:projectFingerprint(q),commands:[{id:'bad',action:'set_mask',clipId:cl.id,mask:{...mask,feather:1500}}]},opts),/MASK_GEOMETRY/);
+});
+run('native matte binds an exact independent source track without deleting source layers',()=>{
+ const q=structuredClone(p);q.tracks.unshift({id:'V3',kind:'video'});q.clips.push({id:'matte',mediaId:'v',kind:'video',track:'V3',start:0,in:0,duration:5,props:{opacity:1}});
+ const r=applyCommandBatch(q,{baseRevision:q.revision,baseFingerprint:projectFingerprint(q),commands:[{id:'matte1',action:'set_matte',clipId:'base',matteClipId:'matte',matteTrack:'V3',mode:'luma',proofId:'test-proof'}]},opts);
+ assert.equal(r.project.clips[0].props.matte,'luma');assert.equal(r.project.clips[0].props.matteTrack,'V3');assert.equal(r.project.clips.length,2);
+ assert.throws(()=>applyCommandBatch(q,{baseRevision:q.revision,baseFingerprint:projectFingerprint(q),commands:[{id:'bad',action:'set_matte',clipId:'base',matteClipId:'matte',matteTrack:'V2',mode:'luma',proofId:'test-proof'}]},opts),/INVALID_MATTE_BINDING/);
+});

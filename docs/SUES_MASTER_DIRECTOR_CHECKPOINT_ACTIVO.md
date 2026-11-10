@@ -881,3 +881,6 @@ No reutilizar blindly `src/editor-server.js` de la rama sobre producción; la ba
 - **2026-11-05 ~08:20 CET · Chat normal / ejecución aislada**: se publicaron diagnóstico seguro de memoria y 7 pruebas PASS, se construyó una candidata reproducible (458 archivos productivos verificados) y se probó completa (132/132 Node + 1/1 MP4 nativo FFmpeg). **El bloqueo Remotion en contenedor y la integración cinematográfica final permanecen pendientes.** Ningún despliegue.
 
 - **2026-11-05 ~08:00 CET · Chat normal / auditoría de solo lectura**: corte inicial, 50 % estimado, 558/558 regresión, 128/129 dirigida con 1 omitida, bloqueo memoria contenedor. Este documento inaugura el estado único; no se ha modificado producción. Las mejoras posteriores deben documentarse aquí con su commit y resultados nuevos.
+
+## 10/11/2026 · FableCut private automation
+See docs/engine-next/FABLECUT_STORY_AUTOMATION_20261110.md for QA015, QA018, QA020, 63/63 directed regression, 24 commands, isolated renderer parity and 394 DAEDAL assets. Technical private workflow ready for supported canonical plans, no general creative acceptance. Brand masters need provenance; new user recording needs source/word/visual evidence and explicit review. No production change.
