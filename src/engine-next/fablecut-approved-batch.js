@@ -2,6 +2,7 @@
 // come from trusted server configuration, not from the client's payload.
 import {prepareStoryBatch,projectFingerprint,applyCommandBatch} from './fablecut-command-batch.js';
 import {dispatchCommandBatch} from './fablecut-command-dispatcher.js';
+import {assertStoryOperationCoverage} from './fablecut-native-supervisor.js';
 const SHA=/^[a-f0-9]{64}$/;
 export function createApprovedBatchService({ledger,resolveContext,readProject,native,resolveAsset,stageAssets,invokeMcp}={}){
  if(!ledger||![resolveContext,readProject,resolveAsset,stageAssets,invokeMcp].every(x=>typeof x==='function')||!native?.applyPatch)throw Error('TRUSTED_BATCH_HOST_REQUIRED');
@@ -23,15 +24,8 @@ export function createApprovedBatchService({ledger,resolveContext,readProject,na
   const plan=await prepareStoryBatch(story,{registry,project:before.data,bindings:c.bindings,authorize:async()=>true});
   if(plan.status!=='PREPARED_NOT_EXECUTED')return {status:'BLOCKED',issues:plan.issues??[],storyRevision};
   const predicted=applyCommandBatch(before.data,plan.request,{native,resolveAsset});
-  // Verify exact one-to-one coverage before issuing any write authorization.
-  // Equal counts alone cannot detect a duplicated receipt replacing an operation.
-  const expectedIds=new Set(story.operations.map(o=>o.id));
-  const receiptIds=new Set(predicted.receipts.map(r=>r.operationId));
-  if(expectedIds.size!==story.operations.length||
-     predicted.receipts.length!==story.operations.length||
-     receiptIds.size!==expectedIds.size||
-     [...expectedIds].some(id=>!receiptIds.has(id)))
-   throw Error('STORY_OPERATION_COVERAGE_MISMATCH');
+  // Exact one-to-one coverage before any write authorization.
+  assertStoryOperationCoverage(story.operations,predicted.receipts);
   // Untrusted resource bytes may never stage in an approved batch.
   if(predicted.assets.some(a=>a.rightsVerified!==true))throw Error('RESOURCE_RIGHTS_UNVERIFIED');
   const proof={actor,projectId,storyRevision,decisionId,planFingerprint:approved.view.fingerprint,projectFingerprint:approved.view.projectFingerprint,nativeFingerprint:c.nativeFingerprint,requestFingerprint:projectFingerprint(plan.request),baseRevision:before.data.revision};
@@ -50,6 +44,8 @@ export function createApprovedBatchService({ledger,resolveContext,readProject,na
     authorize:async()=>{const fresh=await prepare(input);return fresh.status==='PREPARED'&&projectFingerprint(fresh.proof)===projectFingerprint(p.proof)&&ledger.consumeBatch(p.proof,input.approvalId)}
    });
    try{ledger.recordBatchResult(input.approvalId,p.proof,result)}catch{throw Error('NATIVE_COMMITTED_RESULT_PERSISTENCE_FAILED_DO_NOT_RETRY')}
+   // Preserve the durable result before blocking any post-commit discrepancy.
+   assertStoryOperationCoverage(p.receipts.map(r=>({id:r.operationId})),result.receipts,'NATIVE_COMMITTED_RECEIPT_COVERAGE_MISMATCH_DO_NOT_RETRY');
    return {...result,receiptPersisted:true};
   }
  };

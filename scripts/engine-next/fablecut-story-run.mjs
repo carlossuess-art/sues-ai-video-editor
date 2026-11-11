@@ -6,6 +6,8 @@ import {DirectorApprovalLedger} from '../../src/engine-next/fablecut-director-ap
 import {createApprovedBatchService} from '../../src/engine-next/fablecut-approved-batch.js';
 import {prepareStoryBatch,applyCommandBatch,projectFingerprint} from '../../src/engine-next/fablecut-command-batch.js';
 import {assertRenderCopyParity} from '../../src/engine-next/fablecut-render-parity.js';
+import {assertStoryOperationCoverage,buildNativeSupervisorGraph,partitionNativeSupervisorGraph,buildNativeSupervisorIndex,validateNativeSupervisorReview} from '../../src/engine-next/fablecut-native-supervisor.js';
+import {prepareMasterSupervisorEvidence,openMasterSupervisorEvidence} from '../../src/master-director-supervisor-evidence.js';
 const [mode,dir,storyFile,confirmation]=process.argv.slice(2);
 const root=fs.realpathSync('/srv/sues-fablecut-next/data/automation-v1'),out=fs.realpathSync(dir);
 if(path.dirname(out)!==root||!/^test-project-[a-zA-Z0-9_-]+$/.test(path.basename(out)))throw Error('PRIVATE_CLONE_REQUIRED');
@@ -59,8 +61,9 @@ if(mode==='run'){
  const input={actor:h.scope==='technical-qa'?'qa-operator':'sues-approved-operator',projectId,storyRevision:revision,decisionId:decision.decisionId};
  const grant=await service.issue(input,{verifiedHumanSession:true});if(grant.status!=='APPROVAL_ISSUED_NOT_EXECUTED')throw Error(JSON.stringify(grant));
  const result=await service.execute({...input,approvalId:grant.approvalId});
- if(result.receipts?.length!==story.operations.length||!result.receiptPersisted)throw Error('INCOMPLETE_OPERATION_RECEIPTS_DO_NOT_RETRY');
- const receipt={schema:'sues-private-story-execution/v1',scope:h.scope,storyRevision:revision,decisionId:decision.decisionId,approvalId:grant.approvalId,projectFingerprint:projectFingerprint((await readProject()).data),result};
+ if(!result.receiptPersisted)throw Error('INCOMPLETE_OPERATION_RECEIPTS_DO_NOT_RETRY');
+ assertStoryOperationCoverage(story.operations,result.receipts,'INCOMPLETE_OPERATION_RECEIPTS_DO_NOT_RETRY');
+ const receipt={schema:'sues-private-story-execution/v1',scope:h.scope,storyRevision:revision,decisionId:decision.decisionId,approvalId:grant.approvalId,planFingerprint:confirmation,sourceSha256:story.sourceSha256,timelineFingerprint:story.timeline.fingerprint,projectFingerprint:projectFingerprint((await readProject()).data),result};
  write(out+'/execution.json',receipt);
  console.log(JSON.stringify({status:'EXECUTED_NOT_RENDERED',scope:h.scope,revision:result.revision,operations:result.receipts.length}));
 }else if(mode==='render'){
@@ -94,17 +97,61 @@ if(mode==='run'){
   if(job?.status!=='done'||errors.length)throw Error('EXPORT_FAILED '+JSON.stringify({status:job?.status,errors}));
   const files=fs.readdirSync(exportsDir).filter(f=>f.endsWith('.mp4')&&!previous.has(f));if(files.length!==1)throw Error('EXPORT_FILE_AMBIGUOUS');
   const file=path.join(exportsDir,files[0]);if(!fs.statSync(file).isFile()||fs.statSync(file).size<1000)throw Error('EMPTY_EXPORT');const probe=JSON.parse(execFileSync('ffprobe',['-v','error','-count_frames','-show_streams','-show_format','-of','json',file],{encoding:'utf8'}));
-  const v=probe.streams.find(s=>s.codec_type==='video'),a=probe.streams.find(s=>s.codec_type==='audio');
-  if(v?.width!==1080||v.height!==1920||v.r_frame_rate!=='30/1'||Number(v.nb_read_frames)!==Math.round(h.duration*30)||!a||Math.abs(Number(v.duration)-Number(a.duration))>.05)throw Error('EXPORT_TECHNICAL_QA_FAILED');
-  execFileSync('ffmpeg',['-v','error','-i',file,'-f','null','-'],{timeout:120000});
+  const vs=probe.streams.filter(s=>s.codec_type==='video'),as=probe.streams.filter(s=>s.codec_type==='audio'),v=vs[0],a=as[0];
+  if(vs.length!==1||as.length!==1||v?.codec_name!=='h264'||a?.codec_name!=='aac'||v.width!==1080||v.height!==1920||v.r_frame_rate!=='30/1'||Number(v.nb_read_frames)!==Math.round(h.duration*30)||!Number.isFinite(Number(v.duration))||Math.abs(Number(v.duration)-h.duration)>1/30||!Number.isFinite(Number(a.duration))||Math.abs(Number(v.duration)-Number(a.duration))>.05)throw Error('EXPORT_TECHNICAL_QA_FAILED');
+  execFileSync('ffmpeg',['-v','error','-xerror','-protocol_whitelist','file,pipe','-i',file,'-f','null','-'],{timeout:120000});
   const audioStats=await new Promise((resolve,reject)=>{const proc=spawn('ffmpeg',['-hide_banner','-nostats','-i',file,'-vn','-af','volumedetect','-f','null','-'],{stdio:['ignore','ignore','pipe']});let data='';proc.stderr.on('data',b=>data+=b);proc.on('error',reject);proc.on('close',code=>{if(code)reject(Error('AUDIO_ANALYSIS_FAILED'));else{const peak=Number(data.match(/max_volume: (-?[\d.]+) dB/)?.[1]),mean=Number(data.match(/mean_volume: (-?[\d.]+) dB/)?.[1]);if(!Number.isFinite(peak)||!Number.isFinite(mean)||mean< -55)reject(Error('SILENT_OR_UNVERIFIED_AUDIO'));else resolve({peakDb:peak,meanDb:mean})}})});
-  const story=store.readDraft(receipt.storyRevision),operationAudit=story.operations.map(o=>({operationId:o.id,start:o.start,end:o.end,requiredQA:o.requiredQA,execution:receipt.result.receipts.find(r=>r.operationId===o.id)?.status??'MISSING',visualOrAudioReview:'PENDING_HUMAN_OR_SEMANTIC_SUPERVISOR'}));
+  const story=store.readDraft(receipt.storyRevision);
+  assertStoryOperationCoverage(story.operations,receipt.result.receipts,'INCOMPLETE_OPERATION_RECEIPTS_DO_NOT_RETRY');
+  const operationAudit=story.operations.map(o=>({operationId:o.id,start:o.start,end:o.end,requiredQA:o.requiredQA,execution:receipt.result.receipts.find(r=>r.operationId===o.id)?.status??'MISSING',visualOrAudioReview:'PENDING_HUMAN_OR_SEMANTIC_SUPERVISOR'}));
   if(operationAudit.some(o=>o.execution==='MISSING'))throw Error('MISSING_OPERATION_RECEIPT');
   if(projectFingerprint((await readProject()).data)!==receipt.projectFingerprint)throw Error('PROJECT_CHANGED_DURING_RENDER');
   const renderCopy=JSON.parse(fs.readFileSync(renderDir+'/project.json','utf8'));assertRenderCopyParity(before,renderCopy,defaults);
   const deliveredDir=out+'/exports';fs.mkdirSync(deliveredDir,{recursive:true,mode:0o700});const delivered=path.join(deliveredDir,'rendered-'+hash(file).slice(0,12)+'.mp4');fs.linkSync(file,delivered);
 
-  write(out+'/render-proof.json',{schema:'sues-private-story-render/v1',status:'TECHNICAL_QA_PASS_NOT_ARTISTIC_APPROVAL',scope:h.scope,storyRevision:receipt.storyRevision,decisionId:receipt.decisionId,job:ticket.id,file:delivered,sha256:hash(file),probe,audioStats,operationAudit,renderCopyRevision:renderCopy.revision,renderCopyParity:true,operationCount:receipt.result.receipts.length});
+  write(out+'/render-proof.json',{schema:'sues-private-story-render/v1',status:'TECHNICAL_QA_PASS_NOT_ARTISTIC_APPROVAL',scope:h.scope,storyRevision:receipt.storyRevision,decisionId:receipt.decisionId,planFingerprint:receipt.planFingerprint,projectFingerprint:receipt.projectFingerprint,sourceSha256:receipt.sourceSha256,timelineFingerprint:receipt.timelineFingerprint,job:ticket.id,file:delivered,sha256:hash(file),probe,audioStats,operationAudit,renderCopyRevision:renderCopy.revision,renderCopyParity:true,operationCount:receipt.result.receipts.length});
   console.log(JSON.stringify({status:'TECHNICAL_QA_PASS_NOT_ARTISTIC_APPROVAL',file:delivered,frames:v.nb_read_frames,duration:v.duration,scope:h.scope}));
  }finally{await browser?.close();server.kill('SIGTERM')}
-}else throw Error('Use prepare | run | execute | render');
+}else if(mode==='qa-prepare'||mode==='qa-verify'){
+ // The same approved story and native project; no second editor or rewrite.
+ const readPrivate=f=>{const st=fs.lstatSync(f);if(!st.isFile()||st.isSymbolicLink()||(st.mode&0o077)!==0||st.size>4*1024*1024)throw Error('PRIVATE_QA_FILE_REQUIRED');return read(f)};
+ const receipt=readPrivate(out+'/execution.json'),proof=readPrivate(out+'/render-proof.json'),story=store.readDraft(receipt.storyRevision);
+ const renderFile=safeFile(proof.file),exportsRoot=fs.realpathSync(out+'/exports');
+ if(path.dirname(renderFile)!==exportsRoot||fs.lstatSync(proof.file).isSymbolicLink()||h.scope!==receipt.scope)throw Error('PRIVATE_RENDER_BINDING_REQUIRED');
+ const graph=buildNativeSupervisorGraph({story,execution:receipt,render:proof,projectFingerprint:projectFingerprint(before),outputSha256:hash(renderFile)});
+ const rootEvidence=path.join(out,'supervisor'),indexFile=out+'/qa-review-index.json';
+ if(fs.existsSync(rootEvidence)&&(!fs.lstatSync(rootEvidence).isDirectory()||fs.lstatSync(rootEvidence).isSymbolicLink()))throw Error('PRIVATE_EVIDENCE_ROOT_REQUIRED');
+ const unchanged=async()=>store.current().revision===receipt.storyRevision&&hash(source)===h.sourceSha256&&hash(renderFile)===proof.sha256&&projectFingerprint((await readProject()).data)===receipt.projectFingerprint;
+ if(!await unchanged())throw Error('SUPERVISOR_SOURCE_CHANGED');
+ if(mode==='qa-prepare'){
+  if(fs.existsSync(indexFile))throw Error('SUPERVISOR_INDEX_ALREADY_PREPARED');
+  const inspections=[];
+  for(const part of partitionNativeSupervisorGraph(graph)){
+   const evidence=await prepareMasterSupervisorEvidence({graph:part,previewPath:renderFile,outputSha256:proof.sha256,root:rootEvidence,approvalCheck:unchanged});
+   if(evidence.status!=='SAMPLES_REQUIRE_REVIEW')throw Error('SUPERVISOR_EVIDENCE_BLOCKED '+JSON.stringify(evidence.issues??[]));
+   inspections.push({inspectionId:evidence.inspectionId,report:evidence.report});
+  }
+  const index=buildNativeSupervisorIndex(graph,inspections);
+  if(!await unchanged())throw Error('SUPERVISOR_SOURCE_CHANGED');
+  write(indexFile,index);
+  console.log(JSON.stringify({status:index.status,indexFile,operations:index.operations.length,inspections:inspections.length,outputSha256:index.outputSha256}));
+ }else{
+  if(fs.existsSync(out+'/qa-result.json'))throw Error('SUPERVISOR_REVIEW_ALREADY_RECORDED');
+  const stored=readPrivate(indexFile);
+  if(!Array.isArray(stored.inspections))throw Error('SUPERVISOR_INDEX_INVALID');
+  const inspections=stored.inspections.map(item=>{
+   if(!/^inspection-[A-Za-z0-9]{6}$/.test(item.inspectionId??''))throw Error('SUPERVISOR_INSPECTION_INVALID');
+   const report=readPrivate(path.join(rootEvidence,item.inspectionId,'manifest.json'));
+   if(!Array.isArray(report.files))throw Error('SUPERVISOR_EVIDENCE_INVALID');
+   for(const entry of report.files)openMasterSupervisorEvidence({root:rootEvidence,inspectionId:item.inspectionId,file:entry.name,planFingerprint:graph.planFingerprint,outputSha256:graph.outputSha256});
+   return {inspectionId:item.inspectionId,report};
+  });
+  const index=buildNativeSupervisorIndex(graph,inspections);
+  if(JSON.stringify(index)!==JSON.stringify(stored))throw Error('SUPERVISOR_INDEX_CHANGED');
+  const result=validateNativeSupervisorReview(index,readPrivate(out+'/qa-review.json'));
+  if(!await unchanged())throw Error('SUPERVISOR_SOURCE_CHANGED');
+  write(out+'/qa-result.json',result);
+  console.log(JSON.stringify(result));
+  if(result.issues.length)process.exitCode=2;
+ }
+}else throw Error('Use prepare | run | execute | render | qa-prepare | qa-verify');
