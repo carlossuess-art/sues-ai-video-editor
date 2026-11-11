@@ -30,3 +30,22 @@ test('saved editorial adjustments undo across restart and repeated identical sav
   await jobs.close();jobs=new EditorJobs({directory,profiles:f.profiles,renderer});assert.ok(jobs.view(jobs.get(created.id)).canUndo);jobs.undo(created.id);assert.equal(jobs.get(created.id).fingerprint,second);jobs.undo(created.id);assert.equal(jobs.get(created.id).fingerprint,initial);assert.equal(jobs.view(jobs.get(created.id)).canUndo,false);assert.throws(()=>jobs.undo(created.id),/No saved/);assert.equal(jobs.get(created.id).attempt,undefined);
  }finally{await jobs.close();rmSync(f.dir,{recursive:true,force:true});}
 });
+
+test('a finished Reel stays the same project when reedited and rendered again',async()=>{
+ const f=fixture(),directory=join(f.dir,'jobs'),renderer=worker(f);let jobs=new EditorJobs({directory,profiles:f.profiles,renderer});
+ try{
+  const a=jobs.create('test');jobs.render(a.id);await until(()=>jobs.get(a.id).state==='DONE');
+  const first=jobs.get(a.id),originalSha=first.fingerprint,previousArtifact=structuredClone(first.artifact);
+  const changed=jobs.adjust(a.id,{...first.settings,zoomIntensity:.3});
+  assert.equal(changed.id,a.id);assert.equal(jobs.list().length,1);
+  assert.equal(changed.state,'PREVIEW_READY');assert.notEqual(changed.fingerprint,originalSha);
+  assert.equal(changed.storageReady,false);assert.equal(jobs.get(a.id).previousExport.previousFingerprint,originalSha);
+  assert.deepEqual(jobs.get(a.id).previousExport.artifact,previousArtifact);
+  assert.equal(jobs.get(a.id).editorialReview,undefined);
+  await jobs.close();jobs=new EditorJobs({directory,profiles:f.profiles,renderer});
+  assert.equal(jobs.get(a.id).state,'PREVIEW_READY');assert.equal(jobs.get(a.id).settings.zoomIntensity,.3);
+  jobs.render(a.id);await until(()=>jobs.get(a.id).state==='DONE');
+  assert.equal(jobs.list().length,1);assert.equal(jobs.get(a.id).attempt,2);
+  assert.equal(jobs.get(a.id).revision,2);
+ }finally{await jobs.close();rmSync(f.dir,{recursive:true,force:true});}
+});

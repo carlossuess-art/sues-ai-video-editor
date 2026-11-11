@@ -1,0 +1,119 @@
+{
+  "schema": "sues-production-policy/v2",
+  "version": "2026.11.10.1",
+  "canvas": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30
+  },
+  "title": {
+    "font": "Montserrat",
+    "weight": 900,
+    "fontSize": 114,
+    "color": "#FFF9B0",
+    "color2": "#B88C32",
+    "strokeWidth": 8,
+    "strokeColor": "#30250F",
+    "textShadow": 24,
+    "align": "center",
+    "lineHeight": 1.04,
+    "position": "above-face-adaptive"
+  },
+  "caption": {
+    "font": "Montserrat",
+    "weight": 700,
+    "fontSize": 56,
+    "color": "#FFFFFF",
+    "strokeWidth": 2,
+    "strokeColor": "#17191D",
+    "textShadow": 9,
+    "align": "center",
+    "maxLines": 2,
+    "maxLinesException": 3,
+    "progressive": "word-by-word",
+    "position": "below-chin-adaptive",
+    "keyword": {
+      "font": "Montserrat",
+      "weight": 900,
+      "color": "#FFF9B0",
+      "color2": "#B88C32",
+      "scale": 1.6
+    },
+    "deduplicate": "whole-word-overlapping-title-or-hero-motion-graphic-keep-transcript"
+  },
+  "palette": {
+    "white": "#FFFFFF",
+    "warmWhite": "#FFF9B0",
+    "gold": "#B88C32",
+    "charcoal": "#17191D",
+    "black": "#000000",
+    "defaultAccent": "gold",
+    "retiredDefault": "fire-orange"
+  },
+  "mask": {
+    "prepareEveryVisibleSubject": true,
+    "preserveOriginalBackground": true,
+    "subjectMatte": "source-and-timeline-bound",
+    "behindSubject": "strict-no-unintended-visible-edge",
+    "fullWidthUpper": "soft-bottom-edge",
+    "inset": "inward-feather-all-visible-edges",
+    "atmospheric": "localized-flash-mist-scale-reveal",
+    "atmosphericStatus": "candidate-until-visual-approval"
+  },
+  "revisions": {
+    "singleWorkingHead": true,
+    "expectedRevision": true,
+    "expectedFingerprint": true,
+    "explicitSupersession": true,
+    "preserveUnchanged": true,
+    "checkNestedComps": true,
+    "checkLinkedAudio": true,
+    "requireRenderEvidence": true,
+    "approvalSeparateFromPublication": true
+  },
+  "resources": {
+    "canonicalIdentity": "sha256",
+    "favoriteFirst": true,
+    "recordUse": true,
+    "autoFavoriteApprovedUse": true,
+    "manualUnfavoriteWins": true,
+    "rightsAndCompatibilityRequired": true
+  },
+  "presets": [
+    "SUES_REEL_MASTER",
+    "SUES_TITLE_MASTER",
+    "SUES_CAPTION_MASTER",
+    "SUES_COMPOSITING_MASTER",
+    "SUES_VOICE_DEPTH",
+    "SUES_TITLE_SLIDE_DOWN",
+    "SUES_TYPEWRITER",
+    "SUES_LIGHT_SWEEP",
+    "SUES_BROLL_SOFT_EDGE"
+  ],
+  "workflow": [
+    "source-inspection",
+    "subject-matte",
+    "interactive-keyword-selection",
+    "av-plan",
+    "new-composition-preview",
+    "approved-revision",
+    "native-execution",
+    "two-pass-qa",
+    "creative-approval",
+    "native-master-export",
+    "separate-publish-approval",
+    "safe-cleanup"
+  ],
+  "storage": {
+    "protect": [
+      "active-projects",
+      "editable-originals",
+      "masters",
+      "favorites",
+      "dependencies",
+      "verified-backup"
+    ],
+    "deleteOnly": "regenerable-cache-and-explicitly-unreferenced-temporaries",
+    "dryRunFirst": true
+  }
+}

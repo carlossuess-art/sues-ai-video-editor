@@ -1,3 +1,103 @@
+## 11/11/2026 · Supervisor nativo y skill sincronizada · NO DESPLEGADO
+
+- **Código en rama PR27**: `87e4244d92d60f771dcabda6306a90178bdc8912` conecta el runner privado de FableCut al supervisor de evidencias existente mediante `qa-prepare` y `qa-verify`. Manifiestos exactos de fuente/timeline/revisión/decisión/plan/proyecto/MP4, comprobación de IDs antes y después de ejecutar, codecs/duración y evidencias de fotogramas/audio, dos informes de revisión y cola de incidencias con operationId/corrección. Sin reescritura autónoma, sin publicación. [Manual](docs/engine-next/FABLECUT_NATIVE_SUPERVISOR_20261111.md).
+- **11/11 tests unitarios nuevos PASS** en Node 22.16.0, fixtures sintéticos; blobs de módulo y tests coinciden exactamente con los de GitHub (8c6bdd473a5c5849b452c59ba3887f53a174d420 / 051e0abbbe90f67d0a1f4fc4887328297ff123f8). Los 63/63 anteriores pertenecen al corte del 10/11, no se suman como una suite conjunta ejecutada. Aún no se ha probado este runner nuevo contra FableCut del VPS ni se ha hecho una auditoría artística real.
+- **Skill privada SUES AI Film Director 1.7.1 publicada y releída mediante Plugin Creator**, identidad y 16 archivos anteriores preservados (17 con referencia nueva); `FABLECUT_NATIVE_HANDOFF_20261111.md` obligatoria junto a políticas anteriores. La sesión que abrió con 1.7.0 puede conservar caché; consultar release vigente, no afirmar refresco no verificado.
+- **Bloqueo real:** dispositivo VPS conectado, pero cuota mensual Desktop Commander agotada. No repetir llamadas, no reconectar para eludir cuota. La copia privada de VPS y producción no se han tocado en este corte. GitHub sí está actualizado; el worktree privado debe reconciliarse con HEAD cuando exista acceso autorizado. No desplegar, no tocar B05 paralelo ni original/Reel publicado.
+- **Siguiente acción exacta:** ejecutar la regresión dirigida y nuevos modos QA en un clon privado con acceso autorizado, verificar política/derechos de masters y completar un bruto nuevo auténtico con transcripción, selección interactiva, plan A/V aprobado, montaje editable, render y dos pasadas reales. Faltan rotoscopia integral, híbrido lossless, supervisor semántico autónomo y corrección automática validada. No atribuir 100% ni aprobación creativa.
+
+## 10/11/2026 · Plan canónico → lote aprobado → exportación privada
+
+Conexión real store/ledger/MCP, HTTP privado opt-in, 20 órdenes nativas, subtítulos progresivos, fundido entre capas, efectos visuales. 59/59 regresiones dirigidas; V27 reconstruido 217 clips/1089 frames, V29 completo 72,6 s con filtros históricos y SSIM 0,976504 (no todos efectos editables). Nuevo runner privado prepare/run; QA 015 tres operaciones confirmadas. [Manual y límites](docs/engine-next/FABLECUT_STORY_AUTOMATION_20261110.md). Sin despliegue.
+
+## 10/11/2026 · Puente FableCut por lotes, exportación nativa y MCP real
+
+Adaptador privado generalizado, catálogo de órdenes y búsqueda de recursos; copia V26 169→170 clips, MCP rev124→125 con CAS y autorización técnica. QA 002: export real 1080×1920, 30 frames + AAC estéreo; 28/28 tests dirigidos, negativos y undo. Sin despliegue; aprobación creativa, integración ledger HTTP, mapping completo y reconstrucción V29 pendientes. [Manual y evidencia](docs/engine-next/FABLECUT_COMMAND_ADAPTER_20261110.md).
+
+## 06/11/2026 · MP4 1080 privado para revisión en rama
+
+Los flujos Remotion y mixto admitidos pueden solicitar un MP4 privado de 1080×1920, con verificación técnica, trazabilidad y etiqueta de revisión no final. Se han probado la API y la interfaz con datos simulados y una salida sintética Remotion de seis fotogramas; la memoria, un Reel real, el supervisor semántico y la aceptación siguen pendientes. Sin despliegue. Detalle: [checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md).
+
+## 06/11/2026 · Evidencia de audio para supervisión
+
+La escucha de supervisión usa una conversión estéreo y muestra pico, RMS y muestras próximas al máximo por canal; son medidas objetivas, no QA. Cinco pruebas con FFmpeg pasaron. Se midió también el audio convertido de la previsualización real V6B existente, sin generar otro Reel; la escucha y aceptación completas siguen pendientes. [Checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Sin despliegue.
+
+## 06/11/2026 · Ajuste centrado de medios en rama
+
+Las capas Remotion de imagen y vídeo aceptan `fill`, `contain` y `cover` con encuadre centrado. Pruebas dirigidas 37/37, TypeScript y comprobaciones por píxeles en imágenes y un fotograma de vídeo sintéticos; no equivale a QA de movimiento ni Reel real. La skill privada se sincronizó a 1.5.6. [Checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Sin despliegue.
+
+## 06/11/2026 · Plan externo: fidelidad del montaje mixto
+
+El grafo conserva tiempos originales y el motor mixto detecta solapamientos antes del redondeo. Se bloquean combinaciones con orden visual nativo/Remotion no implementado en vez de alterar el efecto. Regresión dirigida 174 aprobadas y 5 omitidas; una omitida pasó aparte con FFmpeg sobre material sintético. La composición completa, supervisor, exportación y prueba de Reel real siguen pendientes. Véase [checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Sin despliegue.
+
+## 06/11/2026 · Generador local opcional de borradores maestros
+
+En rama existe un adaptador para Qwen3/llama.cpp local conectado al mismo flujo de revisión; está desactivado por defecto y no despliega ni aprueba planes. Una prueba sintética con modelo real produjo JSON; una prueba HTTP guardó un borrador que la revisión bloqueó. Los límites, evidencia y trabajo pendiente constan en [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md) y [manual](docs/SUES_MASTER_LOCAL_GENERATOR_20261106.md).
+
+## 05/11/2026 · Master Director: máscaras candidatas y muestras de supervisión
+
+Estado vivo: [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). En rama se ha conectado generación local opt-in de máscaras candidatas y preparación independiente de muestras para revisión. No se aprueban máscaras ni se certifica calidad automáticamente. Última regresión: 163 PASS, 0 FAIL, 5 SKIP en host; pruebas específicas omitidas ejecutadas aparte en entornos indicados en el checkpoint. No se ha desplegado ni generado un Reel nuevo. Pendientes planificación IA gratuita real, verificación de máscaras, supervisor audiovisual autónomo, integración integral y aceptación creativa.
+
+## 05/11/2026 · Master Director: continuidad en rama
+
+Estado vivo y detalle de commits: [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Entrada IA preparada para proveedor gratuito inyectable, aún sin proveedor configurado; ambas entradas comparten borrador y revisión. Trazabilidad inmutable y comprobación nativa previa a aprobación incorporadas. Pendientes efectos, máscaras, editabilidad integral, supervisor audiovisual y validación posterior. Sin tests ni renders por decisión de Carlos; sin despliegue ni gasto.
+
+## ESTADO ACTIVO · 05/11/2026 · SUES MASTER DIRECTOR
+
+**Consultar antes de continuar:** [CHECKPOINT ACTIVO ÚNICO](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Es la fuente de verdad operativa del trabajo de Work/chat normal; contiene 50 % estimado global, evidencia, bloqueos, única rama escritora, permisos y próxima acción. **Todo lo que aparece a continuación es HISTÓRICO** y no debe sustituir el último checkpoint. Reglas aprobadas: [20 reglas](docs/SUES_MASTER_DIRECTOR_REGLAS_APROBADAS_20261104.md). No hay despliegue de este cerebro.
+
+## 04/11/2026 · MASTER DIRECTOR · PREVIEW EN ENTORNO AISLADO · MISIÓN INCOMPLETA
+
+- Servidor/UI de desarrollo integran revisión, versiones y preview Remotion privada con aprobación, validación de fuente CFR30/cortes, bloqueo de cambios, auditoría técnica, reproducción autenticada e idempotencia. No habilitado en producción: política y configuración real faltan; no es exportación final.
+- Prueba HTTP completa de 24 s sintéticos: render 720 frames+audio, auditoría de decodificación, Range e idempotencia PASS. Sobre copia normalizada de 158404 se verificó fuente de 65,1 s y se renderizó/auditó solo un segundo de prueba; no Reel creativo. Prueba técnica de 65,1 s en curso: no reclamarla hasta final.
+- 130/130 Node dirigidas PASS en copia productiva con parche selectivo; navegador desktop/móvil con fixtures PASS. Suite amplia anterior 525/529 con salvedades documentadas, falta repetir final. Detalle y siguientes pasos: docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md.
+- Sin despliegue, gastos API, publicación ni cambio de skill. Faltan evidencia de masters, máscaras dinámicas, compositor integral, recursos, backup portable, QA audiovisual doble y aprobación creativa.
+
+## 04/11/2026 · MASTER DIRECTOR · UI Y PROTOTIPOS MULTICAPA · INCOMPLETO
+
+- Añadida revisión/decisión en UI de desarrollo, selección de versiones y edición reversible parcial de capas (posición, tamaño, tiempos, texto, opacidad, volumen y origen según corresponda). No se inicia render y la política real continúa bloqueada. Prueba Chromium PASS escritorio y móvil con fixtures, incluida recuperación de versión.
+- Prototipo Remotion añade vídeo silencioso con entrada exacta y compone vídeo+texto Montserrat+SFX: MP4 sintético de 30 fotogramas comprobado por fotogramas y RMS; no equivale a editar un Reel real ni a verificación de audio profesional. Máscaras estáticas probadas, dinámica aún pendiente.
+- 121/121 pruebas Node dirigidas PASS sobre copia productiva y parche selectivo; suite amplia anterior 525/529 con fallos y limitaciones documentadas. No hay deploy, publicación ni gastos API. Informe: docs/SUES_MASTER_DIRECTOR_WORK_UI_CAPAS_20261104.md.
+
+## 04/11/2026 · MASTER DIRECTOR · CONTEXTO Y REMOTION EXPERIMENTAL · INCOMPLETO
+
+- Adaptador del servidor basado en 20 reglas literales, SHA y biblioteca; política real permanece bloqueada hasta documentar derechos de los tres tapices, que existen en biblioteca pero carecen de metadatos V2. Revisiones invalidadas cuando cambia evidencia; edición de parámetros crea otra versión inmutable. No hay aún UI editable ni backup TAR.
+- Remotion experimental: texto con fuente real por hash, imagen estática, máscara alfa estática y audio con tiempos/ganancia; reproduce prototipos aislados, rechaza lo no soportado. Sin integración de vídeo completo, máscara dinámica, mezcla completa o QA creativo de 158404.
+- Prueba amplia intermedia 525/529: dos fallos reproducidos en base productiva por expectativas antiguas de tests, uno falta de git en contenedor (host PASS), otro documento no copiado en QA (corregido); no declarar regresión limpia. Detalles: docs/SUES_MASTER_DIRECTOR_WORK_AVANCE_CONTEXT_20261104.md.
+- Sin producción, deploy, publicaciones, gastos de API ni cambio de skill. Misión no terminada; mantener restricciones originales.
+
+## 04/11/2026 · MASTER DIRECTOR · INTEGRACIÓN PARCIAL DE BACKEND Y PRUEBA REMOTION · SIN DESPLIEGUE
+
+- Nuevas rutas autenticadas de borrador, revisión, decisión y grafo de capas; revisiones inmutables y bloqueo ante cambios. Sin proveedor real de confianza quedan bloqueadas; el ejemplo positivo de tests es sintético. Aún no hay ejecución/render ni UI editable.
+- Adaptador experimental Remotion limitado a texto posicionado y keyframes lineales; rechaza máscaras y efectos no soportados. TypeScript PASS y un fotograma sintético renderizado e inspeccionado por píxeles; no demuestra edición de un Reel ni sonido.
+- 107/107 pruebas dirigidas Node PASS en copia aislada del código productivo con parche selectivo. La rama y el servidor productivo difieren; no copiar el servidor entero. No deploy, gasto o publicación.
+- Limitaciones, resultados y continuación exacta: docs/SUES_MASTER_DIRECTOR_WORK_AVANCE_BACKEND_20261104.md. Siguen pendientes registro confiable real, UI, capas editables, motor integral, QA audiovisual y regresión completa.
+
+## 04/11/2026 · SUES MASTER DIRECTOR · AVANCE VERIFICADO · SIN DESPLIEGUE
+
+- **20 reglas creativas aprobadas verbalmente por Carlos**, capturadas en docs/SUES_MASTER_DIRECTOR_REGLAS_APROBADAS_20261104.md. El borrador anterior es histórico; no pedir reaprobarlo.
+- Continúa la rama feat/master-director-story-orchestration-20261104 / PR borrador #27. NO mezclar con main ni con producción.
+- Código nuevo/actualizado: master-director-gate, master-director-rulebook, master-director-story, master-director-narrative-arc, master-director-orchestration, master-director-workflow, master-director-native-bridge, master-director-native-review y master-director-layer-graph, con tests.
+- Comprobación real sobre una **copia aislada** del editor productivo: 96/96 pruebas Node PASS (director, importador externo y adaptador creativo).
+- Pruebas de exportación real con FFmpeg en contenedor temporal de la misma imagen de producción, red desactivada, CPU limitada: 12/12 PASS (máscaras, MP4, audio multicapa, cortes y exportación). No confundir con un vídeo completo ya dirigido por el nuevo cerebro.
+- Producción Docker actual: /app montado desde /opt/sues-video-setup/release-mobile-layers-20261030; este directorio NO tiene .git. No modificado.
+- **Todavía falta** integrar registro/autorizaciones reales de backend, motor Remotion con capas editables en UI, supervisor QA audiovisual independiente y dos auditorías completas de un vídeo generado mediante este cerebro. La skill continúa sin cambios y no se han consumido créditos API.
+- Handoff específico para Work: docs/SUES_MASTER_DIRECTOR_WORK_HANDOFF_20261104.md. Solo cuando corresponda, continuar en Work; no crear otro editor ni duplicar módulos.
+
+## DESARROLLO · unificación de reglas y narrativa del cerebro · 04/11/2026
+- Rama: feat/master-director-story-orchestration-20261104; PR borrador #27 contra feat/master-director-gate-20261104.
+- Se implementaron: master-director-rulebook.js (ámbitos, aprobaciones verificadas, conflictos no resueltos), master-director-story.js (narrativa integral, metáforas distantes, recursos existentes/por generar, palabras/timings, pruebas obligatorias) y master-director-orchestration.js (puerta única de reglas → historia → gate con snapshot exacto para invalidar aprobaciones).
+- QA real de lógica: Node.js v22.23.3, 40/40 PASS; tests combinados del gate y los 3 módulos nuevos en /tmp/sues-master-director-story-qa-20261104. No se han ejecutado suite completa de la app ni pruebas audiovisuales reales.
+- No hay merge, deploy, cambios de skill, consumo API, render nuevo ni modificación de proyectos. Las 20 reglas en lenguaje natural esperan aprobación de Carlos.
+- Siguiente: verificar árbol efectivo de producción, crear adaptadores por capacidad y backend autenticado, comprobar resultado MP4/preview/capas/audio con 2 QA integrales, obtener aprobación creativa y solo entonces adaptar la skill.
+
+## EN DESARROLLO · cerebro coordinador narrativo · 04/11/2026
+- Rama aislada: feat/master-director-story-orchestration-20261104; PR borrador #27 contra feat/master-director-gate-20261104.
+- Código nuevo: src/master-director-story.js; traduce historia global, metáforas entre escenas y recursos verificados a sues-master-director/v1; propone creación si falta un recurso ideal, sin generar ni degradar.
+- Contrato en lenguaje natural: docs/SUES_MASTER_DIRECTOR_REGLAS_PARA_CARLOS_20261104.md (20 reglas; PENDIENTE APROBACIÓN).
+- QA comprobada: 24/24 Node.js 22 en copia temporal aislada (9 gate + 14 narrativa). NO es suite de la aplicación ni auditoría audiovisual; no conectado al renderer ni editor web. Sin merge, deploy, cambio de skill, consumo API ni alteración de originales.
+- Siguiente: aprobación de reglas maestras; adaptador seguro al formato del editor y Remotion, capacidades verificadas por motor, supervisor autenticado, QA de vídeo real y doble auditoría limpia. Solo después adaptar skill.
+
 ## Publicado · correcciones de auditoría · 29/10/2026
 
 ## VIDEO COMPLETO 158404 · V2 GRÁFICOS SUSTITUTIVOS · 04/11/2026
@@ -1333,3 +1433,50 @@ La tabla técnica de Carlos queda codificada como `sues-visual-grammar-158623-v1
 - Preview privada `SUES_158404_V4B_DESDE_ORIGINAL_RECONSTRUIDO_PREVIEW720_20261104.mp4`, 11.561.089 bytes, H.264/AAC 720×1280, 30 fps, 2.230 frames, 74,333333 s, SHA256 `3c8e608f29021972302ac8adaa8f7097c3b500e38d6e18d91ea23c44c806ff82`. `faststart` y grabación única en biblioteca de proyectos.
 - QA verificado: `tsc --noEmit` PASS; 13 segmentos de 2.230 frames; FFmpeg decode completo audio/vídeo PASS; 74 fotogramas a 1 fps y 297 a 4 fps extraídos y hojas de contacto visualmente revisadas, sin palabras protagonistas descentradas/recortes de texto evidentes. No afirmar auditoría exhaustiva de 2.230 frames ni calidad creativa aprobada. Editor accesible; no pruebas visuales reales del reproductor autenticado en móvil.
 - Fuentes versionadas en rama de desarrollo, informe `experiments/remotion-cta/docs/EDICION_158404_V4B_20261104.md` commit `da6e44af32296969e8632b66cc78d0c0a8b8baf9`. Assets MP4/logo permanecen privados en VPS/Drive, no se subieron a GitHub. Sin merge, coste nuevo de API 0, ni Full HD final: **preview 720p** pendiente de revisión de Carlos, licencia B-roll y export a 1080p tras aceptación. Progreso de Fase 9 y global no modificados.
+
+## 04/11/2026 · Master Director: preview asíncrona y límites de memoria
+- Implementación aislada en rama: solicitud de preview asíncrona con persistencia de estado y recuperación segura; protección de memoria y copias en streaming. Prueba sintética autenticada de 24 s con Remotion, audio, auditoría técnica, Range e idempotencia PASS. Prueba técnica de 65,1 s de la copia normalizada 158404 en curso; intentos anteriores incompletos. No representa un montaje creativo ni prueba de exportación final. Detalles y limitaciones en `docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md`. Sin despliegue, gasto ni publicación.
+
+- Actualización: el render limitado de 65,1 s no terminó por el máximo de 10 minutos; se aumentó el límite a 30 minutos sin desactivar el control de memoria y se inició una nueva prueba. 113/113 pruebas específicas de la copia y 2/2 de renderizador en el árbol PASS; regresión con exportación móvil real PASS, batería general aún en curso. Ninguna de estas pruebas valida un Reel creativo final.
+
+- Regresión aislada: 543/548. Dos fallos presentes en base productiva; Git ausente de imagen (PASS en host); preview bloqueada por contenedor menor que requisito de memoria (PASS en host); máscara FFmpeg PASS al repetir con 768 MiB tras fallar fixture con 384 MiB. Suite completa aún no limpia.
+
+- Prueba técnica aislada 158404 completada: 65,109 s, 1953 fotogramas a 30 fps, preview privada 270×480 con audio, SHA256 `84489cd837f55d1a147adbddfdedaf452148b6ef6bcb11d5fb36b6ee7306d3b9`. Auditoría técnica separada con decodificación completa PASS; Range e idempotencia PASS. Fuente es copia normalizada, plan y contexto simulados. Sin revisión artística, Reel terminado ni exportación final.
+
+- Master Director en rama aislada: curvas de animación `linear`, `ease-in`, `ease-out`, `ease-in-out` implementadas y preservadas con cubic-bezier estándar; `spring` sigue bloqueado. 8/8 pruebas dirigidas, TypeScript y fotograma sintético Remotion PASS. No implica aceptación audiovisual ni despliegue. Detalle en `docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md`.
+
+- UI aislada Master Director: selección de curva por fotograma, guardada en versión nueva con revisión requerida. Smoke Chromium escritorio/móvil PASS con backend de prueba; no desplegado.
+
+- UI aislada Master Director ampliada para editar valores existentes de keyframes con versionado. Prueba de navegador escritorio/móvil PASS con fixture simulado; sin despliegue.
+
+- Prueba aislada autenticada de preview sintética con animación ease-in-out: 24 s con render Remotion real, audio, auditoría técnica independiente, Range e idempotencia PASS. No equivale a calidad creativa aprobada.
+
+- Reel 158541 recibido: archivo ya editado 13,2 s. El original carece de SAR y se bloqueó con seguridad. Una copia privada con SAR 1:1 asumido, sin recodificación y con todos los fotogramas decodificados idénticos, permitió prueba técnica autenticada Remotion: 396 frames, audio y decode completo, Range e idempotencia PASS. Plan y transcripción simulados; sin revisión creativa ni Reel completo. Ver `docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md`. Sin despliegue, publicación ni coste.
+
+- Master Director aislado: corregido reintento de preview tras BLOCKED/FAILED conservando idempotencia en conexiones inciertas; geometría no verificada se explica en UI. Browser desktop/mobile PASS con servicio simulado. Sin despliegue.
+
+- Master Director: bruto de práctica de Drive, 30,2 s; análisis local y plan preliminar aplicado en aislamiento, dos previews técnicas PASS, corrección de ubicación de texto y QA visual parcial. Política simulada, derechos de tercero, acabado cinematográfico y auditoría completos pendientes; sin despliegue ni publicación.
+
+- Master Director rama aislada: validación narrativa basada en fases documentadas, evidencia requerida, aviso de fases sin documentar y sin inventar moraleja/caída. Mantiene compatibilidad del modo estricto y exige nueva revisión cuando cambie contexto. 27 pruebas dirigidas, 116 específicas y Chromium escritorio/móvil PASS con fixtures. No acredita comprensión audiovisual integral ni despliegue.
+
+- Arco observado comprobado con bruto privado y transcripción local: 20 reglas procesadas, fases documentadas, moraleja sin documentar y cinco capas preparadas PASS en proveedor real con derechos de recursos simulados. No demuestra comprensión audiovisual completa, verificación de derechos ni autorización creativa.
+
+- Master Director: arranque normal admite configuración de preview opt-in con rutas y SHA de tres puntos de entrada validados antes de iniciar; por defecto desactivado. 2 tests de configuración/arranque HTTP y 117 pruebas específicas PASS. No protege dependencias transitivas ni sustituye política real/rollback; no configurado ni desplegado en producción.
+
+- Master Director: configuración privada de preview rechaza rutas no normalizadas, directorios padres inseguros o enlaces simbólicos; 122/122 pruebas Master Director en rama PASS. No protege dependencias transitivas ni elimina carreras de archivos; aún requiere runtime inmutable y validación de producción. Sin despliegue.
+
+- Seguridad y perfiles: política del cerebro rechaza ficheros de otro propietario, rutas o directorios inseguros; estilos ajenos a CALMA y DOPAMIN se bloquean en vez de convertirse silenciosamente a CALMA. 122 pruebas específicas PASS. ELEMENTS aún no integrado como perfil; producción intacta.
+
+- Preparación de política: comprobador offline de solo lectura valida bytes, metadatos y 20 reglas para tres IDs seleccionados; no crea política ni modifica biblioteca. 125 pruebas del cerebro PASS. Los tres tapices reales figuran como propios, pero carecen de metadatos V2 de prueba/licencia, por lo que el comprobador bloquea correctamente la activación; no se deben inventar pruebas.
+
+- Regresión 05/11: al probar sobre copia productiva se detectó que alteraciones rápidas del mismo tamaño podían conservar mtime/ctime y evadir caché de integridad de live preview. En rama y staging se recalcula SHA antes de servir cada petición; 30 alteraciones repetidas y suite live PASS. Ensayo local 40 MiB × 5 = 312 ms; impacto en reproducción/cargas grandes pendiente de medir. Sin cambios productivos. Batería inicial 550/552 (Git ausente del contenedor, prueba aislada PASS en host; fallo de integridad corregido).
+
+- Integración nativa: aprobación o modo autónomo conecta con importador existente, revisa de nuevo plan/versión/evidencia y crea versión hija editable con petición idempotente; operaciones incompatibles se bloquean. Test autenticado con FFmpeg real produjo MP4 privado sintético 12 s, audio y decode completo PASS; interfaz escritorio supervisado y móvil autónomo PASS con fixtures y acciones DOM, sin evaluar visibilidad de todos los controles. 125 específicas PASS en host y render real PASS en contenedor. Sin despliegue ni aprobación artística.
+- Regresión de base productiva aislada, antes de esta conexión nativa: 554/554 ejecutadas PASS con dos tests actualizados en staging para la cola/límite actual; test Git omitido en contenedor y superado por separado en host. No equivale a batería completa posterior a la conexión ni a auditoría creativa.
+
+- ELEMENTS nativo conectado como formato combinable con CALMA/DOPAMIN: LIST, RANKING, COMPARE, Q&A, REVEAL y FLOW con copy y anclas explícitas, sin reemplazar elementos existentes sin autorización; presentación a pantalla completa declarada. 21 pruebas dirigidas PASS; MP4 sintético privado 12 s con LIST, audio y decode completo PASS con FFmpeg real. No equivale a acabados artísticos avanzados ni Remotion por capas; evaluación audiovisual pendiente. Batería de rama 127 PASS, una prueba real omitida por falta de FFmpeg en host y superada aparte en contenedor.
+
+- Integración completa en copia productiva: 558/558 casos ejecutados PASS (prueba Git omitida en contenedor y PASS por separado en host; dos tests de base ajustados en staging). Generador reproducible crea candidato bajo /tmp, verifica 458 hashes de la base antes y después de copiar y bloquea cambios inesperados; candidato previo 141/141 pruebas dirigidas PASS. Runtime Remotion no instalado ni fijado. Fotogramas sintéticos LIST revisados de forma parcial; no sustituye revisión audiovisual ni artística. Sin despliegue.
+
+### 10/11/2026 · FableCut private automation second checkpoint
+63/63 directed tests; 24 native commands, verified source intake, exact approved story batch, isolated render copy parity. QA015 3s/90f and QA018 five operations 1s/30f 1080x1920 with complete technical proofs. DAEDAL 394 files/12 CC0 licences hash verified; QA020 real riser inserted. Actual brand master commercial provenance and new recording acceptance remain pending. See docs/engine-next/FABLECUT_STORY_AUTOMATION_20261110.md. No deployment.

@@ -4,6 +4,7 @@ const BASE='https://api.shotstack.io';
 export class ProviderFailed extends Error {}
 export class ShotstackStage {
   constructor({key=process.env.SHOTSTACK_STAGE_API_KEY,env='stage',fetchImpl=fetch}={}) {
+    if(process.env.SHOTSTACK_ENABLED!=='true') throw new Error('Shotstack desactivado: SUES AI utiliza FableCut. No se permiten llamadas ni gastos de Shotstack.');
     if(env!=='stage') throw new Error('Producción bloqueada: sólo stage');
     if(!key?.trim()) throw new Error('Configura SHOTSTACK_STAGE_API_KEY en .env; nunca en el chat');
     this.key=key;this.fetch=fetchImpl;

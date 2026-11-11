@@ -12,7 +12,7 @@ export const TEXT_PRESETS=Object.freeze({
  oblique:{name:'Blanco inclinado',color:'#FFFFFF',italic:true},
  condensed:{name:'Blanco estrecho',color:'#FFFFFF',scaleX:74}
 });
-export function keywordPreset(keyword){return TEXT_PRESETS[keyword?.style]??TEXT_PRESETS[keyword?.level==='exceptional'?'gold':'white'];}
+export function keywordPreset(keyword){return TEXT_PRESETS[keyword?.style]??TEXT_PRESETS[keyword?.level==='exceptional'||keyword?.level==='important'?'gold':'white'];}
 export function validateKeywordOverrides(value){
  if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).length>500)throw new Error('Keyword overrides: object required');
  for(const [id,v]of Object.entries(value)){

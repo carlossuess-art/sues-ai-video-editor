@@ -31,7 +31,7 @@ export function editableBaseKey(jobId,project,prepared){
 }
 export class LivePreviews{
  constructor(directory,jobs,{busy=()=>false}={}){
-  this.directory=directory;this.jobs=jobs;this.busy=busy;this.tasks=new Map();this.running=null;this.checkedFiles=new Map();
+  this.directory=directory;this.jobs=jobs;this.busy=busy;this.tasks=new Map();this.running=null;
   mkdirSync(directory,{recursive:true,mode:0o700});if(lstatSync(directory).isSymbolicLink())throw Error('Invalid live preview cache');
   for(const key of readdirSync(directory).filter(x=>KEY.test(x))){try{const t=JSON.parse(readFileSync(join(directory,key,'state.json')));
    if(t.key!==key)continue;if(t.state==='PREPARING'){t.state='INTERRUPTED';t.error='La vista interactiva se interrumpió; vuelve a abrirla.';}this.tasks.set(key,t);
@@ -139,8 +139,9 @@ export class LivePreviews{
   const t=this.task(id,key);if(t.state!=='READY')throw Error('Live preview is preparing');
   if(!/^(base|matte|a-[a-f0-9]{64}|p-(whoosh|impact|draw|neon))$/.test(part??''))throw Error('Live resource not found');
   const f=t.files[part];if(!f||!existsSync(f.file)||lstatSync(f.file).isSymbolicLink()||statSync(f.file).size!==f.size)throw Error('Live resource changed');
-  const st=statSync(f.file,{bigint:true}),signature=[st.dev,st.ino,st.size,st.mtimeNs,st.ctimeNs].join(':'),cached=this.checkedFiles.get(f.file);
-  if(cached?.signature!==signature||cached?.sha256!==f.sha256){if(fileSha256(f.file)!==f.sha256)throw Error('Live resource changed');this.checkedFiles.set(f.file,{signature,sha256:f.sha256});}
+  // Filesystems may preserve identical timestamps during rapid same-size writes.
+  // A cached stat signature is therefore not evidence that content is unchanged.
+  if(fileSha256(f.file)!==f.sha256)throw Error('Live resource changed');
   return f;
  }
  async close(){if(this.running){this.running.child?.kill('SIGTERM');await this.running.done;}}
