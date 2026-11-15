@@ -1,3 +1,7 @@
+## CHECKPOINT ACTUALIZADO · 15/11/2026 · Render e integración NATIVOS verificados
+
+Consultar [docs/SUES_HYPERFRAMES_FABLECUT_NATIVE_CHAIN_20261115.md](docs/SUES_HYPERFRAMES_FABLECUT_NATIVE_CHAIN_20261115.md). Se ha logrado **render REAL HyperFrames → importación MCP REAL de FableCut → exportación REAL FableCut**, 151 frames 1080×1920/30 fps en entorno sintético y PRIVADO. Ya no procede tratar el bloqueo `SIGXFSZ` como impedimento actual: se resolvió mediante trabajo temporal acotado (sin cambiar globales). SHA HF `7f1ac8807b8275fde6d9d2b43fa440954484aae3588a477c17d35ba8395a9ec1`; SHA FableCut `909eaaa37b41546fff29292403eedf677a63ee1c6eb2ea679347d42c5cfa9713`; 151/151 frames comparados con PSNR mín 45,36 dB. **HyperFrames sigue siendo el motor dueño de las animaciones**. FableCut monta media, no modifica las capas animadas internas del MP4. Quedan voz y vídeo reales, QA y aprobación creativa doble. **No producción ni publicación.**
+
 ## ACTUALIZACIÓN OPERATIVA PRIORITARIA · 15/11/2026
 
 **HyperFrames es el motor principal para TODOS los motion graphics.** SUES MASTER DIRECTOR decide narrativa, palabras, ritmo, posiciones y transiciones; HyperFrames ejecuta HTML/SVG/GSAP/Three.js y conserva editables los elementos internos; FableCut monta el Reel, sus pistas y la composición exportada y puede modificar el clip, **NO** las capas internas de un vídeo ya renderizado. La experimentación con objetos nativos FableCut no sustituye HyperFrames.
