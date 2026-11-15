@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {validatePrivateE2EReports,verifyPrivateE2E} from '../scripts/motion-templates/verify-hyperframes-fablecut-e2e.mjs';
+import {validatePrivateE2EReports,verifyPrivateE2E,validateFullFrameComparison} from '../scripts/motion-templates/verify-hyperframes-fablecut-e2e.mjs';
 const sha1='1'.repeat(64),sha2='2'.repeat(64),source='3'.repeat(64);
 const times=[0,.267,.467,.9,1.2,1.7,2.2,2.7,3.1,3.5,4.1,4.8];
 function fixtures(){
@@ -61,4 +61,20 @@ test('private E2E proof cannot silently claim real Reel completion', {skip:!proc
  assert.equal(result.twoPassQACompleted,false);
  assert.equal(result.productionChanged,false);
  assert.equal(result.publicationAuthorized,false);
+});
+
+test('raw frame PSNR must cover all 151 consecutive frames, not just sample photos',()=>{
+ const log=Array.from({length:151},(_,i)=>'n:'+(i+1)+' mse_avg:1.2 psnr_avg:46.8').join('\n')+'\n';
+ const summary={schema:'sues-hf-fablecut-full-frame-psnr/v1',count:151,
+  minPsnrDb:46.8,meanPsnrDb:46.8,visualApproval:false,sourceVoiceVerified:false};
+ const result=validateFullFrameComparison(log,summary);
+ assert.equal(result.frameCount,151);assert.equal(result.firstFrame,0);assert.equal(result.lastFrame,150);
+ assert.equal(result.minPsnrDb,46.8);
+ assert.throws(()=>validateFullFrameComparison(log.split('\n').slice(0,150).join('\n'),summary),/Missing/);
+ const misnumber=log.replace('n:32 ','n:42 ');
+ assert.throws(()=>validateFullFrameComparison(misnumber,summary),/frame index gap/);
+ const low=log.replace('n:62 mse_avg:1.2 psnr_avg:46.8','n:62 mse_avg:1.2 psnr_avg:15.0');
+ assert.throws(()=>validateFullFrameComparison(low,summary),/divergence/);
+ const fake={...summary,minPsnrDb:45.0};
+ assert.throws(()=>validateFullFrameComparison(log,fake),/differ/);
 });
