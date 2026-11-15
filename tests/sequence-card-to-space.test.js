@@ -63,7 +63,7 @@ test('independently animated words retain safe visible gap and fit between the r
  const geometry=id=>{
   const tag=svg.match(new RegExp('<text id="'+id+'"[^>]*>'))?.[0];
   assert.ok(tag,'Missing word layer '+id);
-  const x=Number(tag.match(/\\bx="([^"]+)"/)?.[1]),width=Number(tag.match(/textLength="([^"]+)"/)?.[1]);
+  const x=Number(tag.match(/ x="([^"]+)"/)?.[1]),width=Number(tag.match(/textLength="([^"]+)"/)?.[1]);
   assert.ok(Number.isFinite(x)&&Number.isFinite(width));
   return {left:x-width/2,right:x+width/2};
  };
