@@ -38,6 +38,12 @@ mkdirSync(dataDir,{mode:0o700,recursive:false});
 writeFileSync(join(dataDir,'ISOLATED_HF_QA_NOT_PRODUCTION.txt'),
  'This FableCut data directory is exclusively synthetic HyperFrames integration QA.\nNever publish or copy it into an active project.\n',
  {mode:0o600,flag:'wx'});
+// FableCut MCP imports into an existing project.json; use its canonical
+// blankProject schema (projects.js), never a copy of a user's Reel.
+writeFileSync(join(dataDir,'project.json'),JSON.stringify({
+ name:'SUES HF synthetic QA - NEVER PUBLISH',width:1080,height:1920,fps:30,
+ revision:0,media:[],clips:[]
+},null,2)+'\n',{mode:0o600,flag:'wx'});
 const child=spawn(process.execPath,[serverJs],{
  env:{...process.env,FABLECUT_DATA_DIR:dataDir,FABLECUT_PORT:'17942',HOST:'127.0.0.1'},
  stdio:['pipe','pipe','pipe']});
