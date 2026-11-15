@@ -1,3 +1,7 @@
+## Actualización prioritaria · 15/11/2026 · Motion FableCut sincronizado por fotogramas
+
+**LEER:** [nuevo checkpoint](docs/SUES_MOTION_FRAME_SAMPLED_QA_20261115.md) antes de tocar motion. El último cambio no es solo una comp estructural: se introdujo la candidata `src/motion-templates/fablecut-frame-sampled-candidate.js` con valores SVG exactos **por frame a 30fps** para rect/radius, zoom/Y, rieles y alfa por palabra, sin traslación inventada. **65/65 tests dirigidos PASS en VPS** (incluye FableCut Motion real), 8 textos + 5 figuras editables, fixture QA privado SHA `359f0015c8a3d1f7f80844dcfdbeff468bc21614214d45fc3a69efbf6111b0bc`. Aún NO paridad visual acreditada por Chrome `SIGXFSZ`; faltan blur, clip mask, degradado/sombra y métricas tipográficas. **No importar a Master Director, no publicar ni tocar WAC, V29, FableCut productivo o medios.**
+
 ## Estado más reciente · Motion narrativo · 15/11/2026 · NO PRODUCCIÓN
 
 Antes de continuar: [checkpoint principal](docs/SUES_MOTION_HYPERFRAMES_FABLECUT_20261115.md) y `PROJECT_STATUS.md`. **60/60 pruebas dirigidas PASS en VPS** tras corregir el bloqueo de anclas F81 mientras los rieles se abren y proteger el panel ante cambios de captions y respuestas antiguas. Se probó el JS exacto en Chromium local móvil/escritorio mediante HTML/API ficticios, sin errores ni desbordamiento, pero no se ha probado el CSS real ni el render de FableCut. Script de browser QA: `tests/browser/narrative-motion-playwright.py`. No tocar producción/WAC/V29, ni declarar render final o mapeo canónico aprobado.
