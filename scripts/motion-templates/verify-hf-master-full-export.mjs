@@ -61,7 +61,8 @@ export function verifyPrivateMasterExport(dir0,hf0){
   exported.sourceSha256===handoff.sourceSha256&&
   exported.hyperframesRenderSha256===handoff.nativeHyperFramesSha256,
   'Source/HyperFrames/FableCut media SHA changed');
- check(project.revision===2&&project.media?.length===2&&project.clips?.length===2&&
+ check((project.revision===2||project.revision===3)&&
+  handoff.importedNativeRevision===2&&project.media?.length===2&&project.clips?.length===2&&
   project.clips[0].id==='c_synthetic_original'&&project.clips[0].track==='V1'&&
   project.clips[1].id===handoff.importedGraphicsClipId&&
   project.clips[1].track==='V2'&&project.clips[1].start===0&&
@@ -93,6 +94,8 @@ export function verifyPrivateMasterExport(dir0,hf0){
   finalFableCutSha256:exported.fablecutVideoSha256,
   storyRevision:handoff.storyRevision,operationId:handoff.operationId,
   fablecutProjectRevision:project.revision,
+  fablecutExportMayNormalizeProjectRevision:project.revision===3,
+  originalVideoClipId:'c_synthetic_original',
   canvas:{width:1080,height:1920,fps:30,frames:300,durationSec:10},
   hyperframesMotionInterval:{startFrame:0,endFrameExclusive:151,...motion},
   untouchedOriginalInterval:{startFrame:151,endFrameExclusive:300,...original},
