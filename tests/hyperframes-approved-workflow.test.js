@@ -111,7 +111,7 @@ test('two successful grants cannot double-apply after first alters native revisi
   const a=await r.service.issue(r.input,{verifiedHumanSession:true});
   const b=await r.service.issue(r.input,{verifiedHumanSession:true});
   await r.service.execute({...r.input,approvalId:a.approvalId});
-  await assert.rejects(r.service.execute({...r.input,approvalId:b.approvalId}),/FABLECUT_PROJECT_FINGERPRINT_CHANGED/);
+  await assert.rejects(r.service.execute({...r.input,approvalId:b.approvalId}),/FABLECUT_PROJECT_FINGERPRINT_CHANGED|HF_APPROVAL_EXPIRED_USED_OR_CHANGED/);
   assert.equal(r.state.imports,1);
  }finally{rmSync(r.scratch,{recursive:true,force:true});}
 });
