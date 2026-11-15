@@ -99,3 +99,41 @@ test('fingerprint, source or editor review must remain identical',()=>{
  assert.throws(()=>prepareEditorHyperFramesPreflight({...args(),sourceSha256:'f'.repeat(64)}),/does not match/);
  assert.throws(()=>prepareEditorHyperFramesPreflight({...args(),timelineFingerprint:'wrong'}),/Trusted source/);
 });
+
+function realDialogueFixture({uncertain=false}={}){
+ const lines=['Mañana','tengo','que','hacer','Y','otra','voz','responde,'];
+ const frames=[8,18,27,30,86,88,94,100],seconds=frames.map(f=>f/30);
+ const source={version:'1.0',language:'es',sourceDuration:10,
+  words:lines.map((text,i)=>({text,start:seconds[i],end:seconds[i]+.1,
+   ...(uncertain&&i===4?{timingUncertain:true}:{}),confidence:uncertain&&i===4?.44:.99}))};
+ const cues=[{id:'c1',source:'auto',text:lines.slice(0,4).join(' '),wordIndexes:[0,1,2,3]},
+  {id:'c2',source:'auto',text:lines.slice(4).join(' '),wordIndexes:[4,5,6,7]}];
+ const selections=[{captionId:'c1',captionText:cues[0].text,displayWordIndex:3,sourceWordIndex:3},
+  {captionId:'c2',captionText:cues[1].text,displayWordIndex:2,sourceWordIndex:6}];
+ const review=buildEditorNarrativeMotionReview({transcript:source,sourceSha256,planSourceSha256:sourceSha256,
+  jobFingerprint,requestedFingerprint:jobFingerprint,captions:cues,selections});
+ assert.equal(review.review.candidates.length,0,'Purely conversational words have no matching semantic template');
+ return {editorReview:review,transcript:source,sourceSha256,jobFingerprint,timelineFingerprint,
+  sourceTimeMap,editedDuration:10};
+}
+test('explicit two source words produce ONLY a 4+4 dialogue preflight when semantic matcher has no suggestion',()=>{
+ const p=prepareEditorHyperFramesPreflight(realDialogueFixture());
+ assert.equal(p.status,'READY_FOR_CREATIVE_REVIEW');
+ assert.equal(p.selectionMode,'EXPLICIT_4_PLUS_4_CONTEXT_ONLY');
+ assert.deepEqual(p.words.card.map(w=>w.text),['Mañana','tengo','que','hacer']);
+ assert.deepEqual(p.words.follow.map(w=>w.text),['Y','otra','voz','responde,']);
+ assert.deepEqual(p.words.card.map(w=>w.motionFrame),[8,18,27,30]);
+ assert.deepEqual(p.words.follow.map(w=>w.motionFrame),[86,88,94,100]);
+ assert.equal(p.canExecute,false);
+ assert.equal(p.creativeApproved,false);
+ assert.match(p.avMarkdown,/NO IMPORTABLE/);
+});
+test('ASR low confidence in context blocks stage but returns exact source word IDs for review',()=>{
+ const p=prepareEditorHyperFramesPreflight(realDialogueFixture({uncertain:true}));
+ assert.equal(p.status,'BLOCKED_FOR_EVIDENCE');
+ assert.equal(p.issues[0].code,'UNCERTAIN_SPEECH_TIMES');
+ assert.equal(p.selectionMode,'EXPLICIT_4_PLUS_4_CONTEXT_ONLY');
+ assert.deepEqual(p.proposedText,['Mañana tengo que hacer','Y otra voz responde,']);
+ assert.deepEqual(p.uncertainWordIds,['source-'+sourceSha256.slice(0,16)+'-w4']);
+ assert.equal(p.canExecute,false);
+});
