@@ -55,6 +55,15 @@ test('prepares native HyperFrames CLI variables using real selected original wor
  assert.equal(p.canExecute,false);
  assert.equal(p.fablecut.operationStatus,'NOT_PREPARED');
  assert.equal(p.productionChanged,false);
+ assert.match(p.avMarkdown,/GUION TÉCNICO A\/V/);
+ assert.match(p.avMarkdown,/H01 .*F0–F7/);
+ assert.match(p.avMarkdown,/H02 .*F8–F31/);
+ assert.match(p.avMarkdown,/H06 .*F81–F118/);
+ assert.match(p.avMarkdown,/H07 .*F119–F150/);
+ assert.match(p.avMarkdown,/bruto 0\.267 s, edit\. F8/);
+ assert.match(p.avMarkdown,/NO IMPORTABLE/);
+ assert.match(p.avMarkdown,/no ha escuchado|no escuchado|aún no escuchado/i);
+ assert.match(p.avMarkdown,/FableCut/);
 });
 test('blocks cut or unverified source-to-edited time mapping',()=>{
  const cut={...sourceTimeMap,spans:[
