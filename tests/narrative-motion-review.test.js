@@ -42,7 +42,9 @@ test('no silent word id construction, duplicates or uncertain timing',()=>{
  assert.throws(()=>prepareNarrativeMotionReview({...t,words:t.words.map(({id,...w})=>w)}),/stable unique id/);
  assert.throws(()=>prepareNarrativeMotionReview(t,{selectedWordIds:['real-4']}),/unknown word/);
  assert.throws(()=>prepareNarrativeMotionReview(t,{selectedWordIds:['real-0','real-0']}),/unique ids/);
- assert.throws(()=>prepareNarrativeMotionReview({...t,words:t.words.map((w,i)=>i===0?{...w,timingUncertain:true}:w)}),/Uncertain/);
+ const uncertain={...t,words:t.words.map((w,i)=>i===0?{...w,timingUncertain:true}:w)};
+ assert.equal(prepareNarrativeMotionReview(uncertain).selector.options[0].selectable,false);
+ assert.throws(()=>prepareNarrativeMotionReview(uncertain,{selectedWordIds:['real-0']}),/Uncertain/);
 });
 test('prior IDs are reused only if they still exist; selection does not imply approval',()=>{
  const t=original('¿Y si te escucharas?');
