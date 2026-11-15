@@ -32,6 +32,9 @@ export function buildEditorNarrativeMotionReview({
   as(typeof choice.captionText==='string'&&choice.captionText===caption.text,'Unsaved caption change; prepare a new revision');
   const tokens=caption.text.trim().split(/\s+/u);
   as(tokens.length===caption.wordIndexes.length,'Edited caption does not map one-to-one to original words');
+  as(caption.wordIndexes.every((idx,j)=>validIndex(idx)&&transcript.words[idx]&&
+    norm(tokens[j])===norm(transcript.words[idx].text)),
+    'Caption word context changed; reconcile all displayed words before preparing motion');
   const transcriptWord=transcript.words[choice.sourceWordIndex];
   as(transcriptWord&&norm(tokens[choice.displayWordIndex])===norm(transcriptWord.text),'Displayed word does not match source transcript');
   as(transcriptWord.timingUncertain!==true&&transcriptWord.end>transcriptWord.start,'Uncertain timing cannot drive motion');
