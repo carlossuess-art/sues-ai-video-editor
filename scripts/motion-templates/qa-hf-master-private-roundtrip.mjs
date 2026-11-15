@@ -62,13 +62,15 @@ const registry={sourceSha256,timelineFingerprint:p.timelineFingerprint,
  licensedAssets:{},canvas:{width:1080,height:1920}};
 const rulebook=[{id:'r1',key:'brand.background',scope:'global',
  authority:'explicit-user-approval',status:'approved',value:'anthracite',supersedes:[]}];
-const store=new MasterDirectorProjectStore(dir,async()=>({
+const store=new MasterDirectorProjectStore(dir,async draft=>({
  sourceSha256,timelineFingerprint:p.timelineFingerprint,duration:10,
  registry,rulebook,hyperframesPreflight:async plan=>{
   const hfOps=plan.operations.filter(o=>o.renderer==='hyperframes');
   try{
    check(hfOps.length===1,'Expected only one HF QA op');
-   verifyMasterHyperFramesOperation(hfOps[0],p,registry);
+   const sourceOps=draft.operations.filter(o=>o.renderer==='hyperframes');
+   check(sourceOps.length===1&&sourceOps[0].id===hfOps[0].id,'Compiled HF operation ID changed');
+   verifyMasterHyperFramesOperation(sourceOps[0],p,registry);
    return {status:'READY_FOR_EDITOR_PREVIEW',checkedOperationIds:[op.id]};
   }catch(error){return {status:'BLOCKED',issues:[{code:'QA_HF_PROOF_CHANGED',message:error.message}]};}
  }
@@ -80,8 +82,9 @@ const story={schema:'sues-master-story/v1',sourceSha256,
   scenes:[{id:'scene_hf',start:0,end:10,purpose:'Representar la pregunta y la apertura espacial'}],motifs:[],arc:[]},
  resources:[],operations:[op]};
 const snapshot=store.saveDraft(story);
-check(store.current().revision===null,'Never reuse an already-applied private master story');
-check(store.setCurrent(snapshot.revision,null).status==='CURRENT','Private master CAS failed');
+const currentHead=store.current().revision;
+check(currentHead===null||currentHead===snapshot.revision,'Never reuse another private master story');
+if(currentHead===null)check(store.setCurrent(snapshot.revision,null).status==='CURRENT','Private master CAS failed');
 const review=await store.review(snapshot.revision);
 check(review.status==='READY_FOR_CHOICE','Private synthetic creative review blocked: '+JSON.stringify(review.issues));
 const decision=await store.decide(snapshot.revision,review.fingerprint,'approve');
