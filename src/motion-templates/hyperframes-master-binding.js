@@ -135,7 +135,7 @@ export function loadTrustedHyperFramesPreflight(jobDirectory,fingerprint){
 export function verifyMasterHyperFramesOperation(operation,preflight,registry){
  const p=preflight;
  const expected=makeHyperFramesMasterOperation(p,{sceneId:operation.sceneId,
-  operationId:operation.id,zIndex:operation.parameters?.visual?.zIndex});
+  operationId:operation.id});
  const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
  must(equal(operation,expected),'Master HyperFrames motion operation differs from reviewed preflight');
  must(registry?.sourceSha256===p.sourceSha256&&
