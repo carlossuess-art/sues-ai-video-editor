@@ -46,4 +46,12 @@ test('real FableCut project-ops structurally validates both comps in an unsaved 
  assert.equal(doc.clips[0].kind,'comp');
  assert.ok(doc.comps[0].clips.some(x=>x.kind==='shape'));
  assert.equal(doc.media.length,0);
+ const {dirname,join}=require('node:path');
+ const Comp=require(join(dirname(process.env.SUES_FABLECUT_PROJECT_OPS),'comp.js'));
+ const flattened=Comp.flatten(doc);
+ assert.equal(flattened.filter(c=>c.kind==='text').length,8);
+ assert.equal(flattened.filter(c=>c.kind==='shape').length,5);
+ assert.equal(flattened.filter(c=>c.kind==='comp').length,1);
+ assert.ok(flattened.some(c=>c.id.endsWith('nested-card-scene>card-word-0')));
+
 });
