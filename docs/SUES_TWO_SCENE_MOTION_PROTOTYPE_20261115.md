@@ -21,7 +21,7 @@
 
 - Reutiliza exactamente src/motion-templates/hook-drop-card-engine.js (v3) sin reescribirlo.
 - src/motion-templates/sequence-card-to-space.js añade una segunda escena sobre el mismo lienzo SVG, con animación determinista por fotograma y una metáfora visual con significado.
-- tests/sequence-card-to-space.test.js cubre 6 casos de composición/continuidad, además de los 11 tests previamente existentes.
+- tests/sequence-card-to-space.test.js cubre 6 casos de composición/continuidad, y tests/bind-sequence-to-speech.test.js añade 3 pruebas de anclas revisadas, además de los 11 tests anteriores. El adaptador src/motion-templates/bind-sequence-to-speech.js reutiliza el vinculador de la tarjeta y valida las palabras de ambos bloques.
 - examples/motions/card-to-space.preview.html permite reproducir, detener, avanzar fotograma a fotograma y editar los cuatro fragmentos de texto en el navegador.
 - La segunda composición usa la paleta SUES blanco/dorado/antracita y fuente Montserrat declarada; la fuente real requiere verificación en el renderer final.
 - La segunda escena **no representa una respiración real ni una waveform de voz**. No hay aserciones sobre beneficios terapéuticos.
@@ -29,9 +29,9 @@
 
 ## Evidencia y límites
 
-Pruebas dirigidas localmente: **17/17 PASS**, Node 22.16.0. 151/151 fotogramas SVG convertidos a PNG. Vídeo H.264 aislado y comprobado: 540×960 píxeles, 30 fps, 151 fotogramas, duración 5,0333 segundos, SHA-256 **4f92022f15b5b3f776602cc1a4e08c4e7a5e4498ace0ea7c502cda8e177cc82b**. Hoja de 23 fotogramas clave revisada visualmente y disponible en la conversación. Los activos binarios NO se suben a GitHub.
+Pruebas dirigidas localmente: **20/20 PASS**, Node 22.16.0. 151/151 fotogramas SVG convertidos a PNG. Vídeo H.264 aislado y comprobado: 540×960 píxeles, 30 fps, 151 fotogramas, duración 5,0333 segundos, SHA-256 **4f92022f15b5b3f776602cc1a4e08c4e7a5e4498ace0ea7c502cda8e177cc82b**. Hoja de 23 fotogramas clave revisada visualmente y disponible en la conversación. Los activos binarios NO se suben a GitHub.
 
-No es un render FableCut, no equivale a prueba de previsualización navegador real del editor y no dispone de transcripción, word IDs reales para la segunda escena, mapa fuente↔edición, huella de timeline, máster 1080×1920, mezcla, QA de voz/sonido ni dos revisiones independientes. La validación artística de Carlos está pendiente; no hay aprobación ni autorización de despliegue.
+La sincronización real de ambos bloques está **preparada como interfaz de entrada validada por IDs**, NO se ha ejercitado contra una transcripción auténtica ni se ha integrado con el selector real del editor. No es un render FableCut, no equivale a prueba de previsualización navegador real del editor y no dispone de transcripción, word IDs reales para la segunda escena, mapa fuente↔edición, huella de timeline, máster 1080×1920, mezcla, QA de voz/sonido ni dos revisiones independientes. La validación artística de Carlos está pendiente; no hay aprobación ni autorización de despliegue.
 
 ## Siguiente bloque técnico
 
