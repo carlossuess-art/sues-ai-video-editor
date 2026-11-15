@@ -28,3 +28,19 @@ test('rejects false timing and early card reveal',()=>{
  const early=transcriptWords.map(w=>w.id==='c0'?{...w,start:0.10,end:.20}:w);
  assert.throws(()=>bindCardToSpaceToSpeech({...src,transcriptWords:early}),/rectangle/);
 });
+test('binds reviewed real IDs while follow-up words appear during the moving rails',()=>{
+ const earlier=transcriptWords.map(w=>{
+  const starts={f0:2.70,f1:2.97,f2:3.47,f3:3.73};
+  return Object.hasOwn(starts,w.id)?{...w,start:starts[w.id],end:starts[w.id]+.12}:w;
+ });
+ const result=bindCardToSpaceToSpeech({...src,transcriptWords:earlier});
+ assert.deepEqual(result.params.followWordStartFrames,[81,89,104,112]);
+ assert.ok(sampleCardToSpace(85,result.params).words[0].opacity>0);
+ assert.equal(sampleCardToSpace(85,result.params).speechSync,'external-word-id-anchors');
+ assert.equal(result.nativeMapping,'not-available');
+ assert.equal(result.readyForAutomaticEdit,false);
+});
+test('rejects follow-up speech that would appear before the legible rail-opening window',()=>{
+ const tooSoon=transcriptWords.map(w=>w.id==='f0'?{...w,start:2.60,end:2.72}:w);
+ assert.throws(()=>bindCardToSpaceToSpeech({...src,transcriptWords:tooSoon}),/outside/);
+});
