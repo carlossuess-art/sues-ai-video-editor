@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SUES Motion · tarjeta y esfera · previsualización aislada</title>
+<title>SUES Motion · tarjeta con palabras individuales · previsualización aislada</title>
 <style>
 body{margin:0;background:#151516;color:#f5f3ea;font:16px system-ui,sans-serif}
 main{max-width:940px;margin:auto;padding:20px;display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:24px}
@@ -15,13 +15,13 @@ small{color:#bcb6a9}
 </style></head>
 <body><main>
 <div id="viewport" aria-label="Motion vertical de tarjeta y esfera"></div>
-<aside><h2>Tarjeta + esfera</h2>
-<small>30 fps · 1,7 segundos · SVG por capa · prototipo aislado</small>
+<aside><h2>Tarjeta + palabras</h2>
+<small>30 fps · 2,33 segundos · SVG por capa · palabra a palabra · salida por zoom · prototipo aislado</small>
 <label>Primera línea <input id="line1" maxlength="36" value="¿Y SI TE"></label>
 <label>Segunda línea <input id="line2" maxlength="36" value="ESCUCHARAS?"></label>
 <label>Tarjeta <input id="card" type="color" value="#30250f"></label>
 <button id="play">Reproducir</button>
-<label>Fotograma <output id="index">0</output> / 50 <input id="seek" type="range" min="0" max="50" value="0" step="1"></label>
+<label>Fotograma <output id="index">0</output> / 69 <input id="seek" type="range" min="0" max="69" value="0" step="1"></label>
 <small>No hay vídeo comercial ni pistas de voz, música o subtítulos añadidos. No es una exportación FableCut.</small>
 </aside></main>
 <script type="module">
@@ -42,7 +42,7 @@ function tick(now){
 }
 el('play').onclick=()=>{
  playing=!playing;cancelAnimationFrame(handle);
- if(playing){start=Number(el('seek').value);if(start===50)start=0;t0=performance.now();el('play').textContent='Pausar';handle=requestAnimationFrame(tick);}
+ if(playing){start=Number(el('seek').value);if(start===FRAME_COUNT-1)start=0;t0=performance.now();el('play').textContent='Pausar';handle=requestAnimationFrame(tick);}
  else el('play').textContent='Reproducir';
 };
 el('seek').oninput=()=>{playing=false;cancelAnimationFrame(handle);el('play').textContent='Reproducir';render(Number(el('seek').value));};
