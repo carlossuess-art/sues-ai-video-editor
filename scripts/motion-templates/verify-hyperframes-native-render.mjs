@@ -88,7 +88,8 @@ function probe(path){
  fail(process.status===0,'ffprobe failed: '+String(process.stderr).slice(0,180));
  return JSON.parse(process.stdout);
 }
-export function createVerifiedNativeProof(projectDir,manifest,mediaPath,pixelReport,stderrLog){
+export function createVerifiedNativeProof(projectDir,manifest,mediaPath,pixelReport,stderrLog,proofPath){
+ fail(typeof proofPath==='string'&&proofPath.trim(),'New native proof path required');
  const checked=validateSourceManifest(projectDir,manifest);
  fail(statSync(mediaPath).size>5000&&statSync(mediaPath).size<=maxMediaBytes,'Unexpected native media size');
  const raw=readFileSync(mediaPath),hash=sha(raw);
@@ -106,7 +107,7 @@ export function createVerifiedNativeProof(projectDir,manifest,mediaPath,pixelRep
   kind:'NATIVE_HYPERFRAMES_RENDER',renderer:'HyperFrames',
   sourceFingerprint:checked.source.fingerprint,outputSha256:hash,
   width:media.width,height:media.height,fps:media.fps,frames:media.frames,
-  filePath:mediaPath,proofPath:'supplied-by-caller'
+  filePath:mediaPath,proofPath
  });
  return {schema:'sues-hyperframes-native-media-proof/v1',
   status:'TECHNICAL_RENDER_AND_FRAME_ALIGNMENT_VERIFIED',
@@ -131,7 +132,7 @@ if(resolve(process.argv[1]??'')===fileURLToPath(import.meta.url)){
  const [projectDir,sourceFile,mediaFile,outFile,pixelFile,stderrFile]=args.map(resolve);
  fail(!existsSync(outFile),'Refuse to overwrite prior native receipt');
  const p=createVerifiedNativeProof(realpathSync(projectDir),readJson(sourceFile),
-  realpathSync(mediaFile),readJson(pixelFile),readFileSync(stderrFile,'utf8'));
+  realpathSync(mediaFile),readJson(pixelFile),readFileSync(stderrFile,'utf8'),outFile);
  writeFileSync(outFile,JSON.stringify(p,null,2)+'\n',{flag:'wx',mode:0o600});
  console.log(JSON.stringify({status:p.status,sha256:p.renderedFile.sha256,
   frames:p.renderedFile.frames,resolution:[p.renderedFile.width,p.renderedFile.height],
