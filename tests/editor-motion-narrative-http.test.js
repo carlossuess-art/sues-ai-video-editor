@@ -30,6 +30,8 @@ test('existing authenticated editor reviews selected real words without changing
    captionId:chosen.id,displayWordIndex,sourceWordIndex:3,captionText:chosen.text
   }]};
   assert.equal((await fetch(path(job.id),{method:'POST',body:JSON.stringify(payload)})).status,401);
+  const noRequestHeader=await fetch(path(job.id),{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  assert.equal(noRequestHeader.status,403);
   const read=await fetch(path(job.id),{method:'POST',headers,body:JSON.stringify(payload)});
   assert.equal(read.status,200);
   const reply=await read.json();
