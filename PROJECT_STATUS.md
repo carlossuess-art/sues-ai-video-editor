@@ -1,3 +1,11 @@
+## 15/11/2026 · HITO: HyperFrames → FableCut EXPORTACIÓN NATIVA REAL (PRIVADA) · SIN PUBLICACIÓN
+
+- **Checkpoint principal vigente:** [SUES_HYPERFRAMES_FABLECUT_NATIVE_CHAIN_20261115.md](docs/SUES_HYPERFRAMES_FABLECUT_NATIVE_CHAIN_20261115.md). Se resolvió el bloqueo de Chrome con trabajos transitorios systemd de QA (`LimitFSIZE=128M`, CPU/memoria/tiempo limitados), sin tocar los límites del servidor ni producción.
+- **Render HyperFrames REAL:** H.264 1080×1920 30fps, 151 frames, 5,033333 s, SHA **`7f1ac8807b8275fde6d9d2b43fa440954484aae3588a477c17d35ba8395a9ec1`**. HF `check` retornó `ok:true`, con **76 avisos `line_unread` + 1 overflow de cámara** por revisar. No confundirlos con QA aprobada.
+- **Importación y exportación FableCut REALES** mediante MCP y Chrome, exclusivamente en QA `fablecut-private-qa/hf-native-v2-mcp-qa` (puerto aislado 17942). MP4 FableCut 1080×1920/30fps/151 frames, SHA **`909eaaa37b41546fff29292403eedf677a63ee1c6eb2ea679347d42c5cfa9713`**; un vídeo editable como clip, animación interna solo editable en HyperFrames.
+- **Comparativa:** 12 imágenes PSNR mínima 39,62 dB, y **151/151 fotogramas** comparados íntegramente mediante `ffmpeg psnr`: mínimo **45,36 dB**, media **46,97 dB**. Manifiesto verificador E2E firmado por SHA `1981c1e94328450a5419f8b97111a357e870b1edad4e2edf6d1d57d579a95161`; sin aprobación artística.
+- Nuevos módulos de validación SHA, ffprobe, importación, exportación privada y comprobación íntegra. **Sin modificar FableCut publicado, V29, WAC, DNS, medios, ni servidores productivos.** Aún falta voz verdadera, plan A/V aprobado, QA integral en 2 pasadas, mapeo Master Director verificable y aprobación/públicación separadas.
+
 ## 15/11/2026 · Arquitectura corregida: HyperFrames dueño de motion, FableCut monta · 74/74 pruebas PASS
 
 - **Checkpoint prioritario:** [SUES_HYPERFRAMES_PRIMARY_HANDOFF_20261115.md](docs/SUES_HYPERFRAMES_PRIMARY_HANDOFF_20261115.md). HyperFrames es el **motor principal** para motion (palabras/blur/máscaras/objetos/cámaras/easing). FableCut es el editor del Reel y consume clips verificados manteniendo una referencia al proyecto editable **en HyperFrames**; un MP4 no convierte sus parámetros internos en objetos FableCut editables.
