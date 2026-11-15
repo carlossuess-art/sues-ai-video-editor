@@ -11,12 +11,15 @@
   hfButton=document.getElementById('narrative-motion-hf-preflight'),
   hfStatus=document.getElementById('narrative-motion-hf-status'),
   hfOutput=document.getElementById('narrative-motion-hf-results'),
-  hfExport=document.getElementById('narrative-motion-hf-export');
+  hfExport=document.getElementById('narrative-motion-hf-export'),
+  hfStage=document.getElementById('narrative-motion-hf-stage'),
+  hfStageStatus=document.getElementById('narrative-motion-hf-stage-status');
  let context=null,lastReview=null,lastHF=null,reviewSerial=0;
  const reset=message=>{
   reviewSerial++;lastReview=null;output.replaceChildren();status.textContent=message;
   exportBtn.disabled=true;button.disabled=!context;
-  lastHF=null;hfOutput.replaceChildren();hfExport.disabled=true;hfButton.disabled=true;
+  lastHF=null;hfOutput.replaceChildren();hfExport.disabled=true;hfButton.disabled=true;hfStage.disabled=true;
+  hfStageStatus.textContent='La incorporación no aprueba ni ejecuta la edición.';
   hfStatus.textContent='Primero revisa las propuestas narrativas.';
  };
  window.addEventListener('sues:motion-context',e=>{
@@ -90,7 +93,7 @@
   const current=context,ticket=++reviewSerial;
   try{
    const selections=choices(),signature=JSON.stringify(selections);
-   hfButton.disabled=true;hfExport.disabled=true;lastHF=null;hfOutput.replaceChildren();
+   hfButton.disabled=true;hfExport.disabled=true;hfStage.disabled=true;lastHF=null;hfOutput.replaceChildren();
    hfStatus.textContent='Comprobando mapa temporal y tiempos reales con HyperFrames…';
    const response=await fetch('/api/jobs/'+encodeURIComponent(current.jobId)+'/motion-hyperframes-preflight',{
     method:'POST',credentials:'same-origin',
@@ -119,12 +122,50 @@
    textNode(hfOutput,'p','Palabras ancladas: '+[...body.words.card,...body.words.follow].
     map(w=>w.text+' (F'+w.editedFrame+')').join(' · '));
    textNode(hfOutput,'small','No importable: falta aprobación creativa del guion A/V, comprobación de rostro, render nativo y conexión CAS a FableCut.');
-   hfExport.disabled=false;
+   hfExport.disabled=false;hfStage.disabled=false;
   }catch(error){
    if(context===current&&ticket===reviewSerial){lastHF=null;hfExport.disabled=true;
     hfOutput.replaceChildren();hfStatus.textContent='Preparación HyperFrames bloqueada: '+error.message;}
   }finally{
    if(context===current&&ticket===reviewSerial)hfButton.disabled=!lastReview?.review?.candidates?.length;
+  }
+ });
+ // User explicitly stages the reviewed motion as a NEW, not-yet-approved
+ // Master Director revision. The existing story is never edited in place.
+ hfStage.addEventListener('click',async()=>{
+  if(!context||!lastHF||lastHF.status!=='READY_FOR_CREATIVE_REVIEW')return;
+  const current=context,ticket=++reviewSerial;
+  hfStage.disabled=true;
+  const signature=JSON.stringify(choices());
+  hfStageStatus.textContent='Comprobando la revisión del guion maestro…';
+  try{
+   const root='/api/jobs/'+encodeURIComponent(current.jobId);
+   const headResp=await fetch(root+'/master-current',{credentials:'same-origin'});
+   const head=await headResp.json();
+   if(!headResp.ok||!/^[a-f0-9]{64}$/.test(head.revision??''))
+    throw Error('Primero debes preparar el guion maestro de este proyecto.');
+   if(context!==current||ticket!==reviewSerial||JSON.stringify(choices())!==signature)return;
+   const r=await fetch(root+'/motion-hyperframes-stage',{
+    method:'POST',credentials:'same-origin',
+    headers:{'content-type':'application/json','x-sues-request':'editor'},
+    body:JSON.stringify({fingerprint:current.fingerprint,
+     selections:JSON.parse(signature),expectedStoryRevision:head.revision})
+   });
+   const reply=await r.json();
+   if(context!==current||ticket!==reviewSerial)return;
+   if(JSON.stringify(choices())!==signature){reset('Las palabras cambiaron. No reutilices la revisión anterior.');return;}
+   if(!r.ok)throw Error(reply.error??reply.issues?.map(i=>i.description??i.code).join('; ')??('HTTP '+r.status));
+   if(reply.status!=='NEW_MASTER_DRAFT_REQUIRES_CREATIVE_APPROVAL'||
+      reply.creativeApproved!==false||reply.canExecute!==false||reply.fablecutEdited!==false)
+    throw Error('El editor no confirmó una revisión segura y no aprobada.');
+   hfStageStatus.textContent='Motion añadido al guion maestro en una NUEVA REVISIÓN ('+
+    reply.storyRevision.slice(0,12)+'…). Revisa el guion completo y aprueba creatividad antes del render.';
+   lastHF=null;hfStage.disabled=true;hfExport.disabled=true;
+  }catch(error){
+   if(context===current&&ticket===reviewSerial){
+    hfStageStatus.textContent='No se ha incorporado el motion: '+error.message;
+    hfStage.disabled=!lastHF;
+   }
   }
  });
  hfExport.addEventListener('click',()=>{
