@@ -7,11 +7,17 @@
  const button=document.getElementById('narrative-motion-propose'),
   status=document.getElementById('narrative-motion-status'),
   output=document.getElementById('narrative-motion-results'),
-  exportBtn=document.getElementById('narrative-motion-export');
- let context=null,lastReview=null,reviewSerial=0;
+  exportBtn=document.getElementById('narrative-motion-export'),
+  hfButton=document.getElementById('narrative-motion-hf-preflight'),
+  hfStatus=document.getElementById('narrative-motion-hf-status'),
+  hfOutput=document.getElementById('narrative-motion-hf-results'),
+  hfExport=document.getElementById('narrative-motion-hf-export');
+ let context=null,lastReview=null,lastHF=null,reviewSerial=0;
  const reset=message=>{
   reviewSerial++;lastReview=null;output.replaceChildren();status.textContent=message;
   exportBtn.disabled=true;button.disabled=!context;
+  lastHF=null;hfOutput.replaceChildren();hfExport.disabled=true;hfButton.disabled=true;
+  hfStatus.textContent='Primero revisa las propuestas narrativas.';
  };
  window.addEventListener('sues:motion-context',e=>{
   const d=e.detail;
@@ -56,6 +62,7 @@
    }
   }
   exportBtn.disabled=false;
+  hfButton.disabled=reply.review.candidates.length===0;
   status.textContent=reply.review.candidates.length+' propuesta(s), sin ejecutar ni modificar el vídeo.';
  }
  button.addEventListener('click',async()=>{
@@ -63,6 +70,7 @@
   const requestContext=context,ticket=++reviewSerial;
   try{
    const selections=choices(),signature=JSON.stringify(selections);
+   lastHF=null;hfOutput.replaceChildren();hfExport.disabled=true;hfButton.disabled=true;
    button.disabled=true;status.textContent='Revisando palabras reales y motivos narrativos…';
    const response=await fetch('/api/jobs/'+encodeURIComponent(requestContext.jobId)+'/motion-narrative',{
     method:'POST',credentials:'same-origin',
@@ -76,6 +84,56 @@
    show(result);
   }catch(error){if(requestContext===context&&ticket===reviewSerial){lastReview=null;exportBtn.disabled=true;output.replaceChildren();status.textContent='Revisión bloqueada: '+error.message}}
   finally{if(ticket===reviewSerial)button.disabled=!context}
+ });
+ hfButton.addEventListener('click',async()=>{
+  if(!context||!lastReview)return;
+  const current=context,ticket=++reviewSerial;
+  try{
+   const selections=choices(),signature=JSON.stringify(selections);
+   hfButton.disabled=true;hfExport.disabled=true;lastHF=null;hfOutput.replaceChildren();
+   hfStatus.textContent='Comprobando mapa temporal y tiempos reales con HyperFrames…';
+   const response=await fetch('/api/jobs/'+encodeURIComponent(current.jobId)+'/motion-hyperframes-preflight',{
+    method:'POST',credentials:'same-origin',
+    headers:{'content-type':'application/json','x-sues-request':'editor'},
+    body:JSON.stringify({fingerprint:current.fingerprint,selections})
+   });
+   const body=await response.json();
+   if(context!==current||ticket!==reviewSerial)return;
+   if(JSON.stringify(choices())!==signature){reset('Se modificaron palabras durante el análisis. Prepara una nueva revisión.');return;}
+   if(response.status===422&&body?.status==='BLOCKED_FOR_EVIDENCE'){
+    hfStatus.textContent='Preparación bloqueada: falta evidencia o revisión.';
+    for(const issue of body.issues??[])textNode(hfOutput,'p',issue.description+' ['+issue.code+']');
+    return;
+   }
+   if(!response.ok)throw Error(body?.error??('HTTP '+response.status));
+   if(body.schema!=='sues-editor-hyperframes-preflight/v1'||
+      body.status!=='READY_FOR_CREATIVE_REVIEW'||body.canExecute!==false||
+      body.creativeApproved!==false||body.rendered!==false)
+    throw Error('Respuesta HyperFrames sin protección de revisión');
+   lastHF=body;
+   hfStatus.textContent='Composición preparada para revisión. No se ha renderizado ni editado el vídeo.';
+   textNode(hfOutput,'h4','Propuesta: '+body.hyperframes.variables.line1+' '+body.hyperframes.variables.line2);
+   textNode(hfOutput,'p','Continuación: '+body.hyperframes.variables.followLine1+' '+body.hyperframes.variables.followLine2);
+   textNode(hfOutput,'p','Comienzo propuesto: '+body.scene.startSec.toFixed(3)+
+    ' s · 151 fotogramas · 30 fps · pantalla completa (sin superponer al rostro)');
+   textNode(hfOutput,'p','Palabras ancladas: '+[...body.words.card,...body.words.follow].
+    map(w=>w.text+' (F'+w.editedFrame+')').join(' · '));
+   textNode(hfOutput,'small','No importable: falta aprobación creativa del guion A/V, comprobación de rostro, render nativo y conexión CAS a FableCut.');
+   hfExport.disabled=false;
+  }catch(error){
+   if(context===current&&ticket===reviewSerial){lastHF=null;hfExport.disabled=true;
+    hfOutput.replaceChildren();hfStatus.textContent='Preparación HyperFrames bloqueada: '+error.message;}
+  }finally{
+   if(context===current&&ticket===reviewSerial)hfButton.disabled=!lastReview?.review?.candidates?.length;
+  }
+ });
+ hfExport.addEventListener('click',()=>{
+  if(!lastHF||lastHF.status!=='READY_FOR_CREATIVE_REVIEW'||!context)return;
+  const json=JSON.stringify(lastHF.hyperframes.variables,null,2)+'\n';
+  const blob=new Blob([json],{type:'application/json;charset=utf-8'});
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download='SUES_HYPERFRAMES_VARIABLES_REVISION_NO_APROBADA.json';link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
  });
  exportBtn.addEventListener('click',()=>{
   if(!lastReview)return;
