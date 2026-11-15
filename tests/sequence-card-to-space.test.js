@@ -57,3 +57,20 @@ test('no textless pause after the card zoom: next words start while rails part',
  assert.ok(sampleCardToSpace(84).words[0].opacity>0);
  assert.ok(sampleCardToSpace(SPACE_EVENTS.settle).words.every(w=>w.opacity===1));
 });
+
+test('independently animated words retain safe visible gap and fit between the rails',()=>{
+ const svg=renderCardToSpaceSvg(119);
+ const geometry=id=>{
+  const tag=svg.match(new RegExp('<text id="'+id+'"[^>]*>'))?.[0];
+  assert.ok(tag,'Missing word layer '+id);
+  const x=Number(tag.match(/\\bx="([^"]+)"/)?.[1]),width=Number(tag.match(/textLength="([^"]+)"/)?.[1]);
+  assert.ok(Number.isFinite(x)&&Number.isFinite(width));
+  return {left:x-width/2,right:x+width/2};
+ };
+ const boundaries=sampleCardToSpace(119).rails;
+ for(const line of [0,1]){
+  const first=geometry('follow-word-'+line+'-0'),second=geometry('follow-word-'+line+'-1');
+  assert.ok(second.left-first.right>=80,'Words need a readable gap');
+  assert.ok(first.left>boundaries.leftX&&second.right<boundaries.rightX,'Typography must fit in opened space');
+ }
+});
