@@ -21,24 +21,36 @@ function config(args={}){
  if(lines.some(v=>typeof v!=='string'||!v.trim()||[...v].length>32))throw Error('following lines must have 1–32 characters');
  const chunks=lines.map((v,index)=>v.trim().split(/\s+/u).map((word,j)=>({word,id:'follow-word-'+index+'-'+j})));
  if(chunks.some(arr=>arr.length>6))throw Error('too many words on one line');
- return {lines,chunks};
+ const count=chunks.flat().length;
+ const hasTimes=args.followWordStartFrames!==undefined;
+ const hasIds=args.followWordIds!==undefined;
+ if(hasTimes!==hasIds)throw Error('follow word starts and IDs must be provided together');
+ if(hasTimes){
+  const starts=args.followWordStartFrames,ids=args.followWordIds;
+  if(!Array.isArray(starts)||starts.length!==count||starts.some((n,i)=>!Number.isInteger(n)||n<SPACE_EVENTS.railsEnd||n>SPACE_EVENTS.end-7||(i>0&&n<=starts[i-1])))throw Error('invalid followWordStartFrames');
+  if(!Array.isArray(ids)||ids.length!==count||ids.some(v=>typeof v!=='string'||!v.trim())||new Set(ids).size!==ids.length)throw Error('invalid followWordIds');
+ }
+ return {lines,chunks,followWordStartFrames:args.followWordStartFrames,followWordIds:args.followWordIds,hasAnchors:hasTimes};
 }
 export function sampleCardToSpace(frame,args={}){
  if(!Number.isInteger(frame)||frame<0||frame>=SEQUENCE_FRAMES)throw RangeError('frame outside 0..150');
- const {lines,chunks}=config(args),e=SPACE_EVENTS;
+ const {lines,chunks,followWordStartFrames,followWordIds,hasAnchors}=config(args),e=SPACE_EVENTS;
  const rise=out(progress(frame,e.railsStart,e.railsStart+13));
  const spread=inOut(progress(frame,e.railsStart+5,e.railsEnd));
  const railsOpacity=out(progress(frame,e.railsStart,e.railsStart+7));
  const railY=lerp(1540,895,rise),railHalfGap=lerp(20,426,spread);
+ let serialIndex=0;
  const labels=chunks.map((group,line)=>group.map((w,i)=>{
-  const first=line===0?e.firstWords:e.secondWords,start=first+i*8;
+  const first=line===0?e.firstWords:e.secondWords;
+  const idx=serialIndex++;
+  const start=hasAnchors?followWordStartFrames[idx]:first+i*8;
   const fade=out(progress(frame,start,start+7));
-  return {...w,line,start,opacity:fade,blur:7*(1-fade),dy:24*(1-fade)};
+  return {...w,line,start,wordId:hasAnchors?followWordIds[idx]:null,opacity:fade,blur:7*(1-fade),dy:24*(1-fade)};
  })).flat();
  const stage=frame<e.bridgeStart?'card':frame<e.cardGone?'bridge':frame<e.railsEnd?'opening-space':frame<e.settle?'reading':'hold';
  return {id:SEQUENCE_ID,frame,fps:FPS,cardFrame:Math.min(frame,CARD_FRAMES-1),stage,
   rails:{leftX:540-railHalfGap,rightX:540+railHalfGap,y:railY,height:210,opacity:railsOpacity},
-  lines,words:labels,captionPolicy:'use-existing-editor',speechSync:'demo-no-transcript',
+  lines,words:labels,captionPolicy:'use-existing-editor',speechSync:hasAnchors?'external-word-id-anchors':'demo-no-transcript',
   secondSceneAlpha:railsOpacity,endsReadyForNextScene:frame===e.end,executableInFableCut:false};
 }
 export function renderCardToSpaceSvg(frame,args={}){
