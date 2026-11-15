@@ -10,18 +10,18 @@ class El {
  append(el){this.children.push(el);}
  click(){return this.handlers.get('click')?.();}
 }
-function rig({selection='1',disabled=false}={}){
- const ids=['narrative-motion-panel','narrative-motion-propose','narrative-motion-status','narrative-motion-results','narrative-motion-export'];
+function rig({selection='1',disabled=false,defer=false}={}){
+ const ids=['narrative-motion-panel','narrative-motion-propose','narrative-motion-status','narrative-motion-results','narrative-motion-export','captions'];
  const elements=Object.fromEntries(ids.map(id=>[id,new El(id)]));
  const select=new El('choice');select.dataset.keyword='seg-001';select.value=selection;select.disabled=disabled;
  const textarea=new El('caption');textarea.value='¿Y SI TE ESCUCHARAS?';
- const listeners=new Map(),requests=[];
+ const listeners=new Map(),requests=[],pending=[];
  const response={review:{candidates:[{sourceSpeech:{quote:'¿Y SI TE ESCUCHARAS?',anchorWordId:'hash-w1',start:1,end:2},reason:'Pregunta',visualMechanism:'Tarjeta con texto',templateId:'TPL_HOOK_DROP_CARD',implementation:'standalone-svg-prototype',blockReasons:['No mapping nativo']} ]},avMarkdown:'# A/V',readOnly:true};
  const document={getElementById:id=>elements[id]??null,
   querySelectorAll:s=>s==='#captions select[data-keyword]'?[select]:[],
   querySelector:s=>s.startsWith('#captions textarea')?textarea:null,
   createElement:tag=>new El(tag)};
- const fetch=async(url,opts)=>{requests.push({url,opts});return {ok:true,json:async()=>response};};
+ const fetch=async(url,opts)=>{requests.push({url,opts});if(defer)await new Promise(done=>pending.push(done));return {ok:true,json:async()=>response};};
  const win={addEventListener:(k,fn)=>listeners.set(k,fn)};
  const env={document,window:win,fetch,Blob,URL:{createObjectURL:()=>'/blob/demo',revokeObjectURL:()=>{}},setTimeout:()=>{}};
  runInNewContext(script,env);
@@ -29,7 +29,7 @@ function rig({selection='1',disabled=false}={}){
   jobId:'11111111-1111-4111-8111-111111111111',fingerprint:'revision-1',
   captions:[{id:'seg-001',text:'¿Y SI TE ESCUCHARAS?',wordIndexes:[0,1,2,3]}]
  }});
- return {elements,select,textarea,listeners,requests,selectProject,response};
+ return {elements,select,textarea,listeners,requests,pending,selectProject,response};
 }
 test('UI sends existing caption selected source-word ID, not new invented selection',async()=>{
  const r=rig();r.selectProject();
@@ -59,4 +59,40 @@ test('project revision invalidation clears stale review without silently editing
  assert.equal(r.elements['narrative-motion-export'].disabled,true);
  assert.equal(r.elements['narrative-motion-propose'].disabled,true);
  assert.equal(r.elements['narrative-motion-results'].children.length,0);
+});
+
+test('editing the original caption instantly invalidates export and leaves the editor untouched',async()=>{
+ const r=rig();r.selectProject();await r.elements['narrative-motion-propose'].click();
+ assert.equal(r.elements['narrative-motion-export'].disabled,false);
+ r.textarea.value='Texto corregido';
+ r.elements.captions.handlers.get('input')();
+ assert.equal(r.elements['narrative-motion-export'].disabled,true);
+ assert.equal(r.elements['narrative-motion-results'].children.length,0);
+ assert.match(r.elements['narrative-motion-status'].textContent,/Vuelve a analizar/);
+});
+test('inflight review cannot reappear after the user changes selected words',async()=>{
+ const r=rig({defer:true});r.selectProject();
+ const inflight=r.elements['narrative-motion-propose'].click();
+ assert.equal(r.pending.length,1);
+ r.select.value='none';
+ r.elements.captions.handlers.get('change')();
+ r.pending[0]();
+ await inflight;
+ assert.equal(r.elements['narrative-motion-export'].disabled,true);
+ assert.equal(r.elements['narrative-motion-results'].children.length,0);
+});
+test('out-of-order responses cannot overwrite a later review',async()=>{
+ const r=rig({defer:true});r.selectProject();
+ const old=r.elements['narrative-motion-propose'].click();
+ r.elements.captions.handlers.get('change')();
+ const newer=r.elements['narrative-motion-propose'].click();
+ assert.equal(r.pending.length,2);
+ r.pending[1]();
+ await newer;
+ assert.equal(r.elements['narrative-motion-export'].disabled,false);
+ assert.equal(r.elements['narrative-motion-results'].children.length,1);
+ r.pending[0]();
+ await old;
+ assert.equal(r.elements['narrative-motion-export'].disabled,false);
+ assert.equal(r.elements['narrative-motion-results'].children.length,1);
 });
