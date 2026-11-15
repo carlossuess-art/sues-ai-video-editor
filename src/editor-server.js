@@ -59,6 +59,10 @@ import {searchPrivateLibrary} from './private-library-search.js';
 import {proposeLibraryCues} from './director-library-cues.js';
 import {buildEditorNarrativeMotionReview} from './motion-templates/editor-motion-bridge.js';
 import {prepareEditorHyperFramesPreflight} from './motion-templates/editor-hyperframes-preflight.js';
+import {HF_MASTER_EFFECT,validateBoundHyperFramesPreflight,makeHyperFramesMasterOperation,
+ proposeHyperFramesStoryRevision,persistTrustedHyperFramesPreflight,
+ loadTrustedHyperFramesPreflight,verifyMasterHyperFramesOperation}
+ from './motion-templates/hyperframes-master-binding.js';
 import {GRAPHIC_BLOCKS,GLOBAL_TRANSITIONS} from './graphic-blocks.js';
 import http from 'node:http';
 import {readFileSync,statSync,createReadStream,openSync,readSync,closeSync,existsSync,writeFileSync,renameSync} from 'node:fs';
@@ -145,6 +149,43 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       const catalog=externalCatalog(project,current.settings,assets.list());
       const verified=await masterContextProvider({jobId:id,project,job:current,assets,catalog,story});
       if(!verified)return null;
+      // HyperFrames is a first-class canonical Master Director operation only
+      // when every motion is linked to a server-created immutable preflight.
+      // Requests cannot supply capabilities, proof paths or a fake approval.
+      const hfOps=Array.isArray(story?.operations)?
+       story.operations.filter(o=>o?.renderer==='hyperframes'):[];
+      if(hfOps.length){
+       if(hfOps.length>4||hfOps.some(o=>o.effect!==HF_MASTER_EFFECT))
+        return {...verified,blockedIssues:[{code:'UNSUPPORTED_HYPERFRAMES_STORY_OPERATION'}]};
+       let evidence;
+       try{
+        evidence=hfOps.map(o=>{
+         const p=loadTrustedHyperFramesPreflight(jobs.dir(id),o.parameters?.preflightFingerprint);
+         if(p.sourceSha256!==catalog.sourceSha256||
+            p.jobFingerprint!==current.fingerprint||
+            p.timelineFingerprint!==catalog.timelineFingerprint)
+          throw Error('HYPERFRAMES_EDITOR_HEAD_CHANGED');
+         return {operation:o,preflight:p};
+        });
+       }catch{return {...verified,blockedIssues:[{code:'HYPERFRAMES_PREFLIGHT_EVIDENCE_UNAVAILABLE'}]};}
+       const registry={...verified.registry,rendererCapabilities:{
+        ...verified.registry?.rendererCapabilities,
+        hyperframes:[HF_MASTER_EFFECT]}};
+       return {...verified,registry,sourceSha256:catalog.sourceSha256,
+        timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration,
+        hyperframesPreflight:async(plan,inspectionRegistry)=>{
+         try{
+          const ops=plan.operations.filter(o=>o.renderer==='hyperframes');
+          if(ops.length!==evidence.length||
+             ops.some((o,i)=>o.id!==evidence[i].operation.id))
+           throw Error('MASTER_HYPERFRAMES_COVERAGE_CHANGED');
+          for(const e of evidence)
+           verifyMasterHyperFramesOperation(e.operation,e.preflight,inspectionRegistry);
+          return {status:'READY_FOR_EDITOR_PREVIEW',
+           checkedOperationIds:evidence.map(e=>e.operation.id)};
+         }catch{return {status:'BLOCKED',issues:[{code:'HYPERFRAMES_MASTER_BINDING_CHANGED'}]};}
+        }};
+      }
       // Exact FableCut batch preflight is opt-in and limited to a trusted,
       // isolated native clone. Legacy / mixed review remains unchanged.
       if(story?.operations?.some(o=>o.effect==='fablecut-command-exact-v1')){
@@ -560,7 +601,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|motion-narrative|motion-hyperframes-preflight|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-mask-candidate|master-mask-frame|master-layer-edit|master-operation-edit|master-versions|master-current|master-current-operation-edit|master-current-layer-edit|master-current-command|master-pause-audit|master-source-brief|master-brief-translation|master-brief-crosswalk|master-brief-requirements|master-brief-capabilities|master-brief-geometry|master-brief-caption-draft|master-brief-caption-layers|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|motion-narrative|motion-hyperframes-preflight|motion-hyperframes-stage|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-mask-candidate|master-mask-frame|master-layer-edit|master-operation-edit|master-versions|master-current|master-current-operation-edit|master-current-layer-edit|master-current-command|master-pause-audit|master-source-brief|master-brief-translation|master-brief-crosswalk|master-brief-requirements|master-brief-capabilities|master-brief-geometry|master-brief-caption-draft|master-brief-caption-layers|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     // Never expose a private native hybrid stage as a standalone final export.
@@ -1224,6 +1265,63 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       ...planned,narrativeAvMarkdown:review.avMarkdown,
       executed:false,approvalIssued:false,assetImported:false
      });
+    }
+    // Explicitly add a reviewed motion candidate to the CURRENT Master
+    // Director story as a NEW UNAPPROVED revision. Never edit FableCut here.
+    if(action==='motion-hyperframes-stage'&&req.method==='POST'){
+     const b=await body(req,8192,{rejectDuplicates:true});
+     if(!b||Object.keys(b).some(k=>!['fingerprint','selections','expectedStoryRevision'].includes(k))||
+        typeof b.fingerprint!=='string'||!Array.isArray(b.selections)||
+        !/^[a-f0-9]{64}$/.test(b.expectedStoryRevision??''))
+      return json(res,400,{error:'Revisión maestra y selección explícita obligatorias.'});
+     const job=jobs.get(id);
+     if(b.fingerprint!==job.fingerprint)
+      return json(res,409,{error:'La revisión del vídeo ha cambiado.'});
+     const store=masterStoreForJob(id),head=store.current();
+     if(head.revision!==b.expectedStoryRevision)
+      return json(res,409,{error:'La historia maestra ha cambiado; vuelve a abrirla.'});
+     const project=jobs.loadProfile(job.profileId),catalog=externalCatalog(project,job.settings,assets.list());
+     const manifest=jobs.plan(id).manifest;
+     if(catalog.timelineFingerprint!==job.fingerprint||
+       project.inputs.source.sha256!==catalog.sourceSha256||
+       manifest.source.sha256!==catalog.sourceSha256)
+      return json(res,409,{error:'Fuente del vídeo o línea temporal desactualizada.'});
+     const profile=job.settings.styleId==='SUES_CALMA'?'CALMA':'DOPAMIN';
+     const review=buildEditorNarrativeMotionReview({
+      transcript:project.inputs.transcript,sourceSha256:catalog.sourceSha256,
+      planSourceSha256:manifest.source.sha256,jobFingerprint:job.fingerprint,
+      requestedFingerprint:b.fingerprint,captions:manifest.captions,
+      selections:b.selections,profile
+     });
+     const preflight=prepareEditorHyperFramesPreflight({
+      editorReview:review,transcript:project.inputs.transcript,
+      sourceSha256:catalog.sourceSha256,jobFingerprint:job.fingerprint,
+      timelineFingerprint:catalog.timelineFingerprint,
+      sourceTimeMap:catalog.sourceTimeMap,editedDuration:catalog.duration,profile
+     });
+     if(preflight.status!=='READY_FOR_CREATIVE_REVIEW')
+      return json(res,422,{status:'BLOCKED',issues:preflight.issues??[]});
+     validateBoundHyperFramesPreflight(preflight);
+     const story=store.readDraft(head.revision),span=preflight.scene;
+     const scenes=story.narrative?.scenes?.filter(s=>s.start<=span.startSec+1e-6&&
+      s.end>=span.endSec-1e-6)??[];
+     if(scenes.length!==1)return json(res,422,{status:'BLOCKED',
+      issues:[{code:'HYPERFRAMES_MASTER_SCENE_REQUIRED',
+       description:'La composición no cabe íntegramente en una única escena del guion maestro.'}]});
+     const operationId='hf_motion_'+preflight.proposedPlanFingerprint.slice(0,22);
+     const proposed=proposeHyperFramesStoryRevision(story,preflight,{
+      sceneId:scenes[0].id,operationId});
+     persistTrustedHyperFramesPreflight(jobs.dir(id),preflight);
+     const saved=store.saveDraft(proposed.story);
+     const next=store.setCurrent(saved.revision,head.revision);
+     if(next.status==='CONFLICT')return json(res,409,next);
+     return json(res,201,{status:'NEW_MASTER_DRAFT_REQUIRES_CREATIVE_APPROVAL',
+      operationId,storyRevision:saved.revision,previousRevision:head.revision,
+      preflightFingerprint:proposed.preflightFingerprint,
+      proposedPlanFingerprint:preflight.proposedPlanFingerprint,
+      masterReviewRequired:true,creativeApproved:false,canExecute:false,
+      fablecutEdited:false,rendered:false,publicationAuthorized:false,
+      avMarkdown:preflight.avMarkdown});
     }
     if(action==='library-cues'&&req.method==='GET'){
      const job=jobs.get(id),limit=url.searchParams.has('limit')?Number(url.searchParams.get('limit')):6;
