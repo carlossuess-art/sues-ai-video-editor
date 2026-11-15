@@ -29,7 +29,7 @@ Esta prueba **NO** es un Reel real, no ha sido aprobada creativamente por Carlos
 | Fidelidad motion V2 [0–151) | **151/151 frames** comparados contra MP4 HF: PSNR mínima **45,19 dB**, media **46,98 dB** |
 | Fidelidad V1 [151–300) | **149/149 frames** comparados contra original: PSNR mínima **49,70 dB**, media **49,75 dB** |
 | Proyecto tras exportación | FableCut normalizó/guardó el documento a revisión **3**; ambos clips, IDs, pistas y fuentes permanecen intactos en el readback |
-| Pruebas dirigidas | **99/99 Node PASS** del conjunto histórico ampliado; además **3/3** tests del verificador de 300 frames (evaluados junto con pruebas nuevas 8/8). Prueba Chromium real anterior 1/1 PASS |
+| Pruebas dirigidas | **102/102 Node PASS, 0 FAIL/SKIP** en batería completa con todas las pruebas nuevas; Chromium real 1/1 PASS |
 | Recibo técnico privado final | `/opt/sues-video-setup/motion-narrative-review-20261115/fablecut-private-qa/hf-master-stage-20261115/qa-hf-master-300frames-verified.json` · SHA `d27f94ad33ade828e243d13933ddc523aaf7ad4d473166ac1f1720946e5aa00b` |
 
 **Nota sobre PSNR:** compara similitud de vídeos decodificados, no aprueba criterio cinematográfico, voz, ritmo, subtítulos o mezcla. El vídeo ficticio original es una composición color/rectángulo sin un rostro ni grabación de Carlos. Las pruebas 10 s no equivalen a la edición real de un Reel.
