@@ -49,20 +49,42 @@ export function buildFrameSampledEditableCandidate(){
  for(const [id,channel] of [['left-rail','leftX'],['right-rail','rightX']]){
   const shape=uniqueClip(scene,id).props.shapes[0];
   shape.keys=samples(SPACE_EVENTS.railsStart,SPACE_EVENTS.railsEnd,f=>{
-   const src=sampleCardToSpace(f).rails;
+   const source=sampleCardToSpace(f),src=source.rails;
    return nativeTimeKey(f,SPACE_EVENTS.railsStart,{
-    x:r4(src[channel]-540),y:r4(src.y-960),opacity:r4(src.opacity)
+    x:r4(src[channel]-540),y:r4(src.y-960),opacity:r4(src.opacity*source.secondSceneAlpha)
    });
   });
+ }
+ // The original SVG has no vertical word displacement in its rendered <text>
+ // elements. Remove the former candidate's invented Y animation; retain only
+ // opacity envelopes sampled exactly at the source word's local frame times.
+ const cardWordIds=['card-word-0','card-word-1','card-word-2','card-word-l2-0'];
+ const followWordIds=['follow-word-0','follow-word-1','follow-word-l2-0','follow-word-l2-1'];
+ for(const [comp,ids,engine,last,fadeFrames] of [
+  [cardComp,cardWordIds,sampleHookDropCard,CARD_FRAMES-1,6],
+  [scene,followWordIds,sampleCardToSpace,SEQUENCE_FRAMES-1,7]
+ ]){
+  for(let i=0;i<ids.length;i++){
+   const text=uniqueClip(comp,ids[i]);
+   const start=Math.round(text.start*FPS);
+   if(!Number.isInteger(start)||start<0||start+fadeFrames>last)throw Error('Word timing changed: revisit keyframe window');
+   text.keyframes={
+    opacity:samples(start,start+fadeFrames,f=>nativeTimeKey(f,start,{
+     v:r4(engine(f).text?.words?.[i]?.opacity??engine(f).words?.[i]?.opacity)
+    }))
+   };
+  }
  }
  return {...candidate,schema:'sues-fablecut-frame-sampled-candidate/v1',
   status:'NUMERIC_FRAME_SAMPLES_CHECKABLE_NOT_RENDER_APPROVED',
   sampledChannels:['card.height','card.cornerRadius','nestedComp.scale','nestedComp.y',
-   'leftRail.x','leftRail.y','leftRail.opacity','rightRail.x','rightRail.y','rightRail.opacity'],
+   'leftRail.x','leftRail.y','leftRail.opacity','rightRail.x','rightRail.y','rightRail.opacity',
+   'cardWords.opacity','followWords.opacity'],
   fpsVerified:FSPolicy(),
   nativeExecuted:false,productionChanged:false,
   incompleteFidelity:[...candidate.incompleteFidelity,
    'Value sampling does not verify FableCut compositing order, canvas coordinates or text baseline',
+   'Blur-to-sharp text reveal is not natively mapped; opacity-only fallback is intentionally visible and requires approval',
    'Keyframes are exact at source frame times but in-between displays have not been compared in Chromium']
  };
 }
