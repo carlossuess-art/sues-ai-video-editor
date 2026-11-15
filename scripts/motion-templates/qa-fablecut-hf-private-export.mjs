@@ -33,7 +33,7 @@ require0(doc.clips[0].id===intake.clipId&&doc.clips[0].mediaId===intake.mediaId,
 require0(sha(readFileSync(join(qaDir,'media',doc.media[0].name)))===proof.renderedFile.sha256,
  'Imported HF media bytes changed');
 const child=spawn(process.execPath,[serverJs],{
- env:{...process.env,FABLECUT_DATA_DIR:qaDir,FABLECUT_PORT:'17942',HOST:'127.0.0.1'},
+ env:{...process.env,FABLECUT_DATA_DIR:qaDir,FABLECUT_PORT:'17942',PORT:'17942',HOST:'127.0.0.1'},
  stdio:['pipe','pipe','pipe']});
 let serial=1,buf='',pending=new Map(),stderr='';
 child.stdout.on('data',b=>{
