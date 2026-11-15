@@ -5,9 +5,9 @@
  * VERIFIED IDENTITY edit map into precise HyperFrames variables. This never
  * approves creativity, writes a Reel, renders or imports media to FableCut.
  *
- * Full 2-scene demo grammar is only applicable to two genuine 4-word
- * utterances (question + create-space). Other narratives are safely blocked
- * rather than silently rewritten to fit the fixed 151-frame composition.
+ * The 151-frame 4+4 design may also be PREVIEWED from two explicitly
+ * selected, original-word anchors without inventing semantic matches. Any
+ * uncertain ASR word blocks staging; creative approval remains separate.
  */
 import {createHash} from 'node:crypto';
 import {bindCardToSpaceToSpeech} from './bind-sequence-to-speech.js';
@@ -60,22 +60,44 @@ export function prepareEditorHyperFramesPreflight({
  if(!trueIdentityMap(sourceTimeMap,editedDuration))
   return block('SOURCE_TO_EDIT_MAP_NOT_VERIFIED',
    'El proyecto contiene cortes o un mapa temporal no comprobado: no se moverá ningún motion hasta verificar la conversión del bruto al montaje.');
+ const words=transcript.words.map((w,i)=>({...w,id:'source-'+sourceSha256.slice(0,16)+'-w'+i}));
  const hook=selectCandidate(editorReview,'TPL_HOOK_DROP_CARD'),
   follow=selectCandidate(editorReview,SEQUENCE_ID);
- if(!hook||!follow)return block('PAIRED_NARRATIVE_CUES_REQUIRED',
-  'Marca una palabra de una pregunta y otra de una frase que relacione espacio con escucharse. No se impondrá la plantilla a otros discursos.');
- const cardIds=hook.sourceSpeech.wordIds,followIds=follow.sourceSpeech.wordIds;
+ let cardIds,followIds,selectionMode='SEMANTIC_CANDIDATE';
+ if(hook&&follow){
+  cardIds=hook.sourceSpeech.wordIds;
+  followIds=follow.sourceSpeech.wordIds;
+ }else{
+  // A generic pair is only a preview made from TWO source words the user
+  // marked explicitly. No text or storytelling intent is manufactured.
+  const anchors=editorReview.review?.selectedWordIds;
+  if(!Array.isArray(anchors)||anchors.length!==2)
+   return block('EXPLICIT_TWO_SOURCE_WORDS_REQUIRED',
+    'El vídeo no coincide con la plantilla semántica. Marca exactamente dos palabras originales y revisa sus ocho palabras de contexto antes de diseñar un motion.');
+  const position=anchors.map(id=>words.findIndex(w=>w.id===id)).sort((a,b)=>a-b);
+  const [first,last]=position;
+  if(first<3||last<2||last+1>=words.length||last-2<=first)
+   return block('EXPLICIT_PAIR_WINDOW_INVALID',
+    'Las dos palabras elegidas no permiten formar dos grupos independientes de cuatro palabras.');
+  cardIds=words.slice(first-3,first+1).map(w=>w.id);
+  followIds=words.slice(last-2,last+2).map(w=>w.id);
+  selectionMode='EXPLICIT_4_PLUS_4_CONTEXT_ONLY';
+ }
+
  if(cardIds.length!==4||followIds.length!==4)return block('FOUR_WORD_LAYOUT_NOT_SUPPORTED',
   'La plantilla de demostración admite exactamente cuatro palabras en cada una de las dos frases. El diseño de otras frases requiere revisión.');
  const all=[...cardIds,...followIds];
  if(new Set(all).size!==all.length)return block('DUPLICATE_SOURCE_WORDS','La propuesta repite palabras originales.');
- const words=transcript.words.map((w,i)=>({...w,id:'source-'+sourceSha256.slice(0,16)+'-w'+i}));
  const byId=new Map(words.map(w=>[w.id,w]));
  if(all.some(id=>!byId.has(id)))return block('SOURCE_WORD_NOT_FOUND','Los ID de palabra ya no existen en la transcripción.');
  const first=byId.get(cardIds[0]),last=byId.get(followIds.at(-1));
- if(first.timingUncertain||last.timingUncertain||
-  all.some(id=>byId.get(id).timingUncertain===true))
-  return block('UNCERTAIN_SPEECH_TIMES','Una palabra no tiene tiempo real suficientemente fiable.');
+ const uncertainIds=all.filter(id=>byId.get(id).timingUncertain===true);
+ if(uncertainIds.length)return {
+  ...block('UNCERTAIN_SPEECH_TIMES',
+   'La ASR contiene palabras no verificadas: confirma su texto y sincronía antes de generar este motion.'),
+  selectionMode,proposedWordIds:all,uncertainWordIds:uncertainIds,
+  proposedText:[cardIds,followIds].map(ids=>ids.map(id=>byId.get(id).text).join(' '))
+ };
  const clipStartFrame=frame(first.start)-EVENTS.firstWord;
  if(clipStartFrame<0)return block('CARD_BEFORE_TIMELINE_START',
   'La primera palabra está demasiado cerca del inicio para abrir la tarjeta.');
@@ -116,7 +138,7 @@ export function prepareEditorHyperFramesPreflight({
   schema:'sues-editor-hyperframes-preflight/v1',status:'READY_FOR_CREATIVE_REVIEW',
   readOnly:true,rendered:false,creativeApproved:false,canExecute:false,
   productionChanged:false,canPublish:false,
-  sourceSha256,jobFingerprint,timelineFingerprint,
+  sourceSha256,jobFingerprint,timelineFingerprint,selectionMode,
   profile,templateId:SEQUENCE_ID,owner:{motion:'HyperFrames',editorial:'FableCut',creative:'SUES MASTER DIRECTOR'},
   sourceTimeSpace:'original-seconds-identity-map-only',
   scene:{startFrame:clipStartFrame,endFrameExclusive:clipStartFrame+SEQUENCE_FRAMES,
@@ -145,6 +167,7 @@ export function prepareEditorHyperFramesPreflight({
   },
   proposedPlanFingerprint:digest(manifestIdentity),
   unresolved:[
+   ...(selectionMode==='EXPLICIT_4_PLUS_4_CONTEXT_ONLY'?['Two keywords are NOT a semantic approval of the card/rails visual metaphor']:[]),
    'Carlos must review and approve the A/V creative plan (not a mere keyword selection)',
    'Actual subject/face/safe zone inspection and subtitle-coverage verification',
    'Source asset rights and a current HyperFrames renderer source fingerprint',
