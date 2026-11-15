@@ -1,3 +1,11 @@
+## 15/11/2026 · Primer puente automatizable: editor palabras → HyperFrames · STAGING NO PRODUCCIÓN
+
+- **Checkpoint más reciente:** [SUES_HYPERFRAMES_EDITOR_AUTOMATIC_PREFLIGHT_20261115.md](docs/SUES_HYPERFRAMES_EDITOR_AUTOMATIC_PREFLIGHT_20261115.md). Se añadió el preflight autenticado `POST /api/jobs/:id/motion-hyperframes-preflight`, botón en el panel de subtítulos existente, comprobación de cada palabra del caption contra la transcripción y exportación de variables HyperFrames y tabla A/V humana por 7 bloques.
+- Preflight **solo lectura**: dos frases reales 4+4 palabras, reloj original ↔ editado **identidad sin cortes**, huellas fuente/job/timeline, clip 151f/30fps. Bloquea cualquier dato incierto o modo no soportado, siempre `creativeApproved:false`, `canExecute:false`, sin modificar Reel.
+- HyperFrames v0.9.20 renderizó con `--variables-file --strict-variables` una composición sintética con anclas **F8/F16/F24/F30 + F86/F99/F108/F120**. MP4 H264 1080×1920/30fps/151f SHA-256 `095bc084c26959381bd0f79f4ea5b1fdfc6633a4f145cf2fb2e36d2388bcdb4f`; Chrome real confirmó opacidades diferenciadas F15/F19/F93/F102 y bloqueó esquema falso.
+- **93/93 tests Node PASS + 1/1 test Chromium PASS** en VPS, sin editar producción. Código, informe y recibo QA guardados; último blob HTML fuente HF `a1fdbe7a3bfa5068fb1e9baec96459d9594f7bf1`.
+- **Pendiente crítico:** aprobación creativa auténtica con `MasterDirectorProjectStore`, render exacto y puente al proyecto FableCut del Reel con CAS/ledger, mapas con cortes, QA imagen/voz completa y doble auditoría. La cadena FableCut demostrada previamente corresponde al **demo sin variables reales**, no a un Reel aprobado.
+
 ## 15/11/2026 · HITO: HyperFrames → FableCut EXPORTACIÓN NATIVA REAL (PRIVADA) · SIN PUBLICACIÓN
 
 - **Checkpoint principal vigente:** [SUES_HYPERFRAMES_FABLECUT_NATIVE_CHAIN_20261115.md](docs/SUES_HYPERFRAMES_FABLECUT_NATIVE_CHAIN_20261115.md). Se resolvió el bloqueo de Chrome con trabajos transitorios systemd de QA (`LimitFSIZE=128M`, CPU/memoria/tiempo limitados), sin tocar los límites del servidor ni producción.
