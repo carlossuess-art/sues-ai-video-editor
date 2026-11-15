@@ -1,3 +1,9 @@
+## ACTUALIZACIÓN OPERATIVA PRIORITARIA · 15/11/2026
+
+**HyperFrames es el motor principal para TODOS los motion graphics.** SUES MASTER DIRECTOR decide narrativa, palabras, ritmo, posiciones y transiciones; HyperFrames ejecuta HTML/SVG/GSAP/Three.js y conserva editables los elementos internos; FableCut monta el Reel, sus pistas y la composición exportada y puede modificar el clip, **NO** las capas internas de un vídeo ya renderizado. La experimentación con objetos nativos FableCut no sustituye HyperFrames.
+
+Consultar primero `docs/SUES_HYPERFRAMES_PRIMARY_HANDOFF_20261115.md`, `PROJECT_STATUS.md` y `AGENTS.md` en la rama vigente. 74/74 pruebas dirigidas PASS, HyperFrames lint 0/0; runtime previamente desincronizado corregido, fuente SHA `e41dadf2a5130698b5c193155b2a7dd28a922ed4bfe28ced404e45e0b8a9dba3`. No confundir manifiesto de fuente o proxy SVG con render nativo ni con autorización de integración/publicación. QA HyperFrames nativa sigue pendiente por Chrome `SIGXFSZ`. No tocar producción/WAC/V29/DNS.
+
 # Instrucciones del proyecto ChatGPT · SUES AI VIDEO EDITOR
 
 **Texto listo para pegar en las instrucciones del proyecto ChatGPT «SUES AI VIDEO EDITOR».**
