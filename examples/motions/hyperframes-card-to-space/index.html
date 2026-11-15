@@ -15,10 +15,8 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#111215
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-duration="5.033333333333333" data-fps="30" data-width="1080" data-height="1920" data-composition-variables='{"line1":"¿Y SI TE","line2":"ESCUCHARAS?","followLine1":"HAZ ESPACIO","followLine2":"PARA ESCUCHARTE"}'>
- <div id="motion-clip" class="clip" data-start="0" data-duration="5.033333333333333" data-track="graphics" data-role="narrative-motion" data-clip-id="SUES_CARD_TO_SPACE_DEMO">
-  <div id="scene"></div>
- </div>
+<div id="root" data-composition-id="main" data-duration="5.033333333333333" data-fps="30" data-width="1080" data-height="1920" data-composition-variables='[{"id":"line1","type":"string","label":"Pregunta línea 1","default":"¿Y SI TE"},{"id":"line2","type":"string","label":"Pregunta línea 2","default":"ESCUCHARAS?"},{"id":"followLine1","type":"string","label":"Respuesta línea 1","default":"HAZ ESPACIO"},{"id":"followLine2","type":"string","label":"Respuesta línea 2","default":"PARA ESCUCHARTE"}]'>
+ <div id="scene" class="clip" data-start="0" data-duration="5.033333333333333" data-track="graphics" data-role="narrative-motion" data-clip-id="SUES_CARD_TO_SPACE_DEMO"></div>
 </div>
 <script src="./vendor/gsap.min.js"></script>
 <script type="module">
