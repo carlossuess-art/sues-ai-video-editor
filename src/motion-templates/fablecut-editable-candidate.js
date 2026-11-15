@@ -35,7 +35,7 @@ export function buildFableCutEditableMotionCandidate(){
   ]
  };
  const railStart=SPACE_EVENTS.railsStart,railLength=duration-railStart;
- const makeRail=(id,tid,sign)=>clip(id,'shape',tid,railStart,railLength,{shapes:[{type:'line',name:id,points:[[0,-105],[0,105]],x:sign*20,y:580,opacity:0,stroke:'#b88c32',strokeWidth:5,keys:[{t:0,x:sign*20,y:580,opacity:0},{t:sec(7),opacity:1},{t:sec(13),y:-65},{t:sec(32),x:sign*426,ease:'ease-in-out'}]}]});
+ const makeRail=(id,tid,sign)=>clip(id,'shape',tid,railStart,railLength,{shapes:[{type:'line',name:id,points:[[0,-105],[0,105]],x:sign*20,y:580,opacity:0,stroke:'#b88c32',strokeWidth:5,keys:[{t:0,x:sign*20,y:580,opacity:0},{t:sec(5),x:sign*20},{t:sec(7),opacity:1},{t:sec(13),y:-65},{t:sec(32),x:sign*426,ease:'ease-in-out'}]}]});
  const follow=second.words.map(w=>({...w,text:w.word}));
  const followFirst=wordLine(follow.filter(w=>w.line===0),-60,94,84,'#fff9b0','follow-word-',0,duration,'FW');
  const followSecond=wordLine(follow.filter(w=>w.line===1),58,66,84,'#ffffff','follow-word-l2-',0,duration,'FL');
