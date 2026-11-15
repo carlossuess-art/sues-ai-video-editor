@@ -6,7 +6,7 @@
 import {renderHookDropCardSvg,FRAME_COUNT as CARD_FRAMES,FPS} from './hook-drop-card-engine.js';
 export const SEQUENCE_ID='SUES_CARD_TO_SPACE_DEMO';
 export const SEQUENCE_FRAMES=151;
-export const SPACE_EVENTS=Object.freeze({bridgeStart:55,cardGone:CARD_FRAMES-1,railsStart:59,railsEnd:91,firstWords:93,secondWords:109,settle:127,end:150});
+export const SPACE_EVENTS=Object.freeze({bridgeStart:55,cardGone:CARD_FRAMES-1,railsStart:59,railsEnd:91,firstWords:81,secondWords:104,settle:123,end:150});
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const progress=(f,a,b)=>clamp((f-a)/(b-a));
 const out=t=>1-(1-t)**3;
