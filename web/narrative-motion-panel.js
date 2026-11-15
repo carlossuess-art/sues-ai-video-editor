@@ -137,9 +137,10 @@
  });
  exportBtn.addEventListener('click',()=>{
   if(!lastReview)return;
-  const blob=new Blob([lastReview.avMarkdown],{type:'text/markdown;charset=utf-8'});
+  const markdown=lastHF?.avMarkdown??lastReview.avMarkdown;
+  const blob=new Blob([markdown],{type:'text/markdown;charset=utf-8'});
   const url=URL.createObjectURL(blob),link=document.createElement('a');
-  link.href=url;link.download='SUES_MOTION_GUION_AV_NO_IMPORTABLE.md';link.click();
+  link.href=url;link.download=lastHF?'SUES_HYPERFRAMES_GUION_AV_NO_APROBADO.md':'SUES_MOTION_GUION_AV_NO_IMPORTABLE.md';link.click();
   setTimeout(()=>URL.revokeObjectURL(url),5000);
  });
  reset('Selecciona un proyecto para revisar su narración.');
