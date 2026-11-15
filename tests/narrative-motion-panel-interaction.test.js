@@ -10,8 +10,8 @@ class El {
  append(el){this.children.push(el);}
  click(){return this.handlers.get('click')?.();}
 }
-function rig({selection='1',disabled=false,defer=false}={}){
- const ids=['narrative-motion-panel','narrative-motion-propose','narrative-motion-status','narrative-motion-results','narrative-motion-export','captions'];
+function rig({selection='1',disabled=false,defer=false,hfResponse=null}={}){
+ const ids=['narrative-motion-panel','narrative-motion-propose','narrative-motion-status','narrative-motion-results','narrative-motion-export','narrative-motion-hf-preflight','narrative-motion-hf-status','narrative-motion-hf-results','narrative-motion-hf-export','captions'];
  const elements=Object.fromEntries(ids.map(id=>[id,new El(id)]));
  const select=new El('choice');select.dataset.keyword='seg-001';select.value=selection;select.disabled=disabled;
  const textarea=new El('caption');textarea.value='¿Y SI TE ESCUCHARAS?';
@@ -21,7 +21,7 @@ function rig({selection='1',disabled=false,defer=false}={}){
   querySelectorAll:s=>s==='#captions select[data-keyword]'?[select]:[],
   querySelector:s=>s.startsWith('#captions textarea')?textarea:null,
   createElement:tag=>new El(tag)};
- const fetch=async(url,opts)=>{requests.push({url,opts});if(defer)await new Promise(done=>pending.push(done));return {ok:true,json:async()=>response};};
+ const fetch=async(url,opts)=>{requests.push({url,opts});if(defer)await new Promise(done=>pending.push(done));if(url.endsWith('/motion-hyperframes-preflight'))return {ok:hfResponse?.status!=='BLOCKED_FOR_EVIDENCE',status:hfResponse?.status==='BLOCKED_FOR_EVIDENCE'?422:200,json:async()=>hfResponse};return {ok:true,json:async()=>response};};
  const win={addEventListener:(k,fn)=>listeners.set(k,fn)};
  const env={document,window:win,fetch,Blob,URL:{createObjectURL:()=>'/blob/demo',revokeObjectURL:()=>{}},setTimeout:()=>{}};
  runInNewContext(script,env);
@@ -95,4 +95,34 @@ test('out-of-order responses cannot overwrite a later review',async()=>{
  await old;
  assert.equal(r.elements['narrative-motion-export'].disabled,false);
  assert.equal(r.elements['narrative-motion-results'].children.length,1);
+});
+
+test('HyperFrames preflight is separate, explicitly requested and not an editing action',async()=>{
+ const base={
+  schema:'sues-editor-hyperframes-preflight/v1',status:'READY_FOR_CREATIVE_REVIEW',
+  readOnly:true,rendered:false,creativeApproved:false,canExecute:false,
+  hyperframes:{variables:{line1:'¿Y si te',line2:'escucharas?',followLine1:'Haz espacio',followLine2:'para escucharte.',wordScheduleJson:'{}'}},
+  scene:{startSec:1,frames:151},words:{card:[{text:'¿Y',editedFrame:38}],follow:[{text:'espacio',editedFrame:110}]}
+ };
+ const r=rig({hfResponse:base});r.selectProject();
+ assert.equal(r.elements['narrative-motion-hf-preflight'].disabled,true);
+ await r.elements['narrative-motion-propose'].click();
+ assert.equal(r.elements['narrative-motion-hf-preflight'].disabled,false);
+ await r.elements['narrative-motion-hf-preflight'].click();
+ assert.equal(r.requests.length,2);
+ assert.match(r.requests[1].url,/motion-hyperframes-preflight$/);
+ const sent=JSON.parse(r.requests[1].opts.body);
+ assert.deepEqual(JSON.parse(JSON.stringify(sent.selections)),[{captionId:'seg-001',displayWordIndex:1,sourceWordIndex:1,captionText:'¿Y SI TE ESCUCHARAS?'}]);
+ assert.equal(r.elements['narrative-motion-hf-export'].disabled,false);
+ assert.match(r.elements['narrative-motion-hf-status'].textContent,/No se ha renderizado ni editado/);
+ r.elements.captions.handlers.get('change')();
+ assert.equal(r.elements['narrative-motion-hf-export'].disabled,true);
+ assert.equal(r.elements['narrative-motion-hf-results'].children.length,0);
+});
+test('a blocked HyperFrames preflight never enables export or edits the Reel',async()=>{
+ const r=rig({hfResponse:{status:'BLOCKED_FOR_EVIDENCE',issues:[{code:'SOURCE_TO_EDIT_MAP_NOT_VERIFIED',description:'No hay fuente editada verificada'}]}});r.selectProject();
+ await r.elements['narrative-motion-propose'].click();
+ await r.elements['narrative-motion-hf-preflight'].click();
+ assert.equal(r.elements['narrative-motion-hf-export'].disabled,true);
+ assert.match(r.elements['narrative-motion-hf-results'].children[0].textContent,/No hay fuente editada verificada/);
 });
