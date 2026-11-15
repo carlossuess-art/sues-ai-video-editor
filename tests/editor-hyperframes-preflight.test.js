@@ -73,7 +73,7 @@ test('does not manufacture a complete scene from keyword selection on one phrase
 test('detects phrases that do not fit the four-word demo grammar',()=>{
  const extra={...transcript,words:transcript.words.map((w,i)=>i===1?{...w,text:'alguna'}:w)};
  // Correct captions would have to be rebuilt if source wording changes.
- assert.throws(()=>args({transcript0:extra}),/does not match/);
+ assert.throws(()=>args({transcript0:extra}),/Caption word context changed/);
  const expanded={...transcript,words:transcript.words.map(w=>({...w}))};
  expanded.words[4]={...expanded.words[4],start:2.1,end:2.23};
  const p=prepareEditorHyperFramesPreflight(args({transcript0:expanded}));
