@@ -22,7 +22,7 @@ export function bindCardToSpaceToSpeech({line1,line2,followLine1,followLine2,cli
   return w;
  });
  const frameStarts=follow.map(w=>Math.round((w.start-clipStartSec)*fps));
- if(frameStarts[0]<SPACE_EVENTS.railsEnd||frameStarts.at(-1)>SPACE_EVENTS.end-7)throw Error('follow-up timing outside supported graphic window');
+ if(frameStarts[0]<SPACE_EVENTS.firstWords||frameStarts.at(-1)>SPACE_EVENTS.end-7)throw Error('follow-up timing outside supported graphic window');
  if(first.params.wordStartFrames[0]<CARD_EVENTS.firstWord)throw Error('card begins before rectangle is ready');
  const args={...first.params,followLine1,followLine2,followWordIds:[...followWordIds],followWordStartFrames:frameStarts};
  sampleCardToSpace(0,args);
