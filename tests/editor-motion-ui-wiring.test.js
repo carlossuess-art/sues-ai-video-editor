@@ -31,3 +31,25 @@ test('only authenticated POST review endpoint; no editor mutation or media publi
  const handler=server.slice(start,end);
  assert.ok(!/jobs\.adjust\(|jobs\.create\(|render\(|applyCommandBatch\(|writeFileSync\(|publish\(/.test(handler));
 });
+
+test('HF preflight stays inside the existing captions panel and never writes a Reel',()=>{
+ const html=read('web/index.html'),client=read('web/narrative-motion-panel.js');
+ const server=read('src/editor-server.js');
+ assert.ok(html.includes('id="narrative-motion-hf-preflight"'));
+ assert.ok(html.includes('id="narrative-motion-hf-export"'));
+ assert.ok(html.indexOf('id="narrative-motion-hf-preflight"')>html.indexOf('id="narrative-motion-panel"'));
+ assert.ok(html.indexOf('id="narrative-motion-hf-preflight"')<html.indexOf('id="captions"'));
+ assert.ok(client.includes("'/motion-hyperframes-preflight'")||
+   client.includes("'/motion-hyperframes-preflight',{"));
+ assert.ok(client.includes('PREPAR')||client.includes('HyperFrames'));
+ assert.ok(client.includes('lastHF?.avMarkdown??lastReview.avMarkdown'));
+ assert.ok(!client.includes('innerHTML'));
+ const start=server.indexOf("if(action==='motion-hyperframes-preflight'&&req.method==='POST')");
+ const end=server.indexOf("if(action==='library-cues'",start);
+ assert.ok(start>0&&end>start);
+ const route=server.slice(start,end);
+ assert.ok(route.includes('prepareEditorHyperFramesPreflight'));
+ assert.ok(route.includes('catalog.sourceTimeMap'));
+ assert.ok(route.includes('catalog.timelineFingerprint'));
+ assert.ok(!/jobs\.(?:create|adjust|render|apply)|applyCommandBatch\(|writeFileSync\(|publish\(|execFile\(/.test(route));
+});
