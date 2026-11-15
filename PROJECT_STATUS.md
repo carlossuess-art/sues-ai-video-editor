@@ -1,3 +1,11 @@
+## 15/11/2026 · SUES Motion narrativo · selector existente → revisión A/V, QA en VPS · NO DESPLEGADO
+
+- **Rama aislada:** `feat/speech-linked-motion-grammar-20261115`; último checkpoint: [docs/SUES_MOTION_NARRATIVE_VPS_INTEGRATION_20261115.md](docs/SUES_MOTION_NARRATIVE_VPS_INTEGRATION_20261115.md).
+- SUES Server Console MCP ejecuta comandos en VPS real srv1841004; no se necesita Desktop Commander. Código de revisión narrativa integrado en la rama (panel de subtítulos existente, endpoint autenticado POST, adapter de índice original a palabra y reporte A/V). **Solo lectura y revisión: no ejecuta efectos ni monta un Reel.**
+- **25/25 tests dirigidos PASS en VPS** con Node 22.23.3: autenticación, CSRF, origen, fingerprint, mapping de palabra, regresión HTTP y wiring UI; sintaxis JS verificada. No representa suite global ni QA visual.
+- Disco ~90 % ocupado; consola impone `ulimit -Hf 1024`, por lo que la prueba usó copia parcial aislada, sin descargar medios ni tocar worktrees existentes. QA de navegador real y dos pasadas audiovisuales pendientes.
+- **No desplegar, no publicar, no tocar FableCut/Originales/V29/WAC/DNS.** Siguiente: UI/browser QA aislada y, solo con evidencia de un bruto real y aprobación, mapping nativo sin pérdida.
+
 ## 11/11/2026 · Supervisor nativo y skill sincronizada · NO DESPLEGADO
 
 - **Código en rama PR27**: `87e4244d92d60f771dcabda6306a90178bdc8912` conecta el runner privado de FableCut al supervisor de evidencias existente mediante `qa-prepare` y `qa-verify`. Manifiestos exactos de fuente/timeline/revisión/decisión/plan/proyecto/MP4, comprobación de IDs antes y después de ejecutar, codecs/duración y evidencias de fotogramas/audio, dos informes de revisión y cola de incidencias con operationId/corrección. Sin reescritura autónoma, sin publicación. [Manual](docs/engine-next/FABLECUT_NATIVE_SUPERVISOR_20261111.md).
