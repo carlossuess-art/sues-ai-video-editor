@@ -41,7 +41,7 @@ test('existing authenticated editor reviews selected real words without changing
   const stale=await fetch(path(job.id),{method:'POST',headers,body:JSON.stringify({...payload,fingerprint:'stale'})});
   assert.equal(stale.status,409);
   const forged=await fetch(path(job.id),{method:'POST',headers,body:JSON.stringify({...payload,selections:[{...payload.selections[0],sourceWordIndex:2}]})});
-  assert.equal(forged.status,400);
+  assert.equal(forged.status,409); // stale caption/source-word mapping is intentionally treated as a conflict
   const evil=await fetch(path(job.id),{method:'POST',headers:{...headers,Origin:'https://evil.example'},body:JSON.stringify(payload)});
   assert.equal(evil.status,403);
  }finally{await app.close();rmSync(f.dir,{recursive:true,force:true});}
