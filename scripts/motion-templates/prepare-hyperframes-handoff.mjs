@@ -3,7 +3,8 @@
  * Generate verifiable, read-only HyperFrames source handoff without a render.
  * Usage:
  * node scripts/motion-templates/prepare-hyperframes-handoff.mjs \
- *  /path/to/isolated/hyperframes-project /path/to/new/private-source-handoff.json
+ *  /path/to/isolated/hyperframes-project /path/to/new/private-source-handoff.json \
+ *  /path/to/canonical/repo/src/motion-templates
  *
  * Never writes to a FableCut project, changes a Reel, publishes, or asserts
  * that the presence of an SVG/FFmpeg proxy constitutes native HF rendering.
@@ -15,9 +16,11 @@ import {fileURLToPath} from 'node:url';
 import {buildHyperFramesMotionHandoff,REQUIRED_SOURCE_FILES} from '../../src/motion-templates/hyperframes-motion-handoff.js';
 
 const argv=process.argv.slice(2);
-if(argv.length!==2)throw Error('Provide an isolated HyperFrames project directory and NEW output JSON path');
+if(argv.length!==3)throw Error('Provide isolated HyperFrames dir, NEW output JSON path and canonical repo motion source dir');
 const directory=realpathSync(resolve(argv[0]));
 const output=resolve(argv[1]);
+const canonicalSource=realpathSync(resolve(argv[2]));
+if(!statSync(canonicalSource).isDirectory())throw Error('Canonical motion templates must be a directory');
 if(!statSync(directory).isDirectory())throw Error('HyperFrames source is not a directory');
 if(output.startsWith(directory+'/'))throw Error('Output must be outside the HyperFrames project (non-mutating source)');
 const hashes={},byPath={};
@@ -28,6 +31,11 @@ for(const path of REQUIRED_SOURCE_FILES){
  if(!bytes.length||bytes.length>250000)throw Error('Unexpected source size: '+path);
  hashes[path]=createHash('sha256').update(bytes).digest('hex');
  byPath[path]=bytes.toString('utf8');
+}
+for(const name of ['hook-drop-card-engine.js','sequence-card-to-space.js']){
+ const canonical=readFileSync(join(canonicalSource,name));
+ const reference=createHash('sha256').update(canonical).digest('hex');
+ if(hashes['runtime/'+name]!==reference)throw Error('HyperFrames runtime is out of sync with canonical source: '+name);
 }
 const html=byPath['index.html'];
 function findNumericAttr(name){
