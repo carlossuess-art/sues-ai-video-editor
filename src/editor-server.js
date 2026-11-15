@@ -1221,7 +1221,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       sourceTimeMap:catalog.sourceTimeMap,editedDuration:catalog.duration,profile
      });
      return json(res,planned.status==='BLOCKED_FOR_EVIDENCE'?422:200,{
-      ...planned,avMarkdown:review.avMarkdown,
+      ...planned,narrativeAvMarkdown:review.avMarkdown,
       executed:false,approvalIssued:false,assetImported:false
      });
     }
