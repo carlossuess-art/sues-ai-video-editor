@@ -278,6 +278,19 @@ export class MasterDirectorProjectStore{
   const structural=buildMasterDirectorLayerGraph(result.plan,inspectionRegistry);
   if(structural.status!=='STRUCTURE_READY_NOT_RENDERED')
    return {response:{status:'BLOCKED',revision,issues:structural.issues??[],canExecute:false}};
+  // The HyperFrames renderer owns its SVG/GSAP source. Never allow a creative
+  // decision for one of its operations without a trusted source/variables
+  // preflight supplied by the host, bound to the immutable story revision.
+  const hyperframesNodes=structural.graph.nodes.filter(node=>node.renderer==='hyperframes');
+  if(hyperframesNodes.length){
+   if(hyperframesNodes.length>4||typeof context.hyperframesPreflight!=='function')
+    return {response:{status:'BLOCKED',revision,issues:[{code:'HYPERFRAMES_TRUSTED_PREFLIGHT_REQUIRED'}],canExecute:false}};
+   const h=await context.hyperframesPreflight(result.plan,inspectionRegistry);
+   if(h?.status!=='READY_FOR_EDITOR_PREVIEW'||!Array.isArray(h.checkedOperationIds)||
+      JSON.stringify(h.checkedOperationIds)!==JSON.stringify(hyperframesNodes.map(n=>n.id)))
+    return {response:{status:'BLOCKED',revision,
+     issues:h?.issues?.length?h.issues:[{code:'HYPERFRAMES_PREFLIGHT_REJECTED'}],canExecute:false}};
+  }
   const remotionNodes=structural.graph.nodes.filter(node=>node.renderer==='remotion');
   if(remotionNodes.length){
    const staged=compileMasterDirectorRemotion({...structural.graph,nodes:remotionNodes},{
