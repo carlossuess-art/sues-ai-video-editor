@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync,mkdtempSync,rmSync,mkdirSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
+import {createHash} from 'node:crypto';
 import {buildHyperFramesMotionHandoff,REQUIRED_SOURCE_FILES} from '../src/motion-templates/hyperframes-motion-handoff.js';
 import {validateNativeProbe,validatePixelEvidence,validateSourceManifest,
  createVerifiedNativeProof} from '../scripts/motion-templates/verify-hyperframes-native-render.mjs';
@@ -36,7 +37,6 @@ test('source hashes cannot change between composition and media proof',()=>{
   for(const [i,path] of REQUIRED_SOURCE_FILES.entries()){
    const filename=join(root,path);mkdirSync(join(root,...path.split('/').slice(0,-1)),{recursive:true});
    writeFileSync(filename,'fixture source file '+i);
-   const {createHash}=await import('node:crypto');
    hashes[path]=createHash('sha256').update(readFileSync(filename)).digest('hex');
   }
   const m=buildHyperFramesMotionHandoff({sourceHashes:hashes});
