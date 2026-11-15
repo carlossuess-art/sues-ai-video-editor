@@ -23,7 +23,7 @@ id('source').addEventListener('change',async()=>{
   const json=JSON.parse(await file.text());const first=prepareNarrativeMotionReview(json);
   transcript=json;
   for(const w of first.selector.options){const row=document.createElement('label');row.className='word';
-   const box=document.createElement('input');box.type='checkbox';box.setAttribute('aria-label',w.text+' '+w.start.toFixed(2));
+   const box=document.createElement('input');box.type='checkbox';box.disabled=w.selectable===false;box.setAttribute('aria-label',w.text+' '+w.start.toFixed(2)+(box.disabled?' · tiempo incierto':''));
    box.addEventListener('change',()=>{box.checked?selected.add(w.wordId):selected.delete(w.wordId)});
    const body=document.createElement('div'),name=document.createElement('strong'),ctx=document.createElement('span');
    name.textContent=w.text+' · '+w.start.toFixed(2)+'–'+w.end.toFixed(2)+' s · '+w.wordId;ctx.textContent=w.context;
