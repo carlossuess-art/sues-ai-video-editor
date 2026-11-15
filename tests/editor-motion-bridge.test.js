@@ -23,7 +23,7 @@ test('uses real source index from the existing caption selector, not an invented
 test('requires selected existing caption and matching source text',()=>{
  assert.throws(()=>buildEditorNarrativeMotionReview({...args,selections:[{...args.selections[0],sourceWordIndex:2}]}),/mapping changed/);
  assert.throws(()=>buildEditorNarrativeMotionReview({...args,selections:[{...args.selections[0],captionText:'Alterado'}]}),/Unsaved caption/);
- assert.throws(()=>buildEditorNarrativeMotionReview({...args,selections:[{...args.selections[0],displayWordIndex:1,sourceWordIndex:1}]}),/does not match/);
+ assert.throws(()=>buildEditorNarrativeMotionReview({...args,captions:[{...captions[0],text:'¿Y nunca te escucharas?'},captions[1]],selections:[{...args.selections[0],captionText:'¿Y nunca te escucharas?',displayWordIndex:1,sourceWordIndex:1}]}),/does not match/);
 });
 test('blocks stale project/source identity and uncertain timing',()=>{
  assert.throws(()=>buildEditorNarrativeMotionReview({...args,requestedFingerprint:'old'}),/revision changed/);
