@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SUES · Dos escenas de motion · Preview aislada</title>
+<style>
+body{margin:0;background:#151516;color:#faf8f3;font:16px system-ui,sans-serif}
+main{max-width:940px;margin:auto;padding:20px;display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:24px}
+#stage{background:#0c0c0e;border-radius:16px;display:flex;justify-content:center;overflow:hidden}
+#stage svg{height:min(80vh,720px);max-width:100%;aspect-ratio:9/16}
+aside{display:flex;flex-direction:column;gap:12px}
+input{font:inherit;min-width:0;padding:8px;background:#25221e;color:white;border:1px solid #6e5d3a;border-radius:7px}
+input[type=range]{width:95%;padding:0}button{background:#d8b96e;color:#292112;border:0;padding:12px;border-radius:7px;font-weight:bold;cursor:pointer}
+small{color:#c8c1b3}@media(max-width:700px){main{grid-template-columns:1fr}#stage svg{height:65vh}}
+</style></head><body>
+<main><div id="stage"></div><aside>
+<h2>Tarjeta → Crear espacio</h2><small>Prueba aislada · 151 fotogramas · 30 fps · 5,03 s · sin voz ni SFX</small>
+<label>Tarjeta, línea 1<input id="line1" value="¿Y SI TE" maxlength="36"></label>
+<label>Tarjeta, línea 2<input id="line2" value="ESCUCHARAS?" maxlength="36"></label>
+<label>Segunda escena, línea 1<input id="followLine1" value="HAZ ESPACIO" maxlength="32"></label>
+<label>Segunda escena, línea 2<input id="followLine2" value="PARA ESCUCHARTE" maxlength="32"></label>
+<button id="play">Reproducir</button>
+<label>Fotograma <output id="value">0</output> / 150 <input id="seek" type="range" min="0" max="150" value="0"></label>
+<small>La segunda frase es únicamente texto demostrativo. No se ha analizado ni supuesto ninguna narración. Sin edición FableCut ni publicación.</small>
+</aside></main>
+<script type="module">
+import {SEQUENCE_FRAMES,renderCardToSpaceSvg} from '../../src/motion-templates/sequence-card-to-space.js';
+const e=id=>document.getElementById(id);let running=false,raf=0,start=0,mark=0;
+function render(f){
+ const args={};for(const id of ['line1','line2','followLine1','followLine2'])args[id]=e(id).value||' ';
+ f=Math.max(0,Math.min(SEQUENCE_FRAMES-1,Math.round(f)));
+ e('stage').innerHTML=renderCardToSpaceSvg(f,args);e('value').value=f;e('seek').value=f;
+}
+function tick(t){if(!running)return;const f=Math.min(150,start+Math.floor((t-mark)*30/1000));render(f);if(f===150){running=false;e('play').textContent='Reproducir';return;}raf=requestAnimationFrame(tick)}
+e('play').onclick=()=>{running=!running;cancelAnimationFrame(raf);e('play').textContent=running?'Pausar':'Reproducir';if(running){start=Number(e('seek').value);if(start===150)start=0;mark=performance.now();raf=requestAnimationFrame(tick)}};
+e('seek').oninput=()=>{running=false;cancelAnimationFrame(raf);e('play').textContent='Reproducir';render(Number(e('seek').value))};
+for(const id of ['line1','line2','followLine1','followLine2'])e(id).oninput=()=>render(Number(e('seek').value));
+render(0);
+</script></body></html>
