@@ -23,7 +23,7 @@ die(!existsSync(receiptFile),'Cannot overwrite/export the same QA project twice'
 const src=JSON.parse(readFileSync(join(data,'cfr-hf-mcp-qa-receipt.json'),'utf8'));
 const doc=JSON.parse(readFileSync(join(data,'project.json'),'utf8'));
 die(src.status==='REAL_SOURCE_CFR30_HF_FABLECUT_MCP_COMMIT'&&
- src.productionChanged===false&&src.creativeUserApproval===false&&
+ src.productionChanged===false&&src.creativeApprovedByUser===false&&
  doc.revision===1&&doc.media.length===3&&doc.clips.length===3&&
  doc.clips.map(x=>x.track).join(',')==='V1,A1,V2'&&
  src.derivedCfr17sSha256===sha(readFileSync(join(data,'media','original-cfr-17s.mp4')))&&
