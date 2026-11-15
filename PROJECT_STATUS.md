@@ -1,3 +1,8 @@
+## 15/11/2026 · FableCut por fotogramas · 65/65 pruebas PASS · SIN DESPLIEGUE
+
+- **Checkpoint prioritario:** [SUES_MOTION_FRAME_SAMPLED_QA_20261115.md](docs/SUES_MOTION_FRAME_SAMPLED_QA_20261115.md). Candidata `fablecut-frame-sampled-candidate.js` deriva keyframes **lineales por fotograma real** del motor SVG para radio, altura, cámara, rieles y opacidad de las 8 palabras, sin crear movimiento vertical del texto que no está en la fuente. Doble opacidad de rieles corregida. Dos comps, 8 textos y 5 figuras editables verificadas con `project-ops.js`/`motion.js` de FableCut.
+- **QA real VPS:** suite dirigida 65/65 PASS, 0 FAIL/SKIP; fixture privado SHA-256 `359f0015c8a3d1f7f80844dcfdbeff468bc21614214d45fc3a69efbf6111b0bc` guardado sin sobrescribir el anterior. Chrome en VPS sigue bloqueado por `SIGXFSZ`; **no existe aún paridad visual nativa acreditada**, ni fuente de voz real o QA audiovisual doble. Sin cambios productivos.
+
 ## 15/11/2026 · Motion: palabras ancladas durante apertura + QA Chromium móvil/escritorio · SIN DESPLIEGUE
 
 - Corregido bloqueo contradictorio de la frase siguiente: anclas con IDs reales pueden comenzar en **F81** durante apertura de líneas, sin exigir F91. `sequence-card-to-space.js` y `bind-sequence-to-speech.js` actualizados.
