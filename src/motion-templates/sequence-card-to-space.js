@@ -58,7 +58,7 @@ export function renderCardToSpaceSvg(frame,args={}){
  const textGroups=[0,1].map(line=>{
   const group=s.words.filter(w=>w.line===line),measure=[...s.lines[line]].length;
   const base=line===0?Math.min(94,Math.floor(94*14/Math.max(14,measure))):Math.min(66,Math.floor(66*18/Math.max(18,measure)));
-  const original=group.map(w=>textWidth(w.word,base)),gap=32;
+  const original=group.map(w=>textWidth(w.word,base)),gap=84; // keep words visually separate across SVG/HTML renderers
   const total=original.reduce((a,b)=>a+b,0)+gap*(group.length-1),fit=Math.min(1,785/Math.max(1,total));
   const widths=original.map(w=>w*fit),fontSize=base*fit;
   const sum=widths.reduce((a,b)=>a+b,0)+gap*(group.length-1);
