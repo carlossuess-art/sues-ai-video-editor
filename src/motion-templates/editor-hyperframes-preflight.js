@@ -13,6 +13,7 @@ import {createHash} from 'node:crypto';
 import {bindCardToSpaceToSpeech} from './bind-sequence-to-speech.js';
 import {SEQUENCE_FRAMES,SEQUENCE_ID} from './sequence-card-to-space.js';
 import {FPS,EVENTS} from './hook-drop-card-engine.js';
+import {makeHyperFramesAVPreflight} from './hyperframes-av-preflight.js';
 
 const SHA=/^[a-f0-9]{64}$/;
 const as=(ok,msg)=>{if(!ok)throw Error(msg);};
@@ -111,7 +112,7 @@ export function prepareEditorHyperFramesPreflight({
  const variables={...layout,wordScheduleJson:JSON.stringify(schedule)};
  const manifestIdentity={sourceSha256,jobFingerprint,timelineFingerprint,
   clipStartFrame,clipStartSec,clipEndSec,cardIds,followIds,variables};
- return {
+ const result={
   schema:'sues-editor-hyperframes-preflight/v1',status:'READY_FOR_CREATIVE_REVIEW',
   readOnly:true,rendered:false,creativeApproved:false,canExecute:false,
   productionChanged:false,canPublish:false,
@@ -152,4 +153,5 @@ export function prepareEditorHyperFramesPreflight({
    'Two complete A/V reviews before creative approval; publishing separate'
   ]
  };
+ return {...result,avMarkdown:makeHyperFramesAVPreflight(result)};
 }
