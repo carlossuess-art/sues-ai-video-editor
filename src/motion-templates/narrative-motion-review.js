@@ -27,11 +27,10 @@ function evidenceWords(transcript){
   as(w&&typeof w.id==='string'&&w.id.trim()&&!seen.has(w.id),'Every word must have a stable unique id');
   seen.add(w.id);
   as(typeof w.text==='string'&&w.text.trim()&&w.text.length<=80,'Invalid transcript word text');
-  as(finite(w.start)&&finite(w.end)&&w.start>=0&&w.end>w.start&&w.end<=transcript.sourceDuration&&w.start>=previous,'Invalid word timing / order');
-  // A timingUncertain item is not precise enough to drive a motion trigger.
-  as(w.timingUncertain!==true,'Uncertain word timing cannot drive a motion');
+  as(finite(w.start)&&finite(w.end)&&w.start>=0&&(w.end>w.start||(w.end===w.start&&w.timingUncertain===true))&&w.end<=transcript.sourceDuration&&w.start>=previous,'Invalid word timing / order');
+  // Preserve uncertain words as context, but never use them to trigger a motion.
   previous=w.start;
-  return {id:w.id,text:w.text,start:w.start,end:w.end,index:i};
+  return {id:w.id,text:w.text,start:w.start,end:w.end,index:i,timingUncertain:w.timingUncertain===true};
  });
 }
 const isEnd=w=>/[.!?…]$/.test(w.text);
@@ -39,6 +38,7 @@ function phrases(words){
  const segments=[];let current=[];
  const flush=()=>{if(current.length){segments.push(current);current=[];}};
  for(const w of words){
+  if(w.timingUncertain){flush();continue;}
   if(current.length&&(w.start-current.at(-1).end>0.9))flush();
   current.push(w);
   if(isEnd(w))flush();
@@ -64,7 +64,7 @@ function matchIntents(segment){
 function selectorOptions(words,prior){
  return words.map((w,i)=>({wordId:w.id,text:w.text,start:w.start,end:w.end,
   context:sentence(words.slice(Math.max(0,i-3),Math.min(words.length,i+4)).map(v=>v.text).join(' ')),
-  checked:prior.has(w.id)}));
+  checked:prior.has(w.id)&&!w.timingUncertain,selectable:!w.timingUncertain}));
 }
 /**
  * Build the selector FIRST. No motion suggestions until selectedWordIds is
@@ -93,6 +93,7 @@ export function prepareNarrativeMotionReview(transcript,{selectedWordIds=null,pr
   candidates:[],notImportableReasons:['No approved Reel A/V plan','No source-to-edit timeline map','No verified renderer mapping for every effect','No human creative approval']};
  if(!isSelectionPresent)return base;
  const selected=new Set(selectedWordIds);
+ as(words.filter(w=>selected.has(w.id)).every(w=>!w.timingUncertain),'Uncertain selected word timing cannot drive a motion');
  const found=[];
  for(const group of phrases(words)){
   const selectedInGroup=group.filter(w=>selected.has(w.id));
