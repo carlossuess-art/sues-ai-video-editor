@@ -32,8 +32,21 @@ require0(doc.clips.length===1&&doc.media.length===1&&doc.width===1080&&doc.heigh
 require0(doc.clips[0].id===intake.clipId&&doc.clips[0].mediaId===intake.mediaId,'FableCut QA clip changed');
 require0(sha(readFileSync(join(qaDir,'media',doc.media[0].name)))===proof.renderedFile.sha256,
  'Imported HF media bytes changed');
+// The server and MCP use different port variable names. FableCut's own
+// browser detection does not inspect Puppeteer's cache, so provide a QA-only
+// launcher. Root Chrome needs --no-sandbox; this stays restricted to the
+// synthetic localhost data directory and the temporary resource-capped job.
+const chrome=process.env.SUES_HF_QA_CHROME;
+require0(typeof chrome==='string'&&chrome.startsWith('/root/.cache/puppeteer/chrome/')&&
+ existsSync(chrome)&&statSync(chrome).isFile(),'Explicit cached QA Chromium binary required');
+const wrapper=join(qaDir,'chrome-headless-qa.sh');
+const wrapperContents='#!/bin/sh\nexec "'+chrome.replaceAll('"','\\\"')+'" --no-sandbox --disable-dev-shm-usage "$@"\n';
+if(!existsSync(wrapper)){
+ writeFileSync(wrapper,wrapperContents,{mode:0o700,flag:'wx'});
+}else require0(readFileSync(wrapper,'utf8')===wrapperContents,'QA browser launcher changed');
 const child=spawn(process.execPath,[serverJs],{
- env:{...process.env,FABLECUT_DATA_DIR:qaDir,FABLECUT_PORT:'17942',PORT:'17942',HOST:'127.0.0.1'},
+ env:{...process.env,FABLECUT_DATA_DIR:qaDir,FABLECUT_PORT:'17942',PORT:'17942',
+  HOST:'127.0.0.1',FABLECUT_CHROME:wrapper},
  stdio:['pipe','pipe','pipe']});
 let serial=1,buf='',pending=new Map(),stderr='';
 child.stdout.on('data',b=>{
