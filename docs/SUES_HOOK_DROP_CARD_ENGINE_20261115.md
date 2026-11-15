@@ -25,12 +25,13 @@ La referencia de ingeniería inversa es el vídeo de 17,884 s, 720×1280 y 29,97
 ## Código y pruebas
 
 Motor: src/motion-templates/hook-drop-card-engine.js.
-Pruebas: tests/hook-drop-card-engine.test.js.
+Pruebas: tests/hook-drop-card-engine.test.js y tests/bind-hook-to-speech.test.js.
+Adaptador de anclas explícitas: src/motion-templates/bind-hook-to-speech.js. Exige identificadores reales revisados, respeta orden y coincidencia textual, convierte sus tiempos a fotogramas y rechaza evidencia inválida. No realiza ASR ni selecciona términos por su cuenta.
 Visor: examples/motions/hook-drop-card.preview.html.
 
 70 fotogramas a 30 fps, salida vectorial SVG determinista y texto parametrizable. Parámetros opcionales wordStartFrames y wordIds permiten recibir anclas reales, pero la muestra tiene únicamente tiempos de demostración. Estado de subtítulos: delegate-to-existing-editor; el motor no sustituye esa lógica.
 
-7 de 7 pruebas locales dirigidas PASS con Node 22.16.0. Convertidos 70/70 SVG a PNG y generado MP4 aislado 540×960, H.264, 30 fps y 2,333 s, validado con ffprobe. SHA-256 del MP4: fe51faddee1a1fb57722b56f66db630bebfc2f477863ad805163eef6e11c3422. 13 fotogramas clave inspeccionados visualmente. Este MP4 es una previsualización local y NO un render nativo ni un máster. La fuente Montserrat real no está verificada en el prototipo; pendiente calidad final, audio, safe zones con A-roll real y dos auditorías completas.
+11 de 11 pruebas locales dirigidas PASS (7 del motor y 4 de anclas explícitas) con Node 22.16.0. Convertidos 70/70 SVG a PNG y generado MP4 aislado 540×960, H.264, 30 fps y 2,333 s, validado con ffprobe. SHA-256 del MP4: fe51faddee1a1fb57722b56f66db630bebfc2f477863ad805163eef6e11c3422. 13 fotogramas clave inspeccionados visualmente. Este MP4 es una previsualización local y NO un render nativo ni un máster. La fuente Montserrat real no está verificada en el prototipo; pendiente calidad final, audio, safe zones con A-roll real y dos auditorías completas.
 
 ## Siguiente fase
 
