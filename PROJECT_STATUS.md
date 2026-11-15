@@ -1,3 +1,10 @@
+## 15/11/2026 · Motion: palabras ancladas durante apertura + QA Chromium móvil/escritorio · SIN DESPLIEGUE
+
+- Corregido bloqueo contradictorio de la frase siguiente: anclas con IDs reales pueden comenzar en **F81** durante apertura de líneas, sin exigir F91. `sequence-card-to-space.js` y `bind-sequence-to-speech.js` actualizados.
+- Panel narrativo ahora invalida propuestas/exportaciones al editar texto o palabras y descarta respuestas asincrónicas antiguas. `web/narrative-motion-panel.js` actualizado.
+- **60/60 pruebas dirigidas PASS en VPS**; Chromium local con **JS exacto SHA `011fdbb34b25e32e8a3c4573b467c9b213638fd0`** en viewports 390×844 y 1280×920: 0 errores JS/overflow, selección fuente 3/5, exportación y reversión por cambios. **Fixture HTML + API ficticia:** no es prueba visual del editor publicado.
+- Repetir la QA con `tests/browser/narrative-motion-playwright.py` si se dispone de Chromium+Playwright autorizados; `hyperframes check` en VPS sigue bloqueado por SIGXFSZ. No hay render nativo validado, paridad ni aprobación; leer [checkpoint](docs/SUES_MOTION_HYPERFRAMES_FABLECUT_20261115.md).
+
 ## 15/11/2026 · Motion graphics: HyperFrames instalado + composición FableCut editable en fixture · SIN DESPLIEGUE
 
 - **Checkpoint técnico prioritario:** [SUES_MOTION_HYPERFRAMES_FABLECUT_20261115.md](docs/SUES_MOTION_HYPERFRAMES_FABLECUT_20261115.md). Reutiliza el repo y la rama `feat/speech-linked-motion-grammar-20261115`.
