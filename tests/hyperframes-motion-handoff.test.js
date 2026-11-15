@@ -28,7 +28,7 @@ test('synthetic demonstration cannot silently acquire fake voice/approval IDs',(
  assert.throws(()=>buildHyperFramesMotionHandoff({sourceHashes:fileHashes,transcriptSha256:'2'.repeat(64)}),/cannot pretend/);
  assert.throws(()=>buildHyperFramesMotionHandoff({sourceHashes:fileHashes,mode:'REVIEWED_SPEECH',selectedWordIds:['w1']}),/transcript fingerprint/);
  assert.throws(()=>buildHyperFramesMotionHandoff({sourceHashes:fileHashes,mode:'REVIEWED_SPEECH',transcriptSha256:'1'.repeat(64),selectedWordIds:['a','a'],approvedPlanFingerprint:'fingerprint-1234'}),/distinct/);
- assert.throws(()=>buildHyperFramesMotionHandoff({sourceHashes:fileHashes,'bad.js':'4'.repeat(64)}),/exactly/);
+ assert.throws(()=>buildHyperFramesMotionHandoff({sourceHashes:{...fileHashes,'bad.js':'4'.repeat(64)}}),/exactly/);
 });
 test('native rendered metadata can be inspected but never counts as native FableCut ingest',()=>{
  const p=packet(),e={renderer:'HyperFrames',kind:'NATIVE_HYPERFRAMES_RENDER',
