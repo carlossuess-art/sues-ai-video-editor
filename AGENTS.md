@@ -1,3 +1,7 @@
+## Actualización del checkpoint Motion Graphics · 15/11/2026 · lectura prioritaria
+
+Leer **[docs/SUES_MOTION_HYPERFRAMES_FABLECUT_20261115.md](docs/SUES_MOTION_HYPERFRAMES_FABLECUT_20261115.md)** antes de editar motion narrativo. HyperFrames v0.9.20 ya está instalado (NO reinstalar); el HTML pasa lint sin errores; comprobación de Chrome bloqueada por límite de archivos `SIGXFSZ`. Proxy SVG r2 verificado 151 frames/30fps y fuente corregida sin hueco y con 84px entre palabras. FableCut puede modelar comps nativas con rect radius keyframed, zoom de comp, rieles, ocho capas de texto; **se verificó solo estructura con fixture sin guardar en proyecto productivo**. **54/54 tests dirigidos PASS en VPS**, no QA nativo ni aprobación. No enviar esta candidata a Master Director como importable ni hornear todas las capas en MP4: faltan blur/máscara/degradado y comparativa visual real. Continuar sobre `feat/speech-linked-motion-grammar-20261115`, sin modificar WAC, V29, materiales ni producción.
+
 ## Continuidad prioritaria · 15/11/2026 · Motion narrativo (código de desarrollo, sin despliegue)
 
 **LEER ANTES DE ACTUAR:** [instrucciones del proyecto ChatGPT](docs/CHATGPT_PROJECT_INSTRUCTIONS_SUES_VIDEO_20261115.md), [checkpoint técnico VPS](docs/SUES_MOTION_NARRATIVE_VPS_INTEGRATION_20261115.md) y [estado global](PROJECT_STATUS.md).
