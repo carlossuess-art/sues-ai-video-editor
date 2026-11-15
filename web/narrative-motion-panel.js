@@ -60,9 +60,9 @@
  }
  button.addEventListener('click',async()=>{
   if(!context)return;
-  const requestContext=context;
+  const requestContext=context,ticket=++reviewSerial;
   try{
-   const selections=choices(),signature=JSON.stringify(selections),ticket=++reviewSerial;
+   const selections=choices(),signature=JSON.stringify(selections);
    button.disabled=true;status.textContent='Revisando palabras reales y motivos narrativos…';
    const response=await fetch('/api/jobs/'+encodeURIComponent(requestContext.jobId)+'/motion-narrative',{
     method:'POST',credentials:'same-origin',
@@ -74,8 +74,8 @@
    if(context!==requestContext||ticket!==reviewSerial)return;
    if(JSON.stringify(choices())!==signature){reset('Las palabras han cambiado durante el análisis. Repite la revisión.');return;}
    show(result);
-  }catch(error){if(requestContext===context){lastReview=null;exportBtn.disabled=true;output.replaceChildren();status.textContent='Revisión bloqueada: '+error.message}}
-  finally{button.disabled=!context}
+  }catch(error){if(requestContext===context&&ticket===reviewSerial){lastReview=null;exportBtn.disabled=true;output.replaceChildren();status.textContent='Revisión bloqueada: '+error.message}}
+  finally{if(ticket===reviewSerial)button.disabled=!context}
  });
  exportBtn.addEventListener('click',()=>{
   if(!lastReview)return;
