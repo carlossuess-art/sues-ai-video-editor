@@ -27,6 +27,11 @@ test('preserves shape radius trigger, camera exit and word layers in editable ob
  assert.equal(camera.keyframes.y.at(-1).v,-1950);
  assert.equal(camera.compId,card.id);
  assert.equal(scene.clips.filter(x=>x.kind==='shape').length,4);
+ assert.deepEqual(card.clips.filter(x=>x.kind==='text').map(x=>Math.round(x.start*30)),[8,14,20,26]);
+ assert.deepEqual(scene.clips.filter(x=>x.kind==='text').map(x=>Math.round(x.start*30)),[81,89,104,112]);
+ const rail=scene.clips.find(x=>x.id==='left-rail').props.shapes[0];
+ assert.ok(rail.keys.some(x=>x.t===Number((5/30).toFixed(4))&&x.x===-20));
+
 });
 test('does not silently claim pixel/blur/typography fidelity or authorise editing',()=>{
  const p=candidate();
