@@ -1,72 +1,69 @@
 /**
- * SUES isolated motion demonstration, intentionally NOT a sues-master-story/v1 operation.
- * Reconstructs card drop, ball rebound, masked text and group exit for a 30 fps timeline.
- * Reference estimates are adjusted for SUES, not advertised as original keyframes.
+ * SUES motion template v3: rectangular card rounds WHEN the first word enters.
+ * Each word has its own timing. The whole group zooms and moves offscreen.
+ * No unrelated orb or waveform. No FableCut native execution is claimed.
  */
 export const HOOK_DROP_CARD_ID='TPL_HOOK_DROP_CARD';
 export const FPS=30;
-export const FRAME_COUNT=51;
-export const EVENTS=Object.freeze({openStart:0,openEnd:6,fallStart:6,impact:14,settle:23,textStart:8,textEnd:21,holdEnd:34,exitEnd:50});
-export const PALETTE=Object.freeze({background:'#111215',card:'#30250F',edge:'#B88C32',highlight:'#FFF9B0',mid:'#D8B96E',dark:'#835F1D',text:'#FFFFFF'});
+export const FRAME_COUNT=70;
+export const EVENTS=Object.freeze({openStart:0,openEnd:7,firstWord:8,cornerEnd:19,revealEnd:32,holdEnd:51,exitEnd:69});
+export const PALETTE=Object.freeze({background:'#111215',card:'#242527',edge:'#B88C32',highlight:'#FFF9B0',text:'#FFFFFF'});
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
-const linear=(a,b,t)=>a+(b-a)*t;
-const progress=(frame,start,end)=>clamp((frame-start)/(end-start));
-const out=t=>1-(1-t)**3;
-const inn=t=>t*t*t;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const p=(frame,start,end)=>clamp((frame-start)/(end-start));
+const easeOut=t=>1-(1-t)**3;
+const easeInOut=t=>t<.5?4*t**3:1-(-2*t+2)**3/2;
 const safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
 function paramsOf(args={}){
  const lines=[args.line1??'¿Y SI TE',args.line2??'ESCUCHARAS?'];
- if(lines.some(s=>typeof s!=='string'||!s.trim()||s.length>36))throw Error('lines must have 1–36 characters');
+ if(lines.some(s=>typeof s!=='string'||!s.trim()||[...s].length>36))throw Error('lines must have 1–36 characters');
  const palette={...PALETTE,...(args.palette??{})};
  for(const [k,v] of Object.entries(palette))if(typeof v!=='string'||!/^#[0-9a-fA-F]{6}$/.test(v))throw Error('invalid color '+k);
- return {lines,palette};
+ const words=lines.flatMap((line,lineIndex)=>line.trim().split(/\s+/u).map((txt,i)=>({id:'motion-word-'+lineIndex+'-'+i,lineIndex,text:txt})));
+ if(words.length>18)throw Error('too many words to reveal clearly');
+ const {wordStartFrames,wordIds}=args;
+ if(wordStartFrames!==undefined&&(!Array.isArray(wordStartFrames)||wordStartFrames.length!==words.length||wordStartFrames.some((v,i)=>!Number.isInteger(v)||v<0||v>EVENTS.holdEnd-7||(i>0&&v<=wordStartFrames[i-1]))))throw Error('invalid wordStartFrames');
+ if(wordIds!==undefined&&(!Array.isArray(wordIds)||wordIds.length!==words.length||wordIds.some(v=>typeof v!=='string'||!v.trim())))throw Error('invalid wordIds');
+ const starts=wordStartFrames??words.map((_,i)=>Math.round(EVENTS.firstWord+(EVENTS.revealEnd-EVENTS.firstWord-6)*(i/Math.max(1,words.length-1))));
+ return {lines,palette,words:words.map((w,i)=>({...w,start:starts[i],end:Math.min(EVENTS.holdEnd,starts[i]+6),wordId:wordIds?.[i]??null})),hasAnchors:Boolean(wordIds&&wordStartFrames)};
 }
 export function sampleHookDropCard(frame,args={}){
- if(!Number.isInteger(frame)||frame<0||frame>=FRAME_COUNT)throw RangeError('frame must be integer from 0 to 50');
- const {lines,palette}=paramsOf(args),e=EVENTS;
- const expand=out(progress(frame,e.openStart,e.openEnd));
- let orbY=160,orbScale=1;
- if(frame>=e.fallStart&&frame<=e.impact)orbY=linear(160,590,inn(progress(frame,e.fallStart,e.impact)));
- else if(frame>e.impact&&frame<e.settle){
-  const t=progress(frame,e.impact,e.settle);
-  orbY=590-22*Math.sin(Math.PI*t)*Math.exp(-1.25*t);
-  orbScale=1+0.09*Math.sin(Math.PI*t)*Math.exp(-1.2*t);
- }else if(frame>=e.settle)orbY=590;
- const read=out(progress(frame,e.textStart,e.textEnd));
- const leave=inn(progress(frame,e.holdEnd,e.exitEnd));
- return {
-  id:HOOK_DROP_CARD_ID,frame,fps:FPS,time:frame/FPS,width:1080,height:1920,
-  card:{x:138,cy:810,w:804,h:8+480*expand,rx:linear(0,62,out(progress(frame,e.impact,e.settle)))},
-  orb:{x:772,y:orbY,r:86*orbScale,visible:frame>=e.fallStart},
-  text:{lines,opacity:read,dy:32*(1-read),blur:22*(1-read)},
-  camera:{scale:linear(1,2.2,leave),dy:linear(0,-830,leave)},
-  palette,
-  phase:frame<6?'open':frame<14?'fall':frame<23?'settle':frame<34?'hold':'exit',
-  captions:'delegate-to-existing-editor',
-  executableInFableCut:false
- };
+ if(!Number.isInteger(frame)||frame<0||frame>=FRAME_COUNT)throw RangeError('frame must be integer from 0 to 69');
+ const {lines,palette,words,hasAnchors}=paramsOf(args),e=EVENTS;
+ const open=easeOut(p(frame,e.openStart,e.openEnd));
+ const cornerRadius=lerp(0,62,easeOut(p(frame,words[0].start,words[0].start+11)));
+ const exit=easeInOut(p(frame,e.holdEnd,e.exitEnd));
+ const wordStates=words.map(w=>{const amount=easeOut(p(frame,w.start,w.end));return {...w,opacity:amount,blur:Math.round((1-amount)*1600)/100,dy:(1-amount)*18};});
+ return {id:HOOK_DROP_CARD_ID,version:'3.0',frame,fps:FPS,time:frame/FPS,width:1080,height:1920,
+  card:{x:130,cy:830,w:820,h:8+530*open,rx:cornerRadius},text:{lines,words:wordStates},
+  camera:{scale:lerp(1,4.5,exit),dy:lerp(0,-1950,exit)},
+  transition:{incomingLayer:'provided-by-next-scene',exitProgress:exit,outgoingOffscreen:frame===e.exitEnd},
+  palette,phase:frame<e.openEnd?'open':frame<e.revealEnd?'word-reveal':frame<e.holdEnd?'hold':'zoom-out',
+  decorativeSphere:false,decorativeWave:false,captions:'delegate-to-existing-editor',
+  speechSync:hasAnchors?'external-word-id-anchors':'demo-timing-only',executableInFableCut:false};
 }
 export function renderHookDropCardSvg(frame,args={}){
- const s=sampleHookDropCard(frame,args),p=s.palette,c=s.card,o=s.orb,t=s.text,top=c.cy-c.h/2;
- const textSize=t.lines[1].length>14?71:t.lines[1].length>10?79:92;
- const camera=['translate(0 ',s.camera.dy,') translate(540 960) scale(',s.camera.scale,') translate(-540 -960)'].join('');
- return [
-  '<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">',
-  '<defs>',
-  '<radialGradient id="sues-bg"><stop offset="0%" stop-color="#26282B"/><stop offset="100%" stop-color="',p.background,'"/></radialGradient>',
-  '<pattern id="sues-grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0 H0 V48" stroke="#FFFFFF" stroke-opacity=".055" fill="none"/></pattern>',
-  '<radialGradient id="sues-orb" cx="33%" cy="25%" r="75%"><stop stop-color="',p.highlight,'"/><stop offset="65%" stop-color="',p.mid,'"/><stop offset="100%" stop-color="',p.dark,'"/></radialGradient>',
-  '<filter id="focus" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="',t.blur/2,'"/></filter>',
-  '<filter id="orb-shadow" x="-40%" y="-40%" width="180%" height="190%"><feDropShadow dx="14" dy="18" stdDeviation="16" flood-color="#000" flood-opacity=".45"/></filter>',
-  '<clipPath id="card-mask"><rect x="',c.x,'" y="',top,'" width="',c.w,'" height="',c.h,'" rx="',c.rx,'"/></clipPath>',
-  '</defs><rect width="1080" height="1920" fill="url(#sues-bg)"/><rect width="1080" height="1920" fill="url(#sues-grid)"/>',
-  '<g id="camera" transform="',camera,'">',
-  '<rect id="card" x="',c.x,'" y="',top,'" width="',c.w,'" height="',c.h,'" rx="',c.rx,'" fill="',p.card,'" stroke="',p.edge,'" stroke-width="5"/>',
-  '<g id="title" clip-path="url(#card-mask)" opacity="',t.opacity,'" transform="translate(0 ',t.dy,')" filter="url(#focus)">',
-  '<text x="212" y="780" fill="',p.text,'" font-family="Montserrat,Arial,sans-serif" font-weight="800" font-size="87">',safe(t.lines[0]),'</text>',
-  '<text x="212" y="902" fill="',p.highlight,'" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="',textSize,'">',safe(t.lines[1]),'</text>',
-  '</g>',
-  '<circle id="orb" cx="',o.x,'" cy="',o.y,'" r="',o.r,'" opacity="',o.visible?1:0,'" fill="url(#sues-orb)" filter="url(#orb-shadow)"/>',
-  '</g></svg>'
- ].join('');
+ const s=sampleHookDropCard(frame,args),c=s.card,col=s.palette,top=c.cy-c.h/2;
+ const cam='translate(0 '+s.camera.dy+') translate(540 960) scale('+s.camera.scale+') translate(-540 -960)';
+ const filters=s.text.words.map((w,i)=>'<filter id="blur-word-'+i+'" x="-35%" y="-75%" width="170%" height="250%"><feGaussianBlur stdDeviation="'+w.blur+'"/></filter>').join('');
+ const line=(ix,y)=>{
+  const items=s.text.words.map((w,i)=>({...w,globalIndex:i})).filter(w=>w.lineIndex===ix);
+  const n=[...s.text.lines[ix]].length;
+  const size=ix===0?Math.min(84,Math.floor(84*20/Math.max(20,n))):Math.min(95,Math.floor(95*15/Math.max(15,n)));
+  const spans=items.map((w,j)=>'<tspan id="'+w.id+'" opacity="'+w.opacity+'" filter="url(#blur-word-'+w.globalIndex+')">'+(j?' ':'')+safe(w.text)+'</tspan>').join('');
+  return '<text id="line-'+ix+'" x="540" y="'+y+'" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-size="'+size+'" font-weight="'+(ix===0?800:900)+'" fill="'+(ix===0?col.text:col.highlight)+'">'+spans+'</text>';
+ };
+ return ['<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">',
+ '<defs>',
+ '<radialGradient id="bg"><stop stop-color="#28292B"/><stop offset="100%" stop-color="'+col.background+'"/></radialGradient>',
+ '<pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0 H0 V48" fill="none" stroke="#FFF" stroke-opacity=".055"/></pattern>',
+ '<linearGradient id="card-fill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+col.card+'"/><stop offset="100%" stop-color="#151619"/></linearGradient>',
+ '<filter id="card-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="21" stdDeviation="18" flood-color="#000" flood-opacity=".55"/></filter>',filters,
+ '<clipPath id="card-clip"><rect x="'+c.x+'" y="'+top+'" width="'+c.w+'" height="'+c.h+'" rx="'+c.rx+'"/></clipPath>',
+ '</defs>',
+ '<rect width="1080" height="1920" fill="url(#bg)"/><rect width="1080" height="1920" fill="url(#grid)"/>',
+ '<g id="camera" transform="'+cam+'">',
+ '<rect id="card" x="'+c.x+'" y="'+top+'" width="'+c.w+'" height="'+c.h+'" rx="'+c.rx+'" fill="url(#card-fill)" stroke="'+col.edge+'" stroke-width="4" filter="url(#card-shadow)"/>',
+ '<g id="content" clip-path="url(#card-clip)">',line(0,768),line(1,902),'</g>',
+ '</g></svg>'].join('');
 }
