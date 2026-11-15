@@ -11,7 +11,7 @@ class El {
  click(){return this.handlers.get('click')?.();}
 }
 function rig({selection='1',disabled=false,defer=false,hfResponse=null}={}){
- const ids=['narrative-motion-panel','narrative-motion-propose','narrative-motion-status','narrative-motion-results','narrative-motion-export','narrative-motion-hf-preflight','narrative-motion-hf-status','narrative-motion-hf-results','narrative-motion-hf-export','captions'];
+ const ids=['narrative-motion-panel','narrative-motion-propose','narrative-motion-status','narrative-motion-results','narrative-motion-export','narrative-motion-hf-preflight','narrative-motion-hf-status','narrative-motion-hf-results','narrative-motion-hf-export','narrative-motion-hf-stage','narrative-motion-hf-stage-status','captions'];
  const elements=Object.fromEntries(ids.map(id=>[id,new El(id)]));
  const select=new El('choice');select.dataset.keyword='seg-001';select.value=selection;select.disabled=disabled;
  const textarea=new El('caption');textarea.value='¿Y SI TE ESCUCHARAS?';
@@ -21,7 +21,7 @@ function rig({selection='1',disabled=false,defer=false,hfResponse=null}={}){
   querySelectorAll:s=>s==='#captions select[data-keyword]'?[select]:[],
   querySelector:s=>s.startsWith('#captions textarea')?textarea:null,
   createElement:tag=>new El(tag)};
- const fetch=async(url,opts)=>{requests.push({url,opts});if(defer)await new Promise(done=>pending.push(done));if(url.endsWith('/motion-hyperframes-preflight'))return {ok:hfResponse?.status!=='BLOCKED_FOR_EVIDENCE',status:hfResponse?.status==='BLOCKED_FOR_EVIDENCE'?422:200,json:async()=>hfResponse};return {ok:true,json:async()=>response};};
+ const fetch=async(url,opts)=>{requests.push({url,opts});if(defer)await new Promise(done=>pending.push(done));if(url.endsWith('/master-current'))return {ok:true,json:async()=>({revision:'a'.repeat(64)})};if(url.endsWith('/motion-hyperframes-stage'))return {ok:true,json:async()=>({status:'NEW_MASTER_DRAFT_REQUIRES_CREATIVE_APPROVAL',storyRevision:'b'.repeat(64),creativeApproved:false,canExecute:false,fablecutEdited:false})};if(url.endsWith('/motion-hyperframes-preflight'))return {ok:hfResponse?.status!=='BLOCKED_FOR_EVIDENCE',status:hfResponse?.status==='BLOCKED_FOR_EVIDENCE'?422:200,json:async()=>hfResponse};return {ok:true,json:async()=>response};};
  const win={addEventListener:(k,fn)=>listeners.set(k,fn)};
  const env={document,window:win,fetch,Blob,URL:{createObjectURL:()=>'/blob/demo',revokeObjectURL:()=>{}},setTimeout:()=>{}};
  runInNewContext(script,env);
@@ -125,4 +125,27 @@ test('a blocked HyperFrames preflight never enables export or edits the Reel',as
  await r.elements['narrative-motion-hf-preflight'].click();
  assert.equal(r.elements['narrative-motion-hf-export'].disabled,true);
  assert.match(r.elements['narrative-motion-hf-results'].children[0].textContent,/No hay fuente editada verificada/);
+});
+
+test('explicit HF staging uses the observed master head CAS; never auto-approves or executes',async()=>{
+ const base={schema:'sues-editor-hyperframes-preflight/v1',status:'READY_FOR_CREATIVE_REVIEW',
+  readOnly:true,rendered:false,creativeApproved:false,canExecute:false,
+  hyperframes:{variables:{line1:'¿Y si te',line2:'escucharas?',followLine1:'Haz espacio',followLine2:'para escucharte.',wordScheduleJson:'{}'}},
+  scene:{startSec:1,frames:151},words:{card:[{text:'¿Y',editedFrame:38}],follow:[{text:'espacio',editedFrame:110}]}};
+ const r=rig({hfResponse:base});r.selectProject();
+ assert.equal(r.elements['narrative-motion-hf-stage'].disabled,true);
+ await r.elements['narrative-motion-propose'].click();
+ await r.elements['narrative-motion-hf-preflight'].click();
+ assert.equal(r.elements['narrative-motion-hf-stage'].disabled,false);
+ assert.equal(r.requests.length,2);
+ await r.elements['narrative-motion-hf-stage'].click();
+ assert.equal(r.requests.length,4);
+ assert.match(r.requests[2].url,/master-current$/);
+ assert.match(r.requests[3].url,/motion-hyperframes-stage$/);
+ const body=JSON.parse(r.requests[3].opts.body);
+ assert.equal(body.expectedStoryRevision,'a'.repeat(64));
+ assert.equal(body.fingerprint,'revision-1');
+ assert.equal(r.elements['narrative-motion-hf-stage'].disabled,true);
+ assert.equal(r.elements['narrative-motion-hf-export'].disabled,true);
+ assert.match(r.elements['narrative-motion-hf-stage-status'].textContent,/Revisa el guion completo/);
 });
