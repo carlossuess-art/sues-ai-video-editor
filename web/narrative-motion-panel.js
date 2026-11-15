@@ -52,7 +52,7 @@
   lastReview=reply;
   output.replaceChildren();
   if(!reply.review?.candidates?.length){
-   textNode(output,'p','No hay propuestas justificadas por las palabras seleccionadas. No se añadirá ningún efecto.');
+   textNode(output,'p','No hay una plantilla semántica validada. Con exactamente dos palabras elegidas puedes solicitar una propuesta técnica 4+4 para REVISIÓN, sin añadir ni aprobar ningún efecto. Las palabras ASR dudosas impedirán ejecutarla.');
   }else{
    for(const c of reply.review.candidates){
     const article=document.createElement('article');article.className='narrative-motion-result';
@@ -65,8 +65,8 @@
    }
   }
   exportBtn.disabled=false;
-  hfButton.disabled=reply.review.candidates.length===0;
-  status.textContent=reply.review.candidates.length+' propuesta(s), sin ejecutar ni modificar el vídeo.';
+  hfButton.disabled=!(reply.review.candidates.length>0||choices().length===2);
+  status.textContent=reply.review.candidates.length+' propuesta(s) semántica(s). Dos palabras explícitas permiten un preflight contextual NO aprobado.';
  }
  button.addEventListener('click',async()=>{
   if(!context)return;
@@ -127,7 +127,7 @@
    if(context===current&&ticket===reviewSerial){lastHF=null;hfExport.disabled=true;
     hfOutput.replaceChildren();hfStatus.textContent='Preparación HyperFrames bloqueada: '+error.message;}
   }finally{
-   if(context===current&&ticket===reviewSerial)hfButton.disabled=!lastReview?.review?.candidates?.length;
+   if(context===current&&ticket===reviewSerial)hfButton.disabled=!(lastReview?.review?.candidates?.length||choices().length===2);
   }
  });
  // User explicitly stages the reviewed motion as a NEW, not-yet-approved
