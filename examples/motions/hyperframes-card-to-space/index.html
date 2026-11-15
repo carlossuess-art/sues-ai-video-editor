@@ -37,8 +37,8 @@ if(scheduleText.trim()){
  if(!schedule||typeof schedule!=='object'||Array.isArray(schedule)||
     Object.keys(schedule).length!==fields.length||fields.some(key=>!Object.hasOwn(schedule,key))||
     schedule.schema!=='sues-hyperframes-word-schedule/v1')throw Error('Untrusted word timing schedule: wrong schema');
- const expectedCard=[args.line1,args.line2].flatMap(v=>v.trim().split(/\\s+/u)).length;
- const expectedFollow=[args.followLine1,args.followLine2].flatMap(v=>v.trim().split(/\\s+/u)).length;
+ const expectedCard=[args.line1,args.line2].flatMap(v=>v.trim().split(/\s+/u)).length;
+ const expectedFollow=[args.followLine1,args.followLine2].flatMap(v=>v.trim().split(/\s+/u)).length;
  if(!Array.isArray(schedule.wordStartFrames)||!Array.isArray(schedule.wordIds)||
     !Array.isArray(schedule.followWordStartFrames)||!Array.isArray(schedule.followWordIds)||
     schedule.wordStartFrames.length!==expectedCard||schedule.wordIds.length!==expectedCard||
