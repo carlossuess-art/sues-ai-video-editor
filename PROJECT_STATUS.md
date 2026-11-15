@@ -1,3 +1,13 @@
+## 15/11/2026 · ÚLTIMO REEL AUTÉNTICO (10/11) · HyperFrames/FableCut probado en clon V18, DISEÑO NO APROBADO
+
+**Checkpoint más reciente:** [SUES_HF_REAL_REEL_V18_PRIVATE_QA_20261115.md](docs/SUES_HF_REAL_REEL_V18_PRIVATE_QA_20261115.md). El MP4 subido coincidió por **SHA-256 `0190efba90de1f7f73bfef8fc1c3822779a82c123225f77b68a50a9b31a77ad8`** con `recording-20261110-115912/original.mp4`; se reutilizó la V18 original (165 clips, 49 media, rev23, 55,5667s editados). QA en clon FableCut, sin sobrescribir ni publicar.
+
+- HF render NATIVO con ocho palabras **reales del CTA**, tiempos convertidos desde clips V1 con cortes: inicio F1488 / 49,6s, duración151f, entradas [8,14,17,29] + [89,103,108,111]; MP4 HF SHA **`b5d47f9f366b4c86c52523395a582944c8ef8b08479c1092f92aa4fe3603f80f`**.
+- FableCut MCP privado: CAS `addMedia+addClip` V9, proyecto166 clips/50 media, export real151f/30fps/1080×1920 con audio, SHA **`583e49dd53304e93112f785703beb953b2f8d0f7cc6e68bea52661ec7d6b053c`**; 151/151 PSNR mínima45,31dB. **FAIL VISUAL:** panel a pantalla completa cubre a Carlos, título y captions; **NO APROBADO**.
+- 2.ª variante V3 blend screen 88 % en otro clon, preserva 165 clips, pero dos exportaciones no completaron archivo único comprobable y la captura compositor `fablecut_frame` falló `presented frame timeout`. **NO VALIDADA.** Mezcla sonora de primera preview vs V18 anterior también difiere; QA auditiva pendiente.
+- El preflight de editor rama actual **todavía bloquea sourceTimeMap con cortes**; este QA usó un mapper limitado desde los verdaderos V1 del Reel, no se ha desplegado esa capacidad. Transcripción ASR 129 palabras `humanReviewed:false`.
+- Siguiente: **selector humano real, guion A/V de todas las capas, rediseño sin interferencias, rebase formal de cortes, QA audiovisual doble, aprobación de Carlos por revisión, y despliegue separado**. Ningún Reel publicado/WAC ni servicio productivo modificado. No declarar 100 %.
+
 ## 15/11/2026 · HITO: Master Director aprobado (QA) → HyperFrames → FableCut CAS y 300/300 frames · NO DESPLEGADO
 
 - **Checkpoint técnico más reciente:** [SUES_HF_MASTER_PRIVATE_APPROVAL_CAS_20261115.md](docs/SUES_HF_MASTER_PRIVATE_APPROVAL_CAS_20261115.md). Código de rama integra selección y guion A/V de palabra real con **una operación `hyperframes-word-motion-v1` en `sues-master-story/v1`**, nueva revisión CAS y comprobación de preflight inmutable antes de aprobación.
