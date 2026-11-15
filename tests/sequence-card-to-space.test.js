@@ -74,3 +74,12 @@ test('independently animated words retain safe visible gap and fit between the r
   assert.ok(first.left>boundaries.leftX&&second.right<boundaries.rightX,'Typography must fit in opened space');
  }
 });
+
+test('first legible rail-opening frame can carry explicit real timing anchors',()=>{
+ const starts=[81,89,104,112],ids=['a','b','c','d'];
+ const frame=sampleCardToSpace(86,{followWordStartFrames:starts,followWordIds:ids});
+ assert.equal(frame.words[0].wordId,'a');
+ assert.ok(frame.words[0].opacity>0);
+ assert.ok(frame.rails.leftX>114);
+ assert.throws(()=>sampleCardToSpace(86,{followWordStartFrames:[80,89,104,112],followWordIds:ids}),/invalid followWordStartFrames/);
+});
