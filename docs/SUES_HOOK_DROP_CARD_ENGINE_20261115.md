@@ -1,30 +1,39 @@
-# SUES · Motion Graphics narrativos · Estado del primer componente
+# SUES · Motion Graphics narrativos · Tarjeta por palabras · v3
 
-## Fecha y aislamiento
-15/11/2026. Rama: `feat/speech-linked-motion-grammar-20261115`. Código privado de preparación: **no desplegado en FableCut ni importable automáticamente**. Se preservan producción, Reels, bibliotecas, originales, B05 y aprobaciones.
+## Alcance
 
-## Fuente y alcance
-Informe de Gemini de 25 páginas y vídeo de referencia de 17,884 s, 720×1280, 29,97 fps, sin audio. Las curvas/posiciones de Gemini son hipótesis de reconstrucción. Este primer prototipo **no copia el vídeo**: prueba su gramática con identidad SUES en una secuencia aislada de 51 fotogramas a 30 fps.
+15/11/2026. Rama aislada feat/speech-linked-motion-grammar-20261115 del proyecto existente carlossuess-art/sues-ai-video-editor. No desplegado en FableCut, no modificado en producción y no importable aún como sues-master-story/v1. No hay acceso necesario a Hostinger ni uso de Desktop Commander.
 
-## Primer componente entregado
-- `src/motion-templates/hook-drop-card-engine.js` — tarjeta desplegable, esfera con caída+rebote, cambio de radio, texto en máscara y desenfoque progresivo, permanencia, salida conjunta por cámara. Todo depende del fotograma entero, no de timers ni estados ocultos. Exporta evaluación geométrica y SVG vectorial por fotograma.
-- `tests/hook-drop-card-engine.test.js` — seis pruebas dirigidas: determinismo, apertura, física estilizada, permanencia, zoom de salida, parametrización, escape de texto, preservación de captions y estado no nativo.
-- `examples/motions/hook-drop-card.preview.html` — controles de reproducción/pausa, scrub por fotograma, texto y color editable. Servir la raíz del repositorio con un servidor HTTP local para que funcionen los imports ES Modules.
+La referencia de ingeniería inversa es el vídeo de 17,884 s, 720×1280 y 29,97 fps, sin voz. Los datos matemáticos de Gemini son estimados, no parámetros originales. El prototipo usa identidad SUES y no reproduce la paleta ajena.
 
-| Intervalo frames, 30 fps | Coreografía propuesta |
-|---|---|
-| [0,6] | tarjeta se despliega |
-| [6,14] | esfera desciende |
-| [8,21] | palabras se revelan |
-| [14,23] | impacto, rebote y redondeo de esquinas |
-| [23,34] | permanencia legible |
-| [34,50] | zoom y subida de todo el grupo |
+## Correcciones pedidas por Carlos
 
-**Subtítulos:** no se reimplementan. La salida indica `delegate-to-existing-editor`, para respetar la regla de ocultación en el editor cuando hay motion protagonista. No hay ASR ni sincronía de voz en la muestra, porque el MP4 original no contiene audio.
+1. El rectángulo aparece con cantos rectos y empieza a redondearse cuando entra la primera palabra (F8), hasta radio 62 px en F19.
+2. Las palabras entran separadas: «¿Y» F8, «SI» F14, «TE» F20 y «ESCUCHARAS?» F26; cada una cuenta con su entrada independiente.
+3. El grupo completo se amplía a 4,5×, se traslada Y −1950 px y termina totalmente fuera de encuadre para permitir el enlace con la siguiente escena.
+4. Eliminar la esfera amarilla y la onda decorativa: ninguna explica el texto por sí misma.
 
-## QA y siguientes pasos
-El código de esta plantilla se reprodujo en un entorno local aislado con Node 22.16.0. **6/6 pruebas dirigidas PASS** (`node --test tests/hook-drop-card-engine.test.js`), cubriendo determinismo, trayectorias, rebote, tiempos, escape de texto y separación de captions. Se generaron 51 imágenes PNG desde SVG vectoriales y un MP4 de previsualización de **1,70 s / 540×960 px / 30 fps**, con codec H.264, validado mediante ffprobe. SHA-256 del MP4 de prueba: `d6c730d0d6a64279bf8197bc513e04edbaa93f09d7894a493dac74c148e3a5c7`. **El render no es nativo FableCut ni 1080×1920.** No se ha acreditado Montserrat en el entorno de pruebas (fallback Noto Sans). QA visual inicial: encadenamiento de apertura, caída, deformación y salida reconocible; calidad final de tipografía, sonido, colisiones con texto real y QA en móvil aún pendientes. La evaluación visual es preliminar y no equivale a las dos revisiones completas requeridas para un Reel. No se han vuelto a ejecutar las regresiones generales del repositorio en este cambio. No equivale a implantación en servidor, ni a aprobación creativa, ni a soporte nativo del contrato maestro.
+## Guion A/V por capas · demostración sin audio
 
-Prioridad siguiente: conectar el plan de narración existente al compositor aislado con word IDs reales, implementar después contador con objeto y barras con tendencia, y ampliar la biblioteca sin duplicar presets. Antes de un Reel real: selector interactivo de palabras reales, guion A/V por capas y revisión de Carlos, permisos y recursos, mapeo autorizado al comando nativo, render privado y dos revisiones audiovisuales. **No modificar producción.**
+| ID/tiempo/frames | Voz y anclas | Cámara/A-roll | Capas y máscaras | Motion y subtítulos | SFX/música | QA y estado |
+|---|---|---|---|---|---|---|
+| M01 · 0–0,267 s · [0,8) | Sin voz disponible | Cámara estática, Carlos no aparece | Fondo antracita z0, tarjeta z10 x130, ancho820, altura 8→538, radio 0 | Apertura vertical desde línea recta | Sin audio | Geometría verificada localmente; PREPARADO |
+| M02 · 0,267–1,067 s · [8,32) | Texto de demostración, NO ASR; 4 palabras F8/F14/F20/F26 | Cámara 1× | Tarjeta con radio 0→62 px F8–F19 y clip interno | Cada palabra en capa/tspan independiente, opacidad 0→1, blur 16→0; captions reales delegados al editor | Sin audio | Orden y esquinas verificados; PREPARADO |
+| M03 · 1,067–1,700 s · [32,51) | Lectura de composición | Cámara 1× | Fondo/tarjeta/4 palabras fijas | Permanencia para leer, sin ornamentos | Sin audio | Permanencia comprobada; PREPARADO |
+| M04 · 1,700–2,333 s · [51,70) | Transición a siguiente idea (no aportada) | Zoom 1→4,5 y Y 0→−1950, ease-in-out | Tarjeta y texto salen juntos por arriba, fondo conserva continuidad | El siguiente plano lo debe aportar la composición adyacente, no se inventa un título | Sin audio | Último frame sin tarjeta; PREPARADO |
 
-Para preservar continuidad entre chats, añadir el repositorio y esta rama a las instrucciones de proyecto.
+## Código y pruebas
+
+Motor: src/motion-templates/hook-drop-card-engine.js.
+Pruebas: tests/hook-drop-card-engine.test.js.
+Visor: examples/motions/hook-drop-card.preview.html.
+
+70 fotogramas a 30 fps, salida vectorial SVG determinista y texto parametrizable. Parámetros opcionales wordStartFrames y wordIds permiten recibir anclas reales, pero la muestra tiene únicamente tiempos de demostración. Estado de subtítulos: delegate-to-existing-editor; el motor no sustituye esa lógica.
+
+7 de 7 pruebas locales dirigidas PASS con Node 22.16.0. Convertidos 70/70 SVG a PNG y generado MP4 aislado 540×960, H.264, 30 fps y 2,333 s, validado con ffprobe. SHA-256 del MP4: fe51faddee1a1fb57722b56f66db630bebfc2f477863ad805163eef6e11c3422. 13 fotogramas clave inspeccionados visualmente. Este MP4 es una previsualización local y NO un render nativo ni un máster. La fuente Montserrat real no está verificada en el prototipo; pendiente calidad final, audio, safe zones con A-roll real y dos auditorías completas.
+
+## Siguiente fase
+
+Vincular la composición con una transcripción real con word IDs, selector de palabras clave, tiempos de edición y siguiente escena; no usar ASR del vídeo de referencia porque carece de pista de voz. Integrar solo tras comprobar las capacidades exactas del editor y aprobación creativa del guion A/V por Carlos. Preservar originales, biblioteca, FableCut, versiones publicadas y perfiles existentes.
+
+Para continuidad entre chats, registrar la rama y el repositorio en las instrucciones del proyecto.
