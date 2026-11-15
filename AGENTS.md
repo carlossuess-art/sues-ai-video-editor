@@ -1,3 +1,13 @@
+## Continuidad prioritaria · 15/11/2026 · Motion narrativo (código de desarrollo, sin despliegue)
+
+**LEER ANTES DE ACTUAR:** [instrucciones del proyecto ChatGPT](docs/CHATGPT_PROJECT_INSTRUCTIONS_SUES_VIDEO_20261115.md), [checkpoint técnico VPS](docs/SUES_MOTION_NARRATIVE_VPS_INTEGRATION_20261115.md) y [estado global](PROJECT_STATUS.md).
+
+- Repositorio existente `carlossuess-art/sues-ai-video-editor`; rama narrativo `feat/speech-linked-motion-grammar-20261115`. Mantener separados los worktrees anteriores y el editor publicado.
+- SUES Server Console MCP comprobado ejecutando comandos en Hostinger VPS `srv1841004`. En ese canal, límite duro por archivo `ulimit -Hf 1024`; usar lecturas y descargas pequeñas cuando proceda. Disco al 90 % en última observación.
+- El panel de propuestas de motion se añadió al código de «Subtítulos y elementos», reutilizando la selección de palabras real. Endpoint POST autenticado de **solo lectura**, salida de guion A/V y bloqueo de cambios de fuente/fingerprint. **28/28 pruebas dirigidas en VPS PASS**; QA de interfaz visual/móvil real, rendering nativo FableCut y auditoría artística pendientes.
+- **PROHIBIDO declarar publicado o editar producción** por el mero hecho de existir código/prototipo. No afectar WAC, medios fuente, V29, DNS, FableCut productivo o bibliotecas. Para nuevos planes: aplicar de nuevo SUES AI Film Director y sus referencias obligatorias.
+- Siguiente trabajo: QA navegador aislado; mapping nativo sin degradar animaciones ni perder editabilidad; validación con voz real, guion completo aprobado, recibos y doble QA privada. Las animaciones SVG no implican un comando FableCut acreditado.
+
 ## Continuidad vigente · auditoría corregida y publicada ·29/10/2026
 
 Leer entrada superior PROJECT_STATUS.md y docs/SUES_AUDIT_FIXES_20261029.md.
