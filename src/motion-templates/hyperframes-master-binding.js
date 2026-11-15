@@ -98,7 +98,7 @@ export function proposeHyperFramesStoryRevision(story,preflight,{sceneId,operati
   s.start<=op.start&&s.end>=op.end).length===1,
   'Motion interval must fit exactly inside a reviewed master scene');
  const ops=story.operations;
- must(Array.isArray(ops)&&ops.length>0&&ops.length<1500&&
+ must(Array.isArray(ops)&&ops.length<1500&&
   !ops.some(o=>o.id===op.id),
   'Master operation ID already exists or operations unavailable');
  const copy=structuredClone(story);
