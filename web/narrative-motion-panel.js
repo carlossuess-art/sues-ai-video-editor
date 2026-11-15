@@ -8,9 +8,9 @@
   status=document.getElementById('narrative-motion-status'),
   output=document.getElementById('narrative-motion-results'),
   exportBtn=document.getElementById('narrative-motion-export');
- let context=null,lastReview=null;
+ let context=null,lastReview=null,reviewSerial=0;
  const reset=message=>{
-  lastReview=null;output.replaceChildren();status.textContent=message;
+  reviewSerial++;lastReview=null;output.replaceChildren();status.textContent=message;
   exportBtn.disabled=true;button.disabled=!context;
  };
  window.addEventListener('sues:motion-context',e=>{
@@ -19,6 +19,11 @@
   reset(context?'Marca palabras concretas en los subtítulos de este proyecto y solicita propuestas.':'Selecciona un proyecto para revisar su narración.');
  });
  window.addEventListener('sues:plan-updated',()=>{context=null;reset('Actualizando el proyecto. Espera a que carguen los subtítulos.')});
+ // Any edit to the existing caption controls invalidates previous evidence and exports.
+ const captions=document.getElementById('captions');
+ for(const name of ['input','change'])captions?.addEventListener(name,()=>{
+  if(context)reset('Ha cambiado la selección o el texto. Vuelve a analizar antes de exportar.');
+ });
  function choices(){
   if(!context)return [];
   const byId=new Map(context.captions.map(c=>[c.id,c]));
@@ -57,7 +62,7 @@
   if(!context)return;
   const requestContext=context;
   try{
-   const selections=choices();
+   const selections=choices(),signature=JSON.stringify(selections),ticket=++reviewSerial;
    button.disabled=true;status.textContent='Revisando palabras reales y motivos narrativos…';
    const response=await fetch('/api/jobs/'+encodeURIComponent(requestContext.jobId)+'/motion-narrative',{
     method:'POST',credentials:'same-origin',
@@ -66,9 +71,10 @@
    });
    const result=await response.json();
    if(!response.ok)throw Error(result?.error??('HTTP '+response.status));
-   if(context!==requestContext)throw Error('Se ha seleccionado otro proyecto. Repite la revisión.');
+   if(context!==requestContext||ticket!==reviewSerial)return;
+   if(JSON.stringify(choices())!==signature){reset('Las palabras han cambiado durante el análisis. Repite la revisión.');return;}
    show(result);
-  }catch(error){lastReview=null;exportBtn.disabled=true;output.replaceChildren();status.textContent='Revisión bloqueada: '+error.message}
+  }catch(error){if(requestContext===context){lastReview=null;exportBtn.disabled=true;output.replaceChildren();status.textContent='Revisión bloqueada: '+error.message}}
   finally{button.disabled=!context}
  });
  exportBtn.addEventListener('click',()=>{
