@@ -58,6 +58,7 @@ import {MediaLibrary} from './media-library.js';
 import {searchPrivateLibrary} from './private-library-search.js';
 import {proposeLibraryCues} from './director-library-cues.js';
 import {buildEditorNarrativeMotionReview} from './motion-templates/editor-motion-bridge.js';
+import {prepareEditorHyperFramesPreflight} from './motion-templates/editor-hyperframes-preflight.js';
 import {GRAPHIC_BLOCKS,GLOBAL_TRANSITIONS} from './graphic-blocks.js';
 import http from 'node:http';
 import {readFileSync,statSync,createReadStream,openSync,readSync,closeSync,existsSync,writeFileSync,renameSync} from 'node:fs';
@@ -559,7 +560,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
     if(path==='/api/jobs'&&req.method==='POST'){
      const b=await body(req);return json(res,201,jobs.create(b.profileId,b.settings??{},{parentId:b.parentId,projectTitle:b.projectTitle,newProject:b.newProject===true,...(b.useTemplateOnly===true?{instruction:{text:'Edición solo con la plantilla. El prompt guardado no se ha aplicado.',actions:[],at:new Date().toISOString()}}:{})}));
     }
-    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|motion-narrative|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-mask-candidate|master-mask-frame|master-layer-edit|master-operation-edit|master-versions|master-current|master-current-operation-edit|master-current-layer-edit|master-current-command|master-pause-audit|master-source-brief|master-brief-translation|master-brief-crosswalk|master-brief-requirements|master-brief-capabilities|master-brief-geometry|master-brief-caption-draft|master-brief-caption-layers|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
+    const match=/^\/api\/jobs\/([a-f0-9-]+)(?:\/(plan|review|acceptance|backup|render|cancel|preview|media|audit|undo|direct-plan|direct|external-catalog|external-review|external-execute|external-draft|creative-review|ai-plan|ai-context|library-cues|motion-narrative|motion-hyperframes-preflight|poster|timeline-frames|live-preview|adjust-preview|master-draft|master-generate|master-review|master-decision|master-layers|master-trace|master-supervisor|master-supervisor-evidence|master-mask-candidate|master-mask-frame|master-layer-edit|master-operation-edit|master-versions|master-current|master-current-operation-edit|master-current-layer-edit|master-current-command|master-pause-audit|master-source-brief|master-brief-translation|master-brief-crosswalk|master-brief-requirements|master-brief-capabilities|master-brief-geometry|master-brief-caption-draft|master-brief-caption-layers|master-render-preflight|master-preview|master-preview-media|master-previews|master-preview-status|master-native-review|master-native-apply|master-hybrid-start|master-hybrid-status))?$/.exec(path);
     if(!match)return json(res,404,{error:'Not found'});
     const [,id,action]=match;
     // Never expose a private native hybrid stage as a standalone final export.
@@ -1188,6 +1189,41 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
       selections:request.selections,profile:job.settings.styleId==='SUES_CALMA'?'CALMA':'DOPAMIN'
      });
      return json(res,200,result);
+    }
+    // HyperFrames integration preflight: proposals -> word-bound variables.
+    // No render, import, approval, project mutation or asset staging.
+    if(action==='motion-hyperframes-preflight'&&req.method==='POST'){
+     const request=await body(req,8192,{rejectDuplicates:true});
+     if(!request||Object.keys(request).some(k=>!['fingerprint','selections'].includes(k))||
+       typeof request.fingerprint!=='string'||!Array.isArray(request.selections))
+      return json(res,400,{error:'Solicitud de preflight HyperFrames no válida.'});
+     const job=jobs.get(id);
+     if(request.fingerprint!==job.fingerprint)
+      return json(res,409,{error:'Revisión del proyecto desactualizada; vuelve a seleccionar las palabras.'});
+     const project=jobs.loadProfile(job.profileId);
+     const manifest=jobs.plan(id).manifest;
+     const catalog=externalCatalog(project,job.settings,assets.list());
+     if(catalog.sourceSha256!==project.inputs.source.sha256||
+       manifest.source.sha256!==catalog.sourceSha256||
+       catalog.timelineFingerprint!==job.fingerprint)
+      return json(res,409,{error:'Fuente o línea temporal modificada; vuelve a preparar el montaje.'});
+     const profile=job.settings.styleId==='SUES_CALMA'?'CALMA':'DOPAMIN';
+     const review=buildEditorNarrativeMotionReview({
+      transcript:project.inputs.transcript,sourceSha256:catalog.sourceSha256,
+      planSourceSha256:manifest.source.sha256,jobFingerprint:job.fingerprint,
+      requestedFingerprint:request.fingerprint,captions:manifest.captions,
+      selections:request.selections,profile
+     });
+     const planned=prepareEditorHyperFramesPreflight({
+      editorReview:review,transcript:project.inputs.transcript,
+      sourceSha256:catalog.sourceSha256,jobFingerprint:job.fingerprint,
+      timelineFingerprint:catalog.timelineFingerprint,
+      sourceTimeMap:catalog.sourceTimeMap,editedDuration:catalog.duration,profile
+     });
+     return json(res,planned.status==='BLOCKED_FOR_EVIDENCE'?422:200,{
+      ...planned,avMarkdown:review.avMarkdown,
+      executed:false,approvalIssued:false,assetImported:false
+     });
     }
     if(action==='library-cues'&&req.method==='GET'){
      const job=jobs.get(id),limit=url.searchParams.has('limit')?Number(url.searchParams.get('limit')):6;
