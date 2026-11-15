@@ -57,7 +57,7 @@ test('authenticated edit-head HTTP preflight creates actual word-bound HF variab
   assert.equal(stale.status,409);
   const invalid=await fetch(path,{method:'POST',headers,body:JSON.stringify({...payload,selections:payload.selections.slice(0,1)})});
   assert.equal(invalid.status,422);
-  assert.equal((await invalid.json()).issues[0].code,'PAIRED_NARRATIVE_CUES_REQUIRED');
+  assert.equal((await invalid.json()).issues[0].code,'EXPLICIT_TWO_SOURCE_WORDS_REQUIRED');
   const malicious=await fetch(path,{method:'POST',headers,body:JSON.stringify({...payload,execute:true})});
   assert.equal(malicious.status,400);
  }finally{await server.close();rmSync(f.dir,{recursive:true,force:true});}
