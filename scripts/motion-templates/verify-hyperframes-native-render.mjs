@@ -129,7 +129,7 @@ export function createVerifiedNativeProof(projectDir,manifest,mediaPath,pixelRep
 if(resolve(process.argv[1]??'')===fileURLToPath(import.meta.url)){
  const args=process.argv.slice(2);
  fail(args.length===6,'Usage: PROJECT_DIR SOURCE_MANIFEST MP4 NEW_RECEIPT PIXEL_QA RENDER_LOG');
- const [projectDir,sourceFile,mediaFile,outFile,pixelFile,stderrFile]=args.map(resolve);
+ const [projectDir,sourceFile,mediaFile,outFile,pixelFile,stderrFile]=args.map(value=>resolve(value));
  fail(!existsSync(outFile),'Refuse to overwrite prior native receipt');
  const p=createVerifiedNativeProof(realpathSync(projectDir),readJson(sourceFile),
   realpathSync(mediaFile),readJson(pixelFile),readFileSync(stderrFile,'utf8'),outFile);
