@@ -27,7 +27,7 @@ function config(args={}){
  if(hasTimes!==hasIds)throw Error('follow word starts and IDs must be provided together');
  if(hasTimes){
   const starts=args.followWordStartFrames,ids=args.followWordIds;
-  if(!Array.isArray(starts)||starts.length!==count||starts.some((n,i)=>!Number.isInteger(n)||n<SPACE_EVENTS.railsEnd||n>SPACE_EVENTS.end-7||(i>0&&n<=starts[i-1])))throw Error('invalid followWordStartFrames');
+  if(!Array.isArray(starts)||starts.length!==count||starts.some((n,i)=>!Number.isInteger(n)||n<SPACE_EVENTS.firstWords||n>SPACE_EVENTS.end-7||(i>0&&n<=starts[i-1])))throw Error('invalid followWordStartFrames');
   if(!Array.isArray(ids)||ids.length!==count||ids.some(v=>typeof v!=='string'||!v.trim())||new Set(ids).size!==ids.length)throw Error('invalid followWordIds');
  }
  return {lines,chunks,followWordStartFrames:args.followWordStartFrames,followWordIds:args.followWordIds,hasAnchors:hasTimes};
