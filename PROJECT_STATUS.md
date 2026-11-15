@@ -1,3 +1,11 @@
+## 15/11/2026 · Arquitectura corregida: HyperFrames dueño de motion, FableCut monta · 74/74 pruebas PASS
+
+- **Checkpoint prioritario:** [SUES_HYPERFRAMES_PRIMARY_HANDOFF_20261115.md](docs/SUES_HYPERFRAMES_PRIMARY_HANDOFF_20261115.md). HyperFrames es el **motor principal** para motion (palabras/blur/máscaras/objetos/cámaras/easing). FableCut es el editor del Reel y consume clips verificados manteniendo una referencia al proyecto editable **en HyperFrames**; un MP4 no convierte sus parámetros internos en objetos FableCut editables.
+- Se añadió **`hyperframes-motion-handoff.js`** (bloquea proxies falsos e importaciones prematuras) y `prepare-hyperframes-handoff.mjs` (hash de 3 archivos, verificación de fuente canónica, dimensiones/FPS/seek, salida review-only).
+- Hallazgo y reparación en proyecto HyperFrames privado: runtime de segunda escena estaba obsoleto (blob `8d51c9905f9d36705c7e73efdcf710752018cca7`), sincronizado al SHA GitHub `6e3e8246e266a662d17c957e4dfe1f2c20cb225c`, copia anterior conservada. **Fingerprint vigente `e41dadf2a5130698b5c193155b2a7dd28a922ed4bfe28ced404e45e0b8a9dba3`**; manifiesto fuente privado `hyperframes-source-review-v3.json`; no hay render nativo aprobado.
+- **74/74 pruebas dirigidas PASS** en VPS (65 anteriores +9 nuevas), `hyperframes lint` 0 errores/0 warnings, `timeline` 5,0333 s. `doctor` detecta actualización disponible, NO instalada. Chrome/HF runtime aún bloqueado `SIGXFSZ`; no producción, WAC, V29, FableCut productivo ni DNS modificados.
+- Siguiente paso: render real HyperFrames en navegador autorizado sin límite de consola, QA frame-a-frame 1080×1920/30, y después handoff al montaje FableCut con source ID, derechos, aprobaciones y revisión/fingerprint. **No derivar un contrato FableCut nativo de un prototipo SVG.**
+
 ## 15/11/2026 · FableCut por fotogramas · 65/65 pruebas PASS · SIN DESPLIEGUE
 
 - **Checkpoint prioritario:** [SUES_MOTION_FRAME_SAMPLED_QA_20261115.md](docs/SUES_MOTION_FRAME_SAMPLED_QA_20261115.md). Candidata `fablecut-frame-sampled-candidate.js` deriva keyframes **lineales por fotograma real** del motor SVG para radio, altura, cámara, rieles y opacidad de las 8 palabras, sin crear movimiento vertical del texto que no está en la fuente. Doble opacidad de rieles corregida. Dos comps, 8 textos y 5 figuras editables verificadas con `project-ops.js`/`motion.js` de FableCut.
