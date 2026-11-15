@@ -1,6 +1,7 @@
 ## 15/11/2026 · SUES Motion narrativo · selector existente → revisión A/V, QA en VPS · NO DESPLEGADO
 
 - **Rama aislada:** `feat/speech-linked-motion-grammar-20261115`; último checkpoint: [docs/SUES_MOTION_NARRATIVE_VPS_INTEGRATION_20261115.md](docs/SUES_MOTION_NARRATIVE_VPS_INTEGRATION_20261115.md).
+- **Continuidad entre agentes/chats:** [AGENTS.md](AGENTS.md) y [instrucciones del proyecto ChatGPT listas para incorporar](docs/CHATGPT_PROJECT_INSTRUCTIONS_SUES_VIDEO_20261115.md). Las instrucciones de la interfaz ChatGPT deben incorporarse manualmente si no se dispone de una acción de edición autorizada.
 - SUES Server Console MCP ejecuta comandos en VPS real srv1841004; no se necesita Desktop Commander. Código de revisión narrativa integrado en la rama (panel de subtítulos existente, endpoint autenticado POST, adapter de índice original a palabra y reporte A/V). **Solo lectura y revisión: no ejecuta efectos ni monta un Reel.**
 - **28/28 tests dirigidos PASS en VPS** con Node 22.23.3: autenticación, CSRF, origen, fingerprint, mapping de palabra, regresión HTTP wiring UI y simulación DOM de selección/revisión; sintaxis JS verificada. No representa suite global ni QA visual.
 - Disco ~90 % ocupado; consola impone `ulimit -Hf 1024`, por lo que la prueba usó copia parcial aislada, sin descargar medios ni tocar worktrees existentes. QA de navegador real y dos pasadas audiovisuales pendientes.
