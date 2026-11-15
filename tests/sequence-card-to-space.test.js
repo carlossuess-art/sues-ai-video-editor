@@ -17,12 +17,16 @@ test('rails absent before bridge, then part to create room for words',()=>{
  assert.equal(end.rails.rightX,966);
 });
 test('follow-up words emerge individually, never as a single phrase',()=>{
- const words=sampleCardToSpace(100).words;
- assert.equal(words[0].opacity,1);
- assert.equal(words[1].opacity,0);
- assert.equal(words[2].opacity,0);
- assert.equal(words[3].opacity,0);
- assert.ok(sampleCardToSpace(126).words.every(w=>w.opacity===1));
+ const early=sampleCardToSpace(84).words,mid=sampleCardToSpace(92).words;
+ assert.ok(early[0].opacity>0);
+ assert.equal(early[1].opacity,0);
+ assert.equal(early[2].opacity,0);
+ assert.equal(early[3].opacity,0);
+ assert.equal(mid[0].opacity,1);
+ assert.ok(mid[1].opacity>0);
+ assert.equal(mid[2].opacity,0);
+ assert.equal(mid[3].opacity,0);
+ assert.ok(sampleCardToSpace(119).words.every(w=>w.opacity===1));
 });
 test('zoom exits first frame group before second scene is settled',()=>{
  assert.equal(SPACE_EVENTS.cardGone,69);
@@ -46,4 +50,10 @@ test('no assumed speech timestamps or native support',()=>{
  assert.equal(s.speechSync,'demo-no-transcript');
  assert.equal(s.captionPolicy,'use-existing-editor');
  assert.equal(s.executableInFableCut,false);
+});
+test('no textless pause after the card zoom: next words start while rails part',()=>{
+ assert.ok(SPACE_EVENTS.firstWords<SPACE_EVENTS.railsEnd);
+ assert.ok(SPACE_EVENTS.firstWords-SPACE_EVENTS.cardGone<=12);
+ assert.ok(sampleCardToSpace(84).words[0].opacity>0);
+ assert.ok(sampleCardToSpace(SPACE_EVENTS.settle).words.every(w=>w.opacity===1));
 });
