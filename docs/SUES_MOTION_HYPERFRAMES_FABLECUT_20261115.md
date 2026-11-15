@@ -4,6 +4,15 @@
 
 Repositorio: `carlossuess-art/sues-ai-video-editor` · rama `feat/speech-linked-motion-grammar-20261115`.
 
+## Continuación verificada · Sincronía real de palabras y navegador aislado
+
+- **Corrección de contrato temporal:** los anclajes de voz explícitos de la segunda frase ahora pueden comenzar en F81 (2,700 s del ejemplo), mientras las líneas se abren, en lugar de exigir incorrectamente F91. Se actualizó `sampleCardToSpace`, `bindCardToSpaceToSpeech` y sus regresiones. Solo admite IDs realmente seleccionados de una transcripción; no inventa tiempos, proyectos ni aprobaciones.
+- **Protección frente a datos desactualizados:** `web/narrative-motion-panel.js` invalida resultados y desactiva exportación si cambia un subtítulo o selección; ignora respuestas asincrónicas antiguas y conserva la revisión actual. Regresiones unitarias de edición durante espera y resolución fuera de orden.
+- **Navegador real, aislado:** se verificó el JS exacto del panel de GitHub (**blob SHA `011fdbb34b25e32e8a3c4573b467c9b213638fd0`**) en Chromium local en un HTML representativo a **390×844** y **1280×920**, con transcripción y API falsos. Se observaron dos propuestas, índices de palabras fuente 3/5, POST protegido, exportación de Markdown, 0 errores JS, 0 desbordamiento horizontal y anulación efectiva por edición o cambio de proyecto. Capturas QA generadas en la sesión, pero **no son pruebas del CSS, navegación real o render del editor publicado**.
+- Script reproducible en `tests/browser/narrative-motion-playwright.py` para otra máquina con Python Playwright/Chromium. Su sintaxis se comprobó en VPS; el navegador del VPS sigue bloqueado por `SIGXFSZ`. No se instaló un navegador allí.
+- **60/60 PASS en pruebas dirigidas en VPS** del motor de motion, revisión UI, servidor autenticado y fixture de composiciones FableCut, después de las correcciones. No equivale a pruebas completas del editor histórico ni a render nativo 1080p.
+- **Pendiente:** abrir y renderizar con el compositor FableCut en entorno realmente aislado, comparar fotogramas y movimiento con SVG r2, confirmar blur/máscaras/fuentes y traducir a contrato de plan canónico antes de editar un Reel auténtico. No lanzar producción ni publicar.
+
 ## Decisión de implementación
 
 Se reutilizaron los dos módulos SVG ya desarrollados (tarjeta con palabras y continuidad hacia «hacer espacio»). Se identificaron recursos existentes en Hostinger, sin instalaciones ni créditos nuevos:
