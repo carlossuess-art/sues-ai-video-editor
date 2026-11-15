@@ -75,6 +75,34 @@ export function validatePrivateE2EReports({hf,intake,render,comparison,doc,metad
   resolution:'1080x1920',silent:true,minPsnrDb:Number(min.toFixed(2)),
   meanPsnrDb:Number((sum/times.length).toFixed(2))};
 }
+/**
+ * Parse every source→editor frame, not just hand-picked sample times.
+ * The raw ffmpeg log is the source of truth; a summary report alone cannot
+ * prove all 151 frames were evaluated.
+ */
+export function validateFullFrameComparison(rawLog,summary){
+ requireTrue(typeof rawLog==='string'&&summary?.schema==='sues-hf-fablecut-full-frame-psnr/v1',
+  'Raw 151-frame PSNR log and summary required');
+ const lines=rawLog.trim().split(/\r?\n/);
+ requireTrue(lines.length===151&&summary.count===151,'Missing one or more of 151 contiguous frames');
+ const values=[];
+ for(let i=0;i<lines.length;i++){
+  const line=lines[i],frame=/\bn:(\d+)\b/.exec(line),psnr=/\bpsnr_avg:(\d+(?:\.\d+)?)\b/.exec(line);
+  requireTrue(frame&&Number(frame[1])===i+1&&psnr,'PSNR frame index gap or missing metric');
+  const value=Number(psnr[1]);
+  requireTrue(Number.isFinite(value)&&value>=40,'Visual roundtrip divergence at frame '+i);
+  values.push(value);
+ }
+ const lowest=Math.min(...values),mean=values.reduce((s,v)=>s+v,0)/values.length;
+ requireTrue(Math.abs(lowest-summary.minPsnrDb)<.02&&Math.abs(mean-summary.meanPsnrDb)<.02,
+  'Raw PSNR metrics differ from summary');
+ requireTrue(summary.visualApproval===false&&summary.sourceVoiceVerified===false,
+  'QA metrics must not assert creative or voice approval');
+ return {frameCount:151,firstFrame:0,lastFrame:150,
+  minPsnrDb:Number(lowest.toFixed(2)),meanPsnrDb:Number(mean.toFixed(2)),
+  rawPsnrLogSha256:hash(Buffer.from(rawLog))};
+}
+
 export function verifyPrivateE2E(dataDir,proofPath){
  const root=realpathSync(resolve(dataDir));
  requireTrue(root.includes('/fablecut-private-qa/')&&
@@ -92,9 +120,11 @@ export function verifyPrivateE2E(dataDir,proofPath){
  requireTrue(hash(exportBytes)===render.fablecutExportSha256&&hash(nativeBytes)===hf.renderedFile.sha256,
   'Actual media SHA differs from receipt');
  const metrics=validatePrivateE2EReports({hf,intake,render,comparison,doc,metadata:ffprobe(file)});
+ const fullFrame=validateFullFrameComparison(readFileSync(join(root,'hf-vs-fablecut-psnr-151.log'),'utf8'),
+  read(join(root,'hf-vs-fablecut-full-151-qa.json')));
  return {schema:'sues-hyperframes-fablecut-e2e-verification/v1',
   status:'ISOLATED_NATIVE_HF_TO_FABLECUT_EXPORT_TECHNICALLY_VERIFIED',
-  createdAt:new Date().toISOString(),...metrics,
+  createdAt:new Date().toISOString(),...metrics,fullFrameConsistency:fullFrame,
   sourceAnimationOwner:'HyperFrames',editorialOwner:'FableCut',
   exportedVideoInternalMotionEditable:false,
   fullReelArollChecked:false,actualNarrationChecked:false,
