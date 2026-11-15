@@ -77,7 +77,7 @@ test('blocks cut or unverified source-to-edited time mapping',()=>{
 test('does not manufacture a complete scene from keyword selection on one phrase only',()=>{
  const p=prepareEditorHyperFramesPreflight(args({selection0:selections.slice(0,1)}));
  assert.equal(p.status,'BLOCKED_FOR_EVIDENCE');
- assert.equal(p.issues[0].code,'PAIRED_NARRATIVE_CUES_REQUIRED');
+ assert.equal(p.issues[0].code,'EXPLICIT_TWO_SOURCE_WORDS_REQUIRED');
 });
 test('detects phrases that do not fit the four-word demo grammar',()=>{
  const extra={...transcript,words:transcript.words.map((w,i)=>i===1?{...w,text:'alguna'}:w)};
