@@ -66,11 +66,11 @@ const request={jsonrpc:'2.0',id:1,method:'tools/call',params:{
    name:'HF QA ONLY - REQUIRES CREATIVE REVIEW',props:{fit:'fill',opacity:1,x:0,y:0,scale:1}}},
   {op:'setProject',set:{inPoint:1488/30,outPoint:1639/30}}
  ]}}};
-const process=spawnSync('node',[server],{env:{...process.env,
+const child=spawnSync('node',[server],{env:{...process.env,
  FABLECUT_DATA_DIR:root,FABLECUT_PORT:'17947',PORT:'17947',HOST:'127.0.0.1'},
  input:JSON.stringify(request)+'\n',encoding:'utf8',timeout:25000,maxBuffer:250000});
-require0(process.status===0,'FableCut MCP QA patch process failed: '+String(process.stderr).slice(0,450));
-const rpc=process.stdout.split('\n').filter(s=>s.startsWith('{')).map(x=>JSON.parse(x)).find(x=>x.id===1);
+require0(child.status===0,'FableCut MCP QA patch process failed: '+String(child.stderr).slice(0,450));
+const rpc=child.stdout.split('\n').filter(s=>s.startsWith('{')).map(x=>JSON.parse(x)).find(x=>x.id===1);
 const output=rpc?.result?.content?.find(x=>x.type==='text')?.text;
 require0(!rpc?.result?.isError&&typeof output==='string'&&output.startsWith('Patched'),
  'FableCut V18 clone patch uncertain: '+String(output).slice(0,400));
