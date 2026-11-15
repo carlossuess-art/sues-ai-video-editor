@@ -41,7 +41,7 @@ test('native rail keys track actual SVG positions and opacities',()=>{
    const at=items[f-start],source=sampleCardToSpace(f).rails;
    tolerance(at.x,source[key]-540,'x f'+f,.0001);
    tolerance(at.y,source.y-960,'y f'+f,.0001);
-   tolerance(at.opacity,source.opacity,'alpha f'+f,.0001);
+   tolerance(at.opacity,source.opacity**2,'alpha f'+f,.0001);
   }
  }
 });
@@ -61,7 +61,7 @@ test('FableCut shape runtime interpolates exact sampled frames, not its default 
   const at=M.shapesAt(rail,(f-59)/30)[0],ref=sampleCardToSpace(f).rails;
   tolerance(at.x,ref.leftX-540,'actual rail x f'+f);
   tolerance(at.y,ref.y-960,'actual rail y f'+f);
-  tolerance(at.opacity,ref.opacity,'actual rail alpha f'+f);
+  tolerance(at.opacity,ref.opacity**2,'actual rail alpha f'+f);
  }
 });
 test('FableCut real ops accepts unsaved editability of sampled structure', {skip:!process.env.SUES_FABLECUT_PROJECT_OPS},()=>{
@@ -76,4 +76,28 @@ test('FableCut real ops accepts unsaved editability of sampled structure', {skip
  assert.equal(flattened.filter(x=>x.kind==='text').length,8);
  assert.equal(flattened.filter(x=>x.kind==='shape').length,5);
  assert.equal(doc.media.length,0);
+});
+
+test('native text layers sample source word opacity without inventing motion in Y',()=>{
+ const x=result(),first=x.operations[0].comp,second=x.operations[1].comp;
+ for(const [comp,ids,source,fadeFrames] of [
+  [first,['card-word-0','card-word-1','card-word-2','card-word-l2-0'],sampleHookDropCard,6],
+  [second,['follow-word-0','follow-word-1','follow-word-l2-0','follow-word-l2-1'],sampleCardToSpace,7]
+ ]){
+  ids.forEach((id,i)=>{
+   const layer=clip(comp,id);
+   assert.equal(layer.kind,'text');
+   assert.equal(layer.keyframes.y,undefined,'Do not invent upward translation absent in SVG render');
+   const keys=layer.keyframes.opacity;
+   assert.equal(keys.length,fadeFrames+1);
+   const firstFrame=Math.round(layer.start*30);
+   for(let j=0;j<=fadeFrames;j++){
+    const state=source(firstFrame+j);
+    const expected=state.text?.words?.[i]?.opacity??state.words?.[i]?.opacity;
+    tolerance(keys[j].v,expected,'word alpha '+id+' '+j,.0001);
+   }
+   assert.equal(keys[0].v,0);
+   assert.equal(keys.at(-1).v,1);
+  });
+ }
 });
