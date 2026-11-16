@@ -5,6 +5,7 @@
  */
 import {prepareNarrativeMotionReview} from './narrative-motion-review.js';
 import {makeMotionAVReview} from './motion-av-review.js';
+import {prepareAssetFirstReview} from './asset-first-policy.js';
 const as=(condition,message)=>{if(!condition)throw Error(message)};
 const hash=s=>typeof s==='string'&&/^[a-f0-9]{64}$/i.test(s);
 const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
@@ -48,10 +49,11 @@ export function buildEditorNarrativeMotionReview({
  const review=prepareNarrativeMotionReview({...transcript,words:scoped},{
   selectedWordIds,sourceSha256,timelineFingerprint:null,profile
  });
+ const assetFirst=prepareAssetFirstReview(review);
  const avMarkdown=makeMotionAVReview(review);
  return {schema:'sues-editor-narrative-review-bridge/v1',status:review.status,
   sourceSha256,jobFingerprint,selectionSource:'existing-caption-keyword-controls',
-  selectedSourceWordIndexes:selected,review,avMarkdown,
+  selectedSourceWordIndexes:selected,review,assetFirst,avMarkdown,
   readOnly:true,editingEffect:'NONE',nativeImportable:false,
   blockingReasons:['No edit-timeline mapping verified','No full source-frame review','No user creative approval','No native FableCut mapping verified']};
 }
