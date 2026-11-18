@@ -1,3 +1,9 @@
+## 18/11/2026 · V1 · Fase 3 de 5 · Punto 1 de 5 finalizado
+
+[Caso técnico V17 → V18](docs/SUES_MASTER_DIRECTOR_CASO_V17_V18_E01_20261118.md). El almacén del Master Director conserva las 10 órdenes históricas en una revisión privada del contrato existente. Dos ejecuciones independientes dieron la misma revisión y el mismo resultado. Volver a aplicar las órdenes recuperadas al motor nativo en memoria reproduce exactamente el proyecto V18. Se conservan 5 recursos, solapes de V3, fotogramas clave y 18 tramos de A-roll.
+
+Siguiente E02, punto 2 de 5, pendiente. Faltan comprobaciones del registro de recursos y capacidad del adaptador para las órdenes históricas. El borrador técnico no ha ejecutado ediciones vía Master Director. V1 52 % estimado de avance funcional. Roadmap y Estado General deben compartir revisión V1-2026-11-18-r5.
+
 ## 18/11/2026 · V1 · Fase 2 de 5 finalizada · Auditoría V17 → V18
 
 [Informe y criterio de regresión](docs/SUES_AUDITORIA_CADENA_REAL_V17_V18_20261118.md). En un clon de la V17, FableCut aplicó las diez órdenes históricas y devolvió exactamente la V18 guardada (165 clips, 49 recursos, revisión 23). Audio idéntico en las previsualizaciones. El Master Director bloqueó el mismo archivo antes de emitir órdenes por `INVALID_STORY_SCHEMA`. Su adaptador también rechazó con `TRACK_OVERLAP` el destello real de V3. El reintento de la revisión 22 mostró conflicto y conservó la 23.
