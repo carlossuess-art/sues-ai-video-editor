@@ -1,3 +1,9 @@
+## 18/11/2026 · V1 · Limpieza de ramas aparcada
+
+Carlos aplaza la retirada de ramas hasta Q06, último punto tras validar la V1. Siguen las 82 ramas. El inventario conserva las 41 candidatas y sus SHA para revalidar en Q06. La PR #27 sigue como única línea de integración. Roadmap y Estado General verificados en revisión V1-2026-11-18-r3.
+
+Activo D01: recuperar el caso real, su plan y revisión, el proyecto editable FableCut y sus pruebas previas. Siguiente D02: contrastar las operaciones con el montaje. V1 52 % estimado y etapa 2 de 4 al 72 %.
+
 ## 18/11/2026 · V1 · Ruta canónica y checklist operativo
 
 La PR #27 es la línea de integración. La prioridad de producto es validar la cadena del Master Director con un plan existente sobre un único proyecto FableCut. [Roadmap Maestro y checklist](https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit) · [Estado General V1](https://docs.google.com/document/d/1L4gycV0LnKGhZ5VtWXAOlzVOzY3GDCp-qW1_X4A9B08/edit) · [Inventario de ramas](docs/SUES_V1_BRANCH_INVENTORY_20261118.md).

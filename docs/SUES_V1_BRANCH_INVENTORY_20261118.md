@@ -5,7 +5,7 @@
 | Grupo | Ramas | Acción |
 |---|---:|---|
 | Canónica | 1 | Única línea de integración V1. |
-| Retirables | 41 | Historial alcanzable desde la PR #27. Retirar cuando haya acceso de borrado, tras comprobar SHA, PR y referencias operativas al momento de actuar. |
+| Retirables | 41 | Historial alcanzable desde la PR #27. Revisar en Q06, tras validar la V1. Retirar con acceso de escritura y tras comprobar SHA, PR y referencias operativas al momento de actuar. |
 | Protegidas | 25 | Mantener ramas de PR abiertas, rama predeterminada y referencias de producción/QA/rollback. |
 | Divergentes restantes | 15 | Conservar las puntas. Inspección dirigida si un punto de la V1 depende de sus cambios exclusivos. |
 
