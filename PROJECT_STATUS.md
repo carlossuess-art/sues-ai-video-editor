@@ -1,3 +1,7 @@
+## 18/11/2026 · V8 · Selección de palabras vacía confirmada
+
+Carlos indicó que no quiere añadir palabras destacadas. El plan de estilo conserva el texto y sus tiempos, con subtítulos blancos y los títulos y motions de referencia como capas independientes. El editor distingue la selección vacía guardada de la selección pendiente y evita bloquear la base de subtítulos por texto gráfico que no interviene en su énfasis. **12 pruebas dirigidas superadas**. La traducción de la apertura y el desarrollo a capas nativas y las dos revisiones de la V8 completa siguen pendientes. V1 52 %, etapa 2 de 4 al 72 %.
+
 ## 18/11/2026 · V8 · Corrección de voz verificada en exportación nativa
 
 - [Checkpoint del render y la referencia](docs/SUES_V8_NATIVE_VOICE_RECHECK_20261118.md). V1 **52 %**, etapa **2 de 4 · 72 %**. FableCut exportó 88 frames del cierre en una copia privada; 88/88 idénticos al MP4 previo. Respecto al IN solicitado, la desviación de voz pasó de +399 ms a −1 ms.

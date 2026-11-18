@@ -24,7 +24,9 @@ export function captionStylePlan(draft,selection,story){
  if(!selection)return {status:'KEYWORD_SELECTION_REQUIRED',renderable:false};
  if(!story||story.sourceSha256!==draft.sourceSha256||story.timeline?.fingerprint!==draft.timelineFingerprint)return {status:'TITLE_TIMELINE_REQUIRED',renderable:false};
  const heroes=[];
- for(const o of story.operations??[]){
+ // A confirmed empty selection has no highlighted words for graphics to suppress.
+ const operations=selection.selectedWordIds?.length===0?[]:story.operations??[];
+ for(const o of operations){
   const c=o.parameters?.command;
   if(c?.action==='add_title'&&typeof c.text==='string')heroes.push({kind:'title',text:c.text,startFrame:Math.round(o.start*30),endFrame:Math.round(o.end*30)});
   else if(o.track==='graphics'){
