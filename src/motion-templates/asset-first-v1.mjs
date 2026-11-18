@@ -68,8 +68,8 @@ export function makeV8PrivateOps(manifest){
  for(const asset of manifest.assets){ops.push({op:'addMedia',media:{id:'m_af_'+asset.id,name:'AF transparent '+asset.id,kind:'image',src:'/media/af_'+asset.id+'.png',width:asset.width,height:asset.height,size:asset.bytes,duration:3600,tags:['sues','asset-first','png-alpha-verified']}})}
  // Background stays procedural and separately editable; not a flattened MP4.
  ops.push({op:'addClip',clip:{id:'af_tapiz',kind:'shape',track:'V1',start:0,duration:18.2,name:'Tapiz antracita editable',props:{shapes:[{type:'rect',name:'Fondo antracita',x:0,y:0,w:1080,h:1920,fill:'#15181c',stroke:'none'}]}}});
- // Original voice is a separate editable clip with a flagged unverified sourceTimeMap.
- ops.push({op:'addClip',clip:{id:'af_voice',mediaId:'source-voice',kind:'audio',track:'A1',start:0,in:.4,duration:18.2,name:'Voz original en clone · offset 0.4 por revisar',props:{volume:1,gain:1}}});
+ // V8's word anchors and approved reference timing use the untrimmed source clock.
+ ops.push({op:'addClip',clip:{id:'af_voice',mediaId:'source-voice',kind:'audio',track:'A1',start:0,in:0,duration:manifest.durationSeconds,name:'Voz original · mismo reloj que los anclajes V8',props:{volume:1,gain:1}}});
  ops.push(imageClip('af_pfff','m_af_pfff',a.buf.spokenAt,15.99,.55,'V6',{scale:[k(0,.03),k(.08,.62),k(.20,1.08),k(.30,.99),k(.43,1)],opacity:[k(0,0),k(.05,1),k(.58,1),k(.71,0)]},'PFFF · asset original separado · explosión en BUF'));
  ops.push(imageClip('af_sofa','m_af_sofa_pereza',a.pereza.spokenAt,18.2,.60,'V6',{scale:[k(0,.12),k(.16,.68),k(.32,.60)],y:[k(0,350),k(.30,205),k(.40,210)],opacity:[k(0,0),k(.15,1),k(1.9,1)]},'SOFÁ · persona con papeles · al pronunciar PEREZA'));
  ops.push(...titleLayers('QUÉ',a.que.spokenAt,18.2,116,-610,a.pereza.spokenAt));

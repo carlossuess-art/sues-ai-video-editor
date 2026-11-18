@@ -1,3 +1,9 @@
+## 18/11/2026 · PR #27 · Cortes del montaje y sincronía de voz V8
+
+- [Checkpoint técnico](docs/SUES_PR27_V1_CUT_MAP_V8_VOICE_20261118.md). V1 **48 %**, etapa **2 de 4 · 60 %**. El preflight admite cortes lineales comprobados y conserva las palabras completas. VPS V18: 18 clips V1 y ocho anclas reales reproducidas en el tramo de prueba.
+- En la exportación privada V8 previa se midió la voz adelantada ~0,38 s. El adaptador de muestra usa ahora el mismo reloj que la referencia V8; queda pendiente comprobarlo en el nuevo MP4.
+- Verificado en VPS aislado: 11/11 mapa, 4/4 Asset-First y regresión de tiempos de V18. Próximo hito abierto: completar el plan ejecutable de V8 (18,2 s), confirmar la voz en el nuevo render y hacer dos revisiones A/V. El plan y el resultado completo siguen pendientes de revisión creativa. Sin despliegue.
+
 ## 15/11/2026 · ÚLTIMO REEL AUTÉNTICO (10/11) · HyperFrames/FableCut probado en clon V18, DISEÑO NO APROBADO
 
 **Checkpoint más reciente:** [SUES_HF_REAL_REEL_V18_PRIVATE_QA_20261115.md](docs/SUES_HF_REAL_REEL_V18_PRIVATE_QA_20261115.md). El MP4 subido coincidió por **SHA-256 `0190efba90de1f7f73bfef8fc1c3822779a82c123225f77b68a50a9b31a77ad8`** con `recording-20261110-115912/original.mp4`; se reutilizó la V18 original (165 clips, 49 media, rev23, 55,5667s editados). QA en clon FableCut, sin sobrescribir ni publicar.

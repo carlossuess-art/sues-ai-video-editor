@@ -26,7 +26,8 @@ export function makeHyperFramesAVPreflight(preflight){
   '',
   '- Proyecto/revisión: '+safe(p.jobFingerprint),
   '- Fuente SHA-256: '+safe(p.sourceSha256),
-  '- Mapa temporal: '+safe(p.timelineFingerprint)+' (1:1 verificado, sin cortes)',
+  '- Mapa temporal: '+safe(p.timelineFingerprint)+(p.sourceTimeSpace==='original-seconds-linear-cut-map'
+   ?' (cortes lineales verificados, bruto a montaje)':' (1:1 verificado, sin cortes)'),
   '- Perfil: '+safe(p.profile)+'; motor animación **HyperFrames**, editor final **FableCut**',
   '- Lienzo: 1080×1920, 30 fps; inicio de la composición: '+p.scene.startSec.toFixed(3)+' s; duración 151/30 s; pantalla completa propuesta.',
   '- Palabras seleccionadas por el usuario: '+p.words.selectedKeywordIds.map(safe).join(', '),

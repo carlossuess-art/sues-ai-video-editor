@@ -2,7 +2,7 @@
  * SUES MASTER DIRECTOR -> HyperFrames, first trusted seam (read only).
  *
  * Converts reviewed keyword choices + ORIGINAL source word timing and a
- * VERIFIED IDENTITY edit map into precise HyperFrames variables. This never
+ * VERIFIED linear edit map into precise HyperFrames variables. This never
  * approves creativity, writes a Reel, renders or imports media to FableCut.
  *
  * The 151-frame 4+4 design may also be PREVIEWED from two explicitly
@@ -10,6 +10,7 @@
  * uncertain ASR word blocks staging; creative approval remains separate.
  */
 import {createHash} from 'node:crypto';
+import {buildTimeMap,sourceIntervalToEdit} from '../time-map.js';
 import {bindCardToSpaceToSpeech} from './bind-sequence-to-speech.js';
 import {SEQUENCE_FRAMES,SEQUENCE_ID} from './sequence-card-to-space.js';
 import {FPS,EVENTS} from './hook-drop-card-engine.js';
@@ -17,9 +18,7 @@ import {makeHyperFramesAVPreflight} from './hyperframes-av-preflight.js';
 
 const SHA=/^[a-f0-9]{64}$/;
 const as=(ok,msg)=>{if(!ok)throw Error(msg);};
-const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
- .toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
-const close=(a,b)=>typeof a==='number'&&Number.isFinite(a)&&Math.abs(a-b)<.0001;
+const close=(a,b)=>Number.isFinite(a)&&Math.abs(a-b)<=1e-6;
 const frame=x=>Math.round(x*FPS);
 const digest=v=>createHash('sha256').update(JSON.stringify(v)).digest('hex');
 const block=(code,description)=>({
@@ -28,12 +27,34 @@ const block=(code,description)=>({
  productionChanged:false,creativeApproved:false,canExecute:false,
  issues:[{code,description}]
 });
-function trueIdentityMap(map,duration){
- if(!map||map.version!=='1.0'||!Array.isArray(map.spans)||map.spans.length!==1||
-  !close(map.duration,duration)||!close(map.sourceDuration,duration))return false;
- const span=map.spans[0];
- return close(span.sourceIn,0)&&close(span.editIn,0)&&
-  close(span.sourceOut,duration)&&close(span.editOut,duration);
+function verifiedLinearMap(map,duration,sourceDuration){
+ // Source metadata and ASR duration follow the editor's existing 50 ms tolerance.
+ if(map?.version!=='1.0'||!Number.isFinite(sourceDuration)||Math.abs(map.sourceDuration-sourceDuration)>=.05||
+  !close(map.duration,duration)||!Array.isArray(map.spans)||!map.spans.length||
+  !map.spans.every(Boolean))return null;
+ let canonical;
+ try{
+  canonical=buildTimeMap(map.spans.map(span=>({in:span.sourceIn,out:span.sourceOut})),map.sourceDuration);
+ }catch{
+  return null;
+ }
+ // The template follows original word order. Merge contiguous camera
+ // splits so a word crossing such a split still has one audible interval.
+ if(!close(canonical.duration,duration))return null;
+ const ranges=[];
+ for(const [i,span] of canonical.spans.entries()){
+  if(!close(map.spans[i].editIn,span.editIn)||!close(map.spans[i].editOut,span.editOut))return null;
+  const previous=ranges.at(-1);
+  if(previous&&close(span.sourceIn,previous.out)){
+   if(span.sourceOut<=previous.out)return null;
+   previous.out=span.sourceOut;
+  }else{
+   if(previous&&span.sourceIn<previous.out)return null;
+   ranges.push({in:span.sourceIn,out:span.sourceOut});
+  }
+ }
+ const normalized=buildTimeMap(ranges,map.sourceDuration);
+ return close(normalized.duration,duration)?normalized:null;
 }
 function selectCandidate(review,id){
  const list=review?.review?.candidates?.filter(c=>c.templateId===id)??[];
@@ -57,9 +78,11 @@ export function prepareEditorHyperFramesPreflight({
  as(['DOPAMIN','CALMA','ELEMENTS'].includes(profile),'Unknown profile');
  if(!Number.isFinite(editedDuration)||editedDuration<=0)
   return block('EDIT_DURATION_NOT_VERIFIED','Falta la duración editada comprobada.');
- if(!trueIdentityMap(sourceTimeMap,editedDuration))
-  return block('SOURCE_TO_EDIT_MAP_NOT_VERIFIED',
-   'El proyecto contiene cortes o un mapa temporal no comprobado: no se moverá ningún motion hasta verificar la conversión del bruto al montaje.');
+ const timeMap=verifiedLinearMap(sourceTimeMap,editedDuration,transcript.sourceDuration);
+ if(!timeMap)return block('SOURCE_TO_EDIT_MAP_NOT_VERIFIED',
+  'El mapa del bruto al montaje no coincide con cortes lineales comprobables.');
+ const identity=timeMap.spans.length===1&&close(timeMap.spans[0].sourceIn,0)&&
+  close(timeMap.sourceDuration,timeMap.duration);
  const words=transcript.words.map((w,i)=>({...w,id:'source-'+sourceSha256.slice(0,16)+'-w'+i}));
  const hook=selectCandidate(editorReview,'TPL_HOOK_DROP_CARD'),
   follow=selectCandidate(editorReview,SEQUENCE_ID);
@@ -90,7 +113,6 @@ export function prepareEditorHyperFramesPreflight({
  if(new Set(all).size!==all.length)return block('DUPLICATE_SOURCE_WORDS','La propuesta repite palabras originales.');
  const byId=new Map(words.map(w=>[w.id,w]));
  if(all.some(id=>!byId.has(id)))return block('SOURCE_WORD_NOT_FOUND','Los ID de palabra ya no existen en la transcripción.');
- const first=byId.get(cardIds[0]),last=byId.get(followIds.at(-1));
  const uncertainIds=all.filter(id=>byId.get(id).timingUncertain===true);
  if(uncertainIds.length)return {
   ...block('UNCERTAIN_SPEECH_TIMES',
@@ -98,12 +120,26 @@ export function prepareEditorHyperFramesPreflight({
   selectionMode,proposedWordIds:all,uncertainWordIds:uncertainIds,
   proposedText:[cardIds,followIds].map(ids=>ids.map(id=>byId.get(id).text).join(' '))
  };
+ const editedById=new Map();
+ for(const id of all){
+  const word=byId.get(id);
+  if(!Number.isFinite(word.start)||!Number.isFinite(word.end)||
+   word.start<0||word.end<=word.start||word.end>timeMap.sourceDuration+1e-6)
+   return block('INVALID_SOURCE_WORD_INTERVAL','No se pudo comprobar el intervalo original de una palabra.');
+  const matches=sourceIntervalToEdit(timeMap,word.start,word.end);
+  const [match]=matches;
+  if(matches.length!==1||!close(word.start,match.sourceStart)||!close(word.end,match.sourceEnd))
+   return {...block('WORD_CROSSES_OR_MISSING_FROM_EDIT',
+    'Una palabra de la propuesta está recortada o no aparece completa en el montaje.'),blockedWordId:id};
+  editedById.set(id,identity?word:{...word,start:match.start,end:match.end});
+ }
+ const first=editedById.get(cardIds[0]);
  const clipStartFrame=frame(first.start)-EVENTS.firstWord;
  if(clipStartFrame<0)return block('CARD_BEFORE_TIMELINE_START',
   'La primera palabra está demasiado cerca del inicio para abrir la tarjeta.');
  const clipStartSec=clipStartFrame/FPS;
  const clipEndSec=(clipStartFrame+SEQUENCE_FRAMES)/FPS;
- if(clipEndSec>editedDuration+.0001||last.end>clipEndSec+.0001)
+ if(clipEndSec>editedDuration+1e-6||all.some(id=>editedById.get(id).end>clipEndSec+1e-6))
   return block('MOTION_OUTSIDE_EDITED_VIDEO','La composición supera el final del vídeo o de la frase.');
  // The layout is a *proposed* fixed template design, not a claim of creative
  // approval, and never changes the original utterance or its punctuation.
@@ -115,7 +151,7 @@ export function prepareEditorHyperFramesPreflight({
  };
  let binding;
  try{
-  binding=bindCardToSpaceToSpeech({...layout,clipStartSec,transcriptWords:words,
+  binding=bindCardToSpaceToSpeech({...layout,clipStartSec,transcriptWords:all.map(id=>editedById.get(id)),
    cardWordIds:cardIds,followWordIds:followIds,fps:FPS});
  }catch(error){
   return block('REAL_SPEECH_OUTSIDE_TEMPLATE_WINDOW',
@@ -133,23 +169,29 @@ export function prepareEditorHyperFramesPreflight({
  // the HTML motion source parses and validates the schedule before painting.
  const variables={...layout,wordScheduleJson:JSON.stringify(schedule)};
  const manifestIdentity={sourceSha256,jobFingerprint,timelineFingerprint,
-  clipStartFrame,clipStartSec,clipEndSec,cardIds,followIds,variables};
+  clipStartFrame,clipStartSec,clipEndSec,cardIds,followIds,variables,
+  ...(!identity?{sourceTimeMapSha256:digest(timeMap)}:{})};
+ const anchor=(id,text,motionFrame)=>({
+  id,text,sourceStartSec:byId.get(id).start,motionFrame,editedFrame:clipStartFrame+motionFrame,
+  ...(!identity?{
+   sourceEndSec:byId.get(id).end,editedStartSec:editedById.get(id).start,editedEndSec:editedById.get(id).end
+  }:{})
+ });
  const result={
   schema:'sues-editor-hyperframes-preflight/v1',status:'READY_FOR_CREATIVE_REVIEW',
   readOnly:true,rendered:false,creativeApproved:false,canExecute:false,
   productionChanged:false,canPublish:false,
   sourceSha256,jobFingerprint,timelineFingerprint,selectionMode,
   profile,templateId:SEQUENCE_ID,owner:{motion:'HyperFrames',editorial:'FableCut',creative:'SUES MASTER DIRECTOR'},
-  sourceTimeSpace:'original-seconds-identity-map-only',
+  sourceTimeSpace:identity?'original-seconds-identity-map-only':'original-seconds-linear-cut-map',
+  ...(!identity?{sourceTimeMapSha256:manifestIdentity.sourceTimeMapSha256}:{}),
   scene:{startFrame:clipStartFrame,endFrameExclusive:clipStartFrame+SEQUENCE_FRAMES,
    startSec:clipStartSec,endSec:clipEndSec,frames:SEQUENCE_FRAMES,fps:FPS,
    width:1080,height:1920,placement:'FULL_FRAME_ONLY_NOT_SUBJECT_OVERLAY'},
   words:{
    selectedKeywordIds:editorReview.review?.selectedWordIds??[],
-   card:cardIds.map((id,i)=>({id,text:card[i],sourceStartSec:byId.get(id).start,
-    motionFrame:schedule.wordStartFrames[i],editedFrame:clipStartFrame+schedule.wordStartFrames[i]})),
-   follow:followIds.map((id,i)=>({id,text:ending[i],sourceStartSec:byId.get(id).start,
-    motionFrame:schedule.followWordStartFrames[i],editedFrame:clipStartFrame+schedule.followWordStartFrames[i]}))
+   card:cardIds.map((id,i)=>anchor(id,card[i],schedule.wordStartFrames[i])),
+   follow:followIds.map((id,i)=>anchor(id,ending[i],schedule.followWordStartFrames[i]))
   },
   hyperframes:{
    composition:'examples/motions/hyperframes-card-to-space',

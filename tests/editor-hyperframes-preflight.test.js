@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildEditorNarrativeMotionReview} from '../src/motion-templates/editor-motion-bridge.js';
 import {prepareEditorHyperFramesPreflight} from '../src/motion-templates/editor-hyperframes-preflight.js';
+import {buildTimeMap} from '../src/time-map.js';
+import {validateBoundHyperFramesPreflight} from '../src/motion-templates/hyperframes-master-binding.js';
 import {sampleCardToSpace} from '../src/motion-templates/sequence-card-to-space.js';
 
 const sourceSha256='a'.repeat(64),jobFingerprint='b'.repeat(64),timelineFingerprint='b'.repeat(64);
@@ -65,14 +67,56 @@ test('prepares native HyperFrames CLI variables using real selected original wor
  assert.match(p.avMarkdown,/no ha escuchado|no escuchado|aún no escuchado/i);
  assert.match(p.avMarkdown,/FableCut/);
 });
-test('blocks cut or unverified source-to-edited time mapping',()=>{
- const cut={...sourceTimeMap,spans:[
-  {sourceIn:0,sourceOut:4,editIn:0,editOut:4},
-  {sourceIn:5,sourceOut:10,editIn:4,editOut:9}],duration:9};
- const x=prepareEditorHyperFramesPreflight(args({timeMap:cut,duration:9}));
- assert.equal(x.status,'BLOCKED_FOR_EVIDENCE');
- assert.equal(x.issues[0].code,'SOURCE_TO_EDIT_MAP_NOT_VERIFIED');
- assert.equal(x.canExecute,false);
+test('rebases both phrases and stages exact anchors across a trim and an internal cut',()=>{
+ const shift=2;
+ const shifted={...transcript,words:transcript.words.map((word,i)=>{
+  const offset=shift+(i<4?0:1);
+  return {...word,start:word.start+offset,end:word.end+offset};
+ })};
+ const map=buildTimeMap([{in:1,out:4},{in:5,out:10}],10);
+ const p=prepareEditorHyperFramesPreflight(args({transcript0:shifted,timeMap:map,duration:8}));
+ assert.equal(p.status,'READY_FOR_CREATIVE_REVIEW');
+ assert.equal(p.scene.startFrame,30);
+ assert.equal(p.sourceTimeSpace,'original-seconds-linear-cut-map');
+ assert.deepEqual(p.words.card.map(w=>w.editedFrame),[38,44,50,56]);
+ assert.deepEqual(p.words.follow.map(w=>w.editedFrame),[111,119,134,142]);
+ assert.equal(p.words.follow[0].sourceStartSec,5.7);
+ assert.ok(Math.abs(p.words.follow[0].editedStartSec-3.7)<1e-6);
+ assert.match(p.avMarkdown,/cortes lineales verificados/);
+ assert.equal(p.canExecute,false);
+ assert.equal(validateBoundHyperFramesPreflight(p).sourceTimeFingerprint,timelineFingerprint);
+ const inconsistent=structuredClone(p);
+ inconsistent.words.follow[0].editedEndSec+=.05;
+ assert.throws(()=>validateBoundHyperFramesPreflight(inconsistent),/complete word interval/);
+});
+test('a camera split within a continuous source word keeps the original timing',()=>{
+ const map=buildTimeMap([{in:0,out:.3},{in:.3,out:10}],10);
+ const p=prepareEditorHyperFramesPreflight(args({timeMap:map}));
+ assert.deepEqual(p,prepareEditorHyperFramesPreflight(args()));
+});
+test('refuses a clipped or missing source word and reports its ID',()=>{
+ for(const map of [
+  buildTimeMap([{in:0,out:.29},{in:.41,out:10}],10),
+  buildTimeMap([{in:.41,out:10}],10)
+ ]){
+  const p=prepareEditorHyperFramesPreflight(args({timeMap:map,duration:map.duration}));
+  assert.equal(p.status,'BLOCKED_FOR_EVIDENCE');
+  assert.equal(p.issues[0].code,'WORD_CROSSES_OR_MISSING_FROM_EDIT');
+  assert.equal(p.blockedWordId,'source-'+sourceSha256.slice(0,16)+'-w0');
+ }
+});
+test('blocks changed offsets, reordered ranges and repeated ranges',()=>{
+ const map=buildTimeMap([{in:0,out:4},{in:5,out:10}],10);
+ map.spans[1].editIn=.5;
+ for(const invalid of [
+  map,
+  buildTimeMap([{in:4,out:7},{in:0,out:4}],10),
+  buildTimeMap([{in:0,out:5},{in:3,out:8}],10)
+ ]){
+  const p=prepareEditorHyperFramesPreflight(args({timeMap:invalid,duration:invalid.duration}));
+  assert.equal(p.issues[0].code,'SOURCE_TO_EDIT_MAP_NOT_VERIFIED');
+  assert.equal(p.canExecute,false);
+ }
 });
 test('does not manufacture a complete scene from keyword selection on one phrase only',()=>{
  const p=prepareEditorHyperFramesPreflight(args({selection0:selections.slice(0,1)}));
@@ -90,7 +134,7 @@ test('detects phrases that do not fit the four-word demo grammar',()=>{
  assert.equal(p.issues[0].code,'REAL_SPEECH_OUTSIDE_TEMPLATE_WINDOW');
 });
 test('refuses to plan beyond video duration and never mistakes a proposal for approval',()=>{
- const p=prepareEditorHyperFramesPreflight(args({timeMap:{...sourceTimeMap,sourceDuration:4,duration:4,
+ const p=prepareEditorHyperFramesPreflight(args({timeMap:{...sourceTimeMap,duration:4,
   spans:[{sourceIn:0,sourceOut:4,editIn:0,editOut:4}]},duration:4}));
  assert.equal(p.issues[0].code,'MOTION_OUTSIDE_EDITED_VIDEO');
  assert.equal(p.creativeApproved,false);

@@ -39,8 +39,10 @@ export function validateBoundHyperFramesPreflight(preflight){
   p.hyperframes.composition==='examples/motions/hyperframes-card-to-space'&&
   p.hyperframes.runtimeScheduleSchema==='sues-hyperframes-word-schedule/v1',
   'Unverified HyperFrames composition');
- must(p.sourceTimeSpace==='original-seconds-identity-map-only',
-  'Missing verified identity source/edit time map');
+ const cutMap=p.sourceTimeSpace==='original-seconds-linear-cut-map';
+ must(p.sourceTimeSpace==='original-seconds-identity-map-only'||
+  (cutMap&&SHA.test(p.sourceTimeMapSha256??'')),
+  'Missing verified source/edit time map');
  const words=[...(p.words?.card??[]),...(p.words?.follow??[])];
  must(words.length===8&&allIds(words.map(x=>x.id))&&
   words.every(w=>Number.isInteger(w.editedFrame)&&
@@ -49,6 +51,13 @@ export function validateBoundHyperFramesPreflight(preflight){
     w.editedFrame===p.scene.startFrame+w.motionFrame&&
     typeof w.text==='string'&&w.text.trim()),
   'Eight exact, source-bound word anchors required');
+ if(cutMap)must(words.every(w=>
+  [w.sourceStartSec,w.sourceEndSec,w.editedStartSec,w.editedEndSec].every(Number.isFinite)&&
+  w.sourceStartSec>=0&&w.sourceEndSec>w.sourceStartSec&&
+  w.editedStartSec>=p.scene.startFrame/30-1/60&&w.editedEndSec<=p.scene.endFrameExclusive/30+1e-6&&
+  w.editedEndSec>w.editedStartSec&&Math.abs((w.editedEndSec-w.editedStartSec)-(w.sourceEndSec-w.sourceStartSec))<=1e-6&&
+  Math.abs(w.editedStartSec*30-w.editedFrame)<=.5+1e-6),
+  'Cut-map anchors must retain the complete word interval and match the edited frame');
  must(typeof p.avMarkdown==='string'&&p.avMarkdown.includes('NO IMPORTABLE')&&
   p.avMarkdown.includes('GUION TÉCNICO A/V'),'Editable human A/V script missing');
  const v=p.hyperframes.variables,schedule=v&&JSON.parse(v.wordScheduleJson);
