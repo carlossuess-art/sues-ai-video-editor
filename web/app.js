@@ -536,13 +536,18 @@ function showMasterReview(result){
   const item=document.createElement('li');item.textContent=`${beat.start.toFixed(1)}–${beat.end.toFixed(1)} s · ${beat.phase??beat.title??'Escena'} · ${beat.purpose??beat.objective??''}`;timeline.append(item);
  }target.append(timeline);
  for(const a of result.resources??[]){const p=document.createElement('p');p.append(document.createTextNode(`${a.number}. ${a.title} · ${a.rightsVerified?'derechos registrados':'derechos pendientes'} `));const localPreview=typeof a.previewPath==='string'&&/^\/api\/assets\/[a-f0-9]{64}\/media$/.test(a.previewPath)?a.previewPath:null;if(localPreview||a.previewUrl){const link=document.createElement('a');link.href=localPreview??a.previewUrl;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Abrir recurso';p.append(link);}const meta=document.createElement('details'),label=document.createElement('summary'),info=document.createElement('pre');label.textContent='Identificación del recurso';info.textContent=JSON.stringify({id:a.id,tipo:a.kind,origen:a.origin,version:a.version,sha256:a.sha256,usoComercialAutorizado:a.commercialUseAllowed,operaciones:a.operationIds},null,2);meta.append(label,info);target.append(p,meta);}
- const technical=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Ver instrucciones de cada escena';technical.append(summary);
+ const technical=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Ver tiempos y capas de cada escena';technical.append(summary);
+ const seconds=new Intl.NumberFormat('es-ES',{minimumFractionDigits:3,maximumFractionDigits:3});
+ const tracks={voice:'Voz',camera:'A-roll / cámara',subject:'Sujeto / máscara',
+  broll:'B-roll',graphics:'Gráficos / motion',captions:'Subtítulos',transition:'Transición',
+  music:'Música',sfx:'Efecto sonoro'};
  for(const scene of result.timeline??[]){
   const section=document.createElement('section'),title=document.createElement('h4');title.textContent=scene.title??scene.sceneId;section.append(title);
   for(const op of scene.operations??[]){
    const details=document.createElement('details'),label=document.createElement('summary');
-   label.textContent=`${op.id} · ${op.start}–${op.end} s · ${op.track} / ${op.effect}`;details.append(label);
-   const information=document.createElement('pre');information.textContent=JSON.stringify({motor:op.renderer,motivo:op.reason,recurso:op.resourceRef??op.resourceId,dependencias:op.dependsOn,anclaVoz:op.speechAnchor,motivoNarrativo:op.motifId,parametros:op.parameters,comprobaciones:op.requiredQA},null,2);details.append(information);section.append(details);
+   const start=seconds.format(op.start),end=seconds.format(op.end),duration=seconds.format(op.end-op.start);
+   label.textContent=`${tracks[op.track]??op.track} · ${op.id} · ${start}–${end} s · duración ${duration} s`;details.append(label);
+   const information=document.createElement('pre');information.textContent=JSON.stringify({efecto:op.effect,motor:op.renderer,motivo:op.reason,recurso:op.resourceRef??op.resourceId,dependencias:op.dependsOn,anclaVoz:op.speechAnchor,motivoNarrativo:op.motifId,parametros:op.parameters,comprobaciones:op.requiredQA},null,2);details.append(information);section.append(details);
   }
   technical.append(section);
  }

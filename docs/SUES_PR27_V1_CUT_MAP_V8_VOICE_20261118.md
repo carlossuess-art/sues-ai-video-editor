@@ -1,6 +1,6 @@
 # SUES AI VIDEO EDITOR · V1 · Sincronía en montajes con cortes y voz V8
 
-**18/11/2026 · PR #27 · validación aislada.** Base de trabajo: `13b44cc770a0bfd87d278358328d9a03015701c4`. Etapa 2 de 4, plan ejecutable. Estimación a cierre de este bloque: V1 48 %, etapa 60 %.
+**18/11/2026 · PR #27 · validación aislada.** Base de trabajo: `13b44cc770a0bfd87d278358328d9a03015701c4`. Etapa 2 de 4, plan ejecutable. Estimación a cierre de este bloque: V1 50 %, etapa 65 %.
 
 ## Hito verificado
 
@@ -11,6 +11,14 @@ En el VPS aislado, la regresión privada leyó la transcripción ASR y los 18 cl
 El MP4 nativo de V8 de 2,93 s contiene un desplazamiento medido de **+0,379 s** respecto al audio original sin recorte (correlación 0,8383 al alinear). El adaptador de muestra configuraba `in: .4`, aunque el guion y la referencia V8 usan el reloj del bruto desde cero. Se corrigió la orden de voz a `start: 0, in: 0` y se añadió una regresión. El MP4 anterior se conserva como evidencia. La sincronía del nuevo render queda por escuchar y medir.
 
 Pruebas dirigidas en el checkout de desarrollo: **50 PASS, 0 FAIL, 6 SKIP**. En el VPS, **11/11** pruebas del mapa y **4/4** de Asset-First con los PNG existentes, más la comprobación V18 descrita arriba. La suite base en este entorno ya presenta seis fallos ajenos a este bloque: tipografía reflectante, proveedor local, staging de recursos privados, dos pruebas del proveedor Shotstack desactivado y un render FFmpeg con límite de memoria.
+
+## Inicio del siguiente hito
+
+La pantalla de revisión del Master Director presenta **inicio, fin y duración por operación**, en el mismo registro que conserva su ID, tipo y parámetros. La prueba Chromium con seis operaciones solapadas comprobó voz, A-roll, motion, música y dos efectos independientes a 390 y 1280 px. Usó la función real de la vista y datos de prueba en el navegador aislado, sin auditar todo el editor.
+
+El mismo MP4 tras cambiar únicamente Fontconfig no permite atribuir una sustitución de fuente al compositor. Las dos bibliotecas privadas ya tenían `Montserrat.woff2`. Una prueba en Chromium real con el servidor FableCut aislado confirmó que el navegador recibió y cargó Montserrat como variable `1 1000`. Canvas midió «QUÉ PEREZA» a 145 px con resultados distintos para Montserrat 900 (1003,690 px), Montserrat 400 (971,355 px) y sans-serif 900 (1023,921 px). La comprobación del nuevo MP4 y el relieve siguen pendientes.
+
+La suite completa en el entorno local dio 970 PASS, 6 FAIL y 23 SKIP tras los cambios de mapa y voz, frente a 966 PASS, 6 FAIL y 23 SKIP del checkout de control. Coincidieron los seis fallos por nombre. A continuación se ejecutaron 7/7 pruebas dirigidas de interfaz, HTTP y sesión para el cambio de la vista.
 
 ## Siguiente hito abierto · V8 completa, 18,2 s
 

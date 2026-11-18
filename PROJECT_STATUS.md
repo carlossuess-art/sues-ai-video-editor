@@ -1,7 +1,8 @@
 ## 18/11/2026 · PR #27 · Cortes del montaje y sincronía de voz V8
 
-- [Checkpoint técnico](docs/SUES_PR27_V1_CUT_MAP_V8_VOICE_20261118.md). V1 **48 %**, etapa **2 de 4 · 60 %**. El preflight admite cortes lineales comprobados y conserva las palabras completas. VPS V18: 18 clips V1 y ocho anclas reales reproducidas en el tramo de prueba.
+- [Checkpoint técnico](docs/SUES_PR27_V1_CUT_MAP_V8_VOICE_20261118.md). V1 **50 %**, etapa **2 de 4 · 65 %**. El preflight admite cortes lineales comprobados y conserva las palabras completas. VPS V18: 18 clips V1 y ocho anclas reales reproducidas en el tramo de prueba.
 - En la exportación privada V8 previa se midió la voz adelantada ~0,38 s. El adaptador de muestra usa ahora el mismo reloj que la referencia V8; queda pendiente comprobarlo en el nuevo MP4.
+- La revisión del plan maestro muestra inicio, fin y duración por registro. Chromium aislado verificó la vista con seis operaciones en tamaños móvil y escritorio, y la carga de Montserrat variable en FableCut. La tipografía del nuevo MP4 sigue pendiente de revisión.
 - Verificado en VPS aislado: 11/11 mapa, 4/4 Asset-First y regresión de tiempos de V18. Próximo hito abierto: completar el plan ejecutable de V8 (18,2 s), confirmar la voz en el nuevo render y hacer dos revisiones A/V. El plan y el resultado completo siguen pendientes de revisión creativa. Sin despliegue.
 
 ## 15/11/2026 · ÚLTIMO REEL AUTÉNTICO (10/11) · HyperFrames/FableCut probado en clon V18, DISEÑO NO APROBADO
