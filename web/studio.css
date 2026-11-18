@@ -126,3 +126,12 @@ body[data-intake-phase="prompt"] #director-panel{display:block!important}
  body[data-active-view="editor"] .stage #editorial-review:not([hidden]){display:block!important;margin-top:14px}
  body[data-active-view="editor"] .stage #editorial-review[hidden]{display:none!important}
 }
+
+#project-workflow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px;max-width:700px}
+#project-workflow[hidden]{display:none}
+#project-workflow button{min-width:0;min-height:44px;padding:8px 10px;border-color:#31515f;background:#152530;color:#e7f6fa;font-size:13px;text-wrap:balance}
+#project-workflow [aria-current="step"]{border-color:var(--accent);box-shadow:inset 0 -2px var(--accent)}
+#project-workflow button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.plan-entry-actions{display:flex;flex-wrap:wrap;gap:8px;margin:9px 0}
+.plan-entry-actions button{min-height:44px}
+@media(max-width:700px){#project-workflow{gap:5px;margin-bottom:10px}#project-workflow button{padding:6px 5px}}

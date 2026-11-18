@@ -29,6 +29,7 @@ test('private approved batch HTTP, actual native project-ops, one-use receipt an
  const saved=await post(root+'/master-draft',{story});assert.equal(saved.status,201,await saved.clone().text());const {revision}=await saved.json();
  assert.equal((await post(root+'/master-current',{revision,expectedRevision:null})).status,200);
  const review=await (await post(root+'/master-review',{revision})).json();assert.equal(review.status,'READY_FOR_CHOICE',JSON.stringify(review));
+ assert.equal(review.nativeBatchProjectId,projectId);
  const decision=await (await post(root+'/master-decision',{revision,fingerprint:review.fingerprint,mode:'approve'})).json();assert.ok(decision.decisionId,JSON.stringify(decision));
  const request={projectId,storyRevision:revision,decisionId:decision.decisionId},approve='/api/engine-next/director/approve-batch',execute='/api/engine-next/director/execute-batch';
  assert.equal((await post(approve,request,{'Content-Type':'application/json'})).status,401);

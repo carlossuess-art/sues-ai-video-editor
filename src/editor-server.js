@@ -1089,7 +1089,15 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
      }
      if(action==='master-review'&&req.method==='POST'){
       const b=await body(req,2048);if(Object.keys(b).some(k=>k!=='revision'))return json(res,400,{error:'Solicitud inválida.'});
-      return json(res,200,await store.review(b.revision));
+      const reviewed=await store.review(b.revision);
+      if(reviewed.status==='READY_FOR_CHOICE'&&activeBatchService){
+       const story=store.readDraft(b.revision);
+       if(story.operations.every(o=>o.renderer==='native'&&o.effect==='fablecut-command-exact-v1')){
+        const binding=await verifiedBatchContext(id);
+        if(binding)return json(res,200,{...reviewed,nativeBatchProjectId:binding.nativeProjectId});
+       }
+      }
+      return json(res,200,reviewed);
      }
      if(action==='master-render-preflight'&&req.method==='POST'){
       const b=await body(req,2048);if(Object.keys(b).some(k=>!['revision','decisionId'].includes(k)))return json(res,400,{error:'Solicitud inválida.'});

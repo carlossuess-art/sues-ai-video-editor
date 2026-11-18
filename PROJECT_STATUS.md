@@ -1,3 +1,9 @@
+## 18/11/2026 · V1 · Fase 4 de 5 finalizada
+
+[Recorrido del editor](docs/SUES_V1_FLUJO_EDITOR_FASE4_20261118.md). S01–S04: barra de tres pasos, entrada de plan común, ejecución privada del lote vinculado y correcciones sobre la revisión del proyecto. Chromium comprobó móvil y escritorio, conservar la otra capa, reabrir el trabajo y deshacer. El código se integra en la PR #27. La aprobación creativa y el render del Reel nuevo quedan en la fase 5.
+
+Siguiente fase 5 de 5, punto 1 de 6 (Q01), usar un Reel real distinto para preparar el plan de revisión. V1 65 % estimado de avance funcional. Roadmap y Estado General deben compartir revisión V1-2026-11-18-r7.
+
 ## 18/11/2026 · V1 · Fase 3 de 5 finalizada
 
 [Cadena real V17 → V18](docs/SUES_MASTER_DIRECTOR_V17_V18_E02_E05_20261118.md). E02–E05 verificados en un clon con el Master Director, el registro de un uso y FableCut MCP. Diez recibos y equivalencia exacta del proyecto V18. La pérdida de respuesta se reconcilió por lectura, el reintento no duplicó capas y la reversión restauró V17 en revisión 24. Los dos originales se conservaron. El registro y la decisión de QA son exclusivos de la copia privada.
