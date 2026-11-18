@@ -1,3 +1,8 @@
+## 18/11/2026 · V8 · Corrección de voz verificada en exportación nativa
+
+- [Checkpoint del render y la referencia](docs/SUES_V8_NATIVE_VOICE_RECHECK_20261118.md). V1 **52 %**, etapa **2 de 4 · 72 %**. FableCut exportó 88 frames del cierre en una copia privada; 88/88 idénticos al MP4 previo. Respecto al IN solicitado, la desviación de voz pasó de +399 ms a −1 ms.
+- La referencia de 18,2 s coincide con el SHA registrado y se comprobó en 12 frames. El nuevo MP4 sigue siendo solo del cierre. Quedan la traducción de las capas anteriores, revisión del límite de voz a 18,2 s, nueva revisión creativa y dos pasadas audiovisuales. Sin despliegue.
+
 ## 18/11/2026 · PR #27 · Cortes del montaje y sincronía de voz V8
 
 - [Checkpoint técnico](docs/SUES_PR27_V1_CUT_MAP_V8_VOICE_20261118.md). V1 **50 %**, etapa **2 de 4 · 65 %**. El preflight admite cortes lineales comprobados y conserva las palabras completas. VPS V18: 18 clips V1 y ocho anclas reales reproducidas en el tramo de prueba.
