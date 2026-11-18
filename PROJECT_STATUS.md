@@ -1,3 +1,9 @@
+## 18/11/2026 · V1 · Fase 3 de 5 finalizada
+
+[Cadena real V17 → V18](docs/SUES_MASTER_DIRECTOR_V17_V18_E02_E05_20261118.md). E02–E05 verificados en un clon con el Master Director, el registro de un uso y FableCut MCP. Diez recibos y equivalencia exacta del proyecto V18. La pérdida de respuesta se reconcilió por lectura, el reintento no duplicó capas y la reversión restauró V17 en revisión 24. Los dos originales se conservaron. El registro y la decisión de QA son exclusivos de la copia privada.
+
+Siguiente fase 4 de 5, punto 1 de 4 (S01), simplificar el recorrido del editor. V1 58 % estimado de avance funcional. Roadmap y Estado General deben compartir revisión V1-2026-11-18-r6.
+
 ## 18/11/2026 · V1 · Fase 3 de 5 · Punto 1 de 5 finalizado
 
 [Caso técnico V17 → V18](docs/SUES_MASTER_DIRECTOR_CASO_V17_V18_E01_20261118.md). El almacén del Master Director conserva las 10 órdenes históricas en una revisión privada del contrato existente. Dos ejecuciones independientes dieron la misma revisión y el mismo resultado. Volver a aplicar las órdenes recuperadas al motor nativo en memoria reproduce exactamente el proyecto V18. Se conservan 5 recursos, solapes de V3, fotogramas clave y 18 tramos de A-roll.

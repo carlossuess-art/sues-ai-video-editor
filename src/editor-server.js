@@ -196,12 +196,12 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
        const registry={...verified.registry,rendererCapabilities:{...verified.registry.rendererCapabilities,native:[...new Set([...(verified.registry.rendererCapabilities?.native??[]),'fablecut-command-exact-v1'])]},projectFingerprint:c.nativeFingerprint,nativeTrackRoles:c.nativeTrackRoles,nativeMediaBindings:c.nativeMediaBindings??{}};
        return {...verified,registry,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration,
         nativePreflight:async(plan,inspectionRegistry)=>{
-         try{const r=await prepareStoryBatch(story,{registry:{...inspectionRegistry,unresolvedRuleConflicts:[]},project:c.data,authorize:async()=>true});
+         try{const r=await prepareStoryBatch(story,{registry:{...inspectionRegistry,unresolvedRuleConflicts:[]},project:c.data,nativePatch:c.nativePatch,authorize:async()=>true});
           if(r.status!=='PREPARED_NOT_EXECUTED')return r;
-          const result=applyCommandBatch(c.data,r.request,{native:nativeBatchRuntime.native,resolveAsset:nativeBatchRuntime.resolveAsset});
+          const result=applyCommandBatch(c.data,r.request,{native:nativeBatchRuntime.native,resolveAsset:nativeBatchRuntime.resolveAsset,nativePatch:c.nativePatch});
           if(result.assets.some(a=>a.rightsVerified!==true))return {status:'BLOCKED',issues:[{code:'RESOURCE_RIGHTS_UNVERIFIED'}]};
           return {status:'READY_FOR_EDITOR_PREVIEW'};
-         }catch(e){return {status:'BLOCKED',issues:[{code:'NATIVE_BATCH_PREFLIGHT_REJECTED',operationId:e.operationId??'plan'}]}}
+         }catch(e){return {status:'BLOCKED',issues:[{code:/^NATIVE_REVISION_PATCH_[A-Z_]+$/.test(e.message)?e.message:'NATIVE_BATCH_PREFLIGHT_REJECTED',operationId:e.operationId??'plan'}]}}
         }};
       }
       return {...verified,sourceSha256:catalog.sourceSha256,timelineFingerprint:catalog.timelineFingerprint,duration:catalog.duration,
@@ -325,7 +325,8 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
        const input={...b,actor:'sues-authenticated-admin'};
        const result=issue?await activeBatchService.issue(input,{verifiedHumanSession:true}):await activeBatchService.execute(input);
        return json(res,result.status==='BLOCKED'?409:200,result);
-      }catch(e){return json(res,409,{error:'Lote bloqueado o no verificado.',code:String(e.message??'UNAVAILABLE').slice(0,120)});}
+      }catch(e){return json(res,409,{error:'Lote bloqueado o no verificado.',code:String(e.message??'UNAVAILABLE').slice(0,120),
+       ...(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/.test(e.operationId??'')?{operationId:e.operationId}:{})});}
     }
     if(path==='/api/engine-next/director/approve-transform'&&req.method==='POST'){
       // Only an authenticated SUES administrator session can issue an exact,

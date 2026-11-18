@@ -3,6 +3,7 @@
 import {auditRevisionDelta} from '../sues-production-policy.js';
 import {createHash} from 'node:crypto';
 import {inspectMasterDirectorStory} from '../master-director-story.js';
+import {applyBoundRevisionPatch,isRevisionPatch,prepareBoundRevisionPatch} from './fablecut-bound-revision-patch.js';
 const hash=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const id=x=>typeof x==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/.test(x);
 const fail=m=>{throw Error(m)};
@@ -39,11 +40,13 @@ export const COMMANDS={
  set_matte:['clipId','matteClipId','matteTrack','mode','proofId'],
 };
 export const projectFingerprint=hash;
-export function applyCommandBatch(project,request,{native,resolveAsset}={}){
+export function applyCommandBatch(project,request,{native,resolveAsset,nativePatch}={}){
  if(!native?.applyPatch||!native?.checkProject||typeof resolveAsset!=='function')fail('Native engine and trusted asset resolver required');
  if(!fields(request,['baseRevision','baseFingerprint','commands'],['baseRevision','baseFingerprint','commands'])||!Number.isInteger(project.revision)||request.baseRevision!==project.revision||request.baseFingerprint!==hash(project))fail('STALE_REVISION_OR_FINGERPRINT');
  if(!Number.isInteger(project.fps)||project.fps<1||project.fps>120||!Array.isArray(project.clips)||!Array.isArray(project.tracks)||!Array.isArray(project.media))fail('INVALID_PROJECT');
  if(!Array.isArray(request.commands)||!request.commands.length||request.commands.length>100)fail('1..100 commands required');
+ if(request.commands.some(isRevisionPatch))
+  return applyBoundRevisionPatch(project,request,{native,resolveAsset,binding:nativePatch});
  const p=structuredClone(project),fps=p.fps,limit=Math.max(0,...p.clips.map(c=>c.start+c.duration)),receipts=[],assets=[],patchOps=[],seen=new Set();
  const assertProjection=(wanted,actual)=>{
   if(typeof wanted==='number'){if(!Number.isFinite(wanted)||typeof actual!=='number'||Math.abs(wanted-actual)>1e-4)fail('NATIVE_NORMALIZATION_CHANGED_VALUE');return}
@@ -175,12 +178,14 @@ export function applyCommandBatch(project,request,{native,resolveAsset}={}){
 export function undoCommandBatch(current,undo){if(hash(current)!==undo?.baseFingerprint)fail('STALE_UNDO');const p=structuredClone(undo.project);p.revision=current.revision+1;return p}
 // Only explicit lossless mappings. The approval check is an external dependency,
 // never a boolean supplied by the creative story. No partial execution.
-export async function prepareStoryBatch(story,{registry,authorize,project,bindings}={}){
+export async function prepareStoryBatch(story,{registry,authorize,project,bindings,nativePatch}={}){
  const audit=inspectMasterDirectorStory(story,registry);
  if(audit.status!=='READY_FOR_PLAN_REVIEW') return {status:'BLOCKED',issues:audit.issues,assetRequests:audit.assetRequests,story};
  if(typeof authorize!=='function'||await authorize(story,registry)!==true)return {status:'BLOCKED',issues:[{code:'APPROVAL_REQUIRED'}],story};
  const issues=[],commands=[],virtualClips=new Map();
  if(!project||project.fps!==story.timeline.fps||Math.abs(Math.max(0,...project.clips.map(c=>c.start+c.duration))-story.timeline.duration)>1e-6||registry.projectFingerprint!==hash(project))return {status:'BLOCKED',issues:[{code:'NATIVE_PROJECT_BINDING_STALE'}],story};
+ if(story.operations.some(o=>isRevisionPatch(o.parameters?.command)))
+  return prepareBoundRevisionPatch(story,project,registry,nativePatch);
  const ordered=[],visited=new Set(),byId=new Map(story.operations.map(o=>[o.id,o]));
  function visit(o){if(visited.has(o.id))return;for(const dep of o.dependsOn)visit(byId.get(dep));visited.add(o.id);ordered.push(o)}
  for(const o of story.operations)visit(o);
