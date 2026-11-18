@@ -1,3 +1,9 @@
+## 18/11/2026 · V1 · Fase 2 de 5 finalizada · Auditoría V17 → V18
+
+[Informe y criterio de regresión](docs/SUES_AUDITORIA_CADENA_REAL_V17_V18_20261118.md). En un clon de la V17, FableCut aplicó las diez órdenes históricas y devolvió exactamente la V18 guardada (165 clips, 49 recursos, revisión 23). Audio idéntico en las previsualizaciones. El Master Director bloqueó el mismo archivo antes de emitir órdenes por `INVALID_STORY_SCHEMA`. Su adaptador también rechazó con `TRACK_OVERLAP` el destello real de V3. El reintento de la revisión 22 mostró conflicto y conservó la 23.
+
+Fase 2, puntos D01 a D04 finalizados. Fase 3, E01 (punto 1 de 5), queda como siguiente. El criterio es pasar esas diez órdenes por la entrada canónica con cobertura por ID, los tiempos y la superposición conservados y el mismo resultado del montaje. V1 52 % estimado de avance funcional. Roadmap y Estado General deben compartir revisión V1-2026-11-18-r4.
+
 ## 18/11/2026 · V1 · Limpieza de ramas aparcada
 
 Carlos aplaza la retirada de ramas hasta Q06, último punto tras validar la V1. Siguen las 82 ramas. El inventario conserva las 41 candidatas y sus SHA para revalidar en Q06. La PR #27 sigue como única línea de integración. Roadmap y Estado General verificados en revisión V1-2026-11-18-r3.
