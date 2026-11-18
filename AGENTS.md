@@ -1,6 +1,11 @@
-## CONTINUIDAD · 18/11/2026 · V1, PR #27
+## Puerta de entrada V1 · PR #27
 
-Leer [checkpoint del mapa de cortes y voz V8](docs/SUES_PR27_V1_CUT_MAP_V8_VOICE_20261118.md) y PROJECT_STATUS.md antes de retomar. Trabajar sobre la PR #27, rama `feat/master-director-story-orchestration-20261104`. Consultar otras ramas cuando resuelvan un bloqueo concreto de la V1 y comprobar la compatibilidad antes de traer cambios. Definir el siguiente hito antes de cerrar el activo y continuar por la ruta de la V1. Cerrar cada respuesta del proyecto con la barra global y la de la etapa activa; actualizar porcentajes por resultados comprobados. El siguiente hito es V8 completa (18,2 s) en clon privado. V1 reserva la API de Gemini para V1.1.
+- Abrir primero el [Estado General V1](https://docs.google.com/document/d/1L4gycV0LnKGhZ5VtWXAOlzVOzY3GDCp-qW1_X4A9B08/edit) y el punto activo del [Roadmap Maestro](https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit). Sus cabeceras deben compartir revisión y punto activo. Si difieren, el Roadmap prevalece y se corrige el resumen antes de continuar.
+- Un punto activo por vez. Antes de editar, anotar su ID, qué evidencia existente resuelve parte de él, el cambio imprescindible y cómo se verificará. Cualquier idea lateral pasa a pendientes. Abrir una excepción solo cuando una evidencia concreta explique qué criterio del punto activo queda bloqueado.
+- Integrar en `feat/master-director-story-orchestration-20261104` (PR #27). El [inventario de ramas](docs/SUES_V1_BRANCH_INVENTORY_20261118.md) documenta las referencias históricas. Incorporar únicamente cambios exclusivos que resuelvan un bloqueo de ese punto y tengan una prueba verificable.
+- V1 usa una entrada de plan temporal, una revisión vinculada a la decisión humana y un proyecto FableCut compartido. El Master Director valida y ejecuta la cadena con las capacidades nativas existentes. Las pruebas visuales entran solo cuando comprueban el resultado de esa cadena o aíslan un fallo registrado.
+- Dos intentos sin nueva evidencia obligan a registrar el bloqueo y escoger una comprobación que lo distinga. El progreso se registra por resultados comprobados, con barras estimadas global y de etapa.
+- Para pasar a FINALIZADO, registrar evidencia, corregir estado/activo/siguiente en el Roadmap, actualizar el Estado General con la misma revisión y verificar ambos antes de empezar el siguiente punto. Actualizar PROJECT_STATUS.md para el checkpoint técnico. El historial inferior conserva contexto y queda subordinado a esta puerta de entrada.
 
 ## ATENCIÓN · 15/11/2026 · Último Reel real probado, QA VISUAL BLOQUEADA
 

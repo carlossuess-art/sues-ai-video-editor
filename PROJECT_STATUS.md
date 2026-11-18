@@ -1,3 +1,9 @@
+## 18/11/2026 · V1 · Ruta canónica y checklist operativo
+
+La PR #27 es la línea de integración. La prioridad de producto es validar la cadena del Master Director con un plan existente sobre un único proyecto FableCut. [Roadmap Maestro y checklist](https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit) · [Estado General V1](https://docs.google.com/document/d/1L4gycV0LnKGhZ5VtWXAOlzVOzY3GDCp-qW1_X4A9B08/edit) · [Inventario de ramas](docs/SUES_V1_BRANCH_INVENTORY_20261118.md).
+
+Auditoría sobre el grafo completo: 82 referencias, 49 históricas contenidas, 41 retirables tras revalidación, 25 protegidas, 15 divergentes restantes y una canónica. Las 41 referencias siguen en GitHub. Se conserva el estado de producción. Las pruebas de la V8 son evidencia auxiliar: la comparación de 546 fotogramas fue diagnóstica y la exportación nativa completa no terminó. El Roadmap contiene la próxima acción y sus criterios de cierre.
+
 ## 18/11/2026 · V8 · Selección de palabras vacía confirmada
 
 Carlos indicó que no quiere añadir palabras destacadas. El plan de estilo conserva el texto y sus tiempos, con subtítulos blancos y los títulos y motions de referencia como capas independientes. El editor distingue la selección vacía guardada de la selección pendiente y evita bloquear la base de subtítulos por texto gráfico que no interviene en su énfasis. **12 pruebas dirigidas superadas**. La traducción de la apertura y el desarrollo a capas nativas y las dos revisiones de la V8 completa siguen pendientes. V1 52 %, etapa 2 de 4 al 72 %.
