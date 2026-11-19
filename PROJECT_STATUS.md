@@ -1,3 +1,7 @@
+## 19/11/2026 · V1 · Fase 5 de 5 · Q01 en curso
+
+Carlos aceptó el plan creativo del Reel 158404. Verificación previa identificó los 14 recursos por SHA, confirmó estructura del anexo (87 operaciones y 168 palabras) y ejecutó 40/40 pruebas dirigidas con el motor FableCut real. El anexo todavía no es importable al contrato maestro. La transcripción contiene fragmentos dudosos que requieren escucha, y siguen pendientes la traducción sin pérdida, composición, ejecución en copia, exportación y doble QA. Q02 no se ha completado. [Detalle y continuación](docs/SUES_V1_FASE5_Q01_PREFLIGHT_20261119.md). Sin cambios en producción.
+
 ## 18/11/2026 · V1 · Fase 4 de 5 finalizada
 
 [Recorrido del editor](docs/SUES_V1_FLUJO_EDITOR_FASE4_20261118.md). S01–S04: barra de tres pasos, entrada de plan común, ejecución privada del lote vinculado y correcciones sobre la revisión del proyecto. Chromium comprobó móvil y escritorio, conservar la otra capa, reabrir el trabajo y deshacer. El código se integra en la PR #27. La aprobación creativa y el render del Reel nuevo quedan en la fase 5.
