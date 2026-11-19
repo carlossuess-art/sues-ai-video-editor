@@ -1,3 +1,7 @@
+## Punto activo · 19/11/2026 · Q02 en curso
+
+Leer docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md y la cabecera de PROJECT_STATUS.md. El plan 158404 conserva 87 IDs fuente. Primer clon técnico con 107 recibos; candidata v4 con 108 por máscara adicional, mezcla y continuidad de sobres traducidos, sourceIn M01 corregido con fuente editable existente. No confundir estos cambios técnicos con aceptación creativa del resultado. Consultar la unidad propia sues-q02-render-v4-20261119 y render-v4.exit/log; comprobar que no está activa antes de otro export. No repetir la edición ya confirmada por MCP. Exportación completa, escucha ASR, bordes/composición y doble revisión audiovisual pendientes. Q01 cerrado, Q02 activo, Q03–Q06 pendientes, revisión compartida V1-2026-11-19-r12. PR #27 canónica; speech histórica. No tocar producción ni firmar QA que no se haya percibido.
+
 ## Punto de continuidad · 19/11/2026 · Q01 finalizado
 
 Leer docs/SUES_V1_FASE5_Q01_CIERRE_20261119.md y la cabecera de PROJECT_STATUS.md. Fase 5 de 5, Q01 (1/6) cerrado conforme al criterio de preparar y revisar el plan. Próximo Q02 pendiente de preparación y ejecución. Conservar como bloqueos de Q02 la escucha/transcripción, los recursos/composición y la traducción íntegra, sin reabrir la aprobación creativa de la propuesta ya aceptada ni fingir una decisión firmada de ejecución. PR #27 conserva la línea de integración. La rama speech es histórica. Roadmap/Estado General en revisión V1-2026-11-19-r11.

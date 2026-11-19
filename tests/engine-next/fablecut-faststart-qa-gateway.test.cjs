@@ -54,3 +54,17 @@ test('gateway refuses public bind, ambiguous names, stale active project and sym
   await assert.rejects(g.binding(),/Not a regular data asset/);
  }finally{await fsp.rm(v.root,{recursive:true,force:true})}
 });
+test('explicit host source timeline permits editable scene spans but refuses gaps, retiming and substituted source',{timeout:60000},async()=>{
+ const v=await fixture();try{
+  const project={fps:30,width:1080,height:1920,media:[{id:'source',src:'/media/original.mp4'}],clips:[
+   {id:'one',kind:'video',track:'V1',mediaId:'source',start:0,in:0,duration:5/30,props:{speed:1}},
+   {id:'two',kind:'video',track:'V1',mediaId:'source',start:5/30,in:5/30,duration:5/30,props:{speed:1}}
+  ]};
+  const g=createFaststartQaGateway({dataDir:v.root,sourceName:'original.mp4',cacheName:'original-faststart.mp4',sourceSha256:v.sourceSha256,builderPath:builder,sourceTimeline:{fps:30,width:1080,height:1920,frames:10,spans:2}});
+  const save=q=>fsp.writeFile(path.join(v.root,'project.json'),JSON.stringify(q));
+  await save(project);assert.equal((await g.binding()).verified,true);
+  for(const change of [q=>q.clips[1].start+=1/30,q=>q.clips[1].in=0,q=>q.clips[1].props.speed=2,q=>q.clips[1].keyframes={speed:[{t:0,v:1}]},q=>q.clips[1].mediaId='other',q=>q.clips.pop(),q=>q.width=720]){
+   const q=structuredClone(project);change(q);await save(q);await assert.rejects(g.binding(),/source clock|protected source timeline/);
+  }
+ }finally{await fsp.rm(v.root,{recursive:true,force:true})}
+});

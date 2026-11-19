@@ -50,4 +50,17 @@ class TestPrivateFableCutClone(unittest.TestCase):
                 m.stage(original,original/'subdir',root/'ops/fablecut-faststart-qa-gateway.cjs',
                         root/'scripts/engine-next/build-native-faststart-cache.py')
 
+    def test_explicit_continuous_source_is_pinned_in_new_app(self):
+        with tempfile.TemporaryDirectory() as t:
+            directory=Path(t);original,app,server=self.build_fixture(directory)
+            clone=directory/'scene-app'
+            m.stage(original,clone,root/'ops/fablecut-faststart-qa-gateway.cjs',
+                    root/'scripts/engine-next/build-native-faststart-cache.py',2212,7)
+            self.assertIn('frames:2212,spans:7', (clone/'server.js').read_text())
+            self.assertEqual((original/'server.js').read_text(),server)
+            for frames,spans in [(0,7),(2212,None),(2212,101),(None,7)]:
+                with self.assertRaises(ValueError):
+                    m.stage(original,directory/'invalid-app',root/'ops/fablecut-faststart-qa-gateway.cjs',
+                            root/'scripts/engine-next/build-native-faststart-cache.py',frames,spans)
+
 if __name__=='__main__':unittest.main()

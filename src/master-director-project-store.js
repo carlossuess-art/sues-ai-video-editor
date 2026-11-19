@@ -82,7 +82,7 @@ export class MasterDirectorProjectStore{
  constructor(jobDirectory,contextProvider){this.root=join(jobDirectory,'master-director');this.contextProvider=contextProvider;}
  saveDraft(story){
   if(!obj(story)||story.schema!=='sues-master-story/v1')throw Error('Invalid story schema');
-  const text=JSON.stringify(story);if(Buffer.byteLength(text)>60000)throw Error('Story too large');
+  const text=JSON.stringify(story);if(Buffer.byteLength(text)>128000)throw Error('Story too large');
   return {revision:immutable(join(this.root,'drafts'),story),rendered:false};
  }
  readDraft(revision){return load(join(this.root,'drafts'),revision);}

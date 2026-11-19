@@ -458,3 +458,18 @@ test('native captions and full-screen B-roll can be surgically edited; unsupport
   assert.equal(store.current().revision,broll.revision);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
+
+test('editor stores expanded plans above 60 KB while retaining the 128 KB UTF-8 bound',async()=>{
+ const f=fixture(),app=createEditorServer({directory:join(f.dir,'jobs'),profiles:f.profiles});
+ try{
+  const url=(await app.listen()).split('/#')[0],job=app.jobs.create('test');
+  const session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}});
+  const headers={Cookie:session.headers.get('set-cookie').split(';')[0],'X-Sues-Request':'editor','Content-Type':'application/json'};
+  const post=story=>fetch(url+'/api/jobs/'+job.id+'/master-draft',{method:'POST',headers,body:JSON.stringify({story})});
+  const story={schema:'sues-master-story/v1',title:'á'.repeat(40000)};
+  const accepted=await post(story);assert.equal(accepted.status,201);
+  const result=await accepted.json(),store=new MasterDirectorProjectStore(join(f.dir,'jobs',job.id),async()=>null);
+  assert.equal(store.readDraft(result.revision).title,story.title);
+  const rejected=await post({...story,title:'á'.repeat(65000)});assert.equal(rejected.status,400);
+ }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
+});

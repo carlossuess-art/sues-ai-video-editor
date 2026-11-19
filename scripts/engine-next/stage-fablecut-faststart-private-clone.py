@@ -64,7 +64,11 @@ def apply(path, old, new):
     path.write_text(current.replace(old, new), encoding="utf-8")
 
 
-def stage(source_app, clone_app, gateway, builder):
+def stage(source_app, clone_app, gateway, builder, continuous_source_frames=None, continuous_source_spans=None):
+    if continuous_source_frames is not None and (not isinstance(continuous_source_frames, int) or not 1 <= continuous_source_frames <= 18000 or not isinstance(continuous_source_spans, int) or not 1 <= continuous_source_spans <= 100):
+        raise ValueError('Explicit bounded source timeline required')
+    if continuous_source_frames is None and continuous_source_spans is not None:
+        raise ValueError('Source timeline frames required')
     source_app, clone_app, gateway, builder = map(lambda p: Path(p).resolve(), (source_app, clone_app, gateway, builder))
     if not source_app.is_dir() or clone_app.exists() or not gateway.is_file() or not builder.is_file():
         raise FileExistsError("A new clone directory, existing upstream and existing gateway required")
@@ -86,7 +90,10 @@ def stage(source_app, clone_app, gateway, builder):
             raise ValueError("No unique decode helper placement")
         p.write_text(app.replace(marker, HELPER + marker), encoding="utf-8")
         p = clone_app / "server.js"
-        apply(p, SERVER_ANCHOR, SERVER_REPLACE)
+        replacement = SERVER_REPLACE
+        if continuous_source_frames is not None:
+            replacement = replacement.replace('  builderPath:', f'  sourceTimeline: {{fps:30,width:1080,height:1920,frames:{continuous_source_frames},spans:{continuous_source_spans}}},\n  builderPath:')
+        apply(p, SERVER_ANCHOR, replacement)
         apply(p, SERVER_API_ANCHOR, SERVER_API_REPLACE)
         shutil.copy2(gateway, clone_app / "sues-faststart-qa-gateway.cjs")
         shutil.copy2(builder, clone_app / "sues-build-native-faststart-cache.py")
@@ -102,8 +109,10 @@ def main():
     p.add_argument("--clone-app", type=Path, required=True)
     p.add_argument("--gateway", type=Path, required=True)
     p.add_argument("--builder", type=Path, required=True)
+    p.add_argument("--continuous-source-frames", type=int)
+    p.add_argument("--continuous-source-spans", type=int)
     a = p.parse_args()
-    print(stage(a.source_app, a.clone_app, a.gateway, a.builder))
+    print(stage(a.source_app, a.clone_app, a.gateway, a.builder, a.continuous_source_frames, a.continuous_source_spans))
 
 if __name__ == "__main__":
     main()

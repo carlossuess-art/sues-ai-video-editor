@@ -122,3 +122,20 @@ run('canonical matte evidence binds asset ID and SHA independently',async()=>{
   assert.equal((await prepareStoryBatch(story,{...ctx,registry:copy})).status,'BLOCKED');
  }
 });
+
+run('expanded exact private plans keep one atomic transaction above 100 operations',async()=>{
+ const h='a'.repeat(64),m='b'.repeat(64),registry={sourceSha256:h,timelineFingerprint:'edit-001',projectFingerprint:projectFingerprint(p),approvedRuleVersion:'rules-v1',unresolvedRuleConflicts:[],masterHashes:{tapiz:m},lockedMastersByMode:{'brand-sues':[{id:'tapiz',sha256:m}]},rendererCapabilities:{native:['fablecut-command-exact-v1']}};
+ const operations=Array.from({length:101},(_,i)=>({id:'text'+i,sceneId:'s1',start:1,end:2,track:'graphics',renderer:'native',effect:'fablecut-command-exact-v1',reason:'Exact private title QA',parameters:{command:{patch:{op:'addClip',clip:{id:'title'+i,kind:'text',track:'V2',start:1,in:0,duration:1,props:{text:'QA '+i,font:'Montserrat',fontSize:54}}}}},dependsOn:[],requiredQA:['rendered-frame','motion-playback','narrative-review']}));
+ const story={schema:'sues-master-story/v1',sourceSha256:h,timeline:{fingerprint:'edit-001',timeSpace:'edit-timeline',fps:30,duration:5},visual:{mode:'brand-sues'},narrative:{centralMessage:'Technical expanded test',intendedExperience:'Technical atomic test',scenes:[{id:'s1',start:0,end:5,purpose:'Technical test'}]},resources:[],operations};
+ const expected=structuredClone(p);native.applyPatch(expected,operations.map(o=>structuredClone(o.parameters.command.patch)),{});expected.revision++;native.checkProject(expected);
+ const binding={schema:'sues-exact-native-plan/v1',storyFingerprint:projectFingerprint(story),baseFingerprint:projectFingerprint(p),expectedFingerprint:projectFingerprint(expected),maxCommands:150,operations:operations.map(o=>({id:o.id,start:o.start,end:o.end,track:o.track,command:structuredClone(o.parameters.command)}))};
+ const ctx={registry,project:p,nativePatch:binding,authorize:async()=>true};
+ const prepared=await prepareStoryBatch(story,ctx);assert.equal(prepared.status,'PREPARED_NOT_EXECUTED');assert.equal(prepared.request.commands.length,101);
+ binding.commandsFingerprint=projectFingerprint(prepared.request.commands);
+ const result=applyCommandBatch(p,prepared.request,{...opts,nativePatch:binding});assert.equal(result.receipts.length,101);assert.equal(result.patchOps.length,101);assert.deepEqual(result.project,expected);
+ assert.throws(()=>applyCommandBatch(p,prepared.request,opts),/COMMAND_LIMIT/);
+ const altered=structuredClone(prepared.request);altered.commands[0].patch.clip.props.text='changed';assert.throws(()=>applyCommandBatch(p,altered,{...opts,nativePatch:binding}),/REQUEST_UNBOUND/);
+ for(const change of [{maxCommands:100},{maxCommands:1501},{operations:binding.operations.slice(1)},{operations:[null,...binding.operations.slice(1)]},{storyFingerprint:m}])assert.equal((await prepareStoryBatch(story,{...ctx,nativePatch:{...binding,...change}})).status,'BLOCKED');
+ const changedManifest=structuredClone(binding);changedManifest.operations[0].command.patch.clip.props.text='changed';assert.equal((await prepareStoryBatch(story,{...ctx,nativePatch:changedManifest})).status,'BLOCKED');
+ assert.throws(()=>applyCommandBatch(p,prepared.request,{...opts,nativePatch:{...binding,expectedFingerprint:m}}),/RESULT_MISMATCH/);
+});

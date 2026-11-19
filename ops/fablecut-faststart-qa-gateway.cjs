@@ -24,10 +24,13 @@ async function regularFileWithoutSymlink(file,root){
   if(path.dirname(real)!==realRoot)throw Error('Asset escaped private media directory');
   return stat;
 }
-function createFaststartQaGateway({dataDir,sourceName,cacheName,sourceSha256,builderPath,pythonBin='python3',host='127.0.0.1'}){
+function createFaststartQaGateway({dataDir,sourceName,cacheName,sourceSha256,builderPath,pythonBin='python3',host='127.0.0.1',sourceTimeline=null}){
   if(host!=='127.0.0.1'||!path.isAbsolute(dataDir)||!path.isAbsolute(builderPath)||
     !isSafeName(sourceName)||!isSafeName(cacheName)||sourceName===cacheName||!SHA.test(sourceSha256||''))
     throw Error('Private verified-cache gateway refuses unsafe configuration');
+  if(sourceTimeline&&(!Number.isInteger(sourceTimeline.frames)||sourceTimeline.frames<1||sourceTimeline.frames>18000||
+    !Number.isInteger(sourceTimeline.spans)||sourceTimeline.spans<1||sourceTimeline.spans>100||
+    sourceTimeline.fps!==30||sourceTimeline.width!==1080||sourceTimeline.height!==1920))throw Error('Invalid protected source timeline');
   const mediaDir=path.join(dataDir,'media'),source=path.join(mediaDir,sourceName),cache=path.join(mediaDir,cacheName);
   const manifest=path.join(mediaDir,cacheName+'.verified.json');
   const sourceUrl='/media/'+encodeURIComponent(sourceName),cacheUrl='/media/'+encodeURIComponent(cacheName);
@@ -35,8 +38,22 @@ function createFaststartQaGateway({dataDir,sourceName,cacheName,sourceSha256,bui
   const verify=async()=>{
     const project=JSON.parse(await fsp.readFile(path.join(dataDir,'project.json'),'utf8'));
     if(!Array.isArray(project.media)||!project.media.some(m=>m?.src===sourceUrl)||
-      !Array.isArray(project.clips)||!project.clips.some(c=>c?.locked===true&&project.media.some(m=>m?.id===c.mediaId&&m.src===sourceUrl)))
+      !Array.isArray(project.clips)||!project.clips.some(c=>(sourceTimeline?c?.kind==='video':c?.locked===true)&&project.media.some(m=>m?.id===c.mediaId&&m.src===sourceUrl)))
       throw Error('Active editable project no longer uses the protected authentic source');
+    if(sourceTimeline){
+      const spans=project.clips.filter(c=>c.track==='V1').sort((a,b)=>a.start-b.start);
+      let cursor=0;
+      for(const c of spans){
+        const m=project.media.find(m=>m.id===c.mediaId);
+        if(c.kind!=='video'||m?.src!==sourceUrl||!Number.isFinite(c.start)||!Number.isFinite(c.in)||!Number.isFinite(c.duration)||
+          Math.abs(c.start-cursor)>1e-6||Math.abs(c.in-c.start)>1e-6||c.duration<=0||
+          c.disabled||project.disabledTracks?.includes('V1')||c.props?.speed!==undefined&&c.props.speed!==1||c.keyframes?.speed?.length)
+          throw Error('Unverified scene-split source clock');
+        cursor=c.start+c.duration;
+      }
+      if(spans.length!==sourceTimeline.spans||project.fps!==sourceTimeline.fps||project.width!==sourceTimeline.width||project.height!==sourceTimeline.height||Math.abs(cursor-sourceTimeline.frames/sourceTimeline.fps)>1e-6)
+        throw Error('Incomplete protected source timeline');
+    }
     await regularFileWithoutSymlink(source,mediaDir);
     if(await fileSHA(source)!==sourceSha256)throw Error('Original source SHA changed');
     const files=await Promise.all([fsp.lstat(cache).catch(e=>e.code==='ENOENT'?null:Promise.reject(e)),fsp.lstat(manifest).catch(e=>e.code==='ENOENT'?null:Promise.reject(e))]);

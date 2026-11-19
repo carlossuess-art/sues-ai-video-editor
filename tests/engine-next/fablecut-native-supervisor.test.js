@@ -73,3 +73,13 @@ test('failed subjective check yields an operation-specific correction, no creati
 test('technical QA fixtures can never be promoted to creative reviewed production',()=>{
  const i=index();i.scope='technical-qa';assert.equal(validateNativeSupervisorReview(i,review(i)).status,'TECHNICAL_FIXTURE_REVIEW_RECORDED');
 });
+
+test('expanded 107-operation plans retain complete supervisor coverage',()=>{
+ const f=fixture(),base=f.story.operations[0];f.story.operations=Array.from({length:107},(_,i)=>({...base,id:'expanded'+i}));
+ f.execution.result.receipts=f.story.operations.map(o=>({operationId:o.id,status}));
+ f.render.operationAudit=f.story.operations.map(o=>({operationId:o.id,start:o.start,end:o.end,requiredQA:o.requiredQA,execution:status}));f.render.operationCount=107;
+ const graph=buildNativeSupervisorGraph(f),parts=partitionNativeSupervisorGraph(graph);
+ assert.equal(graph.nodes.length,107);assert.equal(parts.flatMap(p=>p.nodes).length,107);
+ assert.equal(new Set(parts.flatMap(p=>p.nodes.map(n=>n.id))).size,107);
+ assert.throws(()=>partitionNativeSupervisorGraph({...graph,nodes:Array.from({length:1501},(_,i)=>({...graph.nodes[0],id:'n'+i}))}),/GRAPH_INVALID/);
+});

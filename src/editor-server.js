@@ -793,7 +793,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
         approvedReferenceIds:registry.approvedReferenceIds??[],arcPolicy:registry.arcPolicy??null,
         resourceCandidates:catalog.assets,resourceCandidatesRequireVerification:true};
        const raw=await generator.generate({brief:b.brief.trim(),context:structuredClone(context),outputSchema:'sues-master-story/v1'});
-       if(typeof raw!=='string'||Buffer.byteLength(raw,'utf8')>60000)throw Error('La propuesta generada no es un JSON maestro válido o supera el límite.');
+       if(typeof raw!=='string'||Buffer.byteLength(raw,'utf8')>128000)throw Error('La propuesta generada no es un JSON maestro válido o supera el límite.');
        const story=JSON.parse(raw);rejectDuplicateJsonKeys(raw);
        const latest=jobs.get(id),latestCatalog=externalCatalog(jobs.loadProfile(latest.profileId),latest.settings,assets.list());
        if(latestCatalog.sourceSha256!==catalog.sourceSha256||latestCatalog.timelineFingerprint!==catalog.timelineFingerprint)
@@ -1084,7 +1084,7 @@ export function createEditorServer({directory,profiles,port=0,token=randomBytes(
 
      if(action==='master-draft'&&req.method==='GET')return json(res,200,{story:store.readDraft(url.searchParams.get('revision'))});
      if(action==='master-draft'&&req.method==='POST'){
-      const b=await body(req,65536,{rejectDuplicates:true});if(Object.keys(b).some(k=>k!=='story'))return json(res,400,{error:'Solo se admite la historia creativa.'});
+      const b=await body(req,160000,{rejectDuplicates:true});if(Object.keys(b).some(k=>k!=='story'))return json(res,400,{error:'Solo se admite la historia creativa.'});
       return json(res,201,store.saveDraft(b.story));
      }
      if(action==='master-review'&&req.method==='POST'){

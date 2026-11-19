@@ -25,7 +25,7 @@ export function assertStoryOperationCoverage(operations,receipts,code='STORY_OPE
 // All bindings originate in the trusted host, never in a client's review report.
 export function buildNativeSupervisorGraph({story,execution,render,projectFingerprint,outputSha256}={}){
  if(story?.schema!=='sues-master-story/v1'||story.timeline?.fps!==30||!hash(story.sourceSha256)||!nonblank(story.timeline?.fingerprint)||
-    !Array.isArray(story.operations)||!story.operations.length||story.operations.length>100||
+    !Array.isArray(story.operations)||!story.operations.length||story.operations.length>1500||
     execution?.schema!=='sues-private-story-execution/v1'||render?.schema!=='sues-private-story-render/v1'||render.status!==RENDERED||
     !['technical-qa','private-reviewed'].includes(execution.scope)||render.scope!==execution.scope||!hash(execution.storyRevision)||
     !hash(execution.decisionId)||!hash(execution.planFingerprint)||!hash(projectFingerprint)||execution.projectFingerprint!==projectFingerprint||
@@ -57,7 +57,7 @@ export function buildNativeSupervisorGraph({story,execution,render,projectFinger
 // Reuse the existing <=180-sample evidence extractor. Longer plans are split
 // by operation, preserving every operation and whole-timeline samples in each part.
 export function partitionNativeSupervisorGraph(graph){
- if(graph?.schema!=='sues-layer-graph/v1'||graph.fps!==30||!Number.isInteger(graph.durationFrames)||graph.durationFrames<1||graph.durationFrames>3600||!Array.isArray(graph.nodes)||!graph.nodes.length||graph.nodes.length>100)fail('SUPERVISOR_GRAPH_INVALID');
+ if(graph?.schema!=='sues-layer-graph/v1'||graph.fps!==30||!Number.isInteger(graph.durationFrames)||graph.durationFrames<1||graph.durationFrames>3600||!Array.isArray(graph.nodes)||!graph.nodes.length||graph.nodes.length>1500)fail('SUPERVISOR_GRAPH_INVALID');
  const baseline=new Set();for(let f=0;f<graph.durationFrames;f+=30)baseline.add(f);baseline.add(graph.durationFrames-1);
  const groups=[];let nodes=[],frames=new Set(baseline);const ids=new Set();
  for(const n of graph.nodes){

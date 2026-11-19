@@ -36,6 +36,38 @@ export function prepareBoundRevisionPatch(story, project, registry, binding) {
    operationId:id,code:'NATIVE_REVISION_PATCH_UNBOUND'
   }))};
  }
+ // An expanded plan is pinned by the private host after full native simulation.
+ // Its manifest maps every scene operation to an exact ordered native patch.
+ // Creative input cannot grant this host capability or change its expected result.
+ if(binding.schema==='sues-exact-native-plan/v1'){
+  const manifest=binding.operations;
+  if(!Array.isArray(manifest)||manifest.length!==story.operations.length||
+     !Number.isInteger(binding.maxCommands)||binding.maxCommands<1||binding.maxCommands>1500||
+     manifest.length>binding.maxCommands||manifest.some(x=>!x||typeof x.id!=='string')||
+     new Set(manifest.map(x=>x.id)).size!==manifest.length)
+   return {status:'BLOCKED',issues:[{code:'NATIVE_PLAN_MANIFEST_INVALID'}]};
+  const commands=[],issues=[];
+  for(const [index,operation] of story.operations.entries()){
+   const expected=manifest[index],command=operation.parameters?.command;
+   const resource=story.resources?.find(r=>r.id===operation.resourceRef);
+   const patch=command?.patch;
+   const target=patch?.clip??project.clips.find(c=>c.id===patch?.id);
+   const targetValid=patch?.op==='setProject'?only(patch.set,['name'])&&typeof patch.set.name==='string':
+    target&&close(target.start,operation.start)&&close(target.start+target.duration,operation.end)&&
+    (target.kind==='text'||target.kind==='shape'?expected.assetId===undefined:target.mediaId===expected.assetId);
+   const valid=targetValid&&operation.renderer==='native'&&operation.effect==='fablecut-command-exact-v1'&&
+    expected.id===operation.id&&expected.start===operation.start&&expected.end===operation.end&&
+    expected.track===operation.track&&isDeepStrictEqual(expected.command,command)&&
+    ['addClip','updateClip','setMatte','setProject'].includes(command?.patch?.op)&&
+    (expected.assetId===undefined ? !resource : resource?.assetId===expected.assetId&&
+     resource.expectedSha256===expected.expectedSha256&&sha(expected.expectedSha256));
+   if(valid)commands.push({id:operation.id,patch:structuredClone(command.patch),
+    ...(resource?{assetId:resource.assetId,expectedSha256:resource.expectedSha256}:{})});
+   else issues.push({operationId:operation.id,code:'NATIVE_PLAN_OPERATION_UNBOUND'});
+  }
+  return issues.length?{status:'BLOCKED',issues}:{status:'PREPARED_NOT_EXECUTED',story,
+   request:{baseRevision:project.revision,baseFingerprint:binding.baseFingerprint,commands}};
+ }
  const resources = new Map((story.resources ?? []).map(r => [r.id,r]));
  const media = new Map(project.media.map(m => [m.id,m]));
  const clips = new Map(project.clips.map(c => [c.id,c]));

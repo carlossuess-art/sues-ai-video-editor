@@ -2,6 +2,12 @@
 
 Fecha: 2026-11-05. Fuente revisada: rama feat/master-director-story-orchestration-20261104, commit 0c1ded0cc49f0027d81504c705657764586c40d3. Las 20 reglas aprobadas son requisitos de producto, no prueba de implementación. Este documento fija el objetivo de integración; **no afirma que la pantalla actual lo acepte ni que el sistema ya ejecute todo lo descrito**. No modificar la skill para emitir extensiones como si estuvieran operativas: preservar la información y bloquear la ejecución hasta conectar y validar.
 
+## Planes expandidos por escenas · 19/11/2026
+
+El borrador maestro, su entrada HTTP autenticada y el importador web admiten hasta 128.000 bytes serializados, manteniendo límites y rechazo de duplicados. El anexo 158404 produjo una historia de 78.796 bytes con 107 órdenes a partir de sus 87 IDs fuente. Los datos y parámetros originales se conservan en el crosswalk privado. La expansión todavía requiere revisar mezcla, bordes de escena y composición antes de considerarla equivalente al plan artístico.
+
+La vía privada sues-exact-native-plan/v1 del host vincula historia, base, manifiesto ordenado y resultado nativo esperado por SHA. Permite hasta el límite indicado por el host, con techo 1500, en una sola transacción. Las peticiones tradicionales conservan 100 comandos. El manifiesto no lo aporta una solicitud creativa ni concede aprobación. Requiere ledger, revisión y readback del servicio existente. Supervisor ampliado a 1500 nodos, conservando el máximo de 180 muestras por extracción. Se ejecutaron 107 órdenes con recibos en una copia exclusivamente técnica, sin aceptación creativa ni publicación.
+
 ## Extensión nativa de texto verificada · 19/11/2026
 
 En la rama PR27, add_title/add_caption admiten opcionalmente weight (400, 500, 600, 700, 800, 900), boxW/boxH (ambos), strokeWidth (0–20 px) y strokeColor (#RRGGBB). add_title admite wordIds/wordTimes con el mismo reloj verificado de captions. Se conserva el comportamiento anterior al omitir estos campos. La fuente se verifica por familia y peso. El título permite cambios de mayúscula/puntuación respecto a las palabras fuente, conservando letras y acentos. Los captions requieren coincidencia literal. Coordenadas x/y nativas relativas al centro del lienzo, no esquina superior izquierda.
@@ -20,7 +26,7 @@ Esta sección prevalece sobre las descripciones de estado históricas de 05/11, 
 
 ## 1. Una entrada común, dos procedencias
 
-ChatGPT + aprobación de Carlos y futuro generador IA alimentan el mismo cerebro, contrato, motores y supervisor. La procedencia nunca acredita por sí misma una aprobación. Emitir un objeto JSON UTF-8 `sues-master-story/v1`; no emitir Markdown dentro del JSON, código ejecutable, URLs como comandos, datos secretos, ni reglas o aprobaciones fingidas. El servidor incorpora de su propio registro las reglas, masters, permisos, capacidades, evidencias, proyecto y decisiones autenticadas. El borrador maestro existente se guarda con un límite de 60.000 bytes tras serialización; el límite HTTP también afecta a la solicitud completa. El proveedor IA futuro deberá producir exactamente el mismo contrato y pasar la misma revisión; no hay un segundo cerebro.
+ChatGPT + aprobación de Carlos y futuro generador IA alimentan el mismo cerebro, contrato, motores y supervisor. La procedencia nunca acredita por sí misma una aprobación. Emitir un objeto JSON UTF-8 `sues-master-story/v1`; no emitir Markdown dentro del JSON, código ejecutable, URLs como comandos, datos secretos, ni reglas o aprobaciones fingidas. El servidor incorpora de su propio registro las reglas, masters, permisos, capacidades, evidencias, proyecto y decisiones autenticadas. El borrador maestro existente se guarda con un límite de 128.000 bytes tras serialización; el límite HTTP también afecta a la solicitud completa. El proveedor IA futuro deberá producir exactamente el mismo contrato y pasar la misma revisión; no hay un segundo cerebro.
 
 **Estado:** `sues-master-story/v1` y su compilador existen; pegarlo en la pantalla de `sues-edit-plan/v1` no funciona. Falta importación maestra, preservación integral y conexión de ambos caminos. La autorización real se registra fuera del JSON y queda vinculada al fingerprint efectivo.
 
@@ -156,7 +162,7 @@ El arco, cuando la política del servidor lo exige, contiene hasta ocho elemento
 
 ## Cambios de integración posteriores
 
-En rama: se ha retirado el límite de caracteres del cuadro para evitar que el navegador trunque silenciosamente un pegado; el guardado maestro sigue bloqueando más de 60.000 bytes serializados. El grafo conserva el ancla de voz de cada operación y bloquea límites Remotion no alineados al fotograma. Código pendiente de pruebas; no implica render ni despliegue. El esquema sigue en `sues-master-story/v1`; no se añaden efectos ni se cambia el contrato de las operaciones nativas.
+En rama: se ha retirado el límite de caracteres del cuadro para evitar que el navegador trunque silenciosamente un pegado; el guardado maestro sigue bloqueando más de 128.000 bytes serializados. El grafo conserva el ancla de voz de cada operación y bloquea límites Remotion no alineados al fotograma. Código pendiente de pruebas; no implica render ni despliegue. El esquema sigue en `sues-master-story/v1`; no se añaden efectos ni se cambia el contrato de las operaciones nativas.
 
 ## Integración posterior · dos entradas y trazabilidad
 

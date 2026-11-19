@@ -683,8 +683,8 @@ function inspectMasterInput(raw){
   }
  }
  if(story?.schema!=='sues-master-story/v1')throw Error('El archivo debe contener un plan sues-master-story/v1.');
- if(new TextEncoder().encode(JSON.stringify(story)).length>60000)
-  throw Error('El plan maestro supera los 60.000 bytes. No se ha recortado.');
+ if(new TextEncoder().encode(JSON.stringify(story)).length>128000)
+  throw Error('El plan maestro supera los 128.000 bytes. No se ha recortado.');
  return story;
 }
 $('master-brief-import').onclick=()=>$('master-brief-file').click();

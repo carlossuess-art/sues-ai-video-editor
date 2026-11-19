@@ -44,7 +44,8 @@ export function applyCommandBatch(project,request,{native,resolveAsset,nativePat
  if(!native?.applyPatch||!native?.checkProject||typeof resolveAsset!=='function')fail('Native engine and trusted asset resolver required');
  if(!fields(request,['baseRevision','baseFingerprint','commands'],['baseRevision','baseFingerprint','commands'])||!Number.isInteger(project.revision)||request.baseRevision!==project.revision||request.baseFingerprint!==hash(project))fail('STALE_REVISION_OR_FINGERPRINT');
  if(!Number.isInteger(project.fps)||project.fps<1||project.fps>120||!Array.isArray(project.clips)||!Array.isArray(project.tracks)||!Array.isArray(project.media))fail('INVALID_PROJECT');
- if(!Array.isArray(request.commands)||!request.commands.length||request.commands.length>100)fail('1..100 commands required');
+ const commandLimit=nativePatch?.schema==='sues-exact-native-plan/v1'?nativePatch.maxCommands:100;
+ if(!Number.isInteger(commandLimit)||commandLimit<1||commandLimit>1500||!Array.isArray(request.commands)||!request.commands.length||request.commands.length>commandLimit)fail('NATIVE_COMMAND_LIMIT_EXCEEDED');
  if(request.commands.some(isRevisionPatch))
   return applyBoundRevisionPatch(project,request,{native,resolveAsset,binding:nativePatch});
  const p=structuredClone(project),fps=p.fps,limit=Math.max(0,...p.clips.map(c=>c.start+c.duration)),receipts=[],assets=[],patchOps=[],seen=new Set();

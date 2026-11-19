@@ -1,6 +1,7 @@
 // Private operator entrypoint. One canonical story, one exact creative decision,
 // one MCP batch, one render. No production, no provider generation or auto-publish.
 import fs from 'node:fs';import path from 'node:path';import {createHash,randomUUID} from 'node:crypto';import {createRequire} from 'node:module';import {execFileSync,spawn} from 'node:child_process';
+import http from 'node:http';
 import {MasterDirectorProjectStore} from '../../src/master-director-project-store.js';
 import {DirectorApprovalLedger} from '../../src/engine-next/fablecut-director-approval-ledger.js';
 import {createApprovedBatchService} from '../../src/engine-next/fablecut-approved-batch.js';
@@ -33,16 +34,16 @@ const stageAssets=async assets=>{for(const a of assets){const f=path.join(out,a.
 const registry={...h.registry,projectFingerprint:h.nativeFingerprint,nativeTrackRoles:h.nativeTrackRoles,nativeMediaBindings:h.nativeMediaBindings??{}};
 const store=new MasterDirectorProjectStore(out,async story=>({sourceSha256:h.sourceSha256,timelineFingerprint:h.timelineFingerprint,duration:h.duration,registry,rulebook:h.rulebook,nativePreflight:async(_plan,r)=>{
  const p=(await readProject()).data;
- const plan=await prepareStoryBatch(story,{registry:{...r,unresolvedRuleConflicts:[]},project:p,bindings:h.bindings,authorize:async()=>true});
+ const plan=await prepareStoryBatch(story,{registry:{...r,unresolvedRuleConflicts:[]},project:p,bindings:h.bindings,nativePatch:h.nativePatch,authorize:async()=>true});
  if(plan.status!=='PREPARED_NOT_EXECUTED')return plan;
- try{const result=applyCommandBatch(p,plan.request,{native,resolveAsset});if(result.assets.some(a=>!a.rightsVerified))throw Error('RESOURCE_RIGHTS_UNVERIFIED');return {status:'READY_FOR_EDITOR_PREVIEW'}}catch(e){return {status:'BLOCKED',issues:[{code:e.message,operationId:e.operationId??'plan'}]}}
+ try{const result=applyCommandBatch(p,plan.request,{native,resolveAsset,nativePatch:h.nativePatch});if(result.assets.some(a=>!a.rightsVerified))throw Error('RESOURCE_RIGHTS_UNVERIFIED');return {status:'READY_FOR_EDITOR_PREVIEW'}}catch(e){return {status:'BLOCKED',issues:[{code:e.message,operationId:e.operationId??'plan'}]}}
 }}));
 const ledger=new DirectorApprovalLedger({directory:out+'/approvals'});
-const service=createApprovedBatchService({ledger,resolveContext:async()=>({nativeProjectId:projectId,privateClone:true,store,nativeFingerprint:h.nativeFingerprint,nativeTrackRoles:h.nativeTrackRoles,nativeMediaBindings:h.nativeMediaBindings??{},bindings:h.bindings}),readProject,native,resolveAsset,stageAssets,invokeMcp:async(n,a)=>call(n,a)});
+const service=createApprovedBatchService({ledger,resolveContext:async()=>({nativeProjectId:projectId,privateClone:true,store,nativeFingerprint:h.nativeFingerprint,nativeTrackRoles:h.nativeTrackRoles,nativeMediaBindings:h.nativeMediaBindings??{},bindings:h.bindings,nativePatch:h.nativePatch}),readProject,native,resolveAsset,stageAssets,invokeMcp:async(n,a)=>call(n,a)});
 if(mode==='run'){
  // One explicit confirmation starts both stages; a failed render never replays edits.
  execFileSync(process.execPath,[process.argv[1],'execute',out,storyFile,confirmation],{stdio:'inherit',timeout:120000});
- execFileSync(process.execPath,[process.argv[1],'render',out],{stdio:'inherit',timeout:1300000});
+ execFileSync(process.execPath,[process.argv[1],'render',out],{stdio:'inherit',timeout:3700000});
 }else if(mode==='prepare'){
  if(projectFingerprint(before)!==h.nativeFingerprint)throw Error('NATIVE_BINDING_STALE');
  const story=read(storyFile),{revision}=store.saveDraft(story),head=store.current().revision;
@@ -72,29 +73,73 @@ if(mode==='run'){
  const port=7797,base='http://127.0.0.1:'+port;
  // Reject an existing listener; own the entire temporary server lifetime.
  try{await fetch(base,{signal:AbortSignal.timeout(500)});throw Error('PRIVATE_QA_PORT_BUSY')}catch(e){if(e.message==='PRIVATE_QA_PORT_BUSY')throw e}
- const qaApp='/srv/sues-fablecut-next/qa-export-app-20261109';
+ const cache=h.faststartQa;
+ const qaApp=cache?fs.realpathSync(cache.app):'/srv/sues-fablecut-next/qa-export-app-20261109';
+ if(cache&&(!qaApp.startsWith('/opt/sues-video-setup/q02-')||cache.sourceMediaUrl!==sourceMedia.src))throw Error('PRIVATE_DECODE_CACHE_REQUIRED');
+ const chrome='/root/.cache/puppeteer/chrome/linux-155.0.8059.84/chrome-linux64/chrome';
+ if(!fs.existsSync(chrome))throw Error('VERIFIED_CHROME_UNAVAILABLE');
  // A browser may autosave its normalized defaults. Render a private child
  // copy, so the authoritative, approved editable revision cannot change.
  const renderDir=path.join(out,'render-work-'+randomUUID());fs.mkdirSync(renderDir,{mode:0o700});fs.mkdirSync(renderDir+'/media',{mode:0o700});
- for(const m of before.media){if(!/^\/media\/[A-Za-z0-9_.-]+$/.test(m.src??''))throw Error('UNSAFE_RENDER_MEDIA');const f=renderDir+m.src;if(!fs.existsSync(f))fs.symlinkSync(safeFile(out+m.src),f);}
+ for(const m of before.media){if(!/^\/media\/[A-Za-z0-9_.-]+$/.test(m.src??''))throw Error('UNSAFE_RENDER_MEDIA');const f=renderDir+m.src;if(!fs.existsSync(f)){if(cache&&m.src===cache.sourceMediaUrl)fs.linkSync(safeFile(out+m.src),f);else fs.symlinkSync(safeFile(out+m.src),f);}}
+ if(cache){
+  if(!/^\/media\/[A-Za-z0-9_.-]+$/.test(cache.cacheMediaUrl))throw Error('UNSAFE_DECODE_CACHE');
+  const manifest=read(safeFile(cache.manifestFile));
+  if(manifest.sourceSha256!==h.sourceSha256||hash(safeFile(cache.cacheFile))!==manifest.cacheSha256||manifest.cacheMediaUrl!==cache.cacheMediaUrl)throw Error('DECODE_CACHE_IDENTITY_CHANGED');
+  fs.linkSync(safeFile(cache.cacheFile),renderDir+cache.cacheMediaUrl);
+  fs.linkSync(safeFile(cache.manifestFile),renderDir+cache.cacheMediaUrl+'.verified.json');
+ }
  fs.writeFileSync(renderDir+'/project.json',JSON.stringify(before),{mode:0o600,flag:'wx'});
  const qaLibrary=path.join(root,'test-project-009','library');if(fs.existsSync(qaLibrary))fs.symlinkSync(qaLibrary,renderDir+'/library');
 
+ const exportChrome=path.join(renderDir,'chrome-export.sh');
+ fs.writeFileSync(exportChrome,'#!/bin/sh\nexec '+chrome+' --no-sandbox --disable-dev-shm-usage "$@"\n',{mode:0o700,flag:'wx'});
  const log=fs.openSync(out+'/render-server.log','a',0o600);
- const server=spawn('node',['server.js'],{cwd:qaApp,env:{...process.env,HOST:'127.0.0.1',PORT:String(port),FABLECUT_DATA_DIR:renderDir,FABLECUT_NO_FS_WATCH:'1'},stdio:['ignore',log,log]});fs.closeSync(log);
- let browser;
+ const server=spawn('node',['server.js'],{cwd:qaApp,env:{...process.env,HOST:'127.0.0.1',PORT:String(port),FABLECUT_DATA_DIR:renderDir,FABLECUT_NO_FS_WATCH:'1',FABLECUT_CHROME:exportChrome,...(cache?{SUES_FASTSTART_PRIVATE_QA:'1',SUES_FASTSTART_BUILDER_PATH:path.join(qaApp,'sues-build-native-faststart-cache.py')}:{})},stdio:['ignore',log,log]});fs.closeSync(log);
+ let browser,exportChannel,exportChannelRequest;
  try{
   for(let i=0;i<40;i++){try{if((await fetch(base+'/api/project',{signal:AbortSignal.timeout(1000)})).ok)break}catch{}if(i===39)throw Error('SERVER_NOT_READY');await new Promise(r=>setTimeout(r,250))}
   const p=await (await fetch(base+'/api/project')).json();if(projectFingerprint(p)!==receipt.projectFingerprint)throw Error('RENDER_PROJECT_MISMATCH');
   const require=createRequire(import.meta.url),puppeteer=require('/opt/sues-video-setup/hyperframes-engine-next/node_modules/puppeteer-core');
-  browser=await puppeteer.launch({headless:true,executablePath:'/root/.cache/puppeteer/chrome/linux-155.0.8059.84/chrome-linux64/chrome',args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']});
+  browser=await puppeteer.launch({headless:true,executablePath:chrome,args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']});
   const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:60000});await page.waitForFunction(()=>state.connected===true,{timeout:60000});
   const defaults=await page.evaluate(()=>DEFAULT_PROPS);
   const exportsDir=renderDir+'/exports',previous=new Set(fs.existsSync(exportsDir)?fs.readdirSync(exportsDir):[]);
-  const ticket=await (await fetch(base+'/api/export/request',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({range:'in-out',delivery:{width:1080,height:1920,fps:30,video:{codec:'h264',crf:19},audio:{codec:'aac'}}})})).json();if(!ticket.id)throw Error('EXPORT_REQUEST_FAILED '+JSON.stringify(ticket));
-  let job;const until=Date.now()+20*60*1000;
-  while(Date.now()<until){job=await (await fetch(base+'/api/export/job?id='+ticket.id)).json();if(['done','failed','cancelled'].includes(job.status))break;await new Promise(r=>setTimeout(r,1500))}
-  if(job?.status!=='done'||errors.length)throw Error('EXPORT_FAILED '+JSON.stringify({status:job?.status,errors}));
+  // Native SSE can be quiet for several minutes. Node fetch has a finite
+  // body-inactivity timeout; use a drained HTTP stream for this long-lived
+  // coordinator and handle disconnects rather than leaving a rejected body.
+  let exportChannelError;
+  exportChannel=await new Promise((resolve,reject)=>{
+   exportChannelRequest=http.get(base+'/api/events',response=>{
+    if(response.statusCode!==200){response.resume();reject(Error('EXPORT_EVENT_CHANNEL_UNAVAILABLE'));return;}
+    response.on('error',error=>{exportChannelError=error});response.resume();resolve(response);
+   });
+   exportChannelRequest.on('error',error=>{exportChannelError=error;reject(error)});
+  });
+  let ticket;
+  // Wait for this inspected tab's SSE registration instead of opening a second
+  // browser, which duplicates source buffers on the memory-constrained VPS.
+  for(let attempt=0;attempt<40;attempt++){
+   const response=await fetch(base+'/api/export/request',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({where:'tab',range:'in-out',delivery:{width:1080,height:1920,fps:30,video:{codec:'h264',crf:19},audio:{codec:'aac'}}})});
+   ticket=await response.json();
+   if(ticket.id)break;
+   if(response.status!==409)throw Error('EXPORT_REQUEST_FAILED '+JSON.stringify(ticket));
+   await new Promise(resolve=>setTimeout(resolve,250));
+  }
+  if(!ticket?.id)throw Error('INSPECTED_EXPORT_TAB_NOT_REGISTERED '+JSON.stringify(ticket));
+  fs.writeFileSync(path.join(renderDir,'export-ticket.json'),JSON.stringify(ticket),{mode:0o600,flag:'wx'});
+  // Use the native job handler in the inspected tab as well. The server claim
+  // keeps this atomic if its own headless worker has already claimed the job.
+  await page.evaluate(async id=>{
+   const response=await fetch('/api/export/job/ticket?id='+encodeURIComponent(id));
+   if(response.ok){const current=await response.json();if(current.status==='pending')void runExportJob(current);}
+  },ticket.id);
+  let job;const until=Date.now()+60*60*1000;
+  while(Date.now()<until){if(exportChannelError)throw Error('EXPORT_EVENT_CHANNEL_DISCONNECTED '+exportChannelError.message);job=await (await fetch(base+'/api/export/job?id='+ticket.id)).json();fs.writeFileSync(path.join(renderDir,'export-status.json'),JSON.stringify(job),{mode:0o600});if(['done','failed','cancelled'].includes(job.status))break;await new Promise(r=>setTimeout(r,1500))}
+  if(job?.status!=='done'||errors.length){
+   fs.writeFileSync(path.join(renderDir,'export-failure.json'),JSON.stringify({job,errors},null,2),{mode:0o600,flag:'wx'});
+   throw Error('EXPORT_FAILED '+JSON.stringify({job,errors}));
+  }
   const files=fs.readdirSync(exportsDir).filter(f=>f.endsWith('.mp4')&&!previous.has(f));if(files.length!==1)throw Error('EXPORT_FILE_AMBIGUOUS');
   const file=path.join(exportsDir,files[0]);if(!fs.statSync(file).isFile()||fs.statSync(file).size<1000)throw Error('EMPTY_EXPORT');const probe=JSON.parse(execFileSync('ffprobe',['-v','error','-count_frames','-show_streams','-show_format','-of','json',file],{encoding:'utf8'}));
   const vs=probe.streams.filter(s=>s.codec_type==='video'),as=probe.streams.filter(s=>s.codec_type==='audio'),v=vs[0],a=as[0];
@@ -111,7 +156,7 @@ if(mode==='run'){
 
   write(out+'/render-proof.json',{schema:'sues-private-story-render/v1',status:'TECHNICAL_QA_PASS_NOT_ARTISTIC_APPROVAL',scope:h.scope,storyRevision:receipt.storyRevision,decisionId:receipt.decisionId,planFingerprint:receipt.planFingerprint,projectFingerprint:receipt.projectFingerprint,sourceSha256:receipt.sourceSha256,timelineFingerprint:receipt.timelineFingerprint,job:ticket.id,file:delivered,sha256:hash(file),probe,audioStats,operationAudit,renderCopyRevision:renderCopy.revision,renderCopyParity:true,operationCount:receipt.result.receipts.length});
   console.log(JSON.stringify({status:'TECHNICAL_QA_PASS_NOT_ARTISTIC_APPROVAL',file:delivered,frames:v.nb_read_frames,duration:v.duration,scope:h.scope}));
- }finally{await browser?.close();server.kill('SIGTERM')}
+ }finally{exportChannel?.destroy();exportChannelRequest?.destroy();await browser?.close();server.kill('SIGTERM')}
 }else if(mode==='qa-prepare'||mode==='qa-verify'){
  // The same approved story and native project; no second editor or rewrite.
  const readPrivate=f=>{const st=fs.lstatSync(f);if(!st.isFile()||st.isSymbolicLink()||(st.mode&0o077)!==0||st.size>4*1024*1024)throw Error('PRIVATE_QA_FILE_REQUIRED');return read(f)};
