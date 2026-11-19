@@ -1,6 +1,17 @@
-# Fase 5 · Q02 en curso · Plan 158404 por Master Director y MCP
+# Fase 5 · Exportación técnica Q02 y revisión Q03 · Plan 158404 por Master Director y MCP
 
-19/11/2026. Q01 finalizado, Q02 en curso. Q03–Q06 pendientes. La V1 sigue abierta.
+19/11/2026. Q01 finalizado. Q02 con exportación técnica completa verificada. Q03 iniciado. Q04–Q06 pendientes.
+
+## Inicio de Q03 · Inspección del MP4 completo
+
+Se abrió Q03 sobre el MP4 de 2212 fotogramas y 73,733 s identificado por el SHA-256 `d16019019bc2526e83f8ddb0a61c8fb1f9db240416c5f3d3f7975089700ae0c9`. El render de Q02 está verificado como archivo técnico completo. La auditoría Q03 sigue abierta.
+
+- Tres hojas de 12 muestras cubren el Reel por intervalos de 2 s. Se revisaron además fotogramas a tamaño de vista móvil. En el fotograma 1110 la balanza queda a la izquierda de la cara. En el 1440 se ve el sujeto sobre el nuevo fondo y el subtítulo sigue visible.
+- En el fotograma 1266 (42,200 s), el titular «Miedo a perderlo» y el subtítulo repiten «perderlo». El solapamiento de H03.S04 y C41.S04 dura de 42,133 a 42,700 s y se produce mientras M01.S04 sigue activo. Revisar el énfasis del subtítulo en el intervalo acreditado antes de volver a exportar.
+- C11.S02 (8,533–9,300 s) muestra «a aportarte bien». La transcripción de la voz aislada y de la mezcla coincide con ese texto, pero la formulación «a portarte bien» es plausible en contexto. C19.S03 (16,867–17,367 s) muestra «Hasta con día». Los dos resultados automáticos discrepan en ese pasaje. C29–C31.S04 (28,167–30,367 s) muestran «y sin dejar / de quererme. / si». Ambas transcripciones detectan «y si dejan de quererme» alrededor de 28,400–29,280 s. Conservar estos tres puntos como incidencias para cotejo a oído y revisar la puntuación interrogativa y los tiempos antes de modificar la copia.
+- Se comprobó la pista AAC del archivo final respecto a la voz aislada, a 8 kHz, a ambos lados de las 11 uniones. En las 18 ventanas con voz suficiente la demora medida fue de 0 ms y la correlación de 0,9929 a 1,0000. Las cuatro restantes quedan sin medición por voz de referencia demasiado baja. La mezcla mide −21,2 LUFS integrados y −2,9 dBTP. Estas mediciones no valoran la escucha de la mezcla ni el ajuste narrativo de los efectos.
+
+Evidencia privada en `q03-review/` del workspace Q02. Se conserva el MP4 exacto y el plan aprobado. Próximo paso: cotejar los pasajes de voz, revisar el énfasis visual de 42,133–42,700 s, validar cualquier corrección mediante render aislado y ejecutar dos pases audiovisuales completos sobre un mismo MP4. No constan pases completos ni aceptación de Carlos.
 
 ## Ejecución acreditada
 
