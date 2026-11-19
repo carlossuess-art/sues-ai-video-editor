@@ -1,3 +1,7 @@
+## Punto de continuidad · 19/11/2026 · Q01 finalizado
+
+Leer docs/SUES_V1_FASE5_Q01_CIERRE_20261119.md y la cabecera de PROJECT_STATUS.md. Fase 5 de 5, Q01 (1/6) cerrado conforme al criterio de preparar y revisar el plan. Próximo Q02 pendiente de preparación y ejecución. Conservar como bloqueos de Q02 la escucha/transcripción, los recursos/composición y la traducción íntegra, sin reabrir la aprobación creativa de la propuesta ya aceptada ni fingir una decisión firmada de ejecución. PR #27 conserva la línea de integración. La rama speech es histórica. Roadmap/Estado General en revisión V1-2026-11-19-r11.
+
 ## Puerta de entrada V1 · PR #27
 
 - Abrir primero el [Estado General V1](https://docs.google.com/document/d/1L4gycV0LnKGhZ5VtWXAOlzVOzY3GDCp-qW1_X4A9B08/edit) y el punto activo del [Roadmap Maestro](https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit). Sus cabeceras deben compartir revisión y punto activo. Si difieren, el Roadmap prevalece y se corrige el resumen antes de continuar.
