@@ -46,6 +46,16 @@ Pruebas adicionales locales: gateway de caché 4/4, incluidas discontinuidad, re
 
 ## Criterio de continuidad
 
+### Resultado posterior y punto de reanudación
+
+El render completo v4 x_bb4okxqo se detuvo aproximadamente al 23 % por OOM en su unidad, con pico de 2,1 GiB de RAM y 1,1 GiB de swap. El auditor que esperaba ese trabajo se detuvo. No hay MP4 completo de v4.
+
+Se exportó el tramo nativo 35,8–42,9 s dos veces, a 1080 × 1920, 30 fps, 213 fotogramas y audio AAC. Ambos archivos se decodificaron completos. En v4, tres fotogramas de los momentos relevantes mostraron el rostro despejado pero el gráfico de la balanza quedó parcialmente oculto. En la candidata v5 se desplazó el mismo recurso a [82, 290, 219, 390] en el carril izquierdo y se conservaron el matte, sus fundidos y el reloj de entrada. En los mismos tres fotogramas quedaron visibles las palabras DECISIONES, AMOR y MIEDO, y se mantuvo despejado el rostro. Falta valorar la legibilidad y el ritmo en reproducción.
+
+Clon v5 `/srv/sues-fablecut-next/data/automation-v1/test-project-q02-158404-v5-67c04a`. Revisión de historia `1201ae4834081bb7847ebdcebafa936f3fae495bc01f62853055e57cb54a2c35`, 108 recibos verificados. Tramo v5 x_c0bmtcw3 en `render-work-6114acc6-bfce-4ca7-9704-6841519edfba`, SHA `76b73013bf053a3978b0a01274e112fe0b04a94ad9aa9240a69d9939f6699b3d`. La ejecución, el tramo y la corrección de encuadre son de alcance técnico en una copia privada.
+
+La exportación completa candidata v5 se ejecuta en `sues-q02-v5-segments-retry-20261119.service`. Consultar `render-v5-segments-retry.log`, `render-v5-segments-retry.exit` y `segment-run-v5-retry/segments.json` en el workspace Q02. El primer intento por ventanas falló al conservar el WAV por una referencia de sesión fuera de alcance. Se corrigió usando el directorio validado de la sesión. El controlador `render-all-private-segments.py` arranca un navegador nuevo para cada uno de los 12 tramos contiguos, coteja los proyectos con el recibo y guarda las mezclas nativas PCM. El ensamblado copia la imagen ya compuesta sin volver a codificarla y codifica el audio continuo una sola vez. Solo debe declararse completo si aparece `segment-run-v5-retry/technical-verification.json`, después de comprobar 2212 fotogramas, marcas de tiempo y decodificación. Q02 sigue en curso. No usar la prueba del tramo para cerrar la doble revisión Q03.
+
 ### Diagnóstico de exportación de la revisión v4
 
 Los trabajos x_utui3u8h y x_t2rh484d expiraron antes de emitir fotogramas. La traza de x_s5u82rlp mostró que las siete pistas de voz y los recursos musicales y de efectos se decodificaban, mientras la mezcla seguía esperando el vídeo original silenciado. Se excluyeron de la mezcla las capas fuera del intervalo y las que tienen volumen cero, carecen de fotogramas clave de volumen y carecen de efectos de audio. Se conserva el original como imagen y se decodifica la pista separada de voz.
