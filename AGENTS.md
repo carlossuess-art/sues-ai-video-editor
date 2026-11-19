@@ -1,5 +1,7 @@
 ## Punto activo · 19/11/2026 · Q02 en curso
 
+Consultar primero `sues-q02-render-singlecpu-20261119.service`, trabajo x_bb4okxqo, y `singlecpu-output-verification.json` en el workspace privado Q02 del VPS. La mezcla de 23 tramos terminó y se comprobaron 15 recursos y 108 recibos. El intento actual ya genera fotogramas. La revisión del MP4 completo sigue pendiente. La sección de diagnóstico del checkpoint Q02 documenta los intentos anteriores y la comprobación que debe ocurrir tras el cierre del exportador.
+
 Leer docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md y la cabecera de PROJECT_STATUS.md. El plan 158404 conserva 87 IDs fuente. Primer clon técnico con 107 recibos; candidata v4 con 108 por máscara adicional, mezcla y continuidad de sobres traducidos, sourceIn M01 corregido con fuente editable existente. No confundir estos cambios técnicos con aceptación creativa del resultado. Consultar la unidad propia sues-q02-render-v4-20261119 y render-v4.exit/log; comprobar que no está activa antes de otro export. No repetir la edición ya confirmada por MCP. Exportación completa, escucha ASR, bordes/composición y doble revisión audiovisual pendientes. Q01 cerrado, Q02 activo, Q03–Q06 pendientes, revisión compartida V1-2026-11-19-r12. PR #27 canónica; speech histórica. No tocar producción ni firmar QA que no se haya percibido.
 
 ## Punto de continuidad · 19/11/2026 · Q01 finalizado

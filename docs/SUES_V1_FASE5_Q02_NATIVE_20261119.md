@@ -46,4 +46,16 @@ Pruebas adicionales locales: gateway de caché 4/4, incluidas discontinuidad, re
 
 ## Criterio de continuidad
 
+### Diagnóstico de exportación de la revisión v4
+
+Los trabajos x_utui3u8h y x_t2rh484d expiraron antes de emitir fotogramas. La traza de x_s5u82rlp mostró que las siete pistas de voz y los recursos musicales y de efectos se decodificaban, mientras la mezcla seguía esperando el vídeo original silenciado. Se excluyeron de la mezcla las capas fuera del intervalo y las que tienen volumen cero, carecen de fotogramas clave de volumen y carecen de efectos de audio. Se conserva el original como imagen y se decodifica la pista separada de voz.
+
+La mezcla nativa terminó con 23 tramos. El trabajo x_9mz397kv falló en la prueba de FFmpeg de 30 segundos. Con los filtros y el codificador a un hilo, la prueba directa pasó y produjo H.264 1080 × 1920 a 30 fps con AAC. La opción `--single-cpu-export` del script de preparación reproduce estos ajustes exclusivamente en una copia privada y permite 90 segundos para la prueba del codificador. El script se verificó sobre los archivos del exportador real y mantuvo intacta su entrada.
+
+Trabajo actual x_bb4okxqo, unidad `sues-q02-render-singlecpu-20261119.service`. Datos del trabajo en el directorio render-work-9ccbeefb-afcd-4010-a7de-1b7fd287236e del clon v4. Consultar `export-status.json`, `render-singlecpu.log` y `render-singlecpu.exit`. El archivo parcial carece de verificación final. No repetir el montaje ni iniciar otro trabajo mientras este siga ejecutándose.
+
+La voz extraída de la mezcla nativa concuerda con la referencia en siete ventanas repartidas por el Reel. Desfase medido de 0 ms a 8 kHz y correlación entre 0,9958 y 1,0000. El nivel de pico de la mezcla es −2,9 dBFS. Estas mediciones corresponden a la mezcla previa a la codificación. La escucha y los fragmentos de transcripción dudosos siguen pendientes.
+
+Se cotejaron el estado del navegador y el proyecto guardado, incluyendo los 15 recursos por SHA y los 108 recibos. El navegador completa propiedades vacías, metadatos descriptivos y redondea marcadores al milisegundo. El verificador original puede bloquear la entrega por dichas diferencias aunque el MP4 exista. El auditor complementario conserva la comprobación estricta de los campos de edición y verifica de nuevo la copia y el MP4 tras el estado nativo `done`. La unidad `sues-q02-verify-singlecpu-20261119.service` escribe `singlecpu-output-verification.json` solo si se cumplen todos los controles. Las capturas del render en curso quedan en `singlecpu-visual-samples` y no equivalen a reproducción del archivo final.
+
 Q02 sigue activo. No cerrar por recibos, máscara generada o porcentaje de render. Comprobar archivo completo, decodificación, 2212 frames, audio, paridad de la copia y fidelidad del plan. Q03 no dispone todavía de dos revisiones A/V. Este entorno no ha acreditado escucha del audio: no firmar audio-playback ni fullPlaybackReviewed. No fabricar esos resultados. La aceptación Q04 es de Carlos sobre la salida exacta; el permiso de despliegue continúa separado de la autorización de desarrollar y probar.

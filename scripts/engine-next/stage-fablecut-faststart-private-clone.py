@@ -64,7 +64,36 @@ def apply(path, old, new):
     path.write_text(current.replace(old, new), encoding="utf-8")
 
 
-def stage(source_app, clone_app, gateway, builder, continuous_source_frames=None, continuous_source_spans=None):
+def tune_single_cpu_export(clone_app):
+    """Keep the A/V path intact while avoiding idle decode and encoder contention."""
+    def replace_in_function(file, start, end, edits):
+        source = file.read_text(encoding="utf-8")
+        head = source.index(start)
+        tail = source.index(end, head + len(start))
+        body = source[head:tail]
+        for old, new in edits:
+            if body.count(old) != 1:
+                raise ValueError(f"Unexpected export implementation in {file.name}")
+            body = body.replace(old, new)
+        file.write_text(source[:head] + body + source[tail:], encoding="utf-8")
+
+    clip_guard = "    if (!clipRenders(c)) continue;"
+    replace_in_function(clone_app / "app.js", "async function renderAudioMix(t0, t1)", "async function prepareFrameAssets", [
+        (clip_guard, clip_guard + "\n"
+         "    if (c.start >= t1 || c.start + c.duration <= t0) continue;\n"
+         "    if (c.props?.volume === 0 && !c.keyframes?.volume?.length && !c.fx?.length) continue;"),
+    ])
+    replace_in_function(clone_app / "delivery.js", "function ffmpegArgs(spec, o)", "function loudnormFilter", [
+        ('const args = ["-y", "-hide_banner"];',
+         'const args = ["-y", "-hide_banner", "-filter_threads", "1", "-threads", "1"];'),
+        ('args.push(...videoArgs(spec, +o.fps));',
+         'args.push(...videoArgs(spec, +o.fps));\n    args.push("-threads:v", "1");'),
+    ])
+    probe = "CONTAINERS[o.spec.container].ext) }), 30000)))"
+    apply(clone_app / "server.js", probe, probe.replace("30000", "90000"))
+
+
+def stage(source_app, clone_app, gateway, builder, continuous_source_frames=None, continuous_source_spans=None, *, single_cpu_export=False):
     if continuous_source_frames is not None and (not isinstance(continuous_source_frames, int) or not 1 <= continuous_source_frames <= 18000 or not isinstance(continuous_source_spans, int) or not 1 <= continuous_source_spans <= 100):
         raise ValueError('Explicit bounded source timeline required')
     if continuous_source_frames is None and continuous_source_spans is not None:
@@ -95,6 +124,8 @@ def stage(source_app, clone_app, gateway, builder, continuous_source_frames=None
             replacement = replacement.replace('  builderPath:', f'  sourceTimeline: {{fps:30,width:1080,height:1920,frames:{continuous_source_frames},spans:{continuous_source_spans}}},\n  builderPath:')
         apply(p, SERVER_ANCHOR, replacement)
         apply(p, SERVER_API_ANCHOR, SERVER_API_REPLACE)
+        if single_cpu_export:
+            tune_single_cpu_export(clone_app)
         shutil.copy2(gateway, clone_app / "sues-faststart-qa-gateway.cjs")
         shutil.copy2(builder, clone_app / "sues-build-native-faststart-cache.py")
     except BaseException:
@@ -111,8 +142,9 @@ def main():
     p.add_argument("--builder", type=Path, required=True)
     p.add_argument("--continuous-source-frames", type=int)
     p.add_argument("--continuous-source-spans", type=int)
+    p.add_argument("--single-cpu-export", action="store_true")
     a = p.parse_args()
-    print(stage(a.source_app, a.clone_app, a.gateway, a.builder, a.continuous_source_frames, a.continuous_source_spans))
+    print(stage(a.source_app, a.clone_app, a.gateway, a.builder, a.continuous_source_frames, a.continuous_source_spans, single_cpu_export=a.single_cpu_export))
 
 if __name__ == "__main__":
     main()

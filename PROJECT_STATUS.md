@@ -1,5 +1,7 @@
 ## 19/11/2026 · Fase 5 · Q02 en curso · 108 órdenes y render privado
 
+Seguimiento tarde del 19/11. El exportador privado ya completó la mezcla de 23 tramos e inició la entrega a 1080 × 1920. Se descartó de la mezcla el audio de capas silenciadas y se limitó FFmpeg a un hilo. Voz sin desfase medido en siete ventanas. El trabajo x_bb4okxqo y el auditor de salida se detallan en el checkpoint Q02. El cierre exige el MP4 completo y la revisión audiovisual.
+
 [Checkpoint Q02](docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md). Las 87 operaciones fuente se conservan; primer clon con 107 recibos y candidata v4 con 108, ambos por Master Director, ledger y MCP, revisión 1→2. V4 traduce sobres de mezcla y fundidos sin reiniciarlos, conserva dependencias y añade máscara temporal candidata y ajuste de 18 frames al motion existente. Regresión VPS 67/67 PASS. Gateway y staging reproducibles comprobados. Se corrigieron límite HTTP, arranque Chrome y timeout SSE; la exportación v4 larga sigue pendiente de resultado. Consultar unidad sues-q02-render-v4-20261119 y sus archivos de estado antes de reintentar. No hay dos revisiones A/V ni escucha acreditada ni aprobación del resultado. Q01 cerrado, Q02 activo, Q03–Q06 pendientes. Revisión compartida V1-2026-11-19-r12. V1 65 % estimado; no subir por tests.
 
 ## 19/11/2026 · V1 · Fase 5 de 5 · Punto 1 de 6 finalizado
