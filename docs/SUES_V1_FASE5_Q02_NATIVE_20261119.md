@@ -48,6 +48,10 @@ Pruebas adicionales locales: gateway de caché 4/4, incluidas discontinuidad, re
 
 ### Resultado posterior y punto de reanudación
 
+Limpieza VPS el 19/11 a petición de Carlos. Espacio libre de 3.378.655.232 a aproximadamente 5.317.000.000 bytes (94 % a 90 % de ocupación). Se retiraron ocho perfiles temporales de exportación sin procesos abiertos, caché HTTP de pip y tres archivos de pruebas truncados. En seis conjuntos de QA del 08/11 se agruparon diez copias repetidas de dos recursos mediante enlaces duros entre copias de QA. Coinciden SHA-256, permisos, propietario, grupo, tamaño, mtime y atributos extendidos. Se preservan los nombres y el contenido de las rutas. Evidencia en `retention-qa-copies-evidence.json` dentro del workspace privado. El archivo fuente productivo conserva su SHA-256 y queda en un inodo fuera de la deduplicación. WAC, servicios, backups y medios necesarios para la exportación activa se conservaron.
+
+La unidad de render reanudada había verificado 400 de 2212 fotogramas y seguía con [400, 600) durante la limpieza. Los tramos verificados se reutilizan y el resultado no se marca completo hasta verificar la unión y la decodificación.
+
 El render completo v4 x_bb4okxqo se detuvo aproximadamente al 23 % por OOM en su unidad, con pico de 2,1 GiB de RAM y 1,1 GiB de swap. El auditor que esperaba ese trabajo se detuvo. No hay MP4 completo de v4.
 
 Se exportó el tramo nativo 35,8–42,9 s dos veces, a 1080 × 1920, 30 fps, 213 fotogramas y audio AAC. Ambos archivos se decodificaron completos. En v4, tres fotogramas de los momentos relevantes mostraron el rostro despejado pero el gráfico de la balanza quedó parcialmente oculto. En la candidata v5 se desplazó el mismo recurso a [82, 290, 219, 390] en el carril izquierdo y se conservaron el matte, sus fundidos y el reloj de entrada. En los mismos tres fotogramas quedaron visibles las palabras DECISIONES, AMOR y MIEDO, y se mantuvo despejado el rostro. Falta valorar la legibilidad y el ritmo en reproducción.
