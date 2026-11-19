@@ -1,6 +1,6 @@
 ## Punto activo · 19/11/2026 · Q02 en curso
 
-Última continuación. Consultar la sección «Resultado posterior y punto de reanudación» del checkpoint Q02 y la unidad `sues-q02-v5-segments-finalize-20261119.service`. V4 completa se detuvo por memoria. V5 tiene 108 recibos y un tramo nativo real de 213 fotogramas que valida en tres muestras la nueva posición lateral de la balanza. Está en curso la exportación por 12 ventanas. Confirmar su resultado antes de iniciar otro intento.
+Última continuación. Consultar la sección «Resultado posterior y punto de reanudación» del checkpoint Q02 y la unidad `sues-q02-v5-segments-resume-20261119.service`. V4 completa se detuvo por memoria. V5 tiene 108 recibos y un tramo nativo real de 213 fotogramas que valida en tres muestras la nueva posición lateral de la balanza. Está en curso la exportación por 12 ventanas. Confirmar su resultado antes de iniciar otro intento.
 
 Consultar primero `sues-q02-render-singlecpu-20261119.service`, trabajo x_bb4okxqo, y `singlecpu-output-verification.json` en el workspace privado Q02 del VPS. La mezcla de 23 tramos terminó y se comprobaron 15 recursos y 108 recibos. El intento actual ya genera fotogramas. La revisión del MP4 completo sigue pendiente. La sección de diagnóstico del checkpoint Q02 documenta los intentos anteriores y la comprobación que debe ocurrir tras el cierre del exportador.
 
