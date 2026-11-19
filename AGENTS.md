@@ -1,4 +1,8 @@
-## Punto activo · 19/11/2026 · Q02 en curso
+## Punto activo · Fase 5 · Q03 en curso
+
+Consultar la cabecera de `PROJECT_STATUS.md` y «Q03 · Correcciones privadas de subtítulos» en `docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md`. PR #27 canónica. Q01 finalizado, Q02 exportó el MP4 completo y verificó 2212 fotogramas. El MP4 de Q02 se conserva como referente. Q03 tiene una prueba nativa de 45 fotogramas de C41.S04 y una candidata que corrige cinco operaciones de captions. Antes de repetir un render consultar `sues-q03-reel158404-captions.service` y `q03-review/captions-render.log` en el workspace privado del VPS. Verificar a oído los pasajes cotejados con ASR y completar dos revisiones audiovisuales sobre el mismo MP4 corregido. Q04–Q06 pendientes.
+
+## Punto de continuidad histórico · 19/11/2026 · Q02 en curso
 
 Última continuación. Consultar la sección «Resultado posterior y punto de reanudación» del checkpoint Q02 y la unidad `sues-q02-v5-segments-resume-20261119.service`. V4 completa se detuvo por memoria. V5 tiene 108 recibos y un tramo nativo real de 213 fotogramas que valida en tres muestras la nueva posición lateral de la balanza. Está en curso la exportación por 12 ventanas. Confirmar su resultado antes de iniciar otro intento.
 
