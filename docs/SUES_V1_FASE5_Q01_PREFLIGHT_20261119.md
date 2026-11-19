@@ -11,3 +11,15 @@ Voz: Whisper local se ejecutó sobre el original, con salida en /opt/sues-video-
 El proyecto 001 V26 tiene 170 clips y 76,477 s, y por tanto contiene cortes/capas ajenas al plan de A-roll continuo. El proyecto QA reel-158404-full-native-49ops-20261108 conserva A-roll continuo pero tiene capas B02 activas, voz a 0,8, seis pistas y 73,766667 s, requiere adaptación en copia y comprobación del final antes de vincular el plan. No se ha modificado ningún proyecto.
 
 PR27 d12d31d. Regresión dirigida con motor nativo real VPS: 40 PASS, 0 FAIL, 0 SKIP, hashes del adaptador y prueba iguales al HEAD. Las pruebas comprueban capacidades aisladas, no demuestran ejecución íntegra del plan. Continuar verificando transcripción y traducción completa, resolver geometría y dependencias de recursos, preparar clon, comprobar CAS/recibos y luego exportación y doble revisión. No desplegar ni publicar.
+
+## Correcciones posteriores del adaptador · 19/11/2026
+
+Se añadieron parámetros opcionales boxW/boxH, strokeWidth/strokeColor y weight a add_title/add_caption. Títulos con wordIds/wordTimes usan word-pop y se verifican contra el registro de anclas y la fuente con su peso exacto. Se permite mayúscula y puntuación diferente en el título conservando las letras y los acentos; los captions siguen exigiendo texto literal. Títulos históricos conservan su comportamiento. Datos incompletos, tiempos superpuestos, estilo inválido, fuente ausente o palabra distinta bloquean la operación.
+
+set_matte comparaba proof.assetId con binding.sha256, impidiendo validar un recurso con ID y SHA distintos. Ahora compara proof.assetId con binding.assetId y proof.sha256 con binding.sha256. Pruebas negativas de SHA, ID, fuente y timeline conservadas.
+
+VPS aislado /opt/sues-video-setup/q01-adapter-20261119.pilaPB. Tres suites con motor /srv/sues-fablecut-next/app/project-ops.js, 43 PASS, 0 FAIL, 0 SKIP. El primer intento de la suite no cargó por falta del directorio config en el nuevo entorno privado. Se incorporó config y se repitió con éxito. Prueba adicional verify-67.mjs sobre datos del anexo: 67/67 textos aplicados en memoria, igualdad de reloj, posición, caja, contorno, peso y texto. El primer fixture de base shape fue normalizado por FableCut y rechazado por el auditor de cambios ajenos. Se corrigió el fixture a base video, sin relajar el auditor. No modifica proyecto persistente ni valida render, escucha, tipografía pintada o las 20 operaciones no textuales.
+
+El cálculo de posición usa el centro de cada rectángulo del anexo relativo al centro 540,960 del lienzo FableCut. Para contornos de captions, el anexo da 4 px sin color expreso, y la prueba utiliza el contorno antracita #171717 ya descrito para los títulos. Esa elección requiere revisión visual en el montaje.
+
+Continúan pendientes escucha de 8–9, 16–17 y 28–32 s, traducción íntegra de operaciones no textuales, CAS del clon, exportación y dos revisiones reales. La sesión no dispone de entrada de audio reproducible para el modelo. No atribuir a Whisper una revisión auditiva. El estado Q01 y Q02 conserva su alcance anterior.

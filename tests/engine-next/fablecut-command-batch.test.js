@@ -86,3 +86,39 @@ run('native matte binds an exact independent source track without deleting sourc
  assert.equal(r.project.clips[0].props.matte,'luma');assert.equal(r.project.clips[0].props.matteTrack,'V3');assert.equal(r.project.clips.length,2);
  assert.throws(()=>applyCommandBatch(q,{baseRevision:q.revision,baseFingerprint:projectFingerprint(q),commands:[{id:'bad',action:'set_matte',clipId:'base',matteClipId:'matte',matteTrack:'V2',mode:'luma',proofId:'test-proof'}]},opts),/INVALID_MATTE_BINDING/);
 });
+
+run('timed titles preserve layout, font weight and source word binding',async()=>{
+ const c={id:'H02',action:'add_title',track:'V2',start:1,duration:2,text:'Poner límites',x:0,y:-755,fontSize:92,color:'#F3CB62',font:'Montserrat',weight:800,boxW:944,boxH:160,strokeWidth:4,strokeColor:'#171717',wordIds:['w1','w2'],wordTimes:[[0,.2],[.2,.8]]};
+ const result=applyCommandBatch(p,req([c]),opts),cl=result.project.clips.at(-1);
+ for(const key of ['boxW','boxH','weight','strokeWidth','strokeColor'])assert.equal(cl.props[key],c[key]);
+ assert.deepEqual(cl.props.wordTimes,c.wordTimes);assert.equal(cl.props.caption,false);
+ for(const changes of [{boxW:undefined},{weight:750},{strokeWidth:21},{strokeColor:'red'},{wordTimes:[[0,.4],[.2,.8]]}])
+  assert.throws(()=>applyCommandBatch(p,req([{...c,...changes}]),opts));
+ const h='a'.repeat(64),m='b'.repeat(64),registry={sourceSha256:h,timelineFingerprint:'edit-001',projectFingerprint:projectFingerprint(p),approvedRuleVersion:'rules-v1',unresolvedRuleConflicts:[],masterHashes:{tapiz:m},lockedMastersByMode:{'brand-sues':[{id:'tapiz',sha256:m}]},rendererCapabilities:{native:['fablecut-command-exact-v1']},nativeTrackRoles:{V2:'graphics'},verifiedFonts:{'Montserrat:800':{sha256:m}},wordAnchors:{w1:{time:1,end:1.2,text:'poner'},w2:{time:1.2,end:1.8,text:'límites,'}}};
+ const {id,...command}=c;
+ const story={schema:'sues-master-story/v1',sourceSha256:h,timeline:{fingerprint:'edit-001',timeSpace:'edit-timeline',fps:30,duration:5},visual:{mode:'brand-sues'},narrative:{centralMessage:'Technical title test',intendedExperience:'Technical test',scenes:[{id:'s1',start:0,end:5,purpose:'Technical test'}]},resources:[],operations:[{id,sceneId:'s1',start:1,end:3,track:'graphics',renderer:'native',effect:'fablecut-command-exact-v1',reason:'Verified title timing',parameters:{command},dependsOn:[],requiredQA:['rendered-frame','motion-playback','narrative-review']}]};
+ const ctx={registry,project:p,authorize:async()=>true};
+ assert.equal((await prepareStoryBatch(story,ctx)).status,'PREPARED_NOT_EXECUTED');
+ registry.wordAnchors.w2.text='distinto';assert.equal((await prepareStoryBatch(story,ctx)).status,'BLOCKED');
+ registry.wordAnchors.w2.text='límites,';delete registry.verifiedFonts['Montserrat:800'];assert.equal((await prepareStoryBatch(story,ctx)).status,'BLOCKED');
+});
+
+run('caption styling is retained and historical defaults are compatible',()=>{
+ const c={id:'C01',action:'add_caption',track:'V2',start:1,duration:2,text:'Ahora respira',x:0,y:400,fontSize:54,color:'#ffffff',font:'Montserrat',weight:700,boxW:870,boxH:230,strokeWidth:4,strokeColor:'#171717',wordIds:['w1','w2'],wordTimes:[[0,.5],[.5,1]]};
+ const cl=applyCommandBatch(p,req([c]),opts).project.clips.at(-1);
+ assert.equal(cl.props.boxW,870);assert.equal(cl.props.boxH,230);assert.equal(cl.props.strokeWidth,4);assert.equal(cl.props.caption,true);
+ const {weight,boxW,boxH,strokeWidth,strokeColor,...old}=c;
+ assert.equal(applyCommandBatch(p,req([old]),opts).project.clips.at(-1).props.bold,true);
+});
+
+run('canonical matte evidence binds asset ID and SHA independently',async()=>{
+ const q=structuredClone(p);q.tracks.unshift({id:'V3',kind:'video'});q.clips.push({id:'matte',mediaId:'mask',kind:'video',track:'V3',start:0,in:0,duration:5,props:{opacity:1}});q.media.push({id:'mask',kind:'video',src:'/media/mask.mp4',duration:5});
+ const h='a'.repeat(64),m='b'.repeat(64),registry={sourceSha256:h,timelineFingerprint:'edit-001',projectFingerprint:projectFingerprint(q),approvedRuleVersion:'rules-v1',unresolvedRuleConflicts:[],masterHashes:{tapiz:m},lockedMastersByMode:{'brand-sues':[{id:'tapiz',sha256:m}]},rendererCapabilities:{native:['fablecut-command-exact-v1']},nativeTrackRoles:{V1:'subject'},nativeMediaBindings:{mask:{assetId:'mask-asset',sha256:m}},maskEvidence:{proof:{verified:true,sourceSha256:h,timelineFingerprint:'edit-001',assetId:'mask-asset',sha256:m,start:0,end:5,evidenceRef:'actual-mask-qa'}}};
+ const story={schema:'sues-master-story/v1',sourceSha256:h,timeline:{fingerprint:'edit-001',timeSpace:'edit-timeline',fps:30,duration:5},visual:{mode:'brand-sues'},narrative:{centralMessage:'Technical matte test',intendedExperience:'Technical test',scenes:[{id:'s1',start:0,end:5,purpose:'Technical test'}]},resources:[],operations:[{id:'matte1',sceneId:'s1',start:0,end:5,track:'subject',renderer:'native',effect:'fablecut-command-exact-v1',reason:'Verified matte source',parameters:{command:{action:'set_matte',clipId:'base',matteClipId:'matte',matteTrack:'V3',mode:'luma',proofId:'proof'}},dependsOn:[],requiredQA:['rendered-frame','motion-playback']}]};
+ const ctx={registry,project:q,authorize:async()=>true};
+ assert.equal((await prepareStoryBatch(story,ctx)).status,'PREPARED_NOT_EXECUTED');
+ for(const change of [{sha256:undefined},{sha256:'c'.repeat(64)},{assetId:'wrong-mask'},{sourceSha256:m},{timelineFingerprint:'stale-map'}]){
+  const copy=structuredClone(registry);Object.assign(copy.maskEvidence.proof,change);
+  assert.equal((await prepareStoryBatch(story,{...ctx,registry:copy})).status,'BLOCKED');
+ }
+});

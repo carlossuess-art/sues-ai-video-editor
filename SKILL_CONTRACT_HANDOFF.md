@@ -2,6 +2,12 @@
 
 Fecha: 2026-11-05. Fuente revisada: rama feat/master-director-story-orchestration-20261104, commit 0c1ded0cc49f0027d81504c705657764586c40d3. Las 20 reglas aprobadas son requisitos de producto, no prueba de implementación. Este documento fija el objetivo de integración; **no afirma que la pantalla actual lo acepte ni que el sistema ya ejecute todo lo descrito**. No modificar la skill para emitir extensiones como si estuvieran operativas: preservar la información y bloquear la ejecución hasta conectar y validar.
 
+## Extensión nativa de texto verificada · 19/11/2026
+
+En la rama PR27, add_title/add_caption admiten opcionalmente weight (400, 500, 600, 700, 800, 900), boxW/boxH (ambos), strokeWidth (0–20 px) y strokeColor (#RRGGBB). add_title admite wordIds/wordTimes con el mismo reloj verificado de captions. Se conserva el comportamiento anterior al omitir estos campos. La fuente se verifica por familia y peso. El título permite cambios de mayúscula/puntuación respecto a las palabras fuente, conservando letras y acentos. Los captions requieren coincidencia literal. Coordenadas x/y nativas relativas al centro del lienzo, no esquina superior izquierda.
+
+Prueba en VPS con motor nativo: 43/43; textos del anexo 158404: 67/67 en memoria. Pendiente render completo y QA audiovisual. No interpretar este soporte como un importador del anexo ni ejecución completa de las 87 operaciones.
+
 ## ACTUALIZACIÓN OPERATIVA · 11/11/2026
 
 Esta sección prevalece sobre las descripciones de estado históricas de 05/11, sin relajar el contrato ni las reglas creativas. Skill privada 1.7.1 publicada y releída mediante Plugin Creator, política 10/11 conservada y referencia obligatoria FABLECUT_NATIVE_HANDOFF_20261111.md añadida. Una sesión antigua puede seguir mostrando 1.7.0. Consultar [flujo nativo privado y pruebas](docs/engine-next/FABLECUT_STORY_AUTOMATION_20261110.md) y [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md).

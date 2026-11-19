@@ -30,8 +30,8 @@ export const COMMANDS={
  trim:['clipId','duration'],
  replace:['clipId','assetId','sourceIn'],
  remove:['clipId'],
- add_title:['start','duration','track','text','x','y','fontSize','color','font'],
- add_caption:['start','duration','track','text','x','y','fontSize','color','font','wordTimes','wordIds'],
+ add_title:['start','duration','track','text','x','y','fontSize','color','font','weight','boxW','boxH','strokeWidth','strokeColor','wordTimes','wordIds'],
+ add_caption:['start','duration','track','text','x','y','fontSize','color','font','wordTimes','wordIds','weight','boxW','boxH','strokeWidth','strokeColor'],
  dissolve:['clipId','leftClipId','duration'],
  set_visual_effect:['clipId','brightness','contrast','saturation','blur','shake','shakeSpeed','rgbSplit','rotation'],
  add_shape:['start','duration','track','x','y','scale','opacity','shapes'],
@@ -88,11 +88,22 @@ export function applyCommandBatch(project,request,{native,resolveAsset,nativePat
    range(c.start,c.duration);lane(c.track,'video');free(c.track,c.start,c.duration);
    if(typeof c.text!=='string'||!c.text.trim()||c.text.length>500||typeof c.font!=='string'||!c.font.trim()||!/^#[0-9a-f]{6}$/i.test(c.color))fail('INVALID_TITLE');
    const props={...transform(c),text:c.text,font:c.font,fontSize:numeric(c.fontSize,1,500,'fontSize'),color:c.color};
-   if(c.action==='add_caption'){
+   for(const [key,min,max] of [['boxW',1,p.width],['boxH',1,p.height],['strokeWidth',0,20]])
+    if(c[key]!==undefined)props[key]=numeric(c[key],min,max,key);
+   if((c.boxW===undefined)!==(c.boxH===undefined))fail('INCOMPLETE_TEXT_BOX');
+   if(c.weight!==undefined){
+    if(![400,500,600,700,800,900].includes(c.weight))fail('INVALID_TEXT_WEIGHT');
+    Object.assign(props,{weight:c.weight,bold:c.weight>=700});
+   }
+   if(c.strokeColor!==undefined){
+    if(!/^#[0-9a-f]{6}$/i.test(c.strokeColor))fail('INVALID_STROKE_COLOR');
+    props.strokeColor=c.strokeColor;
+   }
+   if(c.action==='add_caption'||c.wordTimes!==undefined||c.wordIds!==undefined){
     const words=c.text.trim().split(/\s+/);
     if(words.length>9||c.text.split('\n').length>2||!finite(c.x,-10000,10000)||!finite(c.y,-10000,10000)||!Array.isArray(c.wordTimes)||c.wordTimes.length!==words.length||!Array.isArray(c.wordIds)||c.wordIds.length!==words.length||new Set(c.wordIds).size!==words.length||!c.wordIds.every(id))fail('INVALID_CAPTION_CLOCK');
     let end=0;for(const pair of c.wordTimes){if(!Array.isArray(pair)||pair.length!==2||!aligned(pair[0],fps)||!aligned(pair[1],fps)||pair[0]<end-1e-6||pair[1]<=pair[0]||pair[1]>c.duration+1e-6)fail('INVALID_CAPTION_WORD_RANGE');end=pair[1]}
-    Object.assign(props,{caption:true,textAnim:'word-pop',wordTimes:structuredClone(c.wordTimes),bold:true});
+    Object.assign(props,{caption:c.action==='add_caption',textAnim:'word-pop',wordTimes:structuredClone(c.wordTimes),bold:c.weight===undefined?true:c.weight>=700});
    }
    ops.push({op:'addClip',clip:{id:cid,kind:'text',track:c.track,start:c.start,in:0,duration:c.duration,name:c.id,props}});
   }else{
@@ -214,14 +225,16 @@ export async function prepareStoryBatch(story,{registry,authorize,project,bindin
    if(c?.action==='set_matte'){
     const vm=virtualClips.get(c.matteClipId),matte=project.clips.find(x=>x.id===c.matteClipId)??vm?.clip;
     const proof=registry.maskEvidence?.[c.proofId],binding=vm?{assetId:vm.assetId,sha256:vm.expectedSha256}:registry.nativeMediaBindings?.[matte?.mediaId];
-    valid=valid&&matte&&(!vm||o.dependsOn.includes(vm.operationId))&&proof?.verified===true&&proof.sourceSha256===story.sourceSha256&&proof.timelineFingerprint===story.timeline.fingerprint&&proof.assetId===binding?.assetId&&proof.assetId===binding?.sha256&&equal(proof.start,o.start)&&equal(proof.end,o.end)&&typeof proof.evidenceRef==='string'&&!!proof.evidenceRef.trim();
+    valid=valid&&matte&&(!vm||o.dependsOn.includes(vm.operationId))&&proof?.verified===true&&proof.sourceSha256===story.sourceSha256&&proof.timelineFingerprint===story.timeline.fingerprint&&proof.assetId===binding?.assetId&&/^[a-f0-9]{64}$/.test(proof.sha256??'')&&proof.sha256===binding?.sha256&&equal(proof.start,o.start)&&equal(proof.end,o.end)&&typeof proof.evidenceRef==='string'&&!!proof.evidenceRef.trim();
    }
-   if(c?.action==='add_caption'){
+   if(c?.action==='add_caption'||c?.action==='add_title'&&(c.wordTimes!==undefined||c.wordIds!==undefined)){
     const words=typeof c.text==='string'?c.text.trim().split(/\s+/):[];
     valid=valid&&Array.isArray(c.wordIds)&&Array.isArray(c.wordTimes)&&c.wordIds.length===words.length&&c.wordTimes.length===words.length&&
-     !!registry.verifiedFonts?.[c.font+':700']&&c.wordIds.every((id,i)=>{
+     !!registry.verifiedFonts?.[c.font+':'+(c.weight??700)]&&c.wordIds.every((id,i)=>{
       const w=registry.wordAnchors?.[id],pair=c.wordTimes[i],fps=story.timeline.fps;
-      return w&&w.text===words[i]&&Number.isFinite(w.time)&&Number.isFinite(w.end)&&Array.isArray(pair)&&equal(c.start+pair[0],Math.round(w.time*fps)/fps)&&equal(c.start+pair[1],Math.round(w.end*fps)/fps);
+      const titleText=text=>String(text).normalize('NFC').toLocaleLowerCase('es').replace(/[^\p{L}\p{N}]/gu,'');
+      const sameText=c.action==='add_caption'?w?.text===words[i]:titleText(w?.text)===titleText(words[i]);
+      return w&&sameText&&Number.isFinite(w.time)&&Number.isFinite(w.end)&&Array.isArray(pair)&&equal(c.start+pair[0],Math.round(w.time*fps)/fps)&&equal(c.start+pair[1],Math.round(w.end*fps)/fps);
      });
    }
    if(o.speechAnchor){
