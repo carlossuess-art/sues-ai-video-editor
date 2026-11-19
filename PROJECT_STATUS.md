@@ -1,5 +1,7 @@
 ## 19/11/2026 · Fase 5 · Q02 en curso · 108 órdenes y render privado
 
+Segunda limpieza VPS: aproximadamente 0,91 GB adicionales recuperados. Libres 6,22 GB y 88 % de ocupación. Se archivaron los repositorios Git de tres clones temporales, se retiraron dos cachés de instalaciones npm inactivas y dos índices regenerables de APT. Tercer tramo del Reel verificado (600 de 2212 fotogramas), cuarto en marcha.
+
 Limpieza VPS: se recuperaron unos 1,94 GB de capacidad disponible. Tareas seguras limitadas a perfiles temporales de exportación, caché de paquetes, tres archivos truncados y deduplicación comprobada de copias de QA. El original conserva su SHA. Dos tramos completos verificados y tercero en marcha al revisar el espacio.
 
 Reanudación por v5. El render monolítico v4 se detuvo por memoria. Se renderizó y decodificó el tramo 35,8–42,9 s en dos disposiciones. Tres imágenes del segundo MP4 muestran la balanza a la izquierda y el rostro despejado. V5 aplicada con 108 recibos. Exportación completa por 12 tramos en curso en el VPS. El checkpoint enlaza ambas pruebas y las comprobaciones de salida. Q01 finalizado y Q02 en curso.
