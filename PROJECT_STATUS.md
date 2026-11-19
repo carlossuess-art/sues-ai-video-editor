@@ -1,3 +1,7 @@
+## 19/11/2026 · Fase 5 · Q03 en curso · Correcciones privadas de captions
+
+C41.S04 se verificó en un tramo nativo de 45 fotogramas. El texto blanco «perderlo?» conserva su posición y pierde el salto de escala al coincidir con el titular superior. La candidata conjunta incorpora además C11.S02, C19.S03, C29.S04 y C30.S04, con 108 recibos en la copia privada. Estado de los tres renders por pasaje en `q03-review/captions-render.log`. El MP4 completo y la doble revisión de la revisión corregida siguen pendientes. Ver [checkpoint](docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md).
+
 ## 19/11/2026 · Fase 5 · Q02 con exportación técnica verificada · Q03 iniciado
 
 Reel 158404. El MP4 privado de 73,733 s se completó y decodificó con 2212 fotogramas, H.264 1080 × 1920 a 30 fps y AAC. Q03 registró tres incidencias en subtítulos y la repetición visual de «perderlo» a 42,200 s. La voz de la mezcla se alinea con la pista original en las 18 ventanas medibles alrededor de las uniones. Quedan la corrección de los pasajes, la doble reproducción audiovisual completa y la revisión de Carlos. Consultar `docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md`, sección «Inicio de Q03». Q04–Q06 pendientes.
