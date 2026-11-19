@@ -13,6 +13,19 @@ Se abrió Q03 sobre el MP4 de 2212 fotogramas y 73,733 s identificado por el SHA
 
 Evidencia privada en `q03-review/` del workspace Q02. Se conserva el MP4 exacto y el plan aprobado. Próximo paso: cotejar los pasajes de voz, revisar el énfasis visual de 42,133–42,700 s, validar cualquier corrección mediante render aislado y ejecutar dos pases audiovisuales completos sobre un mismo MP4. No constan pases completos ni aceptación de Carlos.
 
+## Q03 · Correcciones privadas de subtítulos
+
+| Operación y edición [entrada, salida) | Ajuste en la candidata | Evidencia |
+| --- | --- | --- |
+| C11.S02 · fotogramas 256–279 · 8,533–9,300 s | «a portarte bien,» con los tiempos existentes | Selección anterior de Carlos incluye «portarte». Una pasada segmentada sobre la voz aislada reconoce esa variante. Las demás decodificaciones pueden unir las dos vocales y devuelven «a aportarte». |
+| C19.S03 · 506–521 · 16,867–17,367 s | «Hasta que un día», entradas locales 0, 5, 9 y 11 fotogramas | Dos de tres decodificaciones locales del fragmento reconocen «Hasta que un día». Texto y cuatro anclas pendientes de confirmación a oído. |
+| C29.S04 y C30.S04 · 845–877 · 28,167–29,233 s | «¿Y si dejan / de quererme?» con las anclas existentes | Las tres decodificaciones del fragmento y las dos de pistas completas recuperan «dejan de quererme». La puntuación recoge la lectura interrogativa. La escucha conserva el criterio final. |
+| C41.S04 · 1264–1281 · 42,133–42,700 s | «perderlo?» se mantiene. Se elimina su animación de escala durante el solape con H03.S04. | 45 fotogramas nativos verificados de 41,600 a 43,100 s. Comparación del fotograma 1266: el titular, la balanza y el rostro se mantienen, y el subtítulo se lee en blanco con la escala estable. |
+
+La primera copia privada `test-project-q03-158404-c41` ejecutó 108 operaciones con recibos y paridad del proyecto. Prueba `x_ko5vqckt` con SHA-256 `bc5ecf6fab5dc759a3aa4eddd9418a1968ca39204e05ef8d5a3e5709d921e8d8`. Frente al referente, diferencia media de intensidad fuera del área reservada a captions de 0,696 sobre 255. En las 72.000 muestras PCM por canal del tramo, diferencia absoluta máxima de 1 unidad S16 y correlación 1,000000. Evidencia en `q03-review/c41-before-after-1266.jpg` y `q03-review/c41-check.json`. Deja constancia de una prueba de ventana, sin certificar el audio artístico ni el MP4 corregido completo.
+
+La candidata conjunta `test-project-q03-158404-captions` conserva las 108 operaciones y solo modifica las cinco de la tabla. Revisión `2576f28adfd5b71fdadd9ed7895365200889b13ddcc6a36ed8365634f72687a8`, fingerprint de proyecto `e17b1aa4c361bd9aa9bff1d53c7798e8d4fa97617bb8ae4221b2e2ccab13e36b`. Los 108 recibos se obtuvieron en la copia técnica. La unidad `sues-q03-reel158404-captions` registra renders aislados en `q03-review/captions-render.log`. Consultar el estado y `q03-review/check-captions.py` antes de repetir. El export completo original de Q02 sigue siendo el referente técnico preservado. Q03 continúa y la doble revisión audiovisual queda pendiente sobre la misma versión completa.
+
 ## Ejecución acreditada
 
 En /opt/sues-video-setup/q02-native-annex-20261119.j3YNOa se recuperó el anexo exacto y los 14 recursos por SHA. El script prepare-158404-annex-native-qa.mjs preservó los 87 IDs fuente, sus intervalos y dependencias en un crosswalk. Generó 107 operaciones por escena dentro de su contexto temporal. La historia pesa 78.796 bytes. Primero se simuló con project-ops real y después el almacén maestro la revisó con READY_FOR_CHOICE.
