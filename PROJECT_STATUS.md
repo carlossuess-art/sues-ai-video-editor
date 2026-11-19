@@ -1,3 +1,7 @@
+## Fase 5 · Q03 en curso · Tramos de subtítulos verificados
+
+Las cuatro pruebas focales se renderizaron y comprobaron en privado. La candidata completa del Reel 158404 está en exportación por ventanas. Consultar los trabajos `sues-q03-reel158404-corrected-windows` y `sues-q03-reel158404-assemble` antes de repetir. Roadmap y Estado General sincronizados en V1-2026-11-19-r13, con Q01 y Q02 finalizados. La escucha de los pasajes pendientes, la doble revisión y Q04–Q06 siguen abiertos. [Checkpoint Q03](docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md).
+
 ## 19/11/2026 · Fase 5 · Q03 en curso · Correcciones privadas de captions
 
 C41.S04 se verificó en un tramo nativo de 45 fotogramas. El texto blanco «perderlo?» conserva su posición y pierde el salto de escala al coincidir con el titular superior. La candidata conjunta incorpora además C11.S02, C19.S03, C29.S04 y C30.S04, con 108 recibos en la copia privada. Estado de los tres renders por pasaje en `q03-review/captions-render.log`. El MP4 completo y la doble revisión de la revisión corregida siguen pendientes. Ver [checkpoint](docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md).
