@@ -26,6 +26,12 @@ La primera copia privada `test-project-q03-158404-c41` ejecutó 108 operaciones 
 
 La candidata conjunta `test-project-q03-158404-captions` conserva las 108 operaciones y solo modifica las cinco de la tabla. Revisión `2576f28adfd5b71fdadd9ed7895365200889b13ddcc6a36ed8365634f72687a8`, fingerprint de proyecto `e17b1aa4c361bd9aa9bff1d53c7798e8d4fa97617bb8ae4221b2e2ccab13e36b`. Los 108 recibos se obtuvieron en la copia técnica. La unidad `sues-q03-reel158404-captions` registra renders aislados en `q03-review/captions-render.log`. Consultar el estado y `q03-review/check-captions.py` antes de repetir. El export completo original de Q02 sigue siendo el referente técnico preservado. Q03 continúa y la doble revisión audiovisual queda pendiente sobre la misma versión completa.
 
+### Comprobación de los tres pasajes y nueva exportación
+
+Se verificaron los tres renders nativos [250,285), [500,527) y [839,883) de la candidata. Paridad de copia, revisión, fingerprint y SHA comprobados. En los fotogramas 267, 520, 859 y 874 se leen «a portarte», «Hasta que un día», «¿Y si dejan» y «de quererme?». La verificación es visual y técnica. Pendiente cotejar la voz de los pasajes dudosos y hacer las dos reproducciones completas.
+
+Exportación de la candidata completa iniciada. `sues-q03-reel158404-corrected-windows.service` regenera cuatro ventanas de los capítulos afectados y guarda `q03-review/corrected-windows.log`. `sues-q03-reel158404-assemble.service` espera a que terminen y comprueba la equivalencia de las operaciones ajenas, los SHA, los 2212 fotogramas y que el PCM decodificado del audio AAC coincide con el MP4 de referencia. El ensamblado conserva ocho ventanas sin cambios y registra el origen de las doce. Confirmar el archivo `q03-review/corrected-full/technical-verification.json` y su SHA antes de hablar de exportación terminada. Los archivos `corrected-assembly.log` y `corrected-windows.log` identifican cualquier error de ensamblado. No se ha emitido aceptación creativa ni se ha desplegado nada.
+
 ## Ejecución acreditada
 
 En /opt/sues-video-setup/q02-native-annex-20261119.j3YNOa se recuperó el anexo exacto y los 14 recursos por SHA. El script prepare-158404-annex-native-qa.mjs preservó los 87 IDs fuente, sus intervalos y dependencias en un crosswalk. Generó 107 operaciones por escena dentro de su contexto temporal. La historia pesa 78.796 bytes. Primero se simuló con project-ops real y después el almacén maestro la revisó con READY_FOR_CHOICE.
