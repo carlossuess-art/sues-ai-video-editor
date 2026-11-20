@@ -1,3 +1,8 @@
+
+## Q03 · 20/11/2026 · Tildes verificadas en fragmento privado
+
+Informe Gemini recibido: «Hasta que un día» está visible en fotograma 520 de la candidata Q03, contrario a su informe; «si» aparece en 29,6 s, su sincronización auditiva no está validada. En C26.S03 se corrigió «ser tu mismo,» a «ser tú mismo,» en la copia técnica aislada /srv/sues-fablecut-next/data/automation-v1/test-project-q03-158404-accent-20261120. Se prepararon y ejecutaron 108 operaciones con alcance technical-qa. Ventana nativa 720–790, 70 fotogramas, 2,333 s, decodificada; verify-segment-copy SEGMENT_COPY_VERIFIED; SHA-256 abdac6e2ae709568b5c620425c01d3816fa9d9d26fd525d9448a42bdcc8cf2da. Fotogramas verifican tildes, pero a 25,8 s «tú mismo» se ve pegado durante word-pop: falta corregir y validar espaciado, sin cambiar animación ni degradarla sin autorización. No se ha generado nuevo MP4 completo ni auditado dos veces; original Q03 SHA 7b90ea6ff2049b3baaca8a79f645a9fb26395110c576b5a1608240f4378a3438 se conserva. Q03 sigue EN CURSO; Q04–Q06 pendientes. Sondeo de escucha con Gemini es apoyo, no dos visionados completos acreditados.
+
 ## Fase 5 · Q03 en curso · MP4 corregido completo y verificado técnicamente
 
 La candidata corregida del Reel 158404 terminó con 2212 fotogramas, tiempos verificados y PCM idéntico a la referencia. Confirmado el aspecto de los subtítulos en fotogramas del propio MP4. Quedan los dos pases audiovisuales completos de Q03 y el visto bueno de Carlos en Q04. [Checkpoint Q03](docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md).
