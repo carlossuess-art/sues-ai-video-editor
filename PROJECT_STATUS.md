@@ -1,3 +1,7 @@
+## Fase 5 · Q03 en curso · MP4 corregido completo y verificado técnicamente
+
+La candidata corregida del Reel 158404 terminó con 2212 fotogramas, tiempos verificados y PCM idéntico a la referencia. Confirmado el aspecto de los subtítulos en fotogramas del propio MP4. Quedan los dos pases audiovisuales completos de Q03 y el visto bueno de Carlos en Q04. [Checkpoint Q03](docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md).
+
 ## Fase 5 · Q03 en curso · Tramos de subtítulos verificados
 
 Las cuatro pruebas focales se renderizaron y comprobaron en privado. La candidata completa del Reel 158404 está en exportación por ventanas. Consultar los trabajos `sues-q03-reel158404-corrected-windows` y `sues-q03-reel158404-assemble` antes de repetir. Roadmap y Estado General sincronizados en V1-2026-11-19-r13, con Q01 y Q02 finalizados. La escucha de los pasajes pendientes, la doble revisión y Q04–Q06 siguen abiertos. [Checkpoint Q03](docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md).
