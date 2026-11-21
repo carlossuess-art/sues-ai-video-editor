@@ -44,3 +44,75 @@ html,body{height:100%;overflow:hidden}
 #suesMobileDock{flex-basis:46px;min-height:46px}
 .app[data-mobile-panel=media] .upper>.bin,.app[data-mobile-panel=tools] .upper>.inspector{bottom:50px;height:45dvh}
 }
+/* Mobile navigation is a small contextual strip, not a second editor. */
+#suesToolRail,#suesToolSearch{display:none}
+@media(max-width:760px){
+ #suesToolRail{display:flex;flex:0 0 43px;gap:4px;overflow-x:auto;overflow-y:hidden;
+  padding:4px;background:var(--panel-head);scrollbar-width:none}
+ #suesToolRail button{flex:none;min-width:76px;padding:5px 8px;color:var(--text);
+  font:600 12px system-ui;background:#292934;border:1px solid var(--border);border-radius:5px}
+ #suesToolRail button[aria-pressed=true]{border-color:var(--accent);background:#40344c}
+ .sues-focused-control{outline:2px solid var(--accent);outline-offset:2px;border-radius:5px}
+ #suesToolSearch:not([hidden]){display:flex;flex-direction:column;position:fixed;
+  left:6px;right:6px;bottom:61px;z-index:65;max-height:min(36dvh,260px);
+  padding:8px;background:#202027;border:1px solid #676179;border-radius:11px;box-shadow:0 -8px 30px #000a}
+ #suesToolSearch input{flex:none;min-height:39px;padding:6px 9px;color:var(--text);
+  background:#101013;border:1px solid #5a5868;border-radius:7px;font:14px system-ui;user-select:text}
+ #suesToolResults{display:flex;flex-direction:column;gap:3px;overflow-y:auto;padding-top:6px}
+ #suesToolResults button{min-height:37px;flex:none;text-align:left;padding:5px 10px;color:var(--text);
+  background:#30303a;border:1px solid transparent;border-radius:6px;font:13px system-ui}
+ #suesToolStatus{color:var(--dim);font:12px system-ui;min-height:0}
+}
+
+/* Pinch and one-finger scrub are pointer-driven only in mobile layout. */
+@media(max-width:760px){
+ .timeline-scroll{touch-action:none;overscroll-behavior:contain}
+ #preview{touch-action:none}
+ .clip .handle{width:20px;touch-action:none}
+ .clip .handle.l{left:0;border-left:3px solid #e9e9f5}
+ .clip .handle.r{right:0;border-right:3px solid #e9e9f5}
+ .clip .clip-body{touch-action:none}
+ .monitor-stage{overscroll-behavior:contain}
+}
+
+/* CapCut-like touch controls near preview, backed by FableCut native actions. */
+#suesMobileActions{display:none}
+@media(max-width:760px){
+ .transport{justify-content:space-between;gap:4px;padding:2px 6px}
+ #suesMobileActions{display:flex;flex:0 0 auto;align-items:center;gap:2px}
+ #suesMobileActions button{min-width:34px;min-height:36px;color:var(--text);
+  font:19px system-ui;background:transparent;border:1px solid transparent;border-radius:6px}
+ #suesMobileActions button:active{background:var(--panel-2)}
+ .transport-btns #btnMarkIn,.transport-btns #btnMarkOut,
+ .transport-btns #btnHome,.transport-btns #btnEnd,.transport-btns #btnSpeed{display:none}
+}
+
+/* MCP-controllable expanded viewer; no browser user-activation requirement. */
+@media(max-width:760px){
+ .app.sues-theatre>.topbar,.app.sues-theatre>.timeline-panel,
+ .app.sues-theatre>#suesMobileDock{display:none!important}
+ .app.sues-theatre>.upper{position:fixed;inset:0;z-index:99;
+  width:100vw;height:100dvh;min-height:0;padding:3px;background:var(--bg)}
+ .app.sues-theatre .upper>.monitor{height:100%;min-height:0}
+ .app.sues-theatre .monitor-stage{flex:1 1 auto;min-height:0}
+ .app.sues-theatre .transport{flex:0 0 45px}
+ .app.sues-theatre .upper>.bin,.app.sues-theatre .upper>.inspector,
+ .app.sues-theatre #suesToolSearch{display:none!important}
+}
+
+/* Text and subtitle tools call the original Inspector event handlers. */
+#suesTextTabs,#suesTextGallery{display:none}
+@media(max-width:760px){
+ #suesTextTabs{flex:0 0 38px;gap:3px;overflow-x:auto;overflow-y:hidden;
+  background:var(--panel-sub);padding:3px 5px;scrollbar-width:none}
+ #suesTextTabs button{flex:none;min-width:74px;padding:4px 9px;color:var(--text);
+  background:#292934;border:1px solid var(--border);border-radius:5px;font:12px system-ui}
+ #suesTextTabs button[aria-pressed=true]{border-color:var(--accent);background:#392c49}
+ #suesTextTabs button:disabled{opacity:.35}
+ #suesTextGallery:not([hidden]){display:flex;flex:0 1 auto;flex-wrap:wrap;gap:4px;
+  overflow-y:auto;padding:5px;max-height:140px;border-bottom:1px solid var(--border)}
+ #suesTextGallery button{min-height:35px;min-width:80px;max-width:160px;padding:5px 8px;
+  border:1px solid var(--border);border-radius:6px;background:#35343e;
+  color:var(--text);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+
