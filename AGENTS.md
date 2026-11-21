@@ -1,3 +1,7 @@
+## Continuidad 21/11 · Audio real y despliegue V1
+
+Leer `docs/SUES_V1_TIMING_AUDIO_AUDIT_20261121.md` y cabecera de `PROJECT_STATUS.md`. La auditoría del worker Whisper está solo en PR #27/candidata, no producción; marca tiempos dudosos sin reajustar fonemas. En pista de voz real marcó 2 de 170 palabras, incluida «para»; con música mezclada no funciona igual. No seguir corrigiendo el Reel 158404, ya visionado por Carlos. Falta host nativo FableCut en arranque, regresión, rollback y promoción; no dar por desplegada V1. Respetar WAC, V29 y originales.
+
 ## Punto activo · Fase 5 · Q03 en curso
 
 Consultar la cabecera de `PROJECT_STATUS.md` y «Q03 · Correcciones privadas de subtítulos» en `docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md`. PR #27 canónica. Q01 finalizado, Q02 exportó el MP4 completo y verificó 2212 fotogramas. El MP4 de Q02 se conserva como referente. Q03 tiene una prueba nativa de 45 fotogramas de C41.S04 y una candidata que corrige cinco operaciones de captions. Antes de repetir un render consultar `sues-q03-reel158404-captions.service` y `q03-review/captions-render.log` en el workspace privado del VPS. Verificar a oído los pasajes cotejados con ASR y completar dos revisiones audiovisuales sobre el mismo MP4 corregido. Q04–Q06 pendientes.
