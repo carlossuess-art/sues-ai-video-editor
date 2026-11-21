@@ -1,3 +1,11 @@
+## 21/11/2026 · Estado operativo de despliegue V1
+
+- El servicio público `sues-video-editor` YA ejecuta la candidata fuente PR #27 snapshot `b2179b3` montada desde `/opt/sues-video-setup/v1-deploy-candidate-20261121` (solo lectura), con `/opt/sues-video-setup/editor` como estado existente.
+- Versión anterior detenida pero preservada: contenedor `sues-video-editor-pre-v1-20261121` con source `/opt/sues-video-setup/release-mobile-layers-20261030`. No eliminar ni sobrescribir. Despliegue y copia del proyecto: `/opt/sues-video-setup/v1-rollout-20261121`; en incidente aplicar procedimiento de reversión contrastando mounts y sesiones, no ejecutar a ciegas otra instalación.
+- Pruebas posteriores: web y puerto 3010 HTTP200, API autenticadas /health /jobs /projects HTTP200 con 29 jobs existentes, sin sesión401. NO probado vídeo completo nuevo, render final o aceptación audiovisual en este despliegue.
+- El host `SUES_NATIVE_HOST_CONFIG` nativo sigue privado y no está habilitado en producción; admitir explícitamente esa limitación. Reutilizar SUES Server Console y recursos existentes para correcciones asistidas, sin modificar V29/otros servicios. Actualizar Drive Roadmap y Estado General por cada avance. Q03/Q04 abiertos, Q05 candidato desplegado en validación, Q06 después.
+- La cifra 65 % antigua del roadmap es histórica y no debe citarse como porcentaje estructural de las cinco fases; no inventar número nuevo.
+
 ## 21/11/2026 · E2E auténtico autorizado en clon, no producción
 
 La prueba de la ruta autenticada Master Director → ledger → FableCut MCP ahora es PASS en fixture sintético y clon aislado (revisión 31→32, 15 clips, replay rechazado). Leer `docs/SUES_V1_NATIVE_HOST_PRIVATE_QA_20261121.md`. No confundir con onboarding de proyectos reales, ni con doble auditoría audiovisual o despliegue. El registro QA quedó vacío y su servicio detenido. No repetir el Reel publicado 158404 ni tocar otros servicios.
