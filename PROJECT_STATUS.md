@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión nº 15
+
+Desplegada selección explícita timeline→monitor, hitbox comp por contenido y selector «Elegir elemento» para solapados, «Editar elementos» / «Salir del grupo». QA 15/15 con seis clips reales y 10/10 regresiones; proyecto R14 propietario byte a byte intacto. Fluidez R16 experimental NO desplegada. Reaplicar delta sobre R15 y validar; no cerrar V1/V1.1. Evidencia en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
 ## 21/11/2026 · Revisión nº 14
 
 Prueba privada CONCIENCIA R14 activa preview p_33d4e74d3f, 55.57s, 165 clips, 56 comps, 37 medios importados, 315 operaciones MCP desde fuente. Reutiliza activos y composiciones anteriores, no es prueba de importación maestra completa. Render y doble auditoría pendientes. Evidencia en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No publicar ni cerrar V1/V1.1.
