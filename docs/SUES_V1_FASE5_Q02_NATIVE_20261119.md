@@ -1,4 +1,11 @@
 
+## Q03 · 21/11/2026 · Reel reconstruido; puntuación en curso
+
+La unidad sues-q03-full-wrap-20261121 verificó 11 ventanas/2175 frames y se detuvo en la última por SILENT_OR_UNVERIFIED_AUDIO. Tras verificar igualdad de clips sin subtítulos y SHA de la ventana histórica final, sues-q03-recover-tail-20261121 ensambló el Reel privado Q03_b con 2212 fotogramas y PCM idéntico a la candidata anterior. SHA-256 2141ece817fba2854abc44fcfe1e697fc7d6b1ff7d0548d1de59e0b264ef8c56; prueba q03-review/full-wrap-20261121/technical-verification.json, sin doble QA ni escucha. NO confundir con resultado final.
+
+La revisión técnica /srv/sues-fablecut-next/data/automation-v1/test-project-q03-158404-punctuation-20261121 ejecutó 108 operaciones y difiere de la revisión anterior exclusivamente en C46.S05 («reconocer qué partes») y C49.S05 («poder encajar.»); no se han cambiado otras capas. Unidad sues-q03-punctuation-render-20261121 renderiza de forma secuencial 1375–1575 y 1575–1775. Consultar unidad y sus logs antes de reintentar. Pendiente comprobar ambos tramos, sustituirlos en ensamblado verificado, comprobar fotogramas, tiempos y PCM, doble revisión audiovisual y escucha. Entrega automática anterior está detenida para no confundir versiones. Q03 EN CURSO; Q04–Q06 pendientes.
+
+
 ## Q03 · 21/11/2026 · Continuación de exportación
 
 Unidad sues-q03-full-wrap-20261121 activa. Las ventanas 0–200, 200–400, 400–600, 600–800 y 800–1000 se verificaron y están en q03-review/full-wrap-20261121/segments.json; ventana 1000–1175 en marcha. Consultar unidad, log y manifiesto antes de reintentar; no duplicar renders. CPUQuota reducida en tiempo de ejecución al 70 % para dejar margen al resto de servicios. Se preparó q03-review/recover-tail-20261121.py sin ejecutarlo para un eventual rechazo por audio bajo de la ventana final: solo admite 11 ventanas previas verificadas y la cola anterior de 37 fotogramas con SHA comprobado y clips iguales sin texto. MP4 completo, escuchas y doble QA siguen pendientes. No producción, no Q04.
