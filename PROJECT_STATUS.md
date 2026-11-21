@@ -1,4 +1,9 @@
 
+## Q03 · 21/11/2026 · Revisión comunicada por Carlos y Gemini
+
+Carlos informa haber visualizado y escuchado la candidata, sin percibir desfases importantes; el «si» le resulta un poco extraño. No ha expresado aprobación definitiva de Q04. Gemini declara haber escuchado audio completo y muestreado imagen a 1 fps y 6 fps entre 29–32 s; informa pausa limpia y «si» en 31,5 s, sincronizado, pero su muestreo no constituye visionado continuo integral y no confirma técnicamente el archivo por SHA. Inspección propia de Q03_c: a 29,6 s no se ve «si», a 31,5 s aparece en minúscula y a 56 s aparece «y» en minúscula. Gemini menciona clic de cierre, no comprobado por escucha del operador. No afirmar dos pases ni aprobación. Candidata conservada, Q03 sigue en curso pendiente segundo pase audiovisual real y cotejo auditivo; Q04 decisión explícita de Carlos, Q05 autorización específica y rollback. Sin despliegue.
+
+
 ## Q03 · 21/11/2026 · Candidata Q03_c completa, pendiente de revisión audiovisual
 
 Los dos tramos de puntuación 1375–1575 y 1575–1775 se renderizaron y verificaron; ensamblado privado Q03_c: 2212 fotogramas, decodificación completa y PCM idéntico a la candidata anterior. SHA-256 `3ed3fb081e125581548acf7036f30a1b4314a3dad85dd675b3e4a7ba0bb72c72`; evidencia `/opt/sues-video-setup/q02-native-annex-20261119.j3YNOa/q03-review/full-punctuation-20261121/technical-verification.json`. Copia de descarga autenticada `https://studio.suesholistics.com/exports/SUES_158404_candidata_Q03_c.mp4` con SHA comprobado; la URL redirige a login sin sesión. El original se conserva. El ajuste de «si» a 31,4 s es provisional: falta comprobarlo a oído. Gemini inspeccionó muestras de la versión anterior, no dos reproducciones completas de esta versión. Pendientes dos visionados completos con imagen y sonido y cotejo auditivo; Q03 sigue en curso y Q04–Q06 pendientes. La variante del renderizador permanece aislada y no integrada en producción.
