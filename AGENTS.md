@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión móvil nº 3
+
+Preview privada 8443 actualizada: menú contextual simplificado aprobado como diseño por Carlos, lupa superior, paneles específicos, volver/confirmar, Más avanzado. CDP qa-context-real.json y búsqueda PASS, 10/10 regresiones dirigidas, geometría monitor preservada. Validación humana portátil pendiente. Leer detalle y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No cierre V1 ni aceptación formal V1.1; mantener producción intacta. Próximo: aceptación visual menú, cabezal centrado y demás pendientes ya definidos.
+
 ## 21/11/2026 · Revisión móvil del propietario nº 2
 
 Monitor aprobado; CapCut referencia global. Preview 8443 actualizada con selección directa, marco nativo, edición texto multilinea, capas numeradas, volumen numérico 0–200% y ondas. QA CDP y 10/10 regresiones, 2/2 gesto adicional. Ver detalle y pendientes en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Una pregunta por turno. No confundir prototipo con aceptación, ni modificar producción. Próximo: dock contextual, caja real texto, cabezal centrado y QA pendiente.
