@@ -22,7 +22,7 @@ La cifra recuperable es estimada: `du` puede incluir archivos enlazados físicam
 - Dos suites sintéticas independientes: 2/2 PASS; comprueban que se excluyen symlinks, archivos recientes y backups, que la vista previa no borra, que los tokens incorrectos fallan, que el segundo uso falla y que la mutación del fichero invalida la operación.
 - Servidor candidato HTTP200 en metadatos OAuth, HTTP401 sin token o con token inválido.
 - Despliegue en `sues-vps-mcp.service` con respaldo previo `/opt/sues-vps-mcp/cleanup-candidate-20261121/before/server.mjs` y automatismo de rollback si falla el health check. Postdeploy: servicio active, OAuth metadata HTTP200, /mcp HTTP401 sin sesión, CLI scan PASS, editor.suesholistics.com HTTP200.
-- Escaneo real posterior: 1 candidato `recomendado` (~6 MB), 35 `revisar`, 4 `conservar`; 8,0 GB libres (84 % usado). **Ninguna limpieza ejecutada** desde la herramienta nueva sin autorización.
+- Escaneo real posterior: 1 candidato `recomendado` (~6 MB), 34 `revisar`, 5 `conservar`; 8,0 GB libres (84 % usado). **Ninguna limpieza ejecutada** desde la herramienta nueva sin autorización.
 
 ## Versionado y continuidad
 
