@@ -1,3 +1,7 @@
+## 21/11/2026 · Continuidad de prototipo V1.1 aislado (no desplegado)
+
+Antes de modificar el modo móvil, leer docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md y ops/fablecut/mobile-v1_1/README.md, además del Roadmap y docs/SUES_V1_1_FABLECUT_MOBILE_SPEC_20261121.md. CSS/JS existentes están en entorno QA aislado; no importar automáticamente en producción hasta tener prueba visual/táctil y regresión de exportación. Se completaron 2 tests mock y 56 regresiones, pero las ejecuciones Chromium dieron error; no afirmar QA visual aprobada. V1 sigue Q03/Q04/Q05 pendientes de cierre y V1.1 0/10 módulos aceptados. Revisión Drive V1-2026-11-21-r16.
+
 ## 21/11/2026 · Requisitos V1.1 del editor móvil (PLANIFICACIÓN, no despliegue)
 
 Consultar docs/SUES_V1_1_FABLECUT_MOBILE_SPEC_20261121.md y Roadmap Maestro Drive, revisión V1-2026-11-21-r15, para diez módulos V1.1-01…V1.1-10. Gestos táctiles: centro de clip mueve sin cambiar duración; solo extremos recortan; pulsación larga cambia pista/profundidad; pellizco en monitor escala la capa y en timeline solo escala temporal; dividir permite zoom puntual sin keyframes; buscador abre la herramienta ORIGINAL dentro de sus menús con capa actual y persistencia al cambiar de capa. Subtítulos estáticos/animados y estilos/animaciones independientes. Exportación y previsualización coherentes.
