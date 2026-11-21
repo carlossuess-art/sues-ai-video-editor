@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión móvil nº 7
+
+Preview privada 8443: regla como barra protegida mediante hold 500ms, borde blanco activo, release desactiva; clips sin espera adicional y pinch conservado. CDP qa-ruler-hold-real.json PASS, 10/10 regresiones. Detalle y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Pendiente usuario móvil; no cerrar V1/V1.1 ni tocar producción.
+
 ## 21/11/2026 · Revisión móvil nº 6
 
 Preview 8443 desplegada: regla temporal operativa, cabezal fijo centrado, scroll táctil y zoom sin mutación de clips. CDP qa-centered-timeline-real.json PASS, 4 pruebas navegador adicionales y 10/10 regresiones. Usuario aprueba mejora de navegación ronda 5, no aceptación formal completa. Ver detalle y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Próximo: validación humana de regla. No tocar producción.
