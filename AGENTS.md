@@ -1,3 +1,7 @@
+## 21/11/2026 · Vista rápida 540p separada de entrega final
+
+El usuario ha definido **vista previa 540×960/15fps** (o menor según proporción) separada de **exportación final 1080×1920 u otro preset elegido**. Ya publicado botón `▶ Vista rápida` en FableCut Studio; fuente versionada `ops/fablecut/preview-render.js` + patch/test, checkpoint `docs/SUES_V1_PREVIEW_540_20261121.md`; respaldo de código anterior `/opt/sues-video-setup/v1-preview-540-20261121/before`. No bajar calidad del final, no eliminar efectos creativos para acelerar la vista previa, ni asumir que la composición interna ya va a 540p. La prueba aislada 2s/30frames PASS; la copia 73s 540p derivó de máster previo y NO acredita render completo desde cero. Prioridad siguiente: render incremental de intervalos cambiados + caché de tramos, con QA de reproducción móvil; preservar proyectos originales/V29 y WAC.
+
 ## 21/11/2026 · Consola de limpieza y corrección de render publicadas
 
 Antes de tocar el render de Studio, leer `docs/SUES_V1_RENDER_STABILITY_VPS_CLEANUP_20261121.md`; código FableCut vivo `/srv/sues-fablecut-next/app`, con heartbeat, watchdog y workers ajustados. Rollback en `/opt/sues-video-setup/v1-render-fix-20261121/before`. Sólo canario corto 45 frames validado; no afirmar export de larga duración corregido sin prueba. Disk 8,0GB libres/84% tras dedupe con hardlinks y limpieza segura, no eliminar rollbacks WAC/V29.
