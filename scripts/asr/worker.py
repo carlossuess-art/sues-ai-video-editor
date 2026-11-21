@@ -63,11 +63,27 @@ def transcribe(root, model_path, source_id):
                               **({'timingUncertain': True} if end == start else {})))
     if not words:
         raise ValueError('no speech')
+    # Audio-derived word timing safety gate. Keep the source Whisper clock
+    # unchanged: silence alone cannot prove the exact onset of a phoneme.
+    silence_audit = dict(status='not_needed', findings=[])
+    if any(w['end'] - w['start'] >= 0.90 for w in words):
+        try:
+            from faster_whisper.audio import decode_audio
+            from word_timing_silence import audit_word_silence
+            pcm = decode_audio(str(source), sampling_rate=16000)
+            findings = audit_word_silence(words, pcm, 16000)
+            for finding in findings:
+                words[finding['wordIndex']]['timingUncertain'] = True
+            silence_audit = dict(status='review_required' if findings else 'checked',
+                                 findingCount=len(findings), findings=findings[:64])
+        except Exception:
+            # Never fabricate a phonetic correction when audio analysis fails.
+            silence_audit = dict(status='unavailable', findings=[])
     width, height = data['source']['width'], data['source']['height']
     result = dict(sourceSha256=source_id,
                   transcript=dict(version='1.0', language=info.language, sourceDuration=duration,
                                   text=' '.join(w['text'] for w in words), words=words,
-                                  provenance=dict(engine=ENGINE, wordTimings='automatic; human review required')),
+                                  provenance=dict(engine=ENGINE, wordTimings='automatic; human review required', silenceAudit=silence_audit)),
                   camera=dict(mode='full-frame-fit', keyframes=[dict(time=t, x=0, y=0, width=width,
                                 height=height, zoom=1) for t in [0, duration]]),
                   vision=dict(method='not-performed', frames=[dict(time=t, frameWidth=width,
