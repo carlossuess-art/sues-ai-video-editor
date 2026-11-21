@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión nº 14
+
+Prueba privada CONCIENCIA R14 activa preview p_33d4e74d3f, 55.57s, 165 clips, 56 comps, 37 medios importados, 315 operaciones MCP desde fuente. Reutiliza activos y composiciones anteriores, no es prueba de importación maestra completa. Render y doble auditoría pendientes. Evidencia en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No publicar ni cerrar V1/V1.1.
+
 ## 21/11/2026 · Revisión móvil nº 13
 
 Preview 8443 desplegada: menú avanzado, catálogo 57 rutas, modos de corte nativos, recursos 86 visuales/320 SFX reconocidos, bind RO DAEDAL, búsqueda e inserción táctil, proxy 540p y reloj mejorado. QA 14/14 avanzados, 4/4 biblioteca, 10/10 regresiones, export técnico 1s 1080x1920 H264/AAC. Bruto preview p_27306f2839 intacto. Propietario no quiere más pruebas parciales; primera prueba conjunta pegar plan y render. Falta conexión nativa segura de plan al proyecto real, QA de edición/export completo y fluidez; no declarar terminado. Reutilizar store/ledger/MCP existentes, no mezclar contrato legado y nativo, no debilitar guard private-qa ni inventar aprobaciones. Evidencia, parche, límites y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No tocar producción.
