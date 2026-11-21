@@ -1,3 +1,7 @@
+## 21/11/2026 · Prototipo privado abierto para prueba humana
+
+Preview HTTPS https://studio.suesholistics.com:8443/ usa sesión habitual de Studio, datos demo aislados y servicio sues-fablecut-v11-preview.service. No modificar el snapshot servido mientras Carlos lo comprueba; trabajar en stage 17899. El canal MCP de UI es local y el proxy rechaza orden pública; no anunciar paridad total. Caddy: preservar 443 Studio, editor, WAC y DNS. Leer última entrada de docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md para reversión. Aceptación humana pendiente.
+
 ## 21/11/2026 · Continuidad operativa tras consolidación
 
 Leer la última sección de docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md antes de actuar; prevalece sobre entradas anteriores. Stage móvil existente ya contiene cambios adicionales y evidencia de navegador real, no recrearlo. Búsqueda contextual corregida y 10/10 tests dirigidos PASS; no confundir con aceptación visual/táctil o exportación. Mantener baseline histórico fijado y consolidado verificado hasta restauración completa; no purgar originales, ni WAC, ni producción. Rotación admite consolidado y no elimina automáticamente. V1.1 0/10 aceptadas y V1 todavía en cierre Q03/Q04/Q05.
