@@ -1,3 +1,11 @@
+## 21/11/2026 · Preparación AISLADA V1.1-01/02 · QA parcial, SIN despliegue
+
+Revisión conjunta Drive V1-2026-11-21-r16. Tras confirmar en vivo que V1 NO está cerrada (Q03 vigente, Q04 pendiente, Q05 publicada con cierre funcional pendiente, Q06 posterior), se preparó en /opt/sues-video-setup/v1_1-mobile-20261121/stage una copia funcional de código del Studio, con data privada qa-data y servidor sólo loopback 127.0.0.1:17899. Prototipo sues-mobile.css y sues-mobile.js introduce monitor y timeline móvil en una pantalla con barra inferior que abre los paneles FableCut originales Medios, Inspector/Ajustes, Mezcla y Transcripción. Prueba de escritorio/Android real NO terminada. No incluir ni activar en producción.
+
+QA comprobada: node --test qa-mobile-shell.test.cjs 2/2 PASS (mock DOM); keyframes + export-jobs + captions 56/56 PASS. Código original app.js SHA256 d68028065f4b9c5155c4405081291cd310ad8b3a5ae7bb29b68cf10f9eff8a8f y style.css 723b68f0a93437576282440b2823e7f74df1f5e0a19f39906151386d973155d4 iguales a publicados. Prueba HTTP aislada 200. Bloqueo: Chromium 155 falló leyendo DOM real y headless-shell 152 se cerró/agotó tiempo para Studio/fixture; test simple HTML sí funcionó. No registrar QA visual ni táctil como PASS. Resumen detallado docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md; archivos en ops/fablecut/mobile-v1_1/. Último checkpoint commit be24ea53fb719ce573e3aaf9ae51f6ef7a6c5627.
+
+Siguiente V1 activa: atender Q03 y validaciones Q04/Q05 según Roadmap; al poder trabajar V1.1-01, resolver QA de navegador y probar en portrait/landscape con toques reales, selección y reapertura, sin alterar producción. A día de hoy V1.1 0/10 ACEPTADOS.
+
 ## 21/11/2026 · V1.1 FableCut móvil PLANIFICADA tras revisión del Roadmap (SIN IMPLEMENTAR)
 
 Carlos definió con capturas CapCut los requisitos de futura V1.1: monitor siempre visible, barra contextual, selección bidireccional monitor/timeline, mover clip desde centro sin variar duración, recortar SOLO desde los extremos, mantener pulsado para cambiar z-order, pellizco sobre vídeo para tamaño de capa y sobre timeline para zoom temporal, dividir clip para zoom instantáneo sin keyframe o con keyframes interpolados, editor de subtítulos estáticos/animados, lupa que lleva al menú original y conserva selección al cambiar de capa, audio/máscaras y QA táctil con export real.
