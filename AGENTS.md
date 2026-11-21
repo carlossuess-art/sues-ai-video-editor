@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión móvil nº 12
+
+Preview 8443 desplegada: hueco inicial 8px, cabezal parte de la izquierda hasta centro y regla libre. Usuario aprueba selección/gestos ronda11. Proyecto activo real p_27306f2839 «SUES · EDICIÓN REAL 158404» (73.75s, 1080x1920, V1/A1 vinculados; streamhash AV idéntico al bruto). Demo conservada. Stage aislado p_701ca40ed3, QA bruto 13/13 split/undo/seek/reloj/guardado; no certifica fluidez. Mantener originales/prod intactos. Continuar cobertura de funciones nativas, biblioteca y QA edición real; no dar V1/V1.1 por cerradas. Evidencia y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
 ## 21/11/2026 · Revisión móvil nº 11
 
 Selección de capas aprobada por propietario. Desplazamiento de clips SOLO tras hold650ms horizontal/vertical, feedback visible turquesa/elevación y vibración opcional; taps sin espera, swipe temprano no muta clip. Regla SIEMPRE libre. Preview 8443 desplegada, sesión 21/21, 12/12 taps + 4/4 nombres y arrastres, 10/10 regresiones. Evidencia y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No cerrar V1/V1.1 ni tocar producción.
