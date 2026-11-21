@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SUES · Selector de narración y motion (prototipo aislado)</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#131416;color:#f7f3ea;font:15px/1.5 system-ui,sans-serif}main{max-width:980px;margin:0 auto;padding:28px}h1{font-size:1.35rem}h2{font-size:1.05rem}small,.muted{color:#c5bfb1}.layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}section{border:1px solid #5e4d2e;border-radius:10px;padding:16px;background:#1d1e20}#words{height:330px;overflow:auto}label.word{display:grid;grid-template-columns:23px 1fr;gap:10px;border-bottom:1px solid #353535;padding:7px 0;cursor:pointer}.word span{display:block;font-size:13px;color:#c7c3b5}.word strong{font-weight:650;color:#fff5ce}button,.upload{padding:10px 14px;border:0;border-radius:7px;background:#d8b96e;color:#262015;font-weight:700;cursor:pointer}button:disabled{opacity:.5;cursor:default}input[type=file]{max-width:100%}pre{white-space:pre-wrap;word-break:break-word;font-size:12px;max-height:330px;overflow:auto;background:#111;border:1px solid #383838;padding:10px;border-radius:8px}#summary{min-height:3em}.buttons{display:flex;gap:8px;flex-wrap:wrap}@media(max-width:700px){.layout{grid-template-columns:1fr}}
+</style>
+</head><body><main><h1>SUES · Narración → Motion Graphics</h1>
+<p class="muted">Prototipo privado sin conexión a FableCut. Selecciona palabras reales de una transcripción JSON con ID y tiempo por palabra. Las propuestas <b>no</b> aplican edición ni equivalen a aprobación creativa.</p>
+<div class="layout"><section><h2>1. Cargar y elegir palabras</h2><input id="source" type="file" accept="application/json,.json"><p id="loadStatus" class="muted">Esperando transcripción</p><div id="words" aria-label="Palabras reales de la transcripción"></div></section>
+<section><h2>2. Revisar las sugerencias</h2><p id="summary" class="muted">No hay propuestas</p><div class="buttons"><button id="propose" disabled>Proponer motions</button><button id="json" disabled>Exportar JSON</button><button id="markdown" disabled>Exportar guion A/V</button></div><pre id="av"></pre></section></div>
+<p class="muted">La identidad de fuente, el mapa temporal editado, los recursos reales, las máscaras y la compatibilidad nativa siguen pendientes de verificación. Sin servicios, costes ni imágenes generadas.</p>
+</main><script type="module">
+import {prepareNarrativeMotionReview} from '../../src/motion-templates/narrative-motion-review.js';
+import {makeMotionAVReview} from '../../src/motion-templates/motion-av-review.js';
+const id=x=>document.getElementById(x),selected=new Set();let transcript=null,packet=null,review='';
+const flag=(x,t)=>{id(x).textContent=t;};
+function save(text,name,type){const blob=new Blob([text],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);}
+id('source').addEventListener('change',async()=>{
+ const file=id('source').files?.[0];if(!file)return;
+ transcript=null;packet=null;selected.clear();id('words').replaceChildren();flag('summary','No hay propuestas');id('av').textContent='';
+ for(const x of ['propose','json','markdown'])id(x).disabled=true;
+ try{
+  const json=JSON.parse(await file.text());const first=prepareNarrativeMotionReview(json);
+  transcript=json;
+  for(const w of first.selector.options){const row=document.createElement('label');row.className='word';
+   const box=document.createElement('input');box.type='checkbox';box.disabled=w.selectable===false;box.setAttribute('aria-label',w.text+' '+w.start.toFixed(2)+(box.disabled?' · tiempo incierto':''));
+   box.addEventListener('change',()=>{box.checked?selected.add(w.wordId):selected.delete(w.wordId)});
+   const body=document.createElement('div'),name=document.createElement('strong'),ctx=document.createElement('span');
+   name.textContent=w.text+' · '+w.start.toFixed(2)+'–'+w.end.toFixed(2)+' s · '+w.wordId;ctx.textContent=w.context;
+   body.append(name,ctx);row.append(box,body);id('words').appendChild(row);
+  }
+  flag('loadStatus',first.selector.options.length+' palabras con IDs verificables. Marca las relevantes y pulsa «Proponer».');id('propose').disabled=false;
+ }catch(e){flag('loadStatus','No se puede usar esta transcripción: '+e.message);}
+});
+id('propose').onclick=()=>{
+ if(!transcript)return;
+ try{
+  packet=prepareNarrativeMotionReview(transcript,{selectedWordIds:[...selected]});review=makeMotionAVReview(packet);
+  flag('summary',packet.candidates.length+' propuestas para revisión · '+packet.status+'. Sin editar el vídeo.');id('av').textContent=review;
+  for(const x of ['json','markdown'])id(x).disabled=false;
+ }catch(e){flag('summary','Bloqueado: '+e.message);}
+};
+id('json').onclick=()=>{if(packet)save(JSON.stringify(packet,null,2),'SUES_MOTION_REVIEW_NOT_IMPORTABLE.json','application/json')};
+id('markdown').onclick=()=>{if(packet)save(review,'SUES_GUION_AV_REVISION.md','text/markdown')};
+</script></body></html>

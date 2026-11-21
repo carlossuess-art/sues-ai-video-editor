@@ -34,7 +34,7 @@ test('live cache media cannot be addressed with a foreign job or arbitrary files
   const cache=new LivePreviews(dir,{}),file=join(dir,'base.mp4');writeFileSync(file,'data');
   cache.tasks.set(key,{key,jobId:'owner-job',state:'READY',files:{base:{file,sha256:fileSha256(file),size:statSync(file).size,mime:'video/mp4'}}});
   assert.equal(cache.media('owner-job',key,'base').file,file);
-  writeFileSync(file,'evil');assert.throws(()=>cache.media('owner-job',key,'base'),/changed/);writeFileSync(file,'data');
+  for(let i=0;i<30;i++){writeFileSync(file,'evil');assert.throws(()=>cache.media('owner-job',key,'base'),/changed/);writeFileSync(file,'data');assert.equal(cache.media('owner-job',key,'base').file,file);}
   assert.throws(()=>cache.media('foreign-job',key,'base'),/not found/);
   for(const part of ['../access/token','/etc/passwd','constructor','a-zzzz'])assert.throws(()=>cache.media('owner-job',key,part),/not found/);
   assert.throws(()=>cache.scene('owner-job',{fingerprint:'x',settings:{},command:'rm -rf /'}),/Invalid live preview request/);

@@ -20,7 +20,7 @@ const sample=()=>({
       reason:'Subtitular las palabras pronunciadas',dependsOn:[],requiredQA:['rendered-frame','time-sync']},
     {id:'broll-1',sceneId:'desarrollo',renderer:'remotion',effect:'subject-occlusion',start:3.1,end:5.7,
       reason:'Reforzar la metáfora sin cubrir al sujeto',dependsOn:['caption-1'],
-      resourceId:'video-licensed-1',requiredQA:['rendered-frame','motion-playback']}
+      resourceId:'video-licensed-1',resourceSha256:assetSha,requiredQA:['rendered-frame','motion-playback']}
   ]
 });
 const context=()=>({
@@ -33,10 +33,10 @@ const context=()=>({
 const ready=()=>{
  const p=sample(),r=context();r.approvedPlanFingerprint=masterDirectorFingerprint(p);return {p,r};
 };
-const manifest=p=>({fingerprint:masterDirectorFingerprint(p),operations:p.operations.map(o=>({
+const manifest=p=>({fingerprint:masterDirectorFingerprint(p),outputSha256:output,operations:p.operations.map(o=>({
  id:o.id,renderer:o.renderer,effect:o.effect,start:o.start,end:o.end,outputSha256:output
 }))});
-const qaPass=(p,runId)=>({fingerprint:masterDirectorFingerprint(p),completed:true,verifierId:'qa-sistema',runId,
+const qaPass=(p,runId)=>({fingerprint:masterDirectorFingerprint(p),outputSha256:output,completed:true,verifierId:'qa-sistema',runId,
  evidence:p.operations.map(o=>({operationId:o.id,proofs:o.requiredQA.map(kind=>({kind,passed:true,artifactSha256:output}))}))});
 
 test('the brain awaits explicit approval even when the draft is valid',()=>{
@@ -68,7 +68,7 @@ test('unsupported renderer capability cannot be silently substituted',()=>{
 
 test('unlicensed assets, rule conflicts, missing narrative purpose and coverage are blockers',()=>{
  const {p,r}=ready();r.licensedAssets['video-licensed-1'].commercialUseAllowed=false;
- assert.ok(reviewMasterDirectorPlan(p,r).issues.some(x=>x.code==='ASSET_RIGHTS_UNVERIFIED'));
+ assert.ok(reviewMasterDirectorPlan(p,r).issues.some(x=>x.code==='ASSET_RIGHTS_OR_VERSION_UNVERIFIED'));
  r.licensedAssets['video-licensed-1'].commercialUseAllowed=true;
  p.rules.unresolvedConflicts=['tapiz'];
  assert.ok(reviewMasterDirectorPlan(p,r).issues.some(x=>x.code==='UNRESOLVED_RULE_CONFLICTS'));
@@ -102,7 +102,7 @@ test('two complete QA passes and matching manifest still require final creative 
  const {p,r}=ready(),m=manifest(p);
  r.qaPasses=[qaPass(p,'pass-1'),qaPass(p,'pass-2')];
  assert.equal(auditMasterDirectorExecution(p,r,m).status,'AWAITING_CREATIVE_ACCEPTANCE');
- r.creativeAcceptedFingerprint=masterDirectorFingerprint(p);
+ r.creativeAcceptedFingerprint=masterDirectorFingerprint(p);r.creativeAcceptedOutputSha256=output;
  assert.equal(auditMasterDirectorExecution(p,r,m).status,'READY_FOR_RELEASE');
  r.qaPasses[1].evidence[1].proofs[0].passed=false;
  assert.ok(auditMasterDirectorExecution(p,r,m).issues.some(x=>x.code==='QA_PROOF_MISSING_OR_FAILED'));
@@ -124,4 +124,14 @@ test('malformed QA evidence and duplicate audit IDs fail closed without exceptio
  assert.ok(auditMasterDirectorExecution(p,r,m).issues.some(x=>x.code==='QA_EVIDENCE_INCOMPLETE'));
  p.operations.push(null);
  assert.equal(reviewMasterDirectorPlan(p,r).status,'BLOCKED');
+});
+
+
+test('QA rejects changed output and malformed proof collections',()=>{
+ const {p,r}=ready(),m=manifest(p);r.qaPasses=[qaPass(p,'pass-1'),qaPass(p,'pass-2')];
+ r.qaPasses[1].outputSha256='f'.repeat(64);assert.equal(auditMasterDirectorExecution(p,r,m).status,'QA_REJECTED');
+ r.qaPasses[1].outputSha256=output;r.qaPasses[1].evidence[0].proofs={bad:true};
+ assert.ok(auditMasterDirectorExecution(p,r,m).issues.some(x=>x.code==='QA_PROOFS_INVALID'));
+ r.qaPasses[1]=qaPass(p,'pass-2');r.creativeAcceptedFingerprint=masterDirectorFingerprint(p);r.creativeAcceptedOutputSha256='f'.repeat(64);
+ assert.equal(auditMasterDirectorExecution(p,r,m).status,'AWAITING_CREATIVE_ACCEPTANCE');
 });

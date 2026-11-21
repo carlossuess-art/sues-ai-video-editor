@@ -1,0 +1,24 @@
+# STAGING REFERENCE ONLY — NOT DEPLOYED AND NOT CREDENTIAL-PROVISIONED.
+# Required before installation:
+# - a unique bcrypt password hash from a secure administrator-controlled secret;
+# - Caddy environment variable STUDIO_BCRYPT_HASH configured securely;
+# - FableCut process FABLECUT_ALLOWED_HOSTS=studio.suesholistics.com;
+# - authenticated E2E denial tests and rollback verification.
+# Never expose FableCut port 7780 directly. Keep editor/wa vhosts untouched.
+
+studio.suesholistics.com {
+    header {
+        X-Robots-Tag "noindex, nofollow, noarchive"
+        Cache-Control "private, no-store"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer"
+    }
+    basic_auth {
+        suesstudio {$STUDIO_BCRYPT_HASH}
+    }
+    reverse_proxy 127.0.0.1:7780 {
+        # Preserve client Host and Origin. FableCut's allowed-host policy
+        # must separately authorize studio.suesholistics.com.
+        # NEVER rewrite Origin to localhost to bypass CSRF controls.
+    }
+}

@@ -1,0 +1,125 @@
+--- a/app.js
++++ b/app.js
+@@ -16210,8 +16210,8 @@
+   const cv = deliveryCanvas();
+   return Delivery.reframe(spec, cv.w, cv.h, cv.region);
+ }
+-function deliveryFileName(spec, fps) {
+-  const fr = deliveryFrame(spec);
++function deliveryFileName(spec, fps, overrideFrame = null) {
++  const fr = overrideFrame || deliveryFrame(spec);
+   return Delivery.renderFilename(spec.filename, spec, {
+     project: project.name.replace(/[^\w\- ]+/g, "").trim() || "export",
+     width: fr.outW, height: fr.outH, fps: fps || spec.fps || projectFps(), range: exportRangeMode(),
+@@ -16617,6 +16617,9 @@
+ /* A delivery export sends the whole canvas; ffmpeg crops the export frame
+    (and reframes) itself, so one stream can feed any output shape. */
+ let exportFullCanvas = false;
++let exportQuickPreviewSize = null;
++let exportQuickPreviewCanvas = null;
++let exportQuickPreviewCtx = null;
+ function canvasTaintError(e) {
+   const tainted = e && (e.name === "SecurityError" || /taint/i.test(String(e.message || e)));
+   return tainted
+@@ -16624,6 +16627,15 @@
+     : (e || new Error("frame encode failed"));
+ }
+ function exportSourceCanvas() {
++  if (exportQuickPreviewSize && exportFullCanvas) {
++    const {w,h} = exportQuickPreviewSize;
++    if (!exportQuickPreviewCanvas) exportQuickPreviewCanvas = document.createElement("canvas");
++    if (exportQuickPreviewCanvas.width !== w) exportQuickPreviewCanvas.width = w;
++    if (exportQuickPreviewCanvas.height !== h) exportQuickPreviewCanvas.height = h;
++    if (!exportQuickPreviewCtx) exportQuickPreviewCtx = exportQuickPreviewCanvas.getContext("2d", {alpha:false});
++    exportQuickPreviewCtx.drawImage(els.preview,0,0,w,h);
++    return exportQuickPreviewCanvas;
++  }
+   const ef = getExportFrame();
+   if (!ef || exportFullCanvas) return els.preview;
+   if (!exportCropCanvas) exportCropCanvas = document.createElement("canvas");
+@@ -17502,12 +17514,17 @@
+     if (renderCancelled) throw new Error("cancelled");
+     const profileId = opts.profile || effectiveEncodeProfileId();
+     const cv = deliveryCanvas();
++    const quickPreview = !!delivery && deliveries.length === 1 && FableCutPreview.applies(delivery);
++    const quickSize = quickPreview ? FableCutPreview.dimensions(cv.w, cv.h) : null;
++    const frameSize = quickSize ? {outW:quickSize.w,outH:quickSize.h} : null;
++    const encodeW = quickSize ? quickSize.w : cv.w, encodeH = quickSize ? quickSize.h : cv.h;
++    const encodeRegion = quickSize ? FableCutPreview.region(cv.region,quickSize) : cv.region;
+     const begin = await fetch("/api/export/begin", {
+       method: "POST",
+       body: JSON.stringify(delivery ? {
+         fps, duration: frames / fps,
+-        deliveries: deliveries.map((d) => ({ delivery: d.delivery, name: d.name || deliveryFileName(d.delivery, fps) })),
+-        canvasW: cv.w, canvasH: cv.h, region: cv.region, hasAudio: !!wav,
++        deliveries: deliveries.map((d) => ({ delivery: d.delivery, name: d.name || deliveryFileName(d.delivery, fps, frameSize) })),
++        canvasW: encodeW, canvasH: encodeH, region: encodeRegion, hasAudio: !!wav,
+       } : {
+         fps,
+         name: project.name.replace(/[^\w\- ]+/g, "") || "export",
+@@ -17521,6 +17538,8 @@
+     const jpegQ = delivery ? begin.jpegQuality ?? 0.95 : exportProfileMeta(profileId).jpegQuality ?? 0.95;
+     const rgba = begin.input === "rgba";
+     exportFullCanvas = !!delivery;
++    exportQuickPreviewSize = quickSize;
++    exportQuickPreviewCtx = null; // canvas resizing invalidates context state
+     if (wav) {
+       const r = await fetch("/api/export/audio?id=" + sessId, { method: "POST", body: wav, signal });
+       if (!r.ok) throw new Error("audio upload failed");
+@@ -17640,6 +17659,8 @@
+     if (exportHeartbeat) clearInterval(exportHeartbeat);
+     exportAbort = null;
+     exportFullCanvas = false;
++    exportQuickPreviewSize = null;
++    exportQuickPreviewCtx = null;
+     exportDecodeEnd();
+     restoreExportVideoState();
+     endExportWindow();
+@@ -18409,6 +18430,12 @@
+   if (!clearFocusedTransition()) rippleDeleteSelected();
+ });
+ $("btnExport").addEventListener("click", openExportSetup);
++$("btnQuickPreview").addEventListener("click", () => {
++  if (state.exporting) return;
++  if (!state.connected || !state.ffmpeg) { toast("Vista rápida requiere FableCut conectado y FFmpeg"); return; }
++  const spec = normalizeDelivery({preset:"sues-preview"}).spec;
++  fastExport({delivery:spec});
++});
+ $("btnStartExport").addEventListener("click", startChosenExport);
+ els.exportSetup?.addEventListener("change", (e) => {
+   if (e.target.name === "engine") {
+--- a/delivery.js
++++ b/delivery.js
+@@ -167,6 +167,14 @@
+      so). `group` orders the dropdown. */
+   const H264 = (crf, extra) => ({ codec: "h264", rate: "crf", crf, keyint: 2, pixFmt: "yuv420p", speed: "balanced", ...extra });
+   const PRESETS = {
++    "sues-preview": {
++      label: "SUES · Vista rápida 540p / 15fps", group: "Delivery",
++      width: null, height: null, fps: 15, container: "mp4",
++      video: H264(27, { speed: "fast", keyint: 2 }),
++      audio: { codec: "aac", bitrate: 128, sampleRate: 48000, channels: 2 },
++      filename: "{project}_vista_rapida_{res}",
++      note: "Solo revisión, dimensiones máximas 540×960 · 15fps; exportación final sin cambios",
++    },
+     youtube: {
+       label: "YouTube", group: "Platforms", width: 1920, height: 1080, container: "mp4",
+       // YouTube: High profile, closed GOP of half the frame rate, AAC-LC 384k stereo 48 kHz
+--- a/index.html
++++ b/index.html
+@@ -39,6 +39,7 @@
+         </svg>
+       </button>
+       <button class="btn ghost" id="btnHelp" title="Keyboard shortcuts">?</button>
++      <button class="btn" type="button" id="btnQuickPreview" title="Previsualización ligera a 540p / 15fps, sin cambiar la calidad de exportación">▶ Vista rápida</button>
+       <button class="btn primary" id="btnExport">⬇ Export</button>
+     </div>
+   </header>
+@@ -695,6 +696,7 @@
+ <script src="templates.js"></script>
+ <script src="media-lib.js"></script>
+ <script src="delivery.js"></script>
++<script src="preview-render.js"></script>
+ <script src="mp4-demux.js"></script>
+ <script src="app.js"></script>
+ <script src="/pwa-install.js"></script>

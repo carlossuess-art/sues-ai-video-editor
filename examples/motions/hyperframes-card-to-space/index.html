@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080,height=1920">
+<title>SUES · Tarjeta a espacio · Composición HTML por fotogramas</title>
+<style>
+@font-face{font-family:Montserrat;src:url('./vendor/Montserrat-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+@font-face{font-family:Montserrat;src:url('./vendor/Montserrat-ExtraBold.ttf') format('truetype');font-weight:800 900;font-display:block}
+*{box-sizing:border-box}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#111215}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden}
+.clip,#scene{position:absolute;inset:0;width:1080px;height:1920px}
+#scene svg{display:block;width:1080px;height:1920px}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-duration="5.033333333333333" data-fps="30" data-width="1080" data-height="1920" data-composition-variables='[{"id":"line1","type":"string","label":"Pregunta línea 1","default":"¿Y SI TE"},{"id":"line2","type":"string","label":"Pregunta línea 2","default":"ESCUCHARAS?"},{"id":"followLine1","type":"string","label":"Respuesta línea 1","default":"HAZ ESPACIO"},{"id":"followLine2","type":"string","label":"Respuesta línea 2","default":"PARA ESCUCHARTE"},{"id":"wordScheduleJson","type":"string","label":"Anclas de voz verificadas JSON (vacío = demo)","default":""}]'>
+ <div id="scene" class="clip" data-start="0" data-duration="5.033333333333333" data-track="graphics" data-role="narrative-motion" data-clip-id="SUES_CARD_TO_SPACE_DEMO"></div>
+</div>
+<script src="./vendor/gsap.min.js"></script>
+<script type="module">
+import {renderCardToSpaceSvg,SEQUENCE_FRAMES} from './runtime/sequence-card-to-space.js';
+const root=document.getElementById('root'),stage=document.getElementById('scene');
+const fps=30,last=SEQUENCE_FRAMES-1,duration=SEQUENCE_FRAMES/fps;
+const defaults={line1:'¿Y SI TE',line2:'ESCUCHARAS?',followLine1:'HAZ ESPACIO',followLine2:'PARA ESCUCHARTE'};
+const supplied=window.__hyperframes?.getVariables?.()??{};
+const args={...defaults};
+for(const key of Object.keys(defaults)){
+ if(typeof supplied[key]==='string'&&supplied[key].trim()&&[...supplied[key]].length<=32)args[key]=supplied[key];
+}
+const scheduleText=supplied.wordScheduleJson??'';
+if(typeof scheduleText!=='string'||scheduleText.length>2600)throw Error('Word schedule must be a short JSON string');
+if(scheduleText.trim()){
+ const schedule=JSON.parse(scheduleText);
+ const fields=['schema','wordStartFrames','wordIds','followWordStartFrames','followWordIds'];
+ if(!schedule||typeof schedule!=='object'||Array.isArray(schedule)||
+    Object.keys(schedule).length!==fields.length||fields.some(key=>!Object.hasOwn(schedule,key))||
+    schedule.schema!=='sues-hyperframes-word-schedule/v1')throw Error('Untrusted word timing schedule: wrong schema');
+ const expectedCard=[args.line1,args.line2].flatMap(v=>v.trim().split(/\s+/u)).length;
+ const expectedFollow=[args.followLine1,args.followLine2].flatMap(v=>v.trim().split(/\s+/u)).length;
+ if(!Array.isArray(schedule.wordStartFrames)||!Array.isArray(schedule.wordIds)||
+    !Array.isArray(schedule.followWordStartFrames)||!Array.isArray(schedule.followWordIds)||
+    schedule.wordStartFrames.length!==expectedCard||schedule.wordIds.length!==expectedCard||
+    schedule.followWordStartFrames.length!==expectedFollow||schedule.followWordIds.length!==expectedFollow)
+    throw Error('Voice schedule does not cover exactly the displayed words');
+ Object.assign(args,{
+  wordStartFrames:[...schedule.wordStartFrames],wordIds:[...schedule.wordIds],
+  followWordStartFrames:[...schedule.followWordStartFrames],followWordIds:[...schedule.followWordIds]
+ });
+ window.__suesMotionTiming='EXTERNAL_REVIEWED_WORD_IDS_PREVIEW_ONLY';
+}else{
+ window.__suesMotionTiming='SYNTHETIC_DEMO_TIMING_ONLY';
+}
+let currentFrame=-1;
+function draw(frame){
+ const f=Math.max(0,Math.min(last,Math.round(frame)));
+ if(f===currentFrame)return;
+ stage.innerHTML=renderCardToSpaceSvg(f,args);
+ currentFrame=f;
+ root.dataset.frame=String(f);
+}
+const playhead={frame:0};
+const tl=gsap.timeline({paused:true});
+tl.fromTo(playhead,{frame:0},{frame:last,duration,ease:'none',onUpdate:()=>draw(playhead.frame)},0);
+window.__timelines=window.__timelines||{};
+window.__timelines.main=tl;
+window.addEventListener('hf-seek',event=>{
+ if(!Number.isFinite(event?.detail?.time))return;
+ draw(Math.round(event.detail.time*fps));
+});
+draw(0);
+document.fonts.ready.then(()=>{currentFrame=-1;draw(Math.max(0,Number(root.dataset.frame)||0));});
+window.__suesMotionReady=true;
+</script>
+</body>
+</html>
