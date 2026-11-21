@@ -14,6 +14,12 @@
 - Copia QA aislada del proyecto V8, SHA de fuente conservado. Servicio temporal 127.0.0.1:17977. Comprobación real del MCP: revisión errónea 999 rechazada, parche autorizado **solo para QA técnica** revisión 29→30, clip `af_text_qué_face` x:0→1, 14 clips intactos, lectura del JSON confirmada. Unidad detenida; original, V29 y producción sin tocar. Esta comprobación directa **NO** constituye flujo completo con aprobación humana.
 - El límite de archivos de la consola produjo `EFBIG` en el primer intento. La repetición aislada con `LimitFSIZE=256M` funcionó sin cambiar límites globales.
 
+## E2E adicional: ciclo auténtico de permisos y MCP sobre clon · PASS
+
+Un ensayo posterior ejecutó `createEditorServer` con `SUES_NATIVE_HOST_CONFIG` real, sesión autenticada, `MasterDirectorProjectStore`, binding administrativo a jobId de fixture, borrador, revisión, decisión, aprobación por ledger de uso único, ejecución por MCP real y readback. Revisión FableCut 31→32, cambio de x=1 a x=2, 15 clips preservados. La petición de aprobación sin sesión devolvió 401 y el intento de reutilizar la autorización fue rechazado. Prueba `qa/v1-20261121/native-e2e.mjs` en VPS, unidad systemd transitoria y límite de tamaño controlado; exit 0. Registro de binding revocado después de verificar, unidad de QA detenida, servicio público original HTTP 200 inalterado.
+
+**ALCANCE:** fixture sintético y proyecto FableCut copiado. Se añadió en el CLON un clip centinela para igualar 24 s de duración del fixture; no es prueba de adaptación a un Reel auténtico ni flujo multiproyecto, ni realiza render audiovisual final. El bloqueo del onboarding y asociación segura de CADA proyecto nuevo y del staging de recursos permanece. No marcar V1 desplegada ni aprobada.
+
 ## Pendientes
 
 1. Flujo integrado autenticado editor→Master Director→ledger→MCP→readback→undo sobre clon real, incluyendo rechazo de edición del proyecto equivocado.
