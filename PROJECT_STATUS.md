@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión móvil nº 9
+
+Auditoría autónoma UI en Chromium móvil 411x923 DPR2.625. Regla antes en blanco confirmada visualmente, render nativo visible 36px, hold500ms selección persistente, gestos clasificados, swipe no seleccionado navega, seleccionado mueve, selección/move sin rebuild masivo, serialización guardado y sync de revisiones antiguas. Sesión continua 14/14, 0 conflictos, 12/12 selección +4/4 nombres y 10/10 regresiones. Preview 8443 desplegada, detalle/evidencia/rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Pendiente QA Android físico/proyectos largos; no delegar decisiones de diseño de gestos al usuario, no cerrar V1/V1.1, no tocar producción.
+
 ## 21/11/2026 · Revisión móvil nº 8
 
 Preview privada 8443 actualizada por queja de precisión. Captura estable timeline, selección por nombre/clip, resaltado sincronizado, gestos horizontal/vertical separados y regla hold500ms con tolerancia 14px y origen recalculado. CDP 12/12 clips y 4/4 nombres, arrastres, ruler/pinch y 10/10 regresiones PASS. Evidencia y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Falta validación humana móvil; no cerrar V1/V1.1 ni tocar producción.
