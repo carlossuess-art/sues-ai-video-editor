@@ -1,3 +1,9 @@
+## 21/11/2026 · Candidata de editor publicada con puente nativo aún desactivado
+
+Después de E2E privado se desplegó de forma controlada el código `b2179b3` en `https://editor.suesholistics.com` desde `/opt/sues-video-setup/v1-deploy-candidate-20261121`. `npm run check` PASS, test host privado 5/5 PASS, arranque preflight con imagen productiva en 3101 PASS. Estado real postdeploy: contenedor arriba, web HTTPS200, API autenticadas health/jobs/projects200 y protección sin sesión401; 29 trabajos existentes cargan. Rollback disponible: contenedor anterior `sues-video-editor-pre-v1-20261121`, respaldo y script `/opt/sues-video-setup/v1-rollout-20261121/deploy-v1.sh` (script contiene procedimiento automático de reversión solo durante el despliegue). No se cambió /state ni se realizaron renders de usuario.
+
+**Límite crítico:** el host FableCut nativo creado en este checkpoint exige private-qa y NO se configuró para producción; `SUES_NATIVE_HOST_CONFIG` sigue ausente de servicio público, así que la ruta de aprobación/ejecución nativa automática NO está habilitada. No equiparar con edición por conectores en VPS. Q03 QA y Q04 aceptación pendientes. Q05 salida inicial verificada, cierre completo pendiente. Se corrigió el roadmap de Drive para retirar 65 % histórico como indicador del proyecto de cinco fases.
+
 # SUES V1 · Host nativo FableCut · QA aislada · 21/11/2026
 
 **Estado: código de desarrollo, NO DESPLEGADO.** La V1 pública no ha cambiado.
