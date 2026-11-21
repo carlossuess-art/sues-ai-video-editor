@@ -1,6 +1,6 @@
 # V1.1 · FableCut móvil · Especificación y continuidad (21/11/2026)
 
-FUENTE CANÓNICA: https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit · Revisión compartida V1-2026-11-21-r15.
+FUENTE CANÓNICA: https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit · Revisión compartida V1-2026-11-21-r16.
 ESTADO ACTUAL: planificación aprobada; 0/10 módulos implementados. No es cierre de V1, ni ejecución de V1.1, ni autorización para desplegar sin QA. V1: Q03 en curso, Q04 pendiente, Q05 desplegado en validación, Q06 pendiente. V1.1 se abordará sin perder los cambios no versionados de FableCut Studio /srv/sues-fablecut-next/app.
 
 V1.1 · PLAN DE EVOLUCIÓN DEL EDITOR MÓVIL FABLECUT (REQUISITOS APROBADOS EN CONVERSACIÓN · 21/11/2026)
