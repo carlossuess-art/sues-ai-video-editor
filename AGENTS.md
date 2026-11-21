@@ -1,3 +1,7 @@
+## 21/11/2026 · E2E auténtico autorizado en clon, no producción
+
+La prueba de la ruta autenticada Master Director → ledger → FableCut MCP ahora es PASS en fixture sintético y clon aislado (revisión 31→32, 15 clips, replay rechazado). Leer `docs/SUES_V1_NATIVE_HOST_PRIVATE_QA_20261121.md`. No confundir con onboarding de proyectos reales, ni con doble auditoría audiovisual o despliegue. El registro QA quedó vacío y su servicio detenido. No repetir el Reel publicado 158404 ni tocar otros servicios.
+
 ## 21/11/2026 · Nuevo host confiable de FableCut · privada, sin desplegar
 
 Leer `docs/SUES_V1_NATIVE_HOST_PRIVATE_QA_20261121.md` y `PROJECT_STATUS.md` antes de despliegue. `SUES_NATIVE_HOST_CONFIG` activa un host exclusivamente privado de clon, por defecto deshabilitado. Se probó llamada MCP real y readback en clon 29→30, pero no el E2E de permisos/revisión del editor con un proyecto nuevo. No instalar como producción sin binding multiproyecto seguro, recursos verificados, QA audiovisual y rollback. Conservar WAC, V29, Reel 158404 y originales. La autorización de despliegue consta; no volver a pedirla.
