@@ -1,3 +1,7 @@
+## 21/11/2026 · Auditoría conservadora de tiempos de palabras · candidata aislada
+
+Nuevo `scripts/asr/word_timing_silence.py` y conexión al worker Whisper: detecta silencios largos en intervalos ASR, marca `timingUncertain:true`, conserva timestamps; no hay corrección fonética automática ni retoques al Reel. En voz real separada, 170 palabras, 7 intervalos largos y 2 alertas: «para» 53,42–55,12 (silencio 53,50–55,02) y otro intervalo no aceptado como error. En mezcla con música no se activa la misma alerta; limitación confirmada. 6/6 unittest PASS, `npm run check` PASS, 7/7 tests nativos/bindings PASS. No se han ejecutado dos QA completas ni integrado todavía el arranque nativo público. Q03 sigue activo, Q04 será aceptación funcional, Q05 despliegue autorizado PENDIENTE. Ver `docs/SUES_V1_TIMING_AUDIO_AUDIT_20261121.md`.
+
 
 ## 21/11/2026 · V1 prioritaria; despliegue autorizado y conexión nativa pendiente
 
