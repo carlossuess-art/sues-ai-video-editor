@@ -1,3 +1,9 @@
+## 21/11/2026 · Consola de limpieza y corrección de render publicadas
+
+Antes de tocar el render de Studio, leer `docs/SUES_V1_RENDER_STABILITY_VPS_CLEANUP_20261121.md`; código FableCut vivo `/srv/sues-fablecut-next/app`, con heartbeat, watchdog y workers ajustados. Rollback en `/opt/sues-video-setup/v1-render-fix-20261121/before`. Sólo canario corto 45 frames validado; no afirmar export de larga duración corregido sin prueba. Disk 8,0GB libres/84% tras dedupe con hardlinks y limpieza segura, no eliminar rollbacks WAC/V29.
+
+SUES Console existente `/opt/sues-vps-mcp` ya incluye `cleanup_scan/prepare/execute` autenticados; código versionado `ops/sues-console/` y checkpoint `docs/SUES_SERVER_CONSOLE_CLEANUP_20261121.md`. Se exige selección por ID, token único de diez minutos y frase, relectura de inode/mtime/size, informe y auditoría. `revisar` y `conservar` nunca se borran desde ese motor. El botón web original de Sites no está implementado; NO duplicar la web ni exponer borrado root sin auth. Reutilizar MCP/CLI y solicitar conexión de Sites solo en caso de bloqueo real.
+
 ## 21/11/2026 · Estado operativo de despliegue V1
 
 - El servicio público `sues-video-editor` YA ejecuta la candidata fuente PR #27 snapshot `b2179b3` montada desde `/opt/sues-video-setup/v1-deploy-candidate-20261121` (solo lectura), con `/opt/sues-video-setup/editor` como estado existente.
