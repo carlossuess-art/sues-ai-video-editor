@@ -1,4 +1,9 @@
 
+## Q03 · 21/11/2026 · Segundo visionado de Carlos: «para» pendiente
+
+Carlos comunica un segundo visionado de la candidata Q03_c y considera correcta la sincronización salvo «para» en «ido abandonando para poder encajar», que percibe retrasado aproximadamente un segundo. La copia técnica identifica C48.S05: `ido abandonando para`, clip 52,0667–55,1333 s, entrada configurada de «para» 53,4333 s; ASR previo estima 53,42 s pero no sustituye escucha ni desvirtúa la observación. Evitar mover un segundo por suposición: comprobar a oído y con frames el inicio exacto del «para» hablado y mostrado, y si precisa corregirlo en copia conservando el resto, exportar y validar nueva versión. Carlos no ha aprobado el Reel ni autorizado despliegue. Q03 sigue en curso, no se afirma doble QA de una nueva versión.
+
+
 ## Q03 · 21/11/2026 · Revisión comunicada por Carlos y Gemini
 
 Carlos informa haber visualizado y escuchado la candidata, sin percibir desfases importantes; el «si» le resulta un poco extraño. No ha expresado aprobación definitiva de Q04. Gemini declara haber escuchado audio completo y muestreado imagen a 1 fps y 6 fps entre 29–32 s; informa pausa limpia y «si» en 31,5 s, sincronizado, pero su muestreo no constituye visionado continuo integral y no confirma técnicamente el archivo por SHA. Inspección propia de Q03_c: a 29,6 s no se ve «si», a 31,5 s aparece en minúscula y a 56 s aparece «y» en minúscula. Gemini menciona clic de cierre, no comprobado por escucha del operador. No afirmar dos pases ni aprobación. Candidata conservada, Q03 sigue en curso pendiente segundo pase audiovisual real y cotejo auditivo; Q04 decisión explícita de Carlos, Q05 autorización específica y rollback. Sin despliegue.
