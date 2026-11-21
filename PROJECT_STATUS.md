@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión móvil del propietario nº 2
+
+Monitor aprobado; CapCut referencia global. Preview 8443 actualizada con selección directa, marco nativo, edición texto multilinea, capas numeradas, volumen numérico 0–200% y ondas. QA CDP y 10/10 regresiones, 2/2 gesto adicional. Ver detalle y pendientes en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Una pregunta por turno. No confundir prototipo con aceptación, ni modificar producción. Próximo: dock contextual, caja real texto, cabezal centrado y QA pendiente.
+
 ## 21/11/2026 · Prototipo V1.1 accesible al propietario
 
 Despliegue de prueba privado https://studio.suesholistics.com:8443/ autorizado por Carlos. Caddy HTTPS autenticado (sesión habitual de Studio), snapshot del stage existente, datos demo separados de producción en /var/lib/sues-v11-preview y servicio aislado sues-fablecut-v11-preview.service. Verified HTTP 200 HTML / demo 4 clips / JS buscador, 302 sin sesión, 403 MCP público/origen ajeno, Studio original en 443 109 clips intacto. Reabrir el enlace tras login habitual. Espera revisión móvil de Carlos, no implica aceptación de ningún módulo V1.1 ni cierre V1. QA técnica en stage 17899. Checkpoint y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
