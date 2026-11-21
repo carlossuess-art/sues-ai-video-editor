@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión móvil nº 8
+
+Preview privada 8443 actualizada por queja de precisión. Captura estable timeline, selección por nombre/clip, resaltado sincronizado, gestos horizontal/vertical separados y regla hold500ms con tolerancia 14px y origen recalculado. CDP 12/12 clips y 4/4 nombres, arrastres, ruler/pinch y 10/10 regresiones PASS. Evidencia y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Falta validación humana móvil; no cerrar V1/V1.1 ni tocar producción.
+
 ## 21/11/2026 · Revisión móvil nº 7
 
 Preview privada 8443: regla como barra protegida mediante hold 500ms, borde blanco activo, release desactiva; clips sin espera adicional y pinch conservado. CDP qa-ruler-hold-real.json PASS, 10/10 regresiones. Detalle y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Pendiente usuario móvil; no cerrar V1/V1.1 ni tocar producción.
