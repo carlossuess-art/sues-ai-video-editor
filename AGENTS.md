@@ -1,3 +1,9 @@
+## 21/11/2026 · Requisitos V1.1 del editor móvil (PLANIFICACIÓN, no despliegue)
+
+Consultar docs/SUES_V1_1_FABLECUT_MOBILE_SPEC_20261121.md y Roadmap Maestro Drive, revisión V1-2026-11-21-r15, para diez módulos V1.1-01…V1.1-10. Gestos táctiles: centro de clip mueve sin cambiar duración; solo extremos recortan; pulsación larga cambia pista/profundidad; pellizco en monitor escala la capa y en timeline solo escala temporal; dividir permite zoom puntual sin keyframes; buscador abre la herramienta ORIGINAL dentro de sus menús con capa actual y persistencia al cambiar de capa. Subtítulos estáticos/animados y estilos/animaciones independientes. Exportación y previsualización coherentes.
+
+Estado vigente: V1 aún en validación Q03/Q04/Q05; Q06 después; V1.1 sólo documentada, 0/10 implementada. No alterar producción ni edición existente hasta pruebas; FableCut Studio tiene modificaciones locales no versionadas y requiere clon aislado con preservación previa. Priorizar SUES Server Console; proteger WAC/V29 y otros servicios.
+
 ## 21/11/2026 · Vista rápida 540p separada de entrega final
 
 El usuario ha definido **vista previa 540×960/15fps** (o menor según proporción) separada de **exportación final 1080×1920 u otro preset elegido**. Ya publicado botón `▶ Vista rápida` en FableCut Studio; fuente versionada `ops/fablecut/preview-render.js` + patch/test, checkpoint `docs/SUES_V1_PREVIEW_540_20261121.md`; respaldo de código anterior `/opt/sues-video-setup/v1-preview-540-20261121/before`. No bajar calidad del final, no eliminar efectos creativos para acelerar la vista previa, ni asumir que la composición interna ya va a 540p. La prueba aislada 2s/30frames PASS; la copia 73s 540p derivó de máster previo y NO acredita render completo desde cero. Prioridad siguiente: render incremental de intervalos cambiados + caché de tramos, con QA de reproducción móvil; preservar proyectos originales/V29 y WAC.
