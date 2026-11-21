@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión móvil nº 13
+
+Preview 8443 desplegada: menú avanzado, catálogo 57 rutas, modos de corte nativos, recursos 86 visuales/320 SFX reconocidos, bind RO DAEDAL, búsqueda e inserción táctil, proxy 540p y reloj mejorado. QA 14/14 avanzados, 4/4 biblioteca, 10/10 regresiones, export técnico 1s 1080x1920 H264/AAC. Bruto preview p_27306f2839 intacto. Propietario no quiere más pruebas parciales; primera prueba conjunta pegar plan y render. Falta conexión nativa segura de plan al proyecto real, QA de edición/export completo y fluidez; no declarar terminado. Reutilizar store/ledger/MCP existentes, no mezclar contrato legado y nativo, no debilitar guard private-qa ni inventar aprobaciones. Evidencia, parche, límites y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No tocar producción.
+
 ## 21/11/2026 · Revisión móvil nº 12
 
 Preview 8443 desplegada: hueco inicial 8px, cabezal parte de la izquierda hasta centro y regla libre. Usuario aprueba selección/gestos ronda11. Proyecto activo real p_27306f2839 «SUES · EDICIÓN REAL 158404» (73.75s, 1080x1920, V1/A1 vinculados; streamhash AV idéntico al bruto). Demo conservada. Stage aislado p_701ca40ed3, QA bruto 13/13 split/undo/seek/reloj/guardado; no certifica fluidez. Mantener originales/prod intactos. Continuar cobertura de funciones nativas, biblioteca y QA edición real; no dar V1/V1.1 por cerradas. Evidencia y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
