@@ -1,6 +1,6 @@
 # SUES · FableCut mobile V1.1 (isolated prototype, 21/11/2026)
 
-STATUS: PROTOTYPE ONLY. NOT DEPLOYED, not accepted, not a replacement for FableCut, and not closure of V1. Roadmap source: https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit (revision V1-2026-11-21-r15).
+STATUS: PROTOTYPE ONLY. NOT DEPLOYED, not accepted, not a replacement for FableCut, and not closure of V1. Roadmap source: https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit (revision V1-2026-11-21-r16).
 
 This directory contains a minimal responsive mobile shell for the EXISTING FableCut Studio. The main app.js, style.css, renderer, data schema and original desktop controls were not modified. It is a first experiment for V1.1-01/02, not completion of them.
 
