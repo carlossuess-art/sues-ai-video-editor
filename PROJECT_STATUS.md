@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión nº 20
+
+Exportación móvil simplificada ES, botones Volver/Exportar/Descargar visibles, ajustes avanzados plegables; volumen slider 0–200%, porcentaje vivo, silencio/original, undo. Desplegado preview 8443, QA 11+8+10, R14 intacto. R18 lean decoders experimental no pasó readiness y NO se desplegó. Pendiente auditoría integral, traducción restante, render real completo, fluidez. Ver docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
 ## 21/11/2026 · Revisión nº 17
 
 Modo contextual móvil desplegado: «Editar existente» predeterminado, iconos/capas activos al cabezal, «+ Añadir» catálogo nativo, «Todas las capas». Máscara/B-roll doble acceso al mismo ID; undo sin pasos vacíos. QA 22/22 específicos y 10/10 regresión, R14 propietario intacto. Proxies 7/7 ready; R16 fluidez experimental aún NO desplegada. Validar en montaje completo y dispositivo real antes de cerrar. Evidencia y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
