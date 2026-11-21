@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión móvil nº 6
+
+Preview 8443 desplegada: regla temporal operativa, cabezal fijo centrado, scroll táctil y zoom sin mutación de clips. CDP qa-centered-timeline-real.json PASS, 4 pruebas navegador adicionales y 10/10 regresiones. Usuario aprueba mejora de navegación ronda 5, no aceptación formal completa. Ver detalle y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Próximo: validación humana de regla. No tocar producción.
+
 ## 21/11/2026 · Revisión móvil nº 5
 
 Preview 8443 actualizada según investigación CapCut aportada. Catálogo 46 rutas, galería nativa Entrada 12/Salida 11/Bucle 5 y Filtros 15; Formato 5; controles audio contextuales. QA CDP qa-capcut-tree-real.json PASS, otras 5 pruebas navegador y 10/10 regresiones. Mantener volumen 0–200%, pistas 70%, monitor aprobado e interfaz privada. No certificar equivalencia 100%, miniaturas animadas ni paridad MCP completa. Detalle, arquitectura y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Una pregunta humana por turno. No tocar producción.
