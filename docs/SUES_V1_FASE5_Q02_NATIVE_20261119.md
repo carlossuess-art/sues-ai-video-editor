@@ -1,4 +1,9 @@
 
+## Q03 · 21/11/2026 · Continuación de exportación
+
+Unidad sues-q03-full-wrap-20261121 activa. Las ventanas 0–200, 200–400, 400–600, 600–800 y 800–1000 se verificaron y están en q03-review/full-wrap-20261121/segments.json; ventana 1000–1175 en marcha. Consultar unidad, log y manifiesto antes de reintentar; no duplicar renders. CPUQuota reducida en tiempo de ejecución al 70 % para dejar margen al resto de servicios. Se preparó q03-review/recover-tail-20261121.py sin ejecutarlo para un eventual rechazo por audio bajo de la ventana final: solo admite 11 ventanas previas verificadas y la cola anterior de 37 fotogramas con SHA comprobado y clips iguales sin texto. MP4 completo, escuchas y doble QA siguen pendientes. No producción, no Q04.
+
+
 ## Q03 · 21/11/2026 · Exportación privada en curso
 
 Candidata de espaciado y ajuste de línea en /opt/sues-video-setup/q02-native-annex-20261119.j3YNOa/faststart-app-wrap-20261120 (app.js SHA 3d0f15962c8c4c4d0d4bcf6554ee9b59da37fba9a1c19ebcf72262fa3dfa475e); clon técnico /srv/sues-fablecut-next/data/automation-v1/test-project-q03-158404-wrap-20261120. Comprobación con fuente Montserrat y Chromium de 62 captions: 0 desbordes calculados, dos líneas reacomodadas; muestras reales de los dos casos largos verificadas visualmente en ventanas 1040–1105 SHA b1e701737952c362df074d20a30aa88ad6394a183e335f9f5f4ff4e5a77d3437 y 2025–2080 SHA 5fd254b9553cfa51d0efbb4d7a6bedc953f09d36bd7988226d17e633450d1d47, ambas SEGMENT_COPY_VERIFIED. No equivale a auditoría del vídeo completo. C31.S04 desplazado provisionalmente de 29,233–30,367 a 31,400–31,800 s sobre análisis de Gemini y ASR; ventana 870–960 SHA 19ee64516607db48609621ef2450f1fa0e85cbddb196e3c5dd8b42096ea87049 decodificada y verificada, muestras muestran ausencia a 29,6 y presencia a 31,5. Pendiente confirmación a oído.
