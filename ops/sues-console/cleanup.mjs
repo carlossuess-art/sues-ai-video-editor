@@ -57,13 +57,13 @@ export function createCleanupService(overrides={}) {
     if(exists(status)?.isFile())try{
       failed=['failed','cancelled','error'].includes(String(readJSON(status).status).toLowerCase())
     }catch{}
-    const safe=!busy&&(failed||Date.now()-st.mtimeMs>=7*DAY);
+    const safe=!busy&&failed; // only explicitly failed renders are auto-recommended
     add(p,project,'render_sin_validar',safe?'recomendado':'revisar',
       busy?'Render activo en servidor; prohibido borrar':failed?'Render fallido sin comprobante':'Sin comprobante: puede contener investigacion',2*DAY);
    }
   }
   for(const p of candidates(roots.qa,e=>e.isDirectory()&&/^reel-[\w-]+$/.test(e.name)))
-   add(p,roots.qa,'proyecto_qa_antiguo','revisar','Pruebas y materiales: requieren revision antes de retirar',7*DAY);
+   add(p,roots.qa,'proyecto_qa_antiguo',/v29/i.test(path.basename(p))?'conservar':'revisar','Pruebas y materiales: nunca se borran automaticamente; V29 protegida',7*DAY);
   for(const p of candidates(roots.backups,e=>e.isDirectory()&&/^update-backup-\d{8}-/.test(e.name)))
    add(p,roots.backups,'copia_recuperacion','conservar','Copia de seguridad: no borrar automaticamente',0);
   const unique=[...new Map(items.map(x=>[x.path,x])).values()].sort((a,b)=>b.bytes-a.bytes).slice(0,250);
