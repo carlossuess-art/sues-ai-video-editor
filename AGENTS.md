@@ -1,3 +1,7 @@
+## 21/11/2026 · Continuidad operativa tras consolidación
+
+Leer la última sección de docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md antes de actuar; prevalece sobre entradas anteriores. Stage móvil existente ya contiene cambios adicionales y evidencia de navegador real, no recrearlo. Búsqueda contextual corregida y 10/10 tests dirigidos PASS; no confundir con aceptación visual/táctil o exportación. Mantener baseline histórico fijado y consolidado verificado hasta restauración completa; no purgar originales, ni WAC, ni producción. Rotación admite consolidado y no elimina automáticamente. V1.1 0/10 aceptadas y V1 todavía en cierre Q03/Q04/Q05.
+
 ## 21/11/2026 · Continuidad de prototipo V1.1 aislado (no desplegado)
 
 Antes de modificar el modo móvil, leer docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md y ops/fablecut/mobile-v1_1/README.md, además del Roadmap y docs/SUES_V1_1_FABLECUT_MOBILE_SPEC_20261121.md. CSS/JS existentes están en entorno QA aislado; no importar automáticamente en producción hasta tener prueba visual/táctil y regresión de exportación. Se completaron 2 tests mock y 56 regresiones, pero las ejecuciones Chromium dieron error; no afirmar QA visual aprobada. V1 sigue Q03/Q04/Q05 pendientes de cierre y V1.1 0/10 módulos aceptados. Revisión Drive V1-2026-11-21-r16.
