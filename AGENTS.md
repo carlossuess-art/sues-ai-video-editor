@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión móvil nº 11
+
+Selección de capas aprobada por propietario. Desplazamiento de clips SOLO tras hold650ms horizontal/vertical, feedback visible turquesa/elevación y vibración opcional; taps sin espera, swipe temprano no muta clip. Regla SIEMPRE libre. Preview 8443 desplegada, sesión 21/21, 12/12 taps + 4/4 nombres y arrastres, 10/10 regresiones. Evidencia y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No cerrar V1/V1.1 ni tocar producción.
+
 ## 21/11/2026 · Revisión móvil nº 10
 
 Corrección expresa del propietario: regla temporal SIEMPRE desplazable, sin hold ni bloqueo. Sustituye la norma anterior de rondas 7–9. Se conserva la selección de clip al navegar y la pulsación prolongada únicamente para cambios de pista. Preview 8443 desplegada; sesión continua 15/15, regresión 10/10 y cero conflictos de guardado. Evidencia/rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No cerrar V1/V1.1 ni tocar producción.
