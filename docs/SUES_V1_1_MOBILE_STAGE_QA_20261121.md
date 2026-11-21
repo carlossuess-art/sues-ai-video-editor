@@ -1,7 +1,7 @@
 # SUES AI VIDEO EDITOR · Continuidad V1.1 · Bloque de preparación aislada 21/11/2026
 
 ## Estado de versiones
-V1 NO CERRADA. Roadmap V1-2026-11-21-r15: Q03 en curso, Q04 aceptación funcional pendiente, Q05 despliegue inicial técnico hecho con cierre funcional pendiente, Q06 limpieza posterior. La limitación de Vista rápida es real: compone a tamaño original antes de reducir JPEG, por lo que 73s/106 clips sigue siendo lento y no hay render completo nuevo acreditado. No modificar render de máscaras sin paridad demostrada.
+V1 NO CERRADA. Roadmap V1-2026-11-21-r16: Q03 en curso, Q04 aceptación funcional pendiente, Q05 despliegue inicial técnico hecho con cierre funcional pendiente, Q06 limpieza posterior. La limitación de Vista rápida es real: compone a tamaño original antes de reducir JPEG, por lo que 73s/106 clips sigue siendo lento y no hay render completo nuevo acreditado. No modificar render de máscaras sin paridad demostrada.
 
 V1.1 únicamente PLANIFICADA, 0/10 módulos aceptados. El Roadmap contiene V1.1-01 a V1.1-10 y sus pruebas. Se adelantó un prototipo aislado del shell móvil en V1.1-01/02 sin desviar el punto activo de V1.
 
