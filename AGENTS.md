@@ -1,3 +1,7 @@
+## 21/11/2026 · Nuevo host confiable de FableCut · privada, sin desplegar
+
+Leer `docs/SUES_V1_NATIVE_HOST_PRIVATE_QA_20261121.md` y `PROJECT_STATUS.md` antes de despliegue. `SUES_NATIVE_HOST_CONFIG` activa un host exclusivamente privado de clon, por defecto deshabilitado. Se probó llamada MCP real y readback en clon 29→30, pero no el E2E de permisos/revisión del editor con un proyecto nuevo. No instalar como producción sin binding multiproyecto seguro, recursos verificados, QA audiovisual y rollback. Conservar WAC, V29, Reel 158404 y originales. La autorización de despliegue consta; no volver a pedirla.
+
 ## Continuidad 21/11 · Audio real y despliegue V1
 
 Leer `docs/SUES_V1_TIMING_AUDIO_AUDIT_20261121.md` y cabecera de `PROJECT_STATUS.md`. La auditoría del worker Whisper está solo en PR #27/candidata, no producción; marca tiempos dudosos sin reajustar fonemas. En pista de voz real marcó 2 de 170 palabras, incluida «para»; con música mezclada no funciona igual. No seguir corrigiendo el Reel 158404, ya visionado por Carlos. Falta host nativo FableCut en arranque, regresión, rollback y promoción; no dar por desplegada V1. Respetar WAC, V29 y originales.
