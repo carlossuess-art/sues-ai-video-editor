@@ -1,4 +1,9 @@
 
+## Q03 · 21/11/2026 · Candidata Q03_c completa, pendiente de revisión audiovisual
+
+Los dos tramos de puntuación 1375–1575 y 1575–1775 se renderizaron y verificaron; ensamblado privado Q03_c: 2212 fotogramas, decodificación completa y PCM idéntico a la candidata anterior. SHA-256 `3ed3fb081e125581548acf7036f30a1b4314a3dad85dd675b3e4a7ba0bb72c72`; evidencia `/opt/sues-video-setup/q02-native-annex-20261119.j3YNOa/q03-review/full-punctuation-20261121/technical-verification.json`. Copia de descarga autenticada `https://studio.suesholistics.com/exports/SUES_158404_candidata_Q03_c.mp4` con SHA comprobado; la URL redirige a login sin sesión. El original se conserva. El ajuste de «si» a 31,4 s es provisional: falta comprobarlo a oído. Gemini inspeccionó muestras de la versión anterior, no dos reproducciones completas de esta versión. Pendientes dos visionados completos con imagen y sonido y cotejo auditivo; Q03 sigue en curso y Q04–Q06 pendientes. La variante del renderizador permanece aislada y no integrada en producción.
+
+
 ## Q03 · 21/11/2026 · Reel reconstruido; puntuación en curso
 
 La unidad sues-q03-full-wrap-20261121 verificó 11 ventanas/2175 frames y se detuvo en la última por SILENT_OR_UNVERIFIED_AUDIO. Tras verificar igualdad de clips sin subtítulos y SHA de la ventana histórica final, sues-q03-recover-tail-20261121 ensambló el Reel privado Q03_b con 2212 fotogramas y PCM idéntico a la candidata anterior. SHA-256 2141ece817fba2854abc44fcfe1e697fc7d6b1ff7d0548d1de59e0b264ef8c56; prueba q03-review/full-wrap-20261121/technical-verification.json, sin doble QA ni escucha. NO confundir con resultado final.
