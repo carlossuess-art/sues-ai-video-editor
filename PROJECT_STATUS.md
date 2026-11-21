@@ -1,3 +1,11 @@
+## 21/11/2026 · V1.1 FableCut móvil PLANIFICADA tras revisión del Roadmap (SIN IMPLEMENTAR)
+
+Carlos definió con capturas CapCut los requisitos de futura V1.1: monitor siempre visible, barra contextual, selección bidireccional monitor/timeline, mover clip desde centro sin variar duración, recortar SOLO desde los extremos, mantener pulsado para cambiar z-order, pellizco sobre vídeo para tamaño de capa y sobre timeline para zoom temporal, dividir clip para zoom instantáneo sin keyframe o con keyframes interpolados, editor de subtítulos estáticos/animados, lupa que lleva al menú original y conserva selección al cambiar de capa, audio/máscaras y QA táctil con export real.
+
+Registrado como V1.1-01 a V1.1-10 en Roadmap Maestro Drive https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit (revisión compartida V1-2026-11-21-r15), resumido en Estado General https://docs.google.com/document/d/1L4gycV0LnKGhZ5VtWXAOlzVOzY3GDCp-qW1_X4A9B08/edit y replicado en docs/SUES_V1_1_FABLECUT_MOBILE_SPEC_20261121.md. NO IMPLEMENTADO NI DESPLEGADO V1.1: 0/10 módulos. V1 permanece Q03 en curso, Q04 pendiente, Q05 publicada con cierre funcional pendiente, Q06 posterior. No declarar V1 cerrada.
+
+FableCut Studio en /srv/sues-fablecut-next/app presenta rama main con modificaciones locales no versionadas en app.js, delivery.js, export-jobs.js, index.html y archivos preview/PWA. No resetear ni sobrescribir esa carpeta; inspeccionar y aislar worktree+backup. Siguiente trabajo V1.1-01 sólo tras cierre de V1 o para preparación en clon aislado.
+
 ## 21/11/2026 · Nuevo modo Vista rápida 540p publicado en FableCut Studio
 
 Carlos aprobó separar resolución de revisión del máster: 540×960/15fps para ver y 1080×1920 o perfil elegido al exportar. En la **instalación FableCut Studio existente** se publicó el botón `▶ Vista rápida`, junto a `⬇ Export`. Se añadió `sues-preview` en `delivery.js`, módulo `preview-render.js`, cambio mínimo de `app.js` para capturar JPEG a resolución reducida antes de subirlo, y `index.html`. NO se cambia el perfil ni el proyecto de exportación final; no se descartan capas o animaciones. Backup código antiguo `/opt/sues-video-setup/v1-preview-540-20261121/before`.
