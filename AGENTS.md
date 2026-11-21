@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión móvil nº 5
+
+Preview 8443 actualizada según investigación CapCut aportada. Catálogo 46 rutas, galería nativa Entrada 12/Salida 11/Bucle 5 y Filtros 15; Formato 5; controles audio contextuales. QA CDP qa-capcut-tree-real.json PASS, otras 5 pruebas navegador y 10/10 regresiones. Mantener volumen 0–200%, pistas 70%, monitor aprobado e interfaz privada. No certificar equivalencia 100%, miniaturas animadas ni paridad MCP completa. Detalle, arquitectura y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Una pregunta humana por turno. No tocar producción.
+
 ## 21/11/2026 · Revisión móvil nº 4
 
 Preview 8443 desplegada: alturas de pistas móvil 70% (V41/A29), navegación por categorías CapCut, menús de clip principal/overlay separados y controles correspondientes. CDP qa-capcut-nav-real.json PASS, regresiones 10/10. Carlos acepta iconos pero todavía no navegación. Referencias, hashes, rollback y pendientes en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No prometer copia 100% sin inventario completo; no cerrar V1/Q03-Q05 ni aceptación V1.1. Mantener monitor y producción intactos.
