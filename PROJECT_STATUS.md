@@ -1,3 +1,7 @@
+## 21/11/2026 · Revisión nº 17
+
+Modo contextual móvil desplegado: «Editar existente» predeterminado, iconos/capas activos al cabezal, «+ Añadir» catálogo nativo, «Todas las capas». Máscara/B-roll doble acceso al mismo ID; undo sin pasos vacíos. QA 22/22 específicos y 10/10 regresión, R14 propietario intacto. Proxies 7/7 ready; R16 fluidez experimental aún NO desplegada. Validar en montaje completo y dispositivo real antes de cerrar. Evidencia y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
 ## 21/11/2026 · Revisión nº 15
 
 Desplegada selección explícita timeline→monitor, hitbox comp por contenido y selector «Elegir elemento» para solapados, «Editar elementos» / «Salir del grupo». QA 15/15 con seis clips reales y 10/10 regresiones; proyecto R14 propietario byte a byte intacto. Fluidez R16 experimental NO desplegada. Reaplicar delta sobre R15 y validar; no cerrar V1/V1.1. Evidencia en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
