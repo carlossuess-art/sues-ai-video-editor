@@ -1,4 +1,9 @@
 
+## Q03 · 21/11/2026 · Ajuste de «para» en exportación privada
+
+Carlos detectó desfase en «para» de «ido abandonando para poder encajar». Gemini informa imagen a 10 fps, entrada 53,5 s y voz estimada 54,9–55,0 s (margen aproximado 0,1–0,15 s), por tanto adelanto de ~1,4 s; no equivale a escucha directa del operador. Copia técnica `test-project-q03-158404-para-20261121` preparada y ejecutada con 108 operaciones; se cambió la entrada del tercer wordTime C48.S05 a 54,9 s manteniendo el resto, fingerprint esperado d6f3e4210577107b5f1adcbe65e030ddca7b510a2275b0b5bc9dbb0fd1e18c41. Unidad `sues-q03-para-render-20261121` renderiza frames 1575–1775; unidad `sues-q03-para-assemble-20261121` espera y ejecuta ensamblado con validaciones. Consultar unidades y `q03-review/assemble-para-20261121.log` antes de reintentar. Todavía no hay nueva candidata verificada ni auditoría de ella. Se conserva Q03_c. Q03 en curso, no despliegue.
+
+
 ## Q03 · 21/11/2026 · Segundo visionado de Carlos: «para» pendiente
 
 Carlos comunica un segundo visionado de la candidata Q03_c y considera correcta la sincronización salvo «para» en «ido abandonando para poder encajar», que percibe retrasado aproximadamente un segundo. La copia técnica identifica C48.S05: `ido abandonando para`, clip 52,0667–55,1333 s, entrada configurada de «para» 53,4333 s; ASR previo estima 53,42 s pero no sustituye escucha ni desvirtúa la observación. Evitar mover un segundo por suposición: comprobar a oído y con frames el inicio exacto del «para» hablado y mostrado, y si precisa corregirlo en copia conservando el resto, exportar y validar nueva versión. Carlos no ha aprobado el Reel ni autorizado despliegue. Q03 sigue en curso, no se afirma doble QA de una nueva versión.
