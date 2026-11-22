@@ -1,0 +1,26 @@
+[Unit]
+Description=SUES FableCut Q03 incremental export QA (private loopback)
+After=network.target
+StartLimitIntervalSec=60
+StartLimitBurst=4
+
+[Service]
+Type=simple
+User=suesnle
+Group=suesnle
+WorkingDirectory=/opt/sues-secure-headless-qa-20261122/q03-integrated-stage-20261122/app
+ExecStart=/bin/bash /opt/sues-secure-headless-qa-20261122/q03-integrated-stage-20261122/start-private-qa.sh
+Restart=on-failure
+RestartSec=5
+CPUQuota=75%
+MemoryMax=3G
+TasksMax=200
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
