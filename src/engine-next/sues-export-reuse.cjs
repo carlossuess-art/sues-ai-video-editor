@@ -5,10 +5,13 @@ const shaFile=(file)=>{const fd=fs.openSync(file,"r"),h=crypto.createHash("sha25
 const sha=(value)=>crypto.createHash("sha256").update(value).digest("hex");
 const manifestName=".sues-export-reuse-v1.json";
 const deps=["app.js","index.html","server.js","comp.js","motion.js","sues-export-audio.js","sues-segmented-export.js","sues-export-background.js"];
-function fingerprint({projectFile,appDir,profile,chunkFrames}){
+function fingerprint({projectFile,appDir,profile,chunkFrames,snapshotRaw=null}){
  if(process.env.SUES_EXPORT_REUSE!=="1")return null;
  const root=fs.realpathSync(path.dirname(projectFile));
- const raw=fs.readFileSync(projectFile),project=JSON.parse(raw.toString("utf8").replace(/^\uFEFF/,""));
+ // A running export owns its initial byte-exact snapshot. Live edits must not
+ // invalidate that in-flight output; media and renderer bytes are still rechecked.
+ const raw=snapshotRaw==null?fs.readFileSync(projectFile):Buffer.from(snapshotRaw);
+ const project=JSON.parse(raw.toString("utf8").replace(/^\uFEFF/,""));
  if(!Array.isArray(project.media)||!Array.isArray(project.clips))return null;
  const media=[];
  for(const m of project.media){
