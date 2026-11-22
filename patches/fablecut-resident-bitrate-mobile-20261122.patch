@@ -1,0 +1,128 @@
+--- a/fablecut/app.js
++++ b/fablecut/app.js
+@@ -1591,12 +1591,16 @@
+   return job;
+ }
+ function scheduleSave() {
++  // The dedicated export browser is read-only; rendering a snapshot must not
++  // bump the project's revision or interfere with a live editor session.
++  if (new URLSearchParams(location.search).get("suesResidentWorker")==="1") return;
+   state.dirtyTimeline = true;
+   if (!state.connected) return;
+   clearTimeout(runtime.saveTimer);
+   runtime.saveTimer = setTimeout(() => { runtime.saveTimer = null; enqueueProjectSave(); }, 400);
+ }
+ async function saveNow() {
++  if (new URLSearchParams(location.search).get("suesResidentWorker")==="1") return false;
+   project.revision++;
+   const body = JSON.stringify(projectJSON(), null, 2);
+   try {
+@@ -18647,7 +18651,10 @@
+       els.preview.height = h;
+     }
+     const codec = webCodecsAvcCodec();
+-    const bitrate = job ? Math.max(40_000_000, webCodecsBitrate(w, h, fps)) : webCodecsBitrate(w, h, fps);
++    const configuredWorkerRate = Number(window.__suesResidentBitrateMbps);
++    const bitrate = job && window.__suesResidentToken && Number.isFinite(configuredWorkerRate) && configuredWorkerRate >= 4 && configuredWorkerRate <= 40
++      ? Math.round(configuredWorkerRate * 1_000_000)
++      : job ? Math.max(40_000_000, webCodecsBitrate(w, h, fps)) : webCodecsBitrate(w, h, fps);
+     const bitrateMode = getSetting("webCodecsBitrateMode") === "constant" ? "constant" : "variable";
+     encoder = new VideoEncoder({
+       output: (chunk) => {
+--- a/fablecut/server.js
++++ b/fablecut/server.js
+@@ -1066,6 +1066,15 @@
+         (process.env.SUES_SEGMENTED_EXPORT === "1" && opts.where === "headless" &&
+          (!opts.range || opts.range === "entire") && !opts.profile && !opts.preset && !opts.delivery && !opts.outputs);
+       if (segmentedRequested) {
++        if(opts.expectedRevision != null){
++          if(!Number.isSafeInteger(opts.expectedRevision)||opts.expectedRevision<0){
++            sendJSON(res,400,{error:"Invalid expected revision"});return;
++          }
++          const latest=JSON.parse(fs.readFileSync(PROJECT_FILE,"utf8").replace(/^\uFEFF/,""));
++          if(Number(latest.revision||0)!==opts.expectedRevision){
++            sendJSON(res,409,{error:"Project was edited before the server export started; retry from current revision"});return;
++          }
++        }
+         if (process.env.FABLECUT_ENABLE_AUDIO_ONLY !== "1") {sendJSON(res, 409, {error:"Segmented export requires continuous audio mixer"});return;}
+         if (opts.where !== "headless" || opts.window || opts.videoOnly || opts.profile || opts.outputs) {sendJSON(res,400,{error:"Segmented export needs one full headless timeline"});return;}
+         sendJSON(res,200,segmentedJobs.request());return;
+@@ -1178,7 +1187,7 @@
+ 
+   /* API: fast export (browser-rendered frames → ffmpeg encode) */
+   if (p === "/api/export/ffmpeg" && req.method === "GET") {
+-    sendJSON(res, 200, { available: HAS_FFMPEG });
++    sendJSON(res, 200, { available: HAS_FFMPEG, residentEnabled:!!residentWorker, residentBitrateMbps:Number(process.env.SUES_RESIDENT_BITRATE_MBPS)||null });
+     return;
+   }
+   if (p === "/api/export/profiles" && req.method === "GET") {
+--- a/fablecut/sues-segmented-export.js
++++ b/fablecut/sues-segmented-export.js
+@@ -16,6 +16,8 @@
+  return path.join(root,name);
+ };
+ function createSegmentedExports({jobs,projectFile,exportsDir,chunkFrames=90,encoderProfile='delivery'}){
++ const rate=Number(process.env.SUES_RESIDENT_BITRATE_MBPS);
++ const cacheProfile=process.env.SUES_RESIDENT_WORKER==='1' && process.env.SUES_RESIDENT_BITRATE_MBPS && Number.isFinite(rate) && rate>=4 && rate<=40 ? encoderProfile+':resident-'+rate+'Mbps' : encoderProfile;
+  const tasks=new Map();
+  const view=(j)=>({id:j.id,kind:'export',status:j.status,cached:!!j.cached,via:'headless',range:'entire',profile:j.nativePlan?'native-ffmpeg-v1':encoderProfile,progress:j.progress,src:j.src||null,error:j.error||null,created:j.created,updated:j.updated});
+  const active=()=>[...tasks.values()].find(j=>!['done','failed','cancelled'].includes(j.status));
+@@ -103,7 +105,7 @@
+    // Store a reusable output only if media, renderer, and project are still
+    // byte-for-byte identical to the input of this completed export.
+    try{
+-    const keyNow=Reuse.fingerprint({projectFile,appDir:__dirname,profile:encoderProfile,chunkFrames,snapshotRaw:j.projectRaw});
++    const keyNow=Reuse.fingerprint({projectFile,appDir:__dirname,profile:cacheProfile,chunkFrames,snapshotRaw:j.projectRaw});
+     if(j.cacheKey&&keyNow===j.cacheKey)Reuse.remember({exportsDir,key:j.cacheKey,frames:j.frames,fps:j.fps,src:j.src});
+    }catch(err){console.warn('[SUES cache] unable to remember export:',err.message)}
+ 
+@@ -171,7 +173,7 @@
+    const frames=Math.round(Math.max(0,...ends)*fps);
+    if(!(fps>0&&frames>=1&&frames<=108000))throw failed('Invalid timeline frame count',400);
+    const nativePlan=process.env.SUES_NATIVE_FFMPEG==='1'?Native.evaluate(project,{dataDir:path.dirname(projectFile)}):null;
+-   const engine=nativePlan?.ok?'native-ffmpeg-v1':encoderProfile;
++   const engine=nativePlan?.ok?'native-ffmpeg-v1':cacheProfile;
+    let cacheKey=null,cached=null;
+    try{
+     cacheKey=Reuse.fingerprint({projectFile,appDir:__dirname,profile:engine,chunkFrames});
+--- a/fablecut/sues-export-background.js
++++ b/fablecut/sues-export-background.js
+@@ -56,7 +56,17 @@
+   catch{}
+  }
+  try{
+-  const r=await fetch("/api/export/request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({range:"entire",delivery,where:"headless"})});
++  let opts={range:"entire",delivery,where:"headless"};
++  const fullBest=delivery.container==="mp4"&&delivery.video?.codec==="h264"
++    &&Number(delivery.video?.bitrate)===16000
++    &&Number(delivery.width)===Number(project.width)&&Number(delivery.height)===Number(project.height)
++    &&!project.exportFrame;
++  if(fullBest){
++    const caps=await fetch("/api/export/ffmpeg",{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
++    if(caps?.residentEnabled&&Number(caps.residentBitrateMbps)===16)
++      opts={range:"entire",where:"headless",segmented:true,expectedRevision:project.revision};
++  }
++  const r=await fetch("/api/export/request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(opts)});
+   const j=await r.json();if(!r.ok||!j.id)throw Error(j.error||"No se pudo iniciar el trabajo");
+   const record={id:j.id,revision:project.revision,projectId:runtime.projectId,signature,created:Date.now()};
+   store(record);attach(record,true);
+--- a/fablecut/sues-resident-chromium.cjs
++++ b/fablecut/sues-resident-chromium.cjs
+@@ -11,7 +11,7 @@
+   let browser=null,socket=null,launching=null,seq=0;
+   const pending=new Map();
+   let lost=()=>{};
+-  const pageUrl="http://127.0.0.1:"+port+"/";
++  const pageUrl="http://127.0.0.1:"+port+"/?suesResidentWorker=1";
+   function rpc(method,params){
+     if(!socket||socket.readyState!==WebSocket.OPEN)return Promise.reject(Error("Resident CDP disconnected"));
+     const id=++seq;
+@@ -92,7 +92,7 @@
+       }
+       if(!ready)throw Error("Resident compositor did not finish initialization");
+       const init=await rpc("Runtime.evaluate",{
+-        expression:"window.__suesResidentToken="+JSON.stringify(secret)+";true",returnByValue:true
++        expression:"window.__suesResidentToken="+JSON.stringify(secret)+";window.__suesResidentBitrateMbps="+JSON.stringify(Number(process.env.SUES_RESIDENT_BITRATE_MBPS)||0)+";true",returnByValue:true
+       });
+       if(init.exceptionDetails||init.result?.value!==true)throw Error("Resident token initialization failed");
+     })();
