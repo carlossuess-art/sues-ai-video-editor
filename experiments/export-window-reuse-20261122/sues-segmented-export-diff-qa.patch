@@ -1,0 +1,78 @@
+--- /opt/sues-secure-headless-qa-20261122/app-bitrate-tune-qa/sues-segmented-export.js	2026-11-22 17:16:49.541131486 +0000
++++ /opt/sues-secure-headless-qa-20261122/app-bitrate-tune-qa/sues-segmented-export-diff-qa.js	2026-11-22 20:13:31.127137804 +0000
+@@ -3,6 +3,8 @@
+ "use strict";
+ const fs=require('fs'),path=require('path'),crypto=require('crypto');
+ const Reuse=require('./sues-export-reuse.cjs');
++const Window=require('../native-fastpath-qa/sues-window-reuse-v1.cjs');
++const WindowStore=require('../native-fastpath-qa/sues-window-cache-store-qa.cjs');
+ const {execFile,spawn}=require('child_process');
+ const Native=require('./sues-native-ffmpeg.cjs');
+ const run=(args,timeout=180000)=>new Promise((ok,fail)=>execFile(args[0],args.slice(1),{encoding:'utf8',timeout,maxBuffer:2097152},(e,stdout,stderr)=>e?fail(Error(stderr||e.message)):ok(stdout)));
+@@ -18,6 +20,16 @@
+ function createSegmentedExports({jobs,projectFile,exportsDir,chunkFrames=90,encoderProfile='delivery'}){
+  const rate=Number(process.env.SUES_RESIDENT_BITRATE_MBPS);
+  const cacheProfile=process.env.SUES_RESIDENT_WORKER==='1' && process.env.SUES_RESIDENT_BITRATE_MBPS && Number.isFinite(rate) && rate>=4 && rate<=40 ? encoderProfile+':resident-'+rate+'Mbps' : encoderProfile;
++ const enabledWindowQA=process.env.SUES_WINDOW_REUSE_QA==='1' && process.env.SUES_EXPORT_REUSE==='1';
++ const windowProof=(project,frames,fps)=>{
++  if(!enabledWindowQA)return null;
++  const stable={...project,clips:[],revision:null,name:null};
++  const globalMediaProof=Reuse.fingerprint({projectFile,appDir:__dirname,
++   profile:cacheProfile,chunkFrames,snapshotRaw:Buffer.from(JSON.stringify(stable))});
++  if(!globalMediaProof)return null;
++  const rendererProof=WindowStore.shaFile(__filename)+':'+WindowStore.shaFile(require.resolve('../native-fastpath-qa/sues-window-reuse-v1.cjs'));
++  return Window.windows(project,{frames,fps,chunkFrames,globalMediaProof,rendererProof});
++ };
+  const tasks=new Map();
+  const view=(j)=>({id:j.id,kind:'export',status:j.status,cached:!!j.cached,via:'headless',range:'entire',profile:j.nativePlan?'native-ffmpeg-v1':encoderProfile,progress:j.progress,src:j.src||null,error:j.error||null,created:j.created,updated:j.updated});
+  const active=()=>[...tasks.values()].find(j=>!['done','failed','cancelled'].includes(j.status));
+@@ -72,6 +84,27 @@
+     await checkProject(j);
+     const w=queue.shift();j.base=.12+.78*(w.startFrame/j.frames);j.weight=.78*((w.endFrame-w.startFrame)/j.frames);
+     try{
++     const wi=Math.floor(w.startFrame/chunkFrames);
++     if(j.windowSource?.reuse[wi]===true &&
++        j.windowPlan?.[wi]?.startFrame===w.startFrame &&
++        j.windowPlan?.[wi]?.endFrame===w.endFrame){
++      const p=path.join(scratch,'reused-'+w.startFrame+'.mp4');
++      try{
++       await run(['ffmpeg','-nostdin','-hide_banner','-loglevel','error','-y',
++        '-ss',String(w.startFrame/j.fps),'-i',j.windowSource.file,
++        '-t',String((w.endFrame-w.startFrame)/j.fps),'-map','0:v:0','-an',
++        '-c:v','copy','-avoid_negative_ts','make_zero',p],45000);
++       const meta=JSON.parse(await run(['ffprobe','-v','error','-select_streams','v:0',
++        '-show_entries','stream=codec_name,nb_frames,width,height','-of','json',p],20000));
++       const v=meta.streams?.[0];
++       if(v?.codec_name!=='h264'||Number(v.nb_frames)!==w.endFrame-w.startFrame ||
++          Number(v.width)!==Number(j.snapshot.width)||Number(v.height)!==Number(j.snapshot.height))
++        throw failed('Reused window failed frame/geometry verification');
++       clips.push({at:w.startFrame,frames:w.endFrame-w.startFrame,path:p});
++       j.progress=.12+.78*(w.endFrame/j.frames);j.updated=Date.now();j.child=null;
++       continue;
++      }catch(err){try{fs.unlinkSync(p)}catch{};console.warn('[SUES window QA] re-rendering unsafe reuse:',err.message)}
++     }
+      const res=await child(j,{kind:'export',range:'entire',profile:encoderProfile,videoOnly:true,window:w});
+      const file=await validatedClip(res.src,w.endFrame-w.startFrame);
+      temporaryOutputs.add(file);
+@@ -109,6 +142,9 @@
+     if(j.cacheKey&&keyNow===j.cacheKey)Reuse.remember({exportsDir,key:j.cacheKey,frames:j.frames,fps:j.fps,src:j.src});
+    }catch(err){console.warn('[SUES cache] unable to remember export:',err.message)}
+ 
++   if(j.windowPlan)try{
++    WindowStore.remember({exportsDir,src:j.src,windows:j.windowPlan,frames:j.frames,fps:j.fps});
++   }catch(e){console.warn('[SUES window QA] manifest not saved:',e.message)}
+    j.status='done';j.progress=1;j.updated=Date.now();
+   }catch(e){j.error=String(e.message||e);j.status=j.cancelled?'cancelled':'failed';j.updated=Date.now();}
+   finally{
+@@ -183,6 +219,11 @@
+    const j={id,status:cached?'done':'pending',progress:cached?1:0,cached:!!cached,cacheKey,nativePlan:nativePlan?.ok?nativePlan:null,created:now,updated:now,frames,fps,
+      revision:project.revision||0,snapshot:project,projectRaw:raw,revisionHash:crypto.createHash('sha256').update(raw).digest('hex'),
+      child:null,cancelled:false,src:cached?.src||null,error:null,base:0,weight:0};
++   if(!cached&&!j.nativePlan)try{
++    j.windowPlan=windowProof(project,frames,fps);
++    if(j.windowPlan)j.windowSource=WindowStore.lookup({exportsDir,
++      windows:j.windowPlan,frames,fps});
++   }catch(e){console.warn('[SUES window QA] safe cache miss:',e.message)}
+    tasks.set(id,j);if(!cached)setImmediate(()=>void (j.nativePlan?executeNative(j):execute(j)));
+    const housekeeping=setTimeout(()=>{if(['done','failed','cancelled'].includes(j.status))tasks.delete(id);},2*3600000);
+    housekeeping.unref?.();
