@@ -1,3 +1,12 @@
+## Q03 r27 · Ventanas por composición (solo QA, opt-in) · 22/11/2026
+
+El proyecto R14 (55,566667s, 1667f, 165 clips, 56 composiciones) reveló un caso muy habitual: cambiar **una sola palabra dentro de un comp de subtítulos** invalidaba las 10 ventanas, porque toda la colección `project.comps` formaba parte de la firma global. Era seguro pero excesivamente conservador.
+
+Se conserva el planificador y el orquestador **existentes** y se añade el opt-in **SUES_COMP_SCOPED_CACHE_QA=1** (por defecto APAGADO; no se ha añadido a `start-private-qa.sh`). En este modo, la firma general conserva medios y código, y cada ventana incorpora los comp completos usados por los clips que aparecen en su intervalo con halo de 6 fotogramas; las composiciones anidadas se siguen recursivamente. Si hay un comp ausente, ciclo o audio dentro de comp, no se permite reutilización. Se versiona el schema `sues-window-reuse/qa-v2-comp` para evitar leer accidentalmente firmas v1; cambios de audio principal, configuración global, medios o código invalidan el contenido necesario.
+
+**Pruebas dirigidas sobre R14:** editar título `comp-SC01-TITLE` pasa de invalidar 10/10 a 1/10 ventanas; editar caption animado que cruza el corte del segundo 6 invalida 2/10; cambio audio invalida 10/10. Los tests extra de fallos cerrados incluyen comp ausente, ciclo recursivo, audio anidado, media/código y schema. Suite completa en staging **90/90 PASS** (`regression-r27-all.log`, ~27,38s); 6 casos nuevos, pruebas QA específicas 6/6 PASS. Código de esta carpeta y test `test/sues-comp-scoped-window-reuse-qa.test.cjs`; rollback local guardado antes de modificar. **No se ha medido nuevo export íntegro ni coste visual real**; una reducción de ventanas planificadas NO es prueba de reducción proporcional de segundos. Falta E2E con edición real dentro de comp y comparación de 1667f + mezcla de audio, hardening CDP, Android físico, doble QA Film Director y primer render frío (último 579,5s), por lo que Q03 sigue EN CURSO.
+
+---
 # FableCut Q03 · Integración incremental aislada · 22/11/2026
 
 **Estado:** implementado y probado en una copia de desarrollo del **editor FableCut existente**, no desplegado a producción. Esta carpeta NO es un editor nuevo: son dos módulos adicionales y la versión modificada del orquestador original `sues-segmented-export.js`, más pruebas.
