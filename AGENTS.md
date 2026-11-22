@@ -1,3 +1,7 @@
+## R25 · 22/11/2026 · Bloqueo repetido al 11 %
+
+Confirmado ffmpeg del VPS esperando fotogramas del navegador móvil (~6min/2s CPU), audio preparado. QA del tramo 0.4-0.7s real sin bloqueo (7 players), perfil composición 150-350ms/frame. Probable suspensión del navegador al cambiar de app, no demostrado por logs del Android. Prueba stage de job headless 0.2s NO completada, navegador no accesible en servicio live; no integrar ni desplegar sin prueba. Live intacto rev375 165 clips; stage restaurado. Pendiente arquitectura servidor independiente del móvil y velocidad verificada del Reel completo, sin degradar MG ni máscaras. Ver checkpoint R25.
+
 ## 22/11/2026 · R24 · Cancelación exportación reparada
 
 Localizado FFmpeg residual PID961113 de exportación cancelada: temporal ya eliminado, proceso vivo 35m; detenido selectivamente. Frontend aborta esperas bloqueadas y permite cerrar overlay con botón «Cancelar», señal visual inmediata y descarte sesión; backend limpia hijos SIGTERM→SIGKILL 1.5s. QA de cancelación congelada CDP, proceso sin TERM y regresión 10/10. Desplegado preview 8443, hashes validados y proyecto usuario rev374/165 clips intacto. Pendiente prueba móvil real y export completa 55s. Ver docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
