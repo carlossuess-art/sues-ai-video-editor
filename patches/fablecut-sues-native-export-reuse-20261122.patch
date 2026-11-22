@@ -1,0 +1,124 @@
+--- a/fablecut/sues-segmented-export.js
++++ b/fablecut/sues-segmented-export.js
+@@ -2,7 +2,9 @@
+    No production deployment. Enabled only with SUES_SEGMENTED_EXPORT=1. */
+ "use strict";
+ const fs=require('fs'),path=require('path'),crypto=require('crypto');
+-const {execFile}=require('child_process');
++const Reuse=require('./sues-export-reuse.cjs');
++const {execFile,spawn}=require('child_process');
++const Native=require('./sues-native-ffmpeg.cjs');
+ const run=(args,timeout=180000)=>new Promise((ok,fail)=>execFile(args[0],args.slice(1),{encoding:'utf8',timeout,maxBuffer:2097152},(e,stdout,stderr)=>e?fail(Error(stderr||e.message)):ok(stdout)));
+ const delay=(ms)=>new Promise(r=>setTimeout(r,ms));
+ const failed=(msg,code=409)=>Object.assign(Error(msg),{code});
+@@ -15,7 +17,7 @@
+ };
+ function createSegmentedExports({jobs,projectFile,exportsDir,chunkFrames=90,encoderProfile='delivery'}){
+  const tasks=new Map();
+- const view=(j)=>({id:j.id,kind:'export',status:j.status,via:'headless',range:'entire',profile:encoderProfile,progress:j.progress,src:j.src||null,error:j.error||null,created:j.created,updated:j.updated});
++ const view=(j)=>({id:j.id,kind:'export',status:j.status,cached:!!j.cached,via:'headless',range:'entire',profile:j.nativePlan?'native-ffmpeg-v1':encoderProfile,progress:j.progress,src:j.src||null,error:j.error||null,created:j.created,updated:j.updated});
+  const active=()=>[...tasks.values()].find(j=>!['done','failed','cancelled'].includes(j.status));
+  function ensure(j){if(j.cancelled)throw failed('Export cancelled');}
+  async function checkProject(j){
+@@ -98,6 +100,13 @@
+    if(!v||!a||v.codec_name!=='h264'||a.codec_name!=='aac'||+v.nb_frames!==j.frames||Math.abs(+info.format.duration-j.frames/j.fps)>.08)throw failed('Merged MP4 failed frame and audio checks');
+    await checkProject(j);
+    fs.renameSync(pending,target);j.src='/exports/'+encodeURIComponent(path.basename(target));
++   // Store a reusable output only if media, renderer, and project are still
++   // byte-for-byte identical to the input of this completed export.
++   try{
++    const keyNow=Reuse.fingerprint({projectFile,appDir:__dirname,profile:encoderProfile,chunkFrames,snapshotRaw:j.projectRaw});
++    if(j.cacheKey&&keyNow===j.cacheKey)Reuse.remember({exportsDir,key:j.cacheKey,frames:j.frames,fps:j.fps,src:j.src});
++   }catch(err){console.warn('[SUES cache] unable to remember export:',err.message)}
++
+    j.status='done';j.progress=1;j.updated=Date.now();
+   }catch(e){j.error=String(e.message||e);j.status=j.cancelled?'cancelled':'failed';j.updated=Date.now();}
+   finally{
+@@ -108,6 +117,50 @@
+    for(const file of temporaryOutputs){try{fs.unlinkSync(file);}catch{}}
+   }
+  }
++
++ async function executeNative(j){
++  let scratch=null; j.status='running';j.updated=Date.now();
++  try{
++   ensure(j);
++   scratch=fs.mkdtempSync(path.join(exportsDir,'.sues-native-'));
++   const output=path.join(scratch,'native.mp4');
++   const args=Native.command(j.nativePlan,output);
++   args.splice(args.length-1,0,'-progress','pipe:2');
++   await new Promise((resolve,reject)=>{
++    const proc=spawn('ffmpeg',args,{stdio:['ignore','ignore','pipe']});
++    j.nativeProc=proc;
++    let errors='';
++    proc.stderr.on('data',b=>{
++     const t=b.toString();errors=(errors+t).slice(-4000);
++     const matches=[...t.matchAll(/out_time_(?:us|ms)=(\d+)/g)];
++     if(matches.length){
++      const micros=Number(matches.at(-1)[1]);
++      if(Number.isFinite(micros))j.progress=Math.min(.94,Math.max(j.progress,micros/(j.frames/j.fps*1000000)*.94));
++      j.updated=Date.now();
++     }
++    });
++    proc.once('error',reject);
++    proc.once('close',(code,signal)=>code===0?resolve():reject(failed('Native FFmpeg failed: '+(errors||signal||code))));
++    if(j.cancelled)proc.kill('SIGTERM');
++   });
++   j.nativeProc=null;ensure(j);
++   const stat=fs.statSync(output);
++   if(!stat.isFile()||stat.size<200)throw failed('Native export missing MP4');
++   const info=JSON.parse(await run(['ffprobe','-v','error','-show_entries','format=duration:stream=codec_name,codec_type,nb_frames','-of','json',output],30000));
++   const v=info.streams?.find(x=>x.codec_type==='video'),a=info.streams?.find(x=>x.codec_type==='audio');
++   if(!v||!a||v.codec_name!=='h264'||a.codec_name!=='aac'||+v.nb_frames!==j.frames||Math.abs(+info.format.duration-j.frames/j.fps)>.08)throw failed('Native export frame/audio mismatch');
++   ensure(j);
++   if(j.cacheKey){
++    const now=Reuse.fingerprint({projectFile,appDir:__dirname,profile:'native-ffmpeg-v1',chunkFrames,snapshotRaw:j.projectRaw});
++    if(now!==j.cacheKey)throw failed('Native inputs changed during export');
++   }
++   const target=path.join(exportsDir,'SUES_export_'+j.id+'.mp4');
++   fs.renameSync(output,target);j.src='/exports/'+encodeURIComponent(path.basename(target));
++   try{if(j.cacheKey)Reuse.remember({exportsDir,key:j.cacheKey,frames:j.frames,fps:j.fps,src:j.src})}catch(e){console.warn('[SUES native cache]',e.message)}
++   j.status='done';j.progress=1;j.updated=Date.now();
++  }catch(e){j.error=String(e.message||e);j.status=j.cancelled?'cancelled':'failed';j.updated=Date.now()}
++  finally{if(j.nativeProc)try{j.nativeProc.kill('SIGTERM')}catch{};j.nativeProc=null;if(scratch)fs.rmSync(scratch,{force:true,recursive:true})}
++ }
+  return {
+   request(){
+    if(active())throw failed('A segmented export is still running');
+@@ -116,11 +169,18 @@
+    const ends=(project.clips||[]).map(c=>Number(c.start||0)+Number(c.duration||0));
+    const frames=Math.round(Math.max(0,...ends)*fps);
+    if(!(fps>0&&frames>=1&&frames<=108000))throw failed('Invalid timeline frame count',400);
++   const nativePlan=process.env.SUES_NATIVE_FFMPEG==='1'?Native.evaluate(project,{dataDir:path.dirname(projectFile)}):null;
++   const engine=nativePlan?.ok?'native-ffmpeg-v1':encoderProfile;
++   let cacheKey=null,cached=null;
++   try{
++    cacheKey=Reuse.fingerprint({projectFile,appDir:__dirname,profile:engine,chunkFrames});
++    cached=Reuse.lookup({exportsDir,key:cacheKey,frames,fps});
++   }catch(err){console.warn('[SUES cache] safe miss:',err.message)}
+    const id='xs_'+crypto.randomBytes(6).toString('hex'),now=Date.now();
+-   const j={id,status:'pending',progress:0,created:now,updated:now,frames,fps,
+-     revision:project.revision||0,snapshot:project,revisionHash:crypto.createHash('sha256').update(raw).digest('hex'),
+-     child:null,cancelled:false,src:null,error:null,base:0,weight:0};
+-   tasks.set(id,j);setImmediate(()=>void execute(j));
++   const j={id,status:cached?'done':'pending',progress:cached?1:0,cached:!!cached,cacheKey,nativePlan:nativePlan?.ok?nativePlan:null,created:now,updated:now,frames,fps,
++     revision:project.revision||0,snapshot:project,projectRaw:raw,revisionHash:crypto.createHash('sha256').update(raw).digest('hex'),
++     child:null,cancelled:false,src:cached?.src||null,error:null,base:0,weight:0};
++   tasks.set(id,j);if(!cached)setImmediate(()=>void (j.nativePlan?executeNative(j):execute(j)));
+    const housekeeping=setTimeout(()=>{if(['done','failed','cancelled'].includes(j.status))tasks.delete(id);},2*3600000);
+    housekeeping.unref?.();
+    return view(j);
+@@ -130,11 +190,12 @@
+    if(!['done','failed','cancelled'].includes(j.status)){
+     j.cancelled=true;j.status='cancelled';j.error='cancelled';j.updated=Date.now();
+     if(j.child)jobs.cancel(j.child);
++    if(j.nativeProc)try{j.nativeProc.kill('SIGTERM')}catch{};
+    }
+    return view(j);
+   },
+   busy(){return Boolean(active());},
+-  shutdown(){for(const j of tasks.values())if(j.child)jobs.cancel(j.child);},
++  shutdown(){for(const j of tasks.values()){if(j.child)jobs.cancel(j.child);if(j.nativeProc)try{j.nativeProc.kill('SIGTERM')}catch{}}},
+  };
+ }
+ module.exports={createSegmentedExports};
