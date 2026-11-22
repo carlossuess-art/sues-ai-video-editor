@@ -1,3 +1,13 @@
+## SEGURIDAD QA · Chromium sin --no-sandbox, AppArmor existente · 22/11/2026
+
+**Problema identificado** en VPS Ubuntu24.04: el Chrome del usuario técnico `suesnle` (sin HOME propio) falla sin bypass: `No usable sandbox`, exit 134. Kernel `kernel.unprivileged_userns_clone=1`, `kernel.apparmor_restrict_unprivileged_userns=1`. **No se modificaron sysctl, AppArmor global, perfiles del sistema ni permisos compartidos.**
+
+**Solución exploratoria en QA aislada:** existía el perfil `sues-qa-chrome-20261122` ya cargado en AppArmor, reportado `(unconfined)`. Se ha reutilizado vía `aa-exec -p sues-qa-chrome-20261122` como lanzador del Chromium existente; HOME/XDG privados, ejecutable aislado mediante hardlink sin nueva instalación, puerto CDP 18148 o 18147 *solo loopback*. El navegador **sin el argumento `--no-sandbox`** contestó `/json/version` (Chrome/151.0.7922.34, CDP1.3) con servidor de smoke local. **Prueba FableCut real** bajo la misma ruta, exportación privada de ventana frames900–914, 15/15 fotogramas H264 1080×1920, duración0,5s, **26,553s**, `sandbox-fablecut-window15-20261122.json` **PASS**. Registro de ejecución `sues-q03-sandbox-render15-20261122.service` terminó exit0; servidor privado apagado tras uso y perfiles temporales limpiados.
+
+**LÍMITE DE SEGURIDAD:** el perfil AppArmor reporta `unconfined`, de modo que el éxito funcional sin `--no-sandbox` NO equivale a certificación de aislamiento completo, a una política AppArmor confinante, a separación de red, ni a autorización de servidor público. Para producción: analizar confinamiento real (Chrome namespace/seccomp/NoNewPrivs, AppArmor restrictivo, CDP autenticado en loopback, Chrome runtime no compartido, hardening de puertos/capabilities), y hacer E2E completo de 180f + reinicio/cancelación/recuperación con ese régimen antes de plantear despliegue. No relajar `kernel.apparmor_restrict_unprivileged_userns`, no activar Chrome `--no-sandbox` públicamente. Sin cambios en producción, WAC, V29, iStudio, DNS.
+
+---
+
 ## VALIDACIÓN POSTERIOR: TEXTO EDITADO CON EL COMPOSITOR REAL FABLECUT · 22/11/2026
 
 **Resultado de QA integral aislada:** sobre la misma copia R14 (165 clips/37 medios), se cambió el texto del clip `SC08-QUESTION` en ~33,9667 s, sin alterar el máster ni producción. Se arrancó FableCut real y el worker Chromium WebCodecs privado, sólo por loopback, con un directorio HOME/XDG aislado para el usuario `suesnle`. El browser aislado continuó usando `--no-sandbox` y NO puede exponerse al exterior. No se instaló un navegador nuevo; se reutilizó el ejecutable existente mediante hardlinks sin modificar permisos de producción.
