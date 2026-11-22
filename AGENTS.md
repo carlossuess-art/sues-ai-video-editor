@@ -1,3 +1,7 @@
+## 22/11/2026 · Revisión nº 22
+
+Corrección bloqueo mezcla de audio desplegada preview 8443: fuentes audibles únicas, ventanas de exportación, progreso, cancel/timeout; mezcla real 55.57s en 6.5s, QA 8/8; descarga por botón UI real de fragmento 1s H264/AAC con archivo recibido verificado y 10/10 regresión. R14 intacto. Pendiente export UI completa 55s y prueba física, no sustituir por export MCP. Ver docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
 ## 21/11/2026 · Revisión nº 21
 
 Arranque móvil prioritario por proxy y ventana cercana al cabezal, descarga simple MP4/MOV + calidad/peso estimado. Desplegado preview 8443; arranque frío 4.831s/7 reproductores en copia 166 clips; recarga 27.277s con ~20s antes de request, pendiente diagnóstico. QA frío 8/8 + regresión 10/10; R14 propietario intacto. Pendiente prueba física, reproducción completa y render final. Ver docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
