@@ -1,3 +1,17 @@
+## VALIDACIÓN POSTERIOR: TEXTO EDITADO CON EL COMPOSITOR REAL FABLECUT · 22/11/2026
+
+**Resultado de QA integral aislada:** sobre la misma copia R14 (165 clips/37 medios), se cambió el texto del clip `SC08-QUESTION` en ~33,9667 s, sin alterar el máster ni producción. Se arrancó FableCut real y el worker Chromium WebCodecs privado, sólo por loopback, con un directorio HOME/XDG aislado para el usuario `suesnle`. El browser aislado continuó usando `--no-sandbox` y NO puede exponerse al exterior. No se instaló un navegador nuevo; se reutilizó el ejecutable existente mediante hardlinks sin modificar permisos de producción.
+
+**Render real de ventana modificada:** frames 900–1079 (180/180, 6s), H.264,1080×1920, **100,229 s**, 11.827.205 bytes, SHA256 `232a40d4bf56b0577d938c3ac6044116a3015f3e30c2bc8c7fbc51edc93546c8`. QA file `/opt/sues-secure-headless-qa-20261122/native-fastpath-qa/window-e2e-run/exports/SUES QA R14 COMPLETO 55s - test name change only.mp4`. El primer readback FFprobe falló porque la URL codificaba espacios `%20`; se corrigió el path del verificador sin repetir el render y ffprobe dio **PASS**.
+
+**Ensamblado incremental con un segmento REAL:** 9 de 10 ventanas desde MP4 máster verificado + 1 ventana auténtica recién renderizada de FableCut. El adaptador solicitó exactamente una orden `export` para frames [900,1080) y una mezcla de audio; ensambló el MP4 completo en **9,186 s** sin errores. Tiempo técnico secuencial de ventana+ensamblado **109,415 s ≈ 1m49,4s**, no incluye pruebas de auditoría ni extrapola a cualquier edición. Report `window-real-edited-e2e-result-20261122.json`, salida `SUES_export_xs_b59b401bc353.mp4` en QA.
+
+**Auditoría definitiva de vídeo:** `real-edited-full-parity-20261122.json` = **PASS**, 1667/1667 fotogramas decodificados, 1487 fotogramas de ventanas intactas píxel a píxel IDÉNTICOS al máster, 180 fotogramas en la ventana editada diferentes, 0 errores de decodificación. Revisión de audio artística/PCM no acreditada: el test de ensamblado usa WAV recodificado desde AAC previo, no el mezclador final del montaje nuevo. Se ha detenido el servicio Chrome QA tras render, sin tocar producción.
+
+**Alcance:** queda demostrada la exportación incremental en QA para un cambio de texto real sobre R14. **NO** está demostrado un export frío en 1–3 minutos (último frío completo 9m39,5s). NO significa que el nuevo motor esté activado en la app pública, ni aprobado en Pixel real, ni doble QA artística. Faltan seguridad del sandbox/CDP, pruebas de cancelación/reanudación, integración real del botón y flujo de proyectos, evaluación de máscaras/compounds, regresiones negativas, memoria/disco (VPS llegó al95% durante prueba), staging privado autorizado y rollback antes de producción. Q03 continúa EN CURSO; Q04 PENDIENTE, Q05 solo despliegue de candidata anterior. No modificar V29/WAC/iStudio/DNS/producción.
+
+---
+
 # SUES V1 · Q03 · Reutilización de segmentos de exportación · QA 22/11/2026
 
 **Estado:** prototipo experimental VERIFICADO en VPS aislado, NO conectado a FableCut público, NO desplegado. Roadmap V1 mantiene Q03 EN CURSO; Q04 aceptación PENDIENTE, Q05 candidata pública anterior sin activar este motor. Rama de trabajo: `feat/speech-linked-motion-grammar-20261115`.
