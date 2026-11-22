@@ -11,7 +11,7 @@ function createResidentWorker({port,debugPort,profileDir,qaNoSandbox=false}={}){
   let browser=null,socket=null,launching=null,seq=0;
   const pending=new Map();
   let lost=()=>{};
-  const pageUrl="http://127.0.0.1:"+port+"/";
+  const pageUrl="http://127.0.0.1:"+port+"/?suesResidentWorker=1";
   function rpc(method,params){
     if(!socket||socket.readyState!==WebSocket.OPEN)return Promise.reject(Error("Resident CDP disconnected"));
     const id=++seq;
@@ -92,7 +92,7 @@ function createResidentWorker({port,debugPort,profileDir,qaNoSandbox=false}={}){
       }
       if(!ready)throw Error("Resident compositor did not finish initialization");
       const init=await rpc("Runtime.evaluate",{
-        expression:"window.__suesResidentToken="+JSON.stringify(secret)+";true",returnByValue:true
+        expression:"window.__suesResidentToken="+JSON.stringify(secret)+";window.__suesResidentBitrateMbps="+JSON.stringify(Number(process.env.SUES_RESIDENT_BITRATE_MBPS)||0)+";true",returnByValue:true
       });
       if(init.exceptionDetails||init.result?.value!==true)throw Error("Resident token initialization failed");
     })();
