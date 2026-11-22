@@ -1,0 +1,10 @@
+--- a/sues-resident-chromium.cjs
++++ b/sues-resident-chromium.cjs
+@@ -73,7 +73,6 @@
+         "--disable-background-timer-throttling","--disable-renderer-backgrounding",
+         "--disable-backgrounding-occluded-windows","--autoplay-policy=no-user-gesture-required",
+         "--remote-debugging-address=127.0.0.1","--remote-debugging-port="+debugPort,
+-        "--remote-allow-origins=*",
+         "--user-data-dir="+dir,pageUrl];
+       browser=spawn(chrome,args,{stdio:"ignore",windowsHide:true});
+       const proc=browser;
