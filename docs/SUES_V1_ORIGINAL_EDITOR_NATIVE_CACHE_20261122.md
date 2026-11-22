@@ -1,3 +1,7 @@
+## Aclaración de identidad del editor original (22/11/2026)
+
+**Nombre correcto indicado por Carlos: SUES iStudio** (no «Sway Studio»). El nombre literal `SUES iStudio` no aparece aún en los archivos/repo consultados; debe verificarse si corresponde exactamente al antiguo editor publicado en `editor.suesholistics.com`. Routing del Caddy VPS verificado: `editor.suesholistics.com` → `127.0.0.1:3010` (editor anterior); `studio.suesholistics.com` → `127.0.0.1:7780` (FableCut protegido por puerta de acceso). No confundir nombres de producto con dominio ni ejecutar cambios de routing sin permiso. El motor histórico FFmpeg está en este mismo repo, `src/local-pipeline.js`, `src/render-worker.js`, `scripts/templates/render_local_preview.py`.
+
 # SUES V1 · Motor nativo conservador y exportación reutilizable · 22/11/2026
 
 **Estado: implementación experimental aislada y pruebas técnicas reales superadas en subset sencillo; NO DESPLEGADA y NO APROBADA para R14 completo.** No se ha instalado otro producto ni consumido créditos externos. El editor publicado y V29/originales/WAC/DNS permanecen sin cambios.
