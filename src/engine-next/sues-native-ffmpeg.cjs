@@ -7,6 +7,7 @@ function evaluate(project,{dataDir}={}){
  const failure=(code,clip)=>({ok:false,reason:code,...(clip?{clip}:{}),engine:"existing-compositor"});
  if(!project||!Array.isArray(project.clips)||!Array.isArray(project.media))return failure("INVALID_PROJECT");
  if(n(project.fps,30)!==30||!Number.isInteger(project.width)||!Number.isInteger(project.height))return failure("UNSUPPORTED_CANVAS");
+ if(Array.isArray(project.tracks)&&project.tracks.some(t=>t.muted===true||t.solo===true||t.gain!=null||t.volume!=null))return failure("TRACK_AUDIO_OR_SOLO_UNSUPPORTED");
  const mediaById=new Map(project.media.map(m=>[m.id,m]));
  const disabled=new Set(project.disabledTracks||[]),clips=project.clips.filter(c=>c.disabled!==true&&!disabled.has(c.track));
  const videos=[],audios=[],root=path.resolve(dataDir||".");
@@ -20,6 +21,7 @@ function evaluate(project,{dataDir}={}){
   try{const p=fs.realpathSync(file);if(!p.startsWith(root+path.sep)||!fs.statSync(p).isFile())return null;return {file,p,m}}catch{return null}
  }
  function safeProps(c){
+  if(Object.keys(c).some(k=>!["id","mediaId","kind","track","start","in","duration","name","props","disabled","keyframes"].includes(k)))return false;
   if(c.keyframes&&Object.keys(c.keyframes).length)return false;
   if(c.parent||c.mask||c.filters||c.trackMatte||c.trackMask)return false;
   if(c.transitions?.length||c.fades?.length)return false;
@@ -28,7 +30,7 @@ function evaluate(project,{dataDir}={}){
   for(const [k,v] of Object.entries(vals))if(!equal(p[k],v))return false;
   if(p.bgRemove||p.flipH||p.flipV||p.chromaKey||(!["normal",undefined].includes(p.blend))||(!["none",undefined].includes(p.filterPreset)))return false;
   if(!["contain","cover",undefined].includes(p.fit))return false;
-  if(c.kind==="video"&&!equal(p.volume,0))return false;
+  if(c.kind==="video"&&!equal(n(p.volume,1),0))return false;
   if(c.kind==="audio"&&(!equal(p.volume,1)||!equal(p.gain,1)||!equal(p.pan,0)||!equal(p.duck,0)))return false;
   return true;
  }
