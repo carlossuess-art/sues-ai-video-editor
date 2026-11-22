@@ -1,3 +1,7 @@
+## 22/11/2026 · V1 EXPORTACIÓN QA COMPLETA, RENDIMIENTO PENDIENTE · NO DESPLEGADA
+
+**Leer primero:** [checkpoint de exportación 22/11](docs/SUES_V1_EXPORT_QA_20261122.md). Se ha generado MP4 auténtico R14 55,5667 s / 1667 frames / 1080×1920 + AAC con segmentación, verificación de frames y límites; **36,5 min**, aún inaceptable para V1. 12 s WebCodecs en 177,3 s (no prueba integral). Se descubrió la carrera de sincronización que sobrescribía el snapshot durante exportación (SSIM 0,487729 FAIL); parche aislado en FableCut y revalidación concurrente de 15 frames **SSIM 1,000000 PASS**, edición posterior preservada. La integración WebCodecs + parche, pruebas completas de rendimiento, QA audiovisual y descarga móvil siguen pendientes. **No se ha desplegado, no tocar V29/originales/WAC/DNS/producción.**
+
 ## 15/11/2026 · ÚLTIMO REEL AUTÉNTICO (10/11) · HyperFrames/FableCut probado en clon V18, DISEÑO NO APROBADO
 
 **Checkpoint más reciente:** [SUES_HF_REAL_REEL_V18_PRIVATE_QA_20261115.md](docs/SUES_HF_REAL_REEL_V18_PRIVATE_QA_20261115.md). El MP4 subido coincidió por **SHA-256 `0190efba90de1f7f73bfef8fc1c3822779a82c123225f77b68a50a9b31a77ad8`** con `recording-20261110-115912/original.mp4`; se reutilizó la V18 original (165 clips, 49 media, rev23, 55,5667s editados). QA en clon FableCut, sin sobrescribir ni publicar.
