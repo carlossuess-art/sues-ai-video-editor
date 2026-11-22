@@ -1,3 +1,7 @@
+## 22/11/2026 · R24 · Cancelación exportación reparada
+
+Localizado FFmpeg residual PID961113 de exportación cancelada: temporal ya eliminado, proceso vivo 35m; detenido selectivamente. Frontend aborta esperas bloqueadas y permite cerrar overlay con botón «Cancelar», señal visual inmediata y descarte sesión; backend limpia hijos SIGTERM→SIGKILL 1.5s. QA de cancelación congelada CDP, proceso sin TERM y regresión 10/10. Desplegado preview 8443, hashes validados y proyecto usuario rev374/165 clips intacto. Pendiente prueba móvil real y export completa 55s. Ver docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
 ## 22/11/2026 · R23 · Rendimiento export móvil
 
 Corregido y desplegado 8443 cargado masivo de reproductores: 44→7 en QA, eliminados parones de >9s en muestra de 5 frames; HTML video activo+próximo, inactivos no se crean y anteriores se liberan. Barra 95/97/100 según etapas reales, QA botón→MP4 0.2s y regresiones 10/10. Instancia de export abierta antes de R23 sigue código anterior y NO fue interrumpida. Proyecto usuario intacto. Sin validación 55s completa ni promesa de tiempo en móvil. Véase docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
