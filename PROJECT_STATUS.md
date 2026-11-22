@@ -1,3 +1,7 @@
+## 22/11/2026 · WEBCodecs + snapshot concurrente 15 FRAMES PASS · EXPORTACIÓN LENTA, NO DESPLEGADA
+
+La candidata WebCodecs V8 aislada en VPS pasa QA H264/AAC con edición concurrente (SSIM **1,000000** en 15 fotogramas, edición viva preservada); el orquestador antes hardcodeaba `delivery` y fue corregido para enviar WebCodecs de verdad. **55,5s para 0,5s de vídeo** en esta prueba, sigue siendo demasiado lento. Ver [checkpoint V1](docs/SUES_V1_EXPORT_QA_20261122.md) y [parche reproducible](docs/SUES_V1_WEBCODECS_SNAPSHOT_PATCH_20261122.md). Falta exportación de 55,57s con esa candidata, optimización de composición, QA audiovisual/descarga móvil y autorización de despliegue. **No producción, originales, V29, WAC ni DNS modificados.**
+
 ## 22/11/2026 · V1 EXPORTACIÓN QA COMPLETA, RENDIMIENTO PENDIENTE · NO DESPLEGADA
 
 **Leer primero:** [checkpoint de exportación 22/11](docs/SUES_V1_EXPORT_QA_20261122.md). Se ha generado MP4 auténtico R14 55,5667 s / 1667 frames / 1080×1920 + AAC con segmentación, verificación de frames y límites; **36,5 min**, aún inaceptable para V1. 12 s WebCodecs en 177,3 s (no prueba integral). Se descubrió la carrera de sincronización que sobrescribía el snapshot durante exportación (SSIM 0,487729 FAIL); parche aislado en FableCut y revalidación concurrente de 15 frames **SSIM 1,000000 PASS**, edición posterior preservada. La integración WebCodecs + parche, pruebas completas de rendimiento, QA audiovisual y descarga móvil siguen pendientes. **No se ha desplegado, no tocar V29/originales/WAC/DNS/producción.**
