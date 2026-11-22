@@ -1,3 +1,11 @@
+## Q03 · r25 · Caché persistente tras reinicio · 22/11/2026
+
+En la copia aislada del FableCut existente se comprobó persistencia de caché tras cambiar únicamente el servidor HTTP Range. Después de verificar SHA256 del MP4 previamente renderizado `474bf01cf4db84d6beb40c21180537f1ba5cc84d9d83c4f0ebbc0ccb9d9b27bc`, el usuario técnico `suesnle` regeneró un manifiesto de reutilización atómico con huella de código/medios actualizada (`QA_RESEEDED_CACHE_AFTER_HTTP_ONLY_CHANGE`, **no** se declaró automáticamente válido sin prueba). Se reinició FableCut en loopback usando el lanzador staging `start-private-qa.sh`. Petición POST a `127.0.0.1:18156/api/export/request` devolvió `status:"done"`, `cached:true`, `progress:1`, misma ruta del MP4, sin render nuevo. Servicio de reinicio `sues-q03-cache-restart-20261122.service` detenido, puertos 18156/18157 comprobados cerrados.
+
+La regresión principal sigue **77/77 PASS**; Range GET directo/sufijo 206, fuera de rango 416, HEAD200; export incremental real por API 113,83s con audio nativo y paridad 1667f. **No existe puerta HTTPS autenticada visible desde Pixel y no se ha tocado el Caddy compartido, 443, DNS, preview V1.1 ni producción**. Antes del enlace Pixel es necesaria autorización explícita para añadir una ruta privada independiente al reverse proxy compartido; no publicar el CDP ni este servicio sin aislamiento autenticado, hardening y rollback. Export frío complejo 579,5 s sin resolver; doble auditoría artística pendiente; Q03 continúa EN CURSO, Q04 pendiente.
+
+---
+
 ## Q03 r24 · Descarga HTTP corregida y regresión ampliada · 22/11/2026
 
 **Hallazgo adicional de QA:** el `serveFile` del FableCut original respondía HTTP206 incluso a `Range: bytes=999999999-999999999`, devolviendo un byte recortado del final; los rangos sufijo `bytes=-10` tampoco se interpretaban según el protocolo. Esto podía causar comportamientos incorrectos en búsquedas y reanudación de vídeos. Se corrigió ÚNICAMENTE en la copia de staging: `sues-http-range.cjs` (parser conservador de rango único) + `http-byte-range-fix.patch` (respuesta416 con `Content-Range: bytes */size` para inválidos; 206 para directos/sufijos y HEAD sin lectura del cuerpo). Los dos ficheros y tests están en `experiments/export-window-reuse-20261122/integrated/`.
