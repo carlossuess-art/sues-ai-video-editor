@@ -1,3 +1,13 @@
+## Acceso QA protegido para Pixel · r27 · 22/11/2026
+
+**Ruta habilitada con autenticación ya existente de SUES Studio:** https://studio.suesholistics.com:8443/q03-export-qa/qa.html . Solo expone panel móvil exportación, no toda la interfaz de FableCut. Caddy `handle_path` + `forward_auth` existente, proxy de rutas permitidas, backend loopback18156/CDP18157. Config host `/opt/sues-video-setup/proxy/Caddyfile`, respaldo único `Caddyfile.q03-backup`. Servicio `sues-q03-pixel-qa.service` habilitado/activo. Sin cambios de DNS/producción/V29/WAC/preview.
+
+**E2E real en este servicio endurecido: PASS**, tras confirmar 9 ventanas reutilizables y1 invalidada con máster SHA verificado; exportación completa 131,0s, MP4 H2641080×1920/1667f/55,566667s AAC, SHA256 `da0ce7481cab0e60e40ac593f6a3ba347bf431f3217ba63c10be96251ffd811c`. `pixel-service-frame-parity.json` PASS: 1487 frames externos a la ventana intactos idénticos, 61 de180 dentro cambiados, errores0; audio PSNR166,139/166,185dB. Reinicio de QA, `cached:true` sin rerender y Range206/1024 bytes PASS; memoria tras reinicio333MB. Los scripts E2E se conservan en esta carpeta **solo para QA**, no ejecutarlos sobre producción. Detalles: `docs/SUES_V1_Q03_PIXEL_PRIVATE_HTTPS_20261122.md`.
+
+**Pendiente:** validación física del Pixel, dos pasadas artísticas Film Director1.7.1, Chrome/AppArmor productivo y exportación fría (sigue579,5s). Q03 abierto, Q04 no aprobado.
+
+---
+
 ## Q03 r27 · Ventanas por composición (solo QA, opt-in) · 22/11/2026
 
 El proyecto R14 (55,566667s, 1667f, 165 clips, 56 composiciones) reveló un caso muy habitual: cambiar **una sola palabra dentro de un comp de subtítulos** invalidaba las 10 ventanas, porque toda la colección `project.comps` formaba parte de la firma global. Era seguro pero excesivamente conservador.
