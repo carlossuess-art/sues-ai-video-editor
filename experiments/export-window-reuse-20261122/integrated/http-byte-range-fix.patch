@@ -1,0 +1,49 @@
+--- a/server.js
++++ b/server.js
+@@ -37,6 +37,7 @@
+ const { pruneCache } = require("./frame-cache");
+ const { createExportJobs } = require("./export-jobs");
+ const { createResidentWorker } = require("./sues-resident-chromium.cjs");
++const { parseSingleRange } = require("./sues-http-range.cjs");
+ const { createSegmentedExports } = require("./sues-segmented-export");
+ const { denoiseFile, AMOUNT_IDS: DENOISE_AMOUNTS } = require("./denoise");
+ 
+@@ -588,22 +589,28 @@
+     }
+     const range = req.headers.range;
+     if (range) {
+-      const m = /bytes=(\d*)-(\d*)/.exec(range);
+-      let start = m && m[1] ? parseInt(m[1]) : 0;
+-      let end = m && m[2] ? parseInt(m[2]) : st.size - 1;
+-      start = Math.min(start, st.size - 1); end = Math.min(end, st.size - 1);
+-      res.writeHead(206, {
+-        "Content-Type": type, "Accept-Ranges": "bytes",
+-        "Content-Range": `bytes ${start}-${end}/${st.size}`,
+-        "Content-Length": end - start + 1, ...extra,
++      const bounds = parseSingleRange(range, st.size);
++      if (!bounds) {
++        res.writeHead(416, {"Accept-Ranges":"bytes",
++          "Content-Range":`bytes */${st.size}`,
++          "Content-Length":0, ...extra});
++        res.end();return;
++      }
++      const {start,end}=bounds;
++      res.writeHead(206,{
++        "Content-Type":type,"Accept-Ranges":"bytes",
++        "Content-Range":`bytes ${start}-${end}/${st.size}`,
++        "Content-Length":end-start+1,"Cache-Control":"no-cache",...extra,
+       });
+-      fs.createReadStream(filePath, { start, end }).pipe(res);
++      if(req.method==="HEAD"){res.end();return}
++      fs.createReadStream(filePath,{start,end}).on("error",()=>res.destroy()).pipe(res);
+     } else {
+       res.writeHead(200, {
+         "Content-Type": type, "Content-Length": st.size,
+         "Accept-Ranges": "bytes", "Cache-Control": "no-cache", ...extra,
+       });
+-      fs.createReadStream(filePath).pipe(res);
++      if(req.method==="HEAD"){res.end();return}
++      fs.createReadStream(filePath).on("error",()=>res.destroy()).pipe(res);
+     }
+   });
+ }
