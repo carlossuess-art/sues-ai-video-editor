@@ -26,3 +26,14 @@ test("private resident worker jobs cannot be selected externally or leak into pu
   jobs.fail(j3.id,"error");assert.equal(jobs.get(j3.id).status,"failed");
  }finally{jobs.shutdown()}
 });
+
+test("resident worker rejects malformed 64-character Unicode tokens without crashing",()=>{
+ const {createResidentWorker}=require(process.env.SUES_RESIDENT_MODULE||"../../src/engine-next/sues-resident-chromium.cjs");
+ const worker=createResidentWorker({port:1,debugPort:2});
+ try{
+  assert.equal(worker.checkToken("x".repeat(64)),false);
+  assert.equal(worker.checkToken("é".repeat(64)),false);
+  assert.equal(worker.checkToken("😀".repeat(32)),false);
+  assert.equal(worker.checkToken(""),false);
+ }finally{worker.shutdown()}
+});
