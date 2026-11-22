@@ -24,11 +24,13 @@ function createSegmentedExports({jobs,projectFile,exportsDir,chunkFrames=90,enco
  const windowProof=(project,frames,fps)=>{
   if(!enabledWindowQA)return null;
   const stable={...project,clips:[],revision:null,name:null};
+  const compScoped=process.env.SUES_COMP_SCOPED_CACHE_QA==='1';
+  if(compScoped)delete stable.comps; // composition definitions now live in their windows
   const globalMediaProof=Reuse.fingerprint({projectFile,appDir:__dirname,
    profile:cacheProfile,chunkFrames,snapshotRaw:Buffer.from(JSON.stringify(stable))});
   if(!globalMediaProof)return null;
   const rendererProof=WindowStore.shaFile(__filename)+':'+WindowStore.shaFile(require.resolve('./sues-window-reuse.cjs'));
-  return Window.windows(project,{frames,fps,chunkFrames,globalMediaProof,rendererProof});
+  return Window.windows(project,{frames,fps,chunkFrames,globalMediaProof,rendererProof,compScoped});
  };
  const tasks=new Map();
  const view=(j)=>({id:j.id,kind:'export',status:j.status,cached:!!j.cached,via:'headless',range:'entire',profile:j.nativePlan?'native-ffmpeg-v1':encoderProfile,progress:j.progress,src:j.src||null,error:j.error||null,created:j.created,updated:j.updated});
