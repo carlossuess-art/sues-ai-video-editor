@@ -1,3 +1,7 @@
+## 22/11/2026 · PRUEBA NATIVA FFmpeg 12s/28s · HÍBRIDO 15F RECHAZADO · NO DESPLEGADO
+
+Se midió **FFmpeg nativo** con base de vídeo 1080x1920: 12s de contenido en **28s** usando 75% de 1CPU (sin máscaras, ni motion; no equivalente a Reel completo). Se implementó **solo QA** un puente Chromium RGBA crudo → FFmpeg que produjo 15 frames H264/AAC/0,5s pero tardó **60,34s** y no alcanzó fidelidad (SSIM ~0,94 frente al render R14, base sin keyframes); se descarta tal cual. No actualizar producción ni prometer exportación rápida. Próxima condición: composición nativa equivalente para clips complejos, benchmarking real de 1667 frames y/o worker con potencia suficiente antes de sustituir exportador. [Checkpoint técnico](docs/SUES_V1_NATIVE_RENDER_BENCH_20261122.md). Activos originales, V29, WAC, DNS y producción intactos.
+
 ## 22/11/2026 · WEBCodecs + snapshot concurrente 15 FRAMES PASS · EXPORTACIÓN LENTA, NO DESPLEGADA
 
 La candidata WebCodecs V8 aislada en VPS pasa QA H264/AAC con edición concurrente (SSIM **1,000000** en 15 fotogramas, edición viva preservada); el orquestador antes hardcodeaba `delivery` y fue corregido para enviar WebCodecs de verdad. **55,5s para 0,5s de vídeo** en esta prueba, sigue siendo demasiado lento. Ver [checkpoint V1](docs/SUES_V1_EXPORT_QA_20261122.md) y [parche reproducible](docs/SUES_V1_WEBCODECS_SNAPSHOT_PATCH_20261122.md). Falta exportación de 55,57s con esa candidata, optimización de composición, QA audiovisual/descarga móvil y autorización de despliegue. **No producción, originales, V29, WAC ni DNS modificados.**
