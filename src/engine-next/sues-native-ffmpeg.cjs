@@ -23,7 +23,7 @@ function evaluate(project,{dataDir}={}){
  function safeProps(c){
   if(Object.keys(c).some(k=>!["id","mediaId","kind","track","start","in","duration","name","props","disabled","keyframes"].includes(k)))return false;
   if(c.keyframes&&Object.keys(c.keyframes).length)return false;
-  if(c.parent||c.mask||c.filters||c.trackMatte||c.trackMask)return false;
+  if(c.parent||c.mask||c.filters||c.trackMatte||c.trackMask||p?.autoOrient||n(p?.pathOffset,0)!==0||!['start',undefined].includes(p?.pathAlign))return false;
   if(c.transitions?.length||c.fades?.length)return false;
   const p=c.props||{};
   const vals={x:0,y:0,scale:1,rotation:0,opacity:1,anchorX:0,anchorY:0,trimStart:0,trimEnd:100,trimOffset:0,speed:1,blur:0,brightness:100,contrast:100,saturation:100,hue:0,grayscale:0,sepia:0,invert:0,temperature:0,tint:0,vignette:0,shake:0,rgbSplit:0,grain:0,motionBlur:0,cropL:0,cropR:0,cropT:0,cropB:0,cornerRadius:0};
@@ -31,7 +31,7 @@ function evaluate(project,{dataDir}={}){
   if(p.bgRemove||p.flipH||p.flipV||p.chromaKey||(!["normal",undefined].includes(p.blend))||(!["none",undefined].includes(p.filterPreset)))return false;
   if(!["contain","cover",undefined].includes(p.fit))return false;
   if(c.kind==="video"&&!equal(n(p.volume,1),0))return false;
-  if(c.kind==="audio"&&(!equal(p.volume,1)||!equal(p.gain,1)||!equal(p.pan,0)||!equal(p.duck,0)))return false;
+  if(c.kind==="audio"&&(!equal(p.volume,1)||!equal(p.gain,0)||!equal(p.pan,0)||!equal(p.duck,0)||!['stereo',undefined].includes(p.channelMode)))return false;
   return true;
  }
  for(const c of clips){
@@ -41,6 +41,7 @@ function evaluate(project,{dataDir}={}){
   if(!safeProps(c))return failure("DYNAMIC_OR_FILTERED_CLIP_REQUIRES_BROWSER",c.id);
   if(![c.start,c.in,c.duration].every(exact)||c.start<0||c.in<0||c.duration<=0)return failure("NON_FRAME_EXACT_TIMING",c.id);
   const m=safeMedia(c,c.kind);if(!m)return failure("MEDIA_UNRESOLVED_OR_NONLOCAL",c.id);
+  if(Number.isFinite(m.m.duration)&&c.in+c.duration>m.m.duration+0.05)return failure("SOURCE_TIME_EXCEEDS_MEDIA",c.id);
   const to={id:c.id,file:m.file,startFrame:Math.round(c.start*30),inFrame:Math.round(c.in*30),frames:Math.round(c.duration*30)};
   if(c.kind==="video"){
    if(m.m.width!==project.width||m.m.height!==project.height||m.m.fps!==30)return failure("VIDEO_GEOMETRY_OR_FPS_UNKNOWN",c.id);
