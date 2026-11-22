@@ -14,7 +14,7 @@ test("Native FFmpeg candidate exports only the proven simple FableCut subset",()
   assert.equal(ok.ok,true,JSON.stringify(ok));
   const out=path.join(root,"final.mp4");
   const args=Native.command(ok,out);
-  ff(args.slice(6));
+  execFileSync("ffmpeg",args,{timeout:30000,maxBuffer:1024*1024});
   const info=JSON.parse(execFileSync("ffprobe",["-v","error","-show_entries","format=duration:stream=codec_name,codec_type,nb_frames","-of","json",out],{timeout:10000}).toString());
   assert.equal(info.streams.find(s=>s.codec_type==="video").nb_frames,"30");
   assert.equal(info.streams.find(s=>s.codec_type==="audio").codec_name,"aac");
