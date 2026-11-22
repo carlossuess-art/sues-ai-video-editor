@@ -26,3 +26,21 @@
 4. Solo entonces, despliegue separado y verificable con autorización, sin tocar originales, V29, WAC, DNS o servicios ajenos. Mantener el editor publicado intacto durante las pruebas.
 
 **Pruebas/archivos privados en VPS:** `segment-qa/verification.json`, `audit.json`, `full-audio-qa.json`, `webcodecs12s-qa.json`, `snapshot-e2e-v4-qa.json`, `snapshot-e2e-v5-qa.json`; scripts de QA en la raíz del entorno. Los MP4 no se suben al repositorio.
+
+## 22/11 · QA de compatibilidad WebCodecs + instantánea (continuación)
+
+Se detectó que la candidata previa de WebCodecs reutilizaba una versión más antigua de `app.js` sin activar `runtime.exportSnapshotLock`, y un orquestador `sues-segmented-export.js` fijaba `profile:'delivery'` aunque el servidor solicitara `encoderProfile:'webcodecs'`. Por tanto no era válido afirmar que las pruebas anteriores de concurrencia ejecutaban el flujo WebCodecs.
+
+En un nuevo entorno **solo QA** (`/opt/sues-secure-headless-qa-20261122/app-snapshot-webcodecs-v8-qa`) se corrigieron todos estos puntos:
+
+- `syncFromServer()`: guard `runtime.exportSnapshotLock` antes y después del fetch asíncrono.
+- `runExportJob(ticket)`: activar lock antes de `applyProject(ticket.snapshot)`; liberar al finalizar.
+- `runAudioOnlyJob`: liberar el lock en `finally`.
+- `sues-segmented-export.js`: aceptar `encoderProfile` y pasarlo a cada trabajo secundario, en lugar de hardcodear `delivery`.
+- `server.js` **solo QA**: configurar explícitamente `encoderProfile:'webcodecs'`.
+
+**Prueba aislada real `snapshot-e2e-v8-qa.json` PASS**: 15 frames/0,5s H264/AAC, request de exportación antes de modificar el proyecto vivo de x=-41 a x=400, comparación con baseline del mismo perfil `webcodecs`, SSIM **1,000000**, edición concurrente conservada; tiempo para la segunda exportación **55,5 s**, baseline 52 s aproximadamente. Endpoint padre informó `profile:'webcodecs'`. También había pasado la regresión de 15 frames con perfil delivery y protección completa `snapshot-e2e-v7b-qa.json` (SSIM1,000, 63,8s). La primera candidata incompleta con guard tras fetch pero sin lifecycle lock `snapshot-e2e-v6-qa.json` **falló** SSIM 0,487729.
+
+**Límites:** el coste de creación de proceso y fotogramas es muy alto; la prueba 15-frame solo valida fidelidad instantánea, no rendimiento ni QA del Reel auténtico completo con esta candidata. No se han cambiado servicios de producción. La variante WebCodecs completa 55,57s aún no se ha acreditado. Antes de desplegar: rendimiento aceptable, QA A/V doble y descarga en dispositivo real. Respetar los originales y V29.
+
+Artefactos reproducibles de test en VPS: `prepare-snapshot-v7-qa.py`, `prepare-snapshot-v8-qa.py`, `snapshot-e2e-v7b-qa.py`, `snapshot-e2e-v8-qa.py` y `segment-qa/*qa.json`. La candidata V8 no está copiada ni activada en el servicio publicado.
