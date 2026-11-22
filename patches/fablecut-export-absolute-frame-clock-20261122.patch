@@ -1,0 +1,16 @@
+--- a/fablecut/app.js
++++ b/fablecut/app.js
+@@ -18688,7 +18688,12 @@
+       if (up.inFlight() > 3 || encoder.encodeQueueSize > 3) pauseExportVideos();
+       await up.waitBackpressure(4);
+       await waitEncodeQueue(encoder, 4, { signal, getError: () => uploadError });
+-      const t = t0 + f / fps;
++      // Derive the compositor time from the absolute integer frame. Splitting
++      // into 90- or 180-frame chunks must select exactly the same source clip,
++      // especially at a cut boundary (floating-point addition is not associative).
++      const t = exportFrameWindow
++        ? (exportFrameWindow.startFrame + f) / fps
++        : t0 + f / fps;
+       state.time = t;
+       await exportWaitOrAbort(seekVideosTo(t, { queueBusy }), signal);
+       await exportWaitOrAbort(prepareFrameAssets(t), signal);
