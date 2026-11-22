@@ -1,0 +1,10 @@
+--- a/app.js
++++ b/app.js
+@@ -1773,6 +1773,8 @@ async function syncFromServer(force) {
+     const res = await fetch("/api/project", { cache: "no-store" });
+     if (!res.ok) return;
+     const data = await res.json();
++    // Reject stale async responses after an immutable export snapshot is active.
++    if (state.gesture || state.exporting || runtime.exportSnapshotLock) { runtime.pendingSync = true; return false; }
+     if (seq !== runtime.syncSeq) return;   // a newer reload is on its way: this answer may be older than it
+     if (!data || !Array.isArray(data.clips)) return;
