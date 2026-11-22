@@ -1,3 +1,13 @@
+## Corrección de cortes por tiempo absoluto (QA adicional 22/11/2026)
+
+**Causa identificada y reproducida:** el compositor anterior calculaba `t=t0+f/fps`, una suma de flotantes cuya representación IEEE-754 depende de dónde comienza el segmento. En el corte absoluto del frame631 (21,0333s), una ventana 90f y otra 180f podían seleccionar escenas distintas, sin que faltasen cuadros. La candidata corregida usa `t=(exportFrameWindow.startFrame+f)/fps`; en el editor normal mantiene `t0+f/fps`. Esta corrección conserva animaciones, máscaras y audio, no altera la EDL.
+
+**Prueba real R14, mismo snapshot revision18:** ventana 540–719 (180f), 16Mbps, codec H264, duración6,0s, **53,423s de ejecución, 180/180 frames, SHA256 `68757112d48d1100fc6dfdf3cad4f9eee197be8f1b21eb485c03772e8a73465d`**, archivo de QA en `/opt/sues-secure-headless-qa-20261122/r14-fixed-timing-data/exports/SUES QA R14 COMPLETO 55s.mp4`. Comparación cuantitativa del frame631 con referencia40Mbps: error cuadrático medio en escala de grises **64,165654 antes → 1,654128 después** (mejora ~97,42%); fotogramas625–645 restantes con diferencias de compresión pequeñas, sin salto equivalente. Evidencias `native-fastpath-qa/r14-absolute-frame-window540-720-qa.json` y `r14-absolute-timing-625-645-mse.json` en VPS QA. Regresión Node **3/3 PASS** para equivalencia numérica exacta de particiones15/30/90/180 y comprobación wiring real.
+
+**Código incorporado a GitHub:** `patches/fablecut-export-absolute-frame-clock-20261122.patch`, aplicar tras el parche resident-bitrate-mobile sobre el candidato FableCut; `tests/engine-next/absolute-frame-clock.test.cjs` (verificados en VPS). **La exportación integral de R14 con esta corrección se está ejecutando de forma aislada; NO afirmar completada hasta leer el JSON** `native-fastpath-qa/r14-fixed-absolute-full-progress-qa.json`. Persisten validación artística por dos pasadas, Android Pixel real, sandbox de Chrome y autorización expresa antes de cualquier despliegue. Drive Estado General y Roadmap sincronizados revisión V1-2026-11-22-r17 con el estado anterior, actualizar a r18 al cerrar esta validación.
+
+---
+
 # SUES AI VIDEO EDITOR V1 · Optimización bitrate y descarga móvil · 22/11/2026
 
 **Estado:** implementación y QA privadas verificadas en Hostinger VPS `srv1841004`. **NO desplegado en producción**. No modificados FableCut publicado, SUES iStudio original, V29, originales, WAC ni DNS. La implementación se aplica a la candidata de worker Chromium residente documentada en [SUES_V1_PRIVATE_RESIDENT_WORKER_20261122.md](SUES_V1_PRIVATE_RESIDENT_WORKER_20261122.md).
