@@ -47,3 +47,26 @@ test("master R14 fixture is eligible and text edit retains 9 of 10 windows",()=>
  const marks=diff(original,windows(changed,conf));
  assert.equal(marks.filter(x=>x.reusable).length,9);
 });
+
+
+test("cyclic parent hierarchy fails closed even if every parent exists",()=>{
+ const p=make();p.clips[0].parent="t";p.clips[1].parent="v";
+ assert.equal(windows(p,settings),null);
+});
+test("offscreen dangling parent fails closed before any cache decision",()=>{
+ const p=make();p.clips.push({id:"hidden",kind:"shape",start:900,duration:1,parent:"missing"});
+ assert.equal(windows(p,settings),null);
+});
+test("R14 changes to mask, comps, track enablement and audio invalidate safely",()=>{
+ const old=windows(JSON.parse(fs.readFileSync(path.resolve(__dirname,"../../data/project.json"),"utf8")),{...settings,frames:1667});
+ const src=JSON.parse(fs.readFileSync(path.resolve(__dirname,"../../data/project.json"),"utf8"));
+ const mask=structuredClone(src),v=mask.clips.find(x=>x.kind==="video");v.props={...v.props,mask:{shape:"rect",x:0.25}};
+ const m=diff(old,windows(mask,{...settings,frames:1667}));
+ assert(m.some(x=>!x.reusable));
+ const mutators=[
+  p=>{p.comps[0].qaMeta={change:"mask"};},
+  p=>{p.disabledTracks=["V1"];},
+  p=>{p.clips.find(x=>x.kind==="audio").props.volume=0.5;}
+ ];
+ for(const change of mutators){const p=structuredClone(src);change(p);const w=windows(p,{...settings,frames:1667});assert(diff(old,w).every(x=>!x.reusable));}
+});
