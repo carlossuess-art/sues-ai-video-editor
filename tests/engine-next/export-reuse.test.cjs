@@ -41,3 +41,28 @@ test("SUES export reuse: same byte-identical project/media/program yields cached
   fs.rmSync(tmp,{recursive:true,force:true});
  }
 });
+
+test("SUES export cache accepts a mounted media root, but rejects nested file symlinks escaping the mount",()=>{
+ const base=fs.mkdtempSync(path.join(os.tmpdir(),"sues-cache-media-mount-"));
+ const env=process.env.SUES_EXPORT_REUSE;
+ try{
+  process.env.SUES_EXPORT_REUSE="1";
+  const data=path.join(base,"data"),mediaRoot=path.join(base,"shared-media"),appDir=path.join(base,"app");
+  fs.mkdirSync(data);fs.mkdirSync(mediaRoot);fs.mkdirSync(appDir);
+  for(const dep of deps)fs.writeFileSync(path.join(appDir,dep),"code:"+dep);
+  fs.writeFileSync(path.join(mediaRoot,"source.mp4"),"immutable media");
+  fs.symlinkSync(mediaRoot,path.join(data,"media"),"dir");
+  const projectFile=path.join(data,"project.json");
+  const project={fps:30,clips:[{id:"c",kind:"video",mediaId:"m",start:0,duration:.5}],media:[{id:"m",src:"/media/source.mp4"}]};
+  fs.writeFileSync(projectFile,JSON.stringify(project));
+  const opts={projectFile,appDir,profile:"webcodecs",chunkFrames:5};
+  assert.match(Reuse.fingerprint(opts),/^[0-9a-f]{64}$/);
+  fs.writeFileSync(path.join(base,"outside.mp4"),"must never be read by a media symlink");
+  fs.symlinkSync(path.join(base,"outside.mp4"),path.join(mediaRoot,"escape.mp4"));
+  project.media[0].src="/media/escape.mp4";fs.writeFileSync(projectFile,JSON.stringify(project));
+  assert.equal(Reuse.fingerprint(opts),null,"nested source media symlink must not escape the canonical media directory");
+ }finally{
+  process.env.SUES_EXPORT_REUSE=env??"0";
+  fs.rmSync(base,{recursive:true,force:true});
+ }
+});
