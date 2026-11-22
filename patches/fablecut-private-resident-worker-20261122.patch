@@ -100,12 +100,13 @@
      /** First tab to claim a pending job runs it. */
      claim(id) {
        const j = jobs.get(id);
-@@ -169,14 +170,16 @@
+@@ -169,14 +170,17 @@
        else if (status === "failed") end(j, "failed", { error: String(error || "export failed") });
        return { cancel: false };
      },
 +    fail(id, error) { const j=jobs.get(id);if(!j||isEnded(j))return null;end(j,"failed",{error:String(error||"private worker unavailable")});return view(j); },
 +    failActiveWorker(error){for(const j of jobs.values())if(j.via==="worker"&&!isEnded(j))this.fail(j.id,error);},
++    releaseWorker(){return opts.worker?.release?.() || Promise.resolve(false);},
      cancel(id) {
        const j = jobs.get(id);
        if (!j) return null;
@@ -139,13 +140,23 @@
      }catch(e){
       if(j.cancelled)throw e;
       if(w.endFrame-w.startFrame<=30)throw e;
+@@ -115,6 +115,7 @@
+    // Do not keep one intermediate MP4 per 3-second window or the PCM master.
+    // All video bytes have already been copied into the atomically published MP4.
+    for(const file of temporaryOutputs){try{fs.unlinkSync(file);}catch{}}
++   if(process.env.SUES_RESIDENT_WORKER==="1")void jobs.releaseWorker().catch(e=>console.warn("[SUES resident] release failed:",e.message));
+   }
+  }
+ 
 --- a/fablecut/app.js
 +++ b/fablecut/app.js
-@@ -17578,7 +17578,12 @@
+@@ -17578,7 +17578,14 @@
  }
  /** Export-time decode state: clip id → source (or null: use the element). */
  function exportDecodeBegin() {
 -  runtime.exportDecode = runtime.noExportDecode ? null : { sources: new Map(), opening: new Map(), frameByKey: new Map(), frameOwner: new Map(), lastUse: new Map() };
++  if(runtime.__suesDecodeIdleTimer)clearTimeout(runtime.__suesDecodeIdleTimer);
++  runtime.__suesDecodeIdleTimer=null;
 +  const pooled = window.__suesResidentToken && runtime.__suesResidentSourceSession && runtime.__suesResidentDecodePool;
 +  runtime.exportDecode = runtime.noExportDecode ? null : pooled || { sources: new Map(), opening: new Map(), frameByKey: new Map(), frameOwner: new Map(), lastUse: new Map() };
 +  if(runtime.exportDecode){
@@ -155,19 +166,27 @@
    runtime.exportFrames = new Map();
  }
  function exportDecodeEnd() {
-@@ -17587,7 +17592,10 @@
+@@ -17587,7 +17594,18 @@
      cache.clear();
    }
    const d = runtime.exportDecode;
 -  if (d) for (const s of d.sources.values()) s?.close();
 +  const keep = !!(window.__suesResidentToken && runtime.__suesResidentSourceSession && !renderCancelled);
 +  if(d && !keep)for(const src of d.sources.values())try{src?.close()}catch{}
-+  if(d && keep){d.frameByKey.clear();d.frameOwner.clear();}
-+  else if(window.__suesResidentToken)runtime.__suesResidentDecodePool=null;
++  if(d && keep){
++    d.frameByKey.clear();d.frameOwner.clear();
++    runtime.__suesDecodeIdleTimer=setTimeout(()=>{
++      if(!state.exporting && runtime.__suesResidentDecodePool===d){
++        for(const src of d.sources.values())try{src?.close()}catch{}
++        d.sources.clear();d.opening.clear();d.lastUse.clear();
++        runtime.__suesResidentDecodePool=null;runtime.__suesResidentSourceSession=null;
++      }
++    },45000);
++  }else if(window.__suesResidentToken)runtime.__suesResidentDecodePool=null;
    runtime.exportDecode = null;
    runtime.exportFrames = null;
  }
-@@ -18175,6 +18183,7 @@
+@@ -18175,6 +18193,7 @@
    try {
      const r = await fetch("/api/export/job/report?id=" + encodeURIComponent(id), {
        method: "POST", body: JSON.stringify(body),
@@ -175,7 +194,7 @@
      }).then((x) => x.json());
      if (r?.cancel) { renderCancelled = true; exportAbort?.abort(); }
    } catch { }
-@@ -18200,7 +18209,7 @@
+@@ -18200,7 +18219,7 @@
      if (!wav) throw new Error("No audible tracks for full mix");
      if (renderCancelled || signal.aborted) throw new Error("cancelled");
      const response = await fetch("/api/export/audio-only/upload?id="+encodeURIComponent(ticket.id),
@@ -184,7 +203,7 @@
      const result = await response.json();
      if (!response.ok || !result.ok || !result.src) throw new Error(result.error || "full mix upload failed");
      await reportExportJob(ticket.id, {status:"done",src:result.src,
-@@ -18215,7 +18224,16 @@
+@@ -18215,7 +18234,18 @@
  }
  async function runExportJob(ticket) {
    if (!ticket?.id || state.exporting) return; // a busy tab leaves it for another
@@ -192,6 +211,8 @@
 +  if(window.__suesResidentToken){
 +    const requested=ticket.sourceSession || null;
 +    if(runtime.__suesResidentSourceSession!==requested){
++      if(runtime.__suesDecodeIdleTimer)clearTimeout(runtime.__suesDecodeIdleTimer);
++      runtime.__suesDecodeIdleTimer=null;
 +      const old=runtime.__suesResidentDecodePool;
 +      if(old)for(const src of old.sources.values())try{src?.close()}catch{}
 +      runtime.__suesResidentDecodePool=null;
