@@ -1,3 +1,15 @@
+## Q03 r24 · Descarga HTTP corregida y regresión ampliada · 22/11/2026
+
+**Hallazgo adicional de QA:** el `serveFile` del FableCut original respondía HTTP206 incluso a `Range: bytes=999999999-999999999`, devolviendo un byte recortado del final; los rangos sufijo `bytes=-10` tampoco se interpretaban según el protocolo. Esto podía causar comportamientos incorrectos en búsquedas y reanudación de vídeos. Se corrigió ÚNICAMENTE en la copia de staging: `sues-http-range.cjs` (parser conservador de rango único) + `http-byte-range-fix.patch` (respuesta416 con `Content-Range: bytes */size` para inválidos; 206 para directos/sufijos y HEAD sin lectura del cuerpo). Los dos ficheros y tests están en `experiments/export-window-reuse-20261122/integrated/`.
+
+**Validación HTTP REAL del MP4 completo de 102.856.671 bytes:** GET `Range: bytes=0-1023` → **206 / 1024 bytes**; GET `bytes=-10` → **206 / 10 bytes**; GET `bytes=999999999-999999999` → **416 / 0 bytes**, `Content-Range: bytes */102856671`; HEAD simple → **200**, Content-Length correcto. Servicio local de prueba detenido y sin tocar Caddy/443/DNS.
+
+**Regresión después de la corrección:** **77/77 tests PASS**, 0 fallidos (pruebas previas, tests de HTTP Range y `test/rest-api.test.js` incluidos), `q03-integrated-stage-20261122/regression-final.log`. Todos los 1667 fotogramas y el PSNR real descritos en r23 continúan válidos; el parche solo afecta al servicio de archivos y no transforma el MP4 ni altera el render. Código en rama existente, staging preparado con `start-private-qa.sh` (solo loopback, sin servicio persistente).
+
+**Puertas todavía no cerradas:** el usuario todavía no tiene un enlace para abrir la interfaz desde su Pixel: se necesita ruta HTTPS autenticada propia. Los actuales dominios/puertos Caddy son compartidos con producción y preview V1.1, por lo que NO se ha cambiado ese reverse proxy ni DNS sin autorización específica. Falta prueba móvil, doble QA audiovisual artística y primer export frío razonable; Q03 EN CURSO y Q04 PENDIENTE.
+
+---
+
 ## Q03 · Integración FableCut y prueba de API con mezcla nativa · 22/11/2026 · r23
 
 **Ejecutado en copia AISLADA y bajo flags, NO producción:** `/opt/sues-secure-headless-qa-20261122/q03-integrated-stage-20261122/` es una copia completa del FableCut existente, no una aplicación nueva. En su `app/sues-segmented-export.js` se conectaron los módulos `sues-window-reuse.cjs` y `sues-window-cache.cjs`. Flags de exclusión: `SUES_WINDOW_REUSE=1` Y `SUES_EXPORT_REUSE=1` y `SUES_SEGMENTED_EXPORT=1`, `FABLECUT_ENABLE_AUDIO_ONLY=1`, worker residente. El sistema por defecto mantiene la ruta anterior. Se añadió control de tipos de clip, symlink, fuente/código mutable tras render, SHA256 de máster, FFprobe, cancelación; `--remote-allow-origins=*` retirado de la copia de Chromium. Código y tests: `experiments/export-window-reuse-20261122/integrated/`, README de reproducción incluido.
