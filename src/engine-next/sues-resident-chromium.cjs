@@ -3,11 +3,11 @@
 // Worker jobs must never be broadcast to public /api/events or editor tabs.
 const fs=require("fs"),os=require("os"),path=require("path"),crypto=require("crypto");
 const {spawn}=require("child_process");
-const {findBrowser}=require("./export-jobs");
+const findBrowser=(()=>{try{return require("./export-jobs").findBrowser}catch{return ()=>null}})();
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function createResidentWorker({port,debugPort,profileDir,qaNoSandbox=false}={}){
   const secret=crypto.randomBytes(32).toString("hex");
-  const checkToken=input=>typeof input==="string"&&input.length===secret.length&&crypto.timingSafeEqual(Buffer.from(input),Buffer.from(secret));
+  const checkToken=input=>typeof input==="string"&&/^[0-9a-f]{64}$/.test(input)&&crypto.timingSafeEqual(Buffer.from(input,"hex"),Buffer.from(secret,"hex"));
   let browser=null,socket=null,launching=null,seq=0;
   const pending=new Map();
   let lost=()=>{};
