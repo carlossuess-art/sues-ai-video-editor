@@ -7,7 +7,7 @@
 - `sues-window-reuse.cjs`: huellas de dependencias por intervalos de fotogramas, conservadoras y con rechazo por defecto de tipos no reconocidos. Cualquier cambio de audio, medios, código, composiciones o parámetros generales fuerza la invalidación correspondiente.
 - `sues-window-cache.cjs`: manifiesto atómico del último máster verificado, SHA256 completo, ffprobe de códecs, duración y número exacto de fotogramas; rechaza enlaces simbólicos.
 - `sues-segmented-export.js`: reutiliza los intervalos intactos mediante FFmpeg stream-copy; si la copia no se valida vuelve a renderizar la ventana, verifica nuevamente medios/código/fuente antes de publicar, une una sola mezcla de audio y conserva la cancelación.
-- `resident-cdp-local.patch`: elimina el permiso comodín `--remote-allow-origins=*` del Chromium residente. CDP y API deben escuchar solo en 127.0.0.1; no es autenticación de CDP.
+- `sues-http-range.cjs` y `http-byte-range-fix.patch`: validan byte ranges únicos, sufijos y HEAD sin leer el archivo entero; rangos imposibles producen HTTP416 y `Content-Range: bytes */size`.\n- `resident-cdp-local.patch`: elimina el permiso comodín `--remote-allow-origins=*` del Chromium residente. CDP y API deben escuchar solo en 127.0.0.1; no es autenticación de CDP.
 
 ## Integración y activación
 
@@ -19,12 +19,12 @@ VPS QA: `/opt/sues-secure-headless-qa-20261122/q03-integrated-stage-20261122` (`
 
 ## Evidencia real
 
-- Regresión del editor: **52/52 PASS**; incluye composición, máscaras, audio, export y 8 tests Q03 (5 planner, 2 caché, 1 cancelación).
+- Regresión del editor: **77/77 PASS**; incluye composición, máscaras, audio, export y 10 tests Q03 (5 planner, 2 caché, 1 cancelación, 2 HTTP Range).
 - El primer intento API no pudo acceder a un manifiesto QA creado como root (0600). Se canceló explícitamente por `POST /api/export/job/cancel`; estado final `cancelled`, sin MP4 final. Se corrigió SOLO el propietario del manifiesto de QA; lectura como `suesnle` confirmó 9/10 ventanas recuperables.
 - Segundo intento por **API FableCut real** con proyecto R14 modificado (`SC08-QUESTION`) y **mezcla de audio nativa**: `xs_33a6a5c1aaa3`, `done`, **113,83 s**, vídeo H264 1080×1920, 1667 fotogramas, audio AAC, 55,566667 s, 102.856.671 bytes, SHA256 `474bf01cf4db84d6beb40c21180537f1ba5cc84d9d83c4f0ebbc0ccb9d9b27bc`.
 - Auditoría `integrated-frames-parity.json`: **PASS**, 1667/1667 decodificados, 1487 fotogramas fuera de escena idénticos píxel a píxel y 180 diferentes en ventana editada. No se confunde con doble QA artística.
 - Audio: `audio-apsnr.log`, PSNR frente al máster 166,203 / 166,271 dB por canal. Es comparación técnica de señal, NO escucha ni comprobación artística.
-- Exportación repetida: `cached:true`, `status:done` sin nuevo render. Control de revisión antigua: HTTP409. Descarga HEAD200 y Range206 (0–1023/102856671).
+- Correción HTTP Range probada en staging: GET `bytes=0-1023` devuelve 206/1024 bytes; `bytes=-10` devuelve 206/10 bytes; rango imposible devuelve **416/0 bytes**; HEAD devuelve 200 y longitud exacta.\n- Exportación repetida: `cached:true`, `status:done` sin nuevo render. Control de revisión antigua: HTTP409. Descarga HEAD200 y Range206 (0–1023/102856671).
 - Sin cambios de producción, V29, WAC, iStudio, DNS ni Caddy. Se preserva el máster original de QA (SHA256 `8a6319be87f0a2668ef153e15465adc5f225ee2285e9305ae22dd4ca61df9e09`).
 
 **Limitaciones:** la primera exportación completa del R14 complejo sigue en **579,5s / 9m39,5s**; 113,83s corresponde exclusivamente a **reexportación incremental** con máster válido precalculado. Seguridad CDP/AppArmor sin certificación productiva, test Pixel real, revisión audiovisual completa en dos pasadas, capacidades de máscaras y regresión con cambios multidimensionales todavía pendientes. La QA está ligada a los medios reales del VPS, no al contenido de este repositorio. Los archivos de prueba no deben incorporarse al build público por accidente.
