@@ -48,6 +48,14 @@ a{color:#ebcf94}
 "use strict";
 const prefix="/q03-export-qa",el=id=>document.getElementById(id);
 let revision=null,jobId=null,output=null,timer=null,started=0;
+try{
+ const saved=JSON.parse(sessionStorage.getItem("suesQ03RunningJob")||"null");
+ if(saved&&/^xs_[a-f0-9]+$/.test(saved.id)){jobId=saved.id;started=Number(saved.started)||Date.now()}
+}catch{}
+function rememberJob(){try{
+ if(jobId)sessionStorage.setItem("suesQ03RunningJob",JSON.stringify({id:jobId,started}));
+ else sessionStorage.removeItem("suesQ03RunningJob");
+}catch{}}
 function status(s){el("status").textContent=s}
 function busy(b){el("export").disabled=b;el("change").disabled=b;el("cancel").disabled=!b}
 async function request(path,method="GET",data){
@@ -100,9 +108,9 @@ async function poll(){
   if(j.status==="done"){
    showVideo(j.src);
    status("Exportación finalizada en "+sec+" s"+(j.cached?" · recuperada de caché":" · vídeo renderizado")+"\nPuedes reproducir o descargar el MP4.");
-   jobId=null;clearInterval(timer);busy(false);await getProject();
+   jobId=null;rememberJob();clearInterval(timer);busy(false);await getProject();
   }else if(j.status==="failed"||j.status==="cancelled"){
-   status("Exportación "+j.status+" · "+(j.error||""));jobId=null;clearInterval(timer);busy(false);
+   status("Exportación "+j.status+" · "+(j.error||""));jobId=null;rememberJob();clearInterval(timer);busy(false);
   }else status("Estado: "+j.status+" · "+el("progress").value+" % · "+sec+" segundos");
  }catch(e){status("Consulta de exportación fallida: "+e.message);clearInterval(timer);jobId=null;busy(false)}
 }
@@ -111,10 +119,10 @@ async function startExport(){
   if(revision===null)throw Error("Revisión no cargada");
   busy(true);started=Date.now();
   const j=await request("/api/export/request","POST",{where:"headless",range:"entire",segmented:true,expectedRevision:revision});
-  jobId=j.id;status("Exportación solicitada: "+j.id);
+  jobId=j.id;rememberJob();status("Exportación solicitada: "+j.id);
   if(j.status==="done"){showVideo(j.src);status("Vídeo recuperado de caché, sin renderizar.");jobId=null;busy(false)}
   else{timer=setInterval(poll,1200);await poll()}
- }catch(e){jobId=null;busy(false);status("No se inició la exportación: "+e.message)}
+ }catch(e){jobId=null;rememberJob();busy(false);status("No se inició la exportación: "+e.message)}
 }
 async function cancelExport(){
  if(!jobId)return;
@@ -135,4 +143,6 @@ el("export").addEventListener("click",startExport);
 el("cancel").addEventListener("click",cancelExport);
 el("range").addEventListener("click",testRange);
 busy(true);getProject();
+if(jobId){timer=setInterval(poll,1200);void poll()}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&jobId)void poll()});
 </script></body></html>
