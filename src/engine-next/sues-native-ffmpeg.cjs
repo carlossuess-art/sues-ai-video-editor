@@ -24,6 +24,8 @@ function evaluate(project,{dataDir}={}){
   if(Object.keys(c).some(k=>!["id","mediaId","kind","track","start","in","duration","name","props","disabled","keyframes"].includes(k)))return false;
   if(c.keyframes&&Object.keys(c.keyframes).length)return false;
   const p=c.props||{};
+  const known=new Set(('x y scale rotation opacity volume pan anchorX anchorY trimStart trimEnd trimOffset autoOrient pathOffset pathAlign motionBlur motionBlurSamples gain channelMode duck speed brightness contrast saturation hue blur grayscale sepia invert temperature tint vignette filterPreset fit cropL cropT cropR cropB flipH flipV cornerRadius blend chromaKey chromaTolerance chromaSoftness bgRemove shake shakeSpeed rgbSplit grain text fontSize color color2 font bold italic weight align letterSpacing lineHeight uppercase textShadow glow glowColor textAnim wordRate direction highlightColor strokeWidth strokeColor bgColor bgOpacity boxW boxH boxFit vAlign').split(' '));
+  if(Object.keys(p).some(k=>!known.has(k)))return false;
   if(c.parent||c.mask||c.filters||c.trackMatte||c.trackMask||p.autoOrient||n(p.pathOffset,0)!==0||!['start',undefined].includes(p.pathAlign))return false;
   if(c.transitions?.length||c.fades?.length)return false;
   const vals={x:0,y:0,scale:1,rotation:0,opacity:1,anchorX:0,anchorY:0,trimStart:0,trimEnd:100,trimOffset:0,speed:1,blur:0,brightness:100,contrast:100,saturation:100,hue:0,grayscale:0,sepia:0,invert:0,temperature:0,tint:0,vignette:0,shake:0,rgbSplit:0,grain:0,motionBlur:0,cropL:0,cropR:0,cropT:0,cropB:0,cornerRadius:0};
@@ -41,6 +43,13 @@ function evaluate(project,{dataDir}={}){
   if(!safeProps(c))return failure("DYNAMIC_OR_FILTERED_CLIP_REQUIRES_BROWSER",c.id);
   if(![c.start,c.in,c.duration].every(exact)||c.start<0||c.in<0||c.duration<=0)return failure("NON_FRAME_EXACT_TIMING",c.id);
   const m=safeMedia(c,c.kind);if(!m)return failure("MEDIA_UNRESOLVED_OR_NONLOCAL",c.id);
+  let probe;
+  try{probe=JSON.parse(execFileSync('ffprobe',['-v','error','-show_entries','stream=codec_name,codec_type,width,height,pix_fmt,r_frame_rate,avg_frame_rate,channels,sample_rate','-of','json',m.file],{timeout:10000,maxBuffer:65536}).toString())}
+  catch{return failure('MEDIA_PROBE_FAILED',c.id)}
+  const stream=probe.streams?.find(st=>st.codec_type===c.kind);
+  if(!stream)return failure('MEDIA_STREAM_MISSING',c.id);
+  if(c.kind==='video'&&(stream.codec_name!=='h264'||stream.width!==project.width||stream.height!==project.height||stream.pix_fmt!=='yuv420p'||stream.r_frame_rate!=='30/1'||stream.avg_frame_rate!=='30/1'))return failure('VIDEO_SOURCE_NOT_CFR30_OPAQUE',c.id);
+  if(c.kind==='audio'&&(![1,2].includes(stream.channels)||!['44100','48000'].includes(stream.sample_rate)))return failure('AUDIO_SOURCE_UNSUPPORTED',c.id);
   if(Number.isFinite(m.m.duration)&&c.in+c.duration>m.m.duration+0.05)return failure("SOURCE_TIME_EXCEEDS_MEDIA",c.id);
   const to={id:c.id,file:m.file,startFrame:Math.round(c.start*30),inFrame:Math.round(c.in*30),frames:Math.round(c.duration*30)};
   if(c.kind==="video"){
