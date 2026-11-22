@@ -13,13 +13,19 @@ function fingerprint({projectFile,appDir,profile,chunkFrames,snapshotRaw=null}){
  const raw=snapshotRaw==null?fs.readFileSync(projectFile):Buffer.from(snapshotRaw);
  const project=JSON.parse(raw.toString("utf8").replace(/^\uFEFF/,""));
  if(!Array.isArray(project.media)||!Array.isArray(project.clips))return null;
+ // A project may mount its entire media directory from an isolated,
+ // read-only asset store. Anchor containment to the resolved media directory,
+ // not to project.json's directory; never follow an individual asset symlink
+ // outside that resolved directory.
+ const mediaRoot=fs.realpathSync(path.join(root,"media"));
+ if(!fs.statSync(mediaRoot).isDirectory())return null;
  const media=[];
  for(const m of project.media){
   const u=m?.src;if(typeof u!=="string"||!u.startsWith("/media/")||u.includes("?")||u.includes("#"))return null;
   const name=decodeURIComponent(u.slice(7));
   if(!name||name.includes("..")||name.includes("\\")||name.startsWith("/")||name.includes("\0"))return null;
   const file=fs.realpathSync(path.resolve(root,"media",name));
-  if(!file.startsWith(root+path.sep))return null;
+  if(!file.startsWith(mediaRoot+path.sep))return null;
   const stat=fs.statSync(file);if(!stat.isFile())return null;
   media.push([m.id,u,stat.size,shaFile(file)]);
  }
