@@ -1,0 +1,31 @@
+--- a/fablecut/sues-segmented-export.js
++++ b/fablecut/sues-segmented-export.js
+@@ -32,7 +32,7 @@
+   await checkProject(j);
+   let ticket;
+   for(let k=0;k<20;k++){
+-   try{ticket=jobs.request({...opts,where:'headless',revision:j.revision,snapshot:j.snapshot});break;}
++   try{ticket=jobs.request({...opts,where:process.env.SUES_QA_RESIDENT_TAB==='1'?'tab':'headless',revision:j.revision,snapshot:j.snapshot});break;}
+    catch(e){if(e.code!==409||k===19)throw e;await delay(1000);ensure(j);}
+   }
+   j.child=ticket.id;
+@@ -76,7 +76,7 @@
+      clips.push({at:w.startFrame,frames:w.endFrame-w.startFrame,path:file});
+      j.progress=.12+.78*(w.endFrame/j.frames);j.updated=Date.now();
+      j.child=null;
+-     await delay(1200); // wait for the previous Chrome renderer to exit
++     if(process.env.SUES_QA_RESIDENT_TAB!=='1')await delay(1200); // QA resident keeps the same browser
+     }catch(e){
+      if(j.cancelled)throw e;
+      if(w.endFrame-w.startFrame<=30)throw e;
+--- a/fablecut/server.js
++++ b/fablecut/server.js
+@@ -1021,7 +1021,7 @@
+       if (freeBytes < minFreeMb * 1048576) {
+         sendJSON(res, 409, { error: `Espacio insuficiente para exportar: ${Math.floor(freeBytes / 1048576)} MB libres; mínimo de seguridad ${minFreeMb} MB. Libera espacio antes de exportar.` }); return;
+       }
+-      if (opts.videoOnly && (!opts.window || opts.where !== "headless")) {
++      if (opts.videoOnly && (!opts.window || (opts.where !== "headless" && !(process.env.SUES_QA_RESIDENT_TAB === "1" && opts.where === "tab")))) {
+         sendJSON(res, 400, {error:"videoOnly is restricted to headless frame windows"}); return;
+       }
+       // A segment is a read-only window onto the current project. Never
