@@ -23,9 +23,9 @@ function evaluate(project,{dataDir}={}){
  function safeProps(c){
   if(Object.keys(c).some(k=>!["id","mediaId","kind","track","start","in","duration","name","props","disabled","keyframes"].includes(k)))return false;
   if(c.keyframes&&Object.keys(c.keyframes).length)return false;
-  if(c.parent||c.mask||c.filters||c.trackMatte||c.trackMask||p?.autoOrient||n(p?.pathOffset,0)!==0||!['start',undefined].includes(p?.pathAlign))return false;
-  if(c.transitions?.length||c.fades?.length)return false;
   const p=c.props||{};
+  if(c.parent||c.mask||c.filters||c.trackMatte||c.trackMask||p.autoOrient||n(p.pathOffset,0)!==0||!['start',undefined].includes(p.pathAlign))return false;
+  if(c.transitions?.length||c.fades?.length)return false;
   const vals={x:0,y:0,scale:1,rotation:0,opacity:1,anchorX:0,anchorY:0,trimStart:0,trimEnd:100,trimOffset:0,speed:1,blur:0,brightness:100,contrast:100,saturation:100,hue:0,grayscale:0,sepia:0,invert:0,temperature:0,tint:0,vignette:0,shake:0,rgbSplit:0,grain:0,motionBlur:0,cropL:0,cropR:0,cropT:0,cropB:0,cornerRadius:0};
   for(const [k,v] of Object.entries(vals))if(!equal(p[k],v))return false;
   if(p.bgRemove||p.flipH||p.flipV||p.chromaKey||(!["normal",undefined].includes(p.blend))||(!["none",undefined].includes(p.filterPreset)))return false;
