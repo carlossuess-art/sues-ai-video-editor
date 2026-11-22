@@ -1,0 +1,204 @@
+--- a/fablecut/server.js
++++ b/fablecut/server.js
+@@ -36,6 +36,7 @@
+ const { downloadImportUrl, maybeFaststart } = require("./import-url");
+ const { pruneCache } = require("./frame-cache");
+ const { createExportJobs } = require("./export-jobs");
++const { createResidentWorker } = require("./sues-resident-chromium.cjs");
+ const { createSegmentedExports } = require("./sues-segmented-export");
+ const { denoiseFile, AMOUNT_IDS: DENOISE_AMOUNTS } = require("./denoise");
+ 
+@@ -558,11 +559,13 @@
+ 
+ /* Agent-requested exports: handed to an open editor tab over SSE, or to a
+    headless browser the server starts (export-jobs.js). */
++const residentWorker = process.env.SUES_RESIDENT_WORKER === "1" ? createResidentWorker({port:PORT,debugPort:Number(process.env.SUES_RESIDENT_DEBUG_PORT)||18140,profileDir:path.join(ANALYSIS_DIR,"resident-chrome-profile"),qaNoSandbox:process.env.FABLECUT_QA_NO_SANDBOX === "1"}) : null;
+ const exportJobs = createExportJobs({
+   url: (id) => `http://localhost:${PORT}/?exportJob=${encodeURIComponent(id)}`,
+   // a transcription's headless browser keeps its profile, so the speech model is downloaded once
+   keepProfile: (kind) => kind === "transcribe" ? path.join(ANALYSIS_DIR, "browser-profile") : null,
+   broadcast,
++  worker:residentWorker,
+   editors: () => sseClients.size,
+ });
+ 
+@@ -570,6 +573,8 @@
+ const segmentedJobs = createSegmentedExports({jobs:exportJobs,projectFile:PROJECT_FILE,exportsDir:EXPORTS_DIR,
+   chunkFrames: Math.min(180, Math.max(5, Number(process.env.SUES_SEGMENT_FRAMES) || 90)), encoderProfile:'webcodecs'});
+ 
++if(residentWorker)residentWorker.onLost(()=>exportJobs.failActiveWorker("Resident Chromium disconnected during export"));
++
+ /* Static file with HTTP Range support (required for <video> seeking) */
+ function serveFile(req, res, filePath) {
+   fs.stat(filePath, (err, st) => {
+@@ -995,6 +1000,7 @@
+     const id = url.searchParams.get("id") || "";
+     const j = exportJobs.get(id);
+     if (!j || j.kind !== "audio" || j.status !== "running") {sendJSON(res, 409, {error:"no running audio-only job"});return;}
++    if(j.via === "worker" && !residentWorker?.checkToken(req.headers["x-sues-worker-token"])) {sendJSON(res,403,{error:"Private worker authentication required"});return;}
+     try {
+       const chunks=[]; let n=0;
+       for await (const chunk of req) {
+@@ -1135,6 +1141,7 @@
+         : action === "/cancel" && req.method === "POST" ? segmentedJobs.cancel(id) : null;
+       sendJSON(res,parent ? 200 : 404,parent || {error:"Unknown segmented export job"});return;
+     }
++    if(exportJobs.get(id)?.via === "worker" && ["/ticket","/claim","/report"].includes(action) && !residentWorker?.checkToken(req.headers["x-sues-worker-token"])) {sendJSON(res,403,{error:"Private worker authentication required"});return;}
+     let got = false;
+     try {
+       got = action === "" && req.method === "GET" ? exportJobs.get(id)
+--- a/fablecut/export-jobs.js
++++ b/fablecut/export-jobs.js
+@@ -76,7 +76,7 @@
+   function sweep() {
+     const now = Date.now();
+     for (const j of jobs.values()) {
+-      if (j.status === "pending" && now - j.created > (j.via === "headless" ? PENDING_HEADLESS_MS : PENDING_TAB_MS))
++      if (j.status === "pending" && now - j.created > (j.via !== "tab" ? PENDING_HEADLESS_MS : PENDING_TAB_MS))
+         end(j, "failed", { error: j.via === "headless"
+           ? "the headless browser never picked up the job (it may have failed to start or to load the editor)"
+           : "no editor tab picked up the job — is it busy exporting? Retry with where:\"headless\"" });
+@@ -113,8 +113,8 @@
+      *  kind "transcribe" turns files' speech into words and saves them (fablecut_transcribe).
+      *  A scopes job's `image` flag also returns that still as a JPEG data URL,
+      *  which is how fablecut_frame shows an agent the composed program picture. */
+-    request({ kind = "export", range, profile, delivery = null, deliveries = null, time, revision, where = "auto", matte = null, mask = null, track = null, transcribe = null, image = false, window = null, videoOnly = false, snapshot = null }) {
+-      if (!["auto", "tab", "headless"].includes(where)) throw Object.assign(new Error("where must be auto, tab or headless"), { code: 400 });
++    request({ kind = "export", range, profile, delivery = null, deliveries = null, time, revision, where = "auto", trustedWorker = false, sourceSession = null, matte = null, mask = null, track = null, transcribe = null, image = false, window = null, videoOnly = false, snapshot = null }) {
++      if (!["auto", "tab", "headless", "worker"].includes(where) || (where === "worker" && (trustedWorker !== true || !opts.worker))) throw Object.assign(new Error("where must be auto, tab or headless"), { code: 400 });
+       if (!["export", "scopes", "track", "transcribe", "audio"].includes(kind)) throw Object.assign(new Error("kind must be export, scopes, track or transcribe"), { code: 400 });
+       if (time != null && !(Number.isFinite(time) && time >= 0)) throw Object.assign(new Error("time must be seconds ≥ 0"), { code: 400 });
+       if (range != null && range !== "entire" && range !== "in-out") throw Object.assign(new Error("range must be \"entire\" or \"in-out\""), { code: 400 });
+@@ -129,7 +129,7 @@
+       const now = Date.now();
+       const j = {
+         id: "x_" + Math.random().toString(36).slice(2, 10), kind, status: "pending", progress: 0,
+-        snapshot: snapshot || null,
++        snapshot: snapshot || null, sourceSession: where === "worker" && typeof sourceSession === "string" ? sourceSession : null,
+         window: window ? { startFrame: window.startFrame, endFrame: window.endFrame } : null, videoOnly: !!videoOnly,
+         range: range || null, profile: profile || null, delivery: kind === "export" && delivery ? delivery : null,
+         deliveries: kind === "export" && Array.isArray(deliveries) && deliveries.length ? deliveries : null, time: time ?? null, revision: Number.isFinite(revision) ? revision : null,
+@@ -138,18 +138,19 @@
+         track: kind === "track" && track ? track : null,
+         transcribe: kind === "transcribe" && transcribe ? transcribe : null,
+         image: kind === "scopes" && !!image,
+-        via: where === "headless" || (where === "auto" && !tabs) ? "headless" : "tab",
++        via: where === "worker" ? "worker" : where === "headless" || (where === "auto" && !tabs) ? "headless" : "tab",
+         created: now, updated: now,
+       };
+       if (j.via === "headless") launch(j);
+       jobs.set(j.id, j);
+       if (j.via === "tab") opts.broadcast("export", JSON.stringify(this.ticket(j.id)));
++      if (j.via === "worker") Promise.resolve().then(() => opts.worker.dispatch(this.ticket(j.id))).catch(e => this.fail(j.id, "Resident worker: " + String(e.message || e)));
+       if (!timer) { timer = setInterval(sweep, 1000); timer.unref?.(); }
+       return view(j);
+     },
+     get(id) { const j = jobs.get(id); return j ? view(j) : null; },
+     /** What a tab needs to run the job (headless pages fetch it by id). */
+-    ticket(id) { const j = jobs.get(id); return j ? { id: j.id, kind: j.kind, snapshot: j.snapshot || null, window: j.window || null, videoOnly: !!j.videoOnly, range: j.range, profile: j.profile, delivery: j.delivery || null, deliveries: j.deliveries || null, time: j.time, revision: j.revision, matte: j.matte || null, mask: j.mask || null, track: j.track || null, transcribe: j.transcribe || null, image: !!j.image, status: j.status } : null; },
++    ticket(id) { const j = jobs.get(id); return j ? { id: j.id, kind: j.kind, snapshot: j.snapshot || null, sourceSession:j.sourceSession || null, window: j.window || null, videoOnly: !!j.videoOnly, range: j.range, profile: j.profile, delivery: j.delivery || null, deliveries: j.deliveries || null, time: j.time, revision: j.revision, matte: j.matte || null, mask: j.mask || null, track: j.track || null, transcribe: j.transcribe || null, image: !!j.image, status: j.status } : null; },
+     /** First tab to claim a pending job runs it. */
+     claim(id) {
+       const j = jobs.get(id);
+@@ -169,14 +170,16 @@
+       else if (status === "failed") end(j, "failed", { error: String(error || "export failed") });
+       return { cancel: false };
+     },
++    fail(id, error) { const j=jobs.get(id);if(!j||isEnded(j))return null;end(j,"failed",{error:String(error||"private worker unavailable")});return view(j); },
++    failActiveWorker(error){for(const j of jobs.values())if(j.via==="worker"&&!isEnded(j))this.fail(j.id,error);},
+     cancel(id) {
+       const j = jobs.get(id);
+       if (!j) return null;
+       // A running tab hears about it on its next report and stops; pending just ends.
+-      if (!isEnded(j)) end(j, "cancelled", { error: "cancelled" });
++      if (!isEnded(j)) {if(j.via==="worker")opts.worker?.cancel();end(j, "cancelled", { error: "cancelled" });}
+       return view(j);
+     },
+-    shutdown() { for (const j of jobs.values()) closeBrowser(j); if (timer) clearInterval(timer); },
++    shutdown() { for (const j of jobs.values()) closeBrowser(j); opts.worker?.shutdown(); if (timer) clearInterval(timer); },
+   };
+ }
+ 
+--- a/fablecut/sues-segmented-export.js
++++ b/fablecut/sues-segmented-export.js
+@@ -32,7 +32,7 @@
+   await checkProject(j);
+   let ticket;
+   for(let k=0;k<20;k++){
+-   try{ticket=jobs.request({...opts,where:'headless',revision:j.revision,snapshot:j.snapshot});break;}
++   try{ticket=jobs.request({...opts,where:process.env.SUES_RESIDENT_WORKER==='1'?'worker':'headless',trustedWorker:process.env.SUES_RESIDENT_WORKER==='1',sourceSession:j.id,revision:j.revision,snapshot:j.snapshot});break;}
+    catch(e){if(e.code!==409||k===19)throw e;await delay(1000);ensure(j);}
+   }
+   j.child=ticket.id;
+@@ -76,7 +76,7 @@
+      clips.push({at:w.startFrame,frames:w.endFrame-w.startFrame,path:file});
+      j.progress=.12+.78*(w.endFrame/j.frames);j.updated=Date.now();
+      j.child=null;
+-     await delay(1200); // wait for the previous Chrome renderer to exit
++     if(process.env.SUES_RESIDENT_WORKER!=='1')await delay(1200); // resident renderer is never restarted between windows
+     }catch(e){
+      if(j.cancelled)throw e;
+      if(w.endFrame-w.startFrame<=30)throw e;
+--- a/fablecut/app.js
++++ b/fablecut/app.js
+@@ -17578,7 +17578,12 @@
+ }
+ /** Export-time decode state: clip id → source (or null: use the element). */
+ function exportDecodeBegin() {
+-  runtime.exportDecode = runtime.noExportDecode ? null : { sources: new Map(), opening: new Map(), frameByKey: new Map(), frameOwner: new Map(), lastUse: new Map() };
++  const pooled = window.__suesResidentToken && runtime.__suesResidentSourceSession && runtime.__suesResidentDecodePool;
++  runtime.exportDecode = runtime.noExportDecode ? null : pooled || { sources: new Map(), opening: new Map(), frameByKey: new Map(), frameOwner: new Map(), lastUse: new Map() };
++  if(runtime.exportDecode){
++    runtime.exportDecode.frameByKey.clear();runtime.exportDecode.frameOwner.clear();
++    if(window.__suesResidentToken && runtime.__suesResidentSourceSession)runtime.__suesResidentDecodePool=runtime.exportDecode;
++  }
+   runtime.exportFrames = new Map();
+ }
+ function exportDecodeEnd() {
+@@ -17587,7 +17592,10 @@
+     cache.clear();
+   }
+   const d = runtime.exportDecode;
+-  if (d) for (const s of d.sources.values()) s?.close();
++  const keep = !!(window.__suesResidentToken && runtime.__suesResidentSourceSession && !renderCancelled);
++  if(d && !keep)for(const src of d.sources.values())try{src?.close()}catch{}
++  if(d && keep){d.frameByKey.clear();d.frameOwner.clear();}
++  else if(window.__suesResidentToken)runtime.__suesResidentDecodePool=null;
+   runtime.exportDecode = null;
+   runtime.exportFrames = null;
+ }
+@@ -18175,6 +18183,7 @@
+   try {
+     const r = await fetch("/api/export/job/report?id=" + encodeURIComponent(id), {
+       method: "POST", body: JSON.stringify(body),
++      headers: window.__suesResidentToken ? {"X-Sues-Worker-Token":window.__suesResidentToken} : {},
+     }).then((x) => x.json());
+     if (r?.cancel) { renderCancelled = true; exportAbort?.abort(); }
+   } catch { }
+@@ -18200,7 +18209,7 @@
+     if (!wav) throw new Error("No audible tracks for full mix");
+     if (renderCancelled || signal.aborted) throw new Error("cancelled");
+     const response = await fetch("/api/export/audio-only/upload?id="+encodeURIComponent(ticket.id),
+-      {method:"POST", body:wav, signal});
++      {method:"POST", body:wav, signal, headers:window.__suesResidentToken?{"X-Sues-Worker-Token":window.__suesResidentToken}:{}});
+     const result = await response.json();
+     if (!response.ok || !result.ok || !result.src) throw new Error(result.error || "full mix upload failed");
+     await reportExportJob(ticket.id, {status:"done",src:result.src,
+@@ -18215,7 +18224,16 @@
+ }
+ async function runExportJob(ticket) {
+   if (!ticket?.id || state.exporting) return; // a busy tab leaves it for another
+-  const claimed = await fetch("/api/export/job/claim?id=" + encodeURIComponent(ticket.id), { method: "POST" })
++  if(window.__suesResidentToken){
++    const requested=ticket.sourceSession || null;
++    if(runtime.__suesResidentSourceSession!==requested){
++      const old=runtime.__suesResidentDecodePool;
++      if(old)for(const src of old.sources.values())try{src?.close()}catch{}
++      runtime.__suesResidentDecodePool=null;
++      runtime.__suesResidentSourceSession=requested;
++    }
++  }
++  const claimed = await fetch("/api/export/job/claim?id=" + encodeURIComponent(ticket.id), { method: "POST", headers:window.__suesResidentToken?{"X-Sues-Worker-Token":window.__suesResidentToken}:{} })
+     .then((r) => r.ok).catch(() => false);
+   if (!claimed) return;
+   const fail = (error) => reportExportJob(ticket.id, { status: "failed", error }, true);
