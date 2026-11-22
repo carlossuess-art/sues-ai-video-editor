@@ -1,0 +1,13 @@
+    # Q03 private export validation, authenticated with existing Studio session.
+    redir /q03-export-qa /q03-export-qa/qa.html 302
+    redir /q03-export-qa/ /q03-export-qa/qa.html 302
+    handle_path /q03-export-qa/* {
+        forward_auth 127.0.0.1:7781 {
+            uri /verify
+        }
+        @q03allowed path /qa.html /api/project /api/export/request /api/export/job /api/export/job/cancel /exports/*
+        route {
+            reverse_proxy @q03allowed 127.0.0.1:18156
+            respond "Not found" 404
+        }
+    }
