@@ -112,12 +112,22 @@ function createResidentWorker({port,debugPort,profileDir,qaNoSandbox=false}={}){
     if(socket?.readyState===WebSocket.OPEN)
       void rpc("Runtime.evaluate",{expression:"renderCancelled=true;try{exportAbort?.abort()}catch{};true",returnByValue:true}).catch(()=>{});
   }
+  async function release(){
+    if(!socket||socket.readyState!==WebSocket.OPEN)return false;
+    try{
+      const result=await rpc("Runtime.evaluate",{
+        expression:"(function(){if(state.exporting)return false;if(runtime.__suesDecodeIdleTimer)clearTimeout(runtime.__suesDecodeIdleTimer);runtime.__suesDecodeIdleTimer=null;const d=runtime.__suesResidentDecodePool;if(d){for(const s of d.sources.values())try{s?.close()}catch{};d.sources.clear();d.opening.clear();d.lastUse.clear()}runtime.__suesResidentDecodePool=null;runtime.__suesResidentSourceSession=null;return true})()",
+        returnByValue:true
+      });
+      return result.result?.value===true;
+    }catch{return false}
+  }
   function shutdown(){
     lost=()=>{};
     clearSocket(Error("Resident shutdown"));
     if(browser&&browser.exitCode===null)try{browser.kill("SIGTERM")}catch{}
     browser=null;
   }
-  return {dispatch,cancel,shutdown,checkToken,onLost(fn){lost=typeof fn==="function"?fn:()=>{}},status(){return {running:!!browser&&browser.exitCode===null,connected:!!socket&&socket.readyState===WebSocket.OPEN}}};
+  return {dispatch,cancel,release,shutdown,checkToken,onLost(fn){lost=typeof fn==="function"?fn:()=>{}},status(){return {running:!!browser&&browser.exitCode===null,connected:!!socket&&socket.readyState===WebSocket.OPEN}}};
 }
 module.exports={createResidentWorker};
