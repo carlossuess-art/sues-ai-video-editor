@@ -79,7 +79,7 @@
 +   fs.renameSync(output,target);j.src='/exports/'+encodeURIComponent(path.basename(target));
 +   try{if(j.cacheKey)Reuse.remember({exportsDir,key:j.cacheKey,frames:j.frames,fps:j.fps,src:j.src})}catch(e){console.warn('[SUES native cache]',e.message)}
 +   j.status='done';j.progress=1;j.updated=Date.now();
-+  }catch(e){j.error=String(e.message||e);j.status=j.cancelled?'cancelled':'failed';j.updated=Date.now()}
++  }catch(e){j.error=j.cancelled?'cancelled':String(e.message||e);j.status=j.cancelled?'cancelled':'failed';j.updated=Date.now()}
 +  finally{if(j.nativeProc)try{j.nativeProc.kill('SIGTERM')}catch{};j.nativeProc=null;if(scratch)fs.rmSync(scratch,{force:true,recursive:true})}
 + }
   return {
