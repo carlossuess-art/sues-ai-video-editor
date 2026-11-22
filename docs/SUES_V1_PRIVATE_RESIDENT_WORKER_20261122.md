@@ -16,7 +16,7 @@
 
 # SUES V1 · Worker privado Chromium reutilizable · Auditoría real 22/11/2026
 
-**Estado: código de desarrollo y pruebas parciales superadas, pero NO DESPLEGADO.** Se ha iniciado QA R14 de 1667f y está EN CURSO en el VPS; no se declara resultado hasta confirmar `done` y validaciones A/V. Producción FableCut, SUES iStudio, WAC, DNS, V29 y originales intactos.
+**Estado del checkpoint:** QA final R14 completada en el apartado superior, solo desarrollo y **NO DESPLEGADO**. Los apartados siguientes reproducen la secuencia histórica de la investigación. Producción FableCut, SUES iStudio, WAC, DNS, V29 y originales intactos.
 
 ## Código real
 
@@ -37,8 +37,8 @@
 4. Diagnóstico del fallo intermitente `Failed to fetch`: en ventana real R14 frame975 con navegador adicional, simultáneamente fallaron `/library/fonts/*.woff2`, `/api/export/job/report`, `/api/media-info`, `/api/proxy/status` y `/api/export/begin`. No son ficheros multimedia desaparecidos; se observó ~1,1 GB swap y Chrome renderer ~1,18 GB, **pero NO se demostró** fallo OOM o causa causal. Evitar Chrome concurrentes.
 5. Comparación con MP4 histórico R14 completo da SSIM0,946–0,965 para estas ventanas, pero aquel renderer/referencia no es bit-exacto a la candidata actual. **No utilizar ese SSIM para aprobar paridad**. Únicamente frame960–974 se comparó contra su referencia directa misma versión y dio SHA idéntico. Falta prueba directa frame975 y990 (intento paralelo falló por fetch).
 
-## QA completa R14 en ejecución
+## Histórico del arranque de la QA completa R14 (resultado verificado arriba)
 
-Servicio privado bajo `sues-r14-full-resident-server-20261122.service` y seguimiento `sues-r14-full-resident-e2e-20261122.service` en Hostinger; 1vCPU/4GB, CPUQuota75%, MemoryMax2950M, LimitFSIZE512M, puerto 18137 **solo loopback**. Source project copiado, medios solo lectura a través de enlaces simbólicos al sandbox, exports separados en `/opt/sues-secure-headless-qa-20261122/r14-fetch-debug-data/exports`. Informe vivo `native-fastpath-qa/r14-full-resident-progress-qa.json`. Es un test ejecutándose, no un resultado logrado.
+Servicio privado bajo `sues-r14-full-resident-server-20261122.service` y seguimiento `sues-r14-full-resident-e2e-20261122.service` en Hostinger; 1vCPU/4GB, CPUQuota75%, MemoryMax2950M, LimitFSIZE512M, puerto 18137 **solo loopback**. Source project copiado, medios solo lectura a través de enlaces simbólicos al sandbox, exports separados en `/opt/sues-secure-headless-qa-20261122/r14-fetch-debug-data/exports`. Informe vivo `native-fastpath-qa/r14-full-resident-progress-qa.json`. Esta sección documentaba el arranque; el trabajo ya terminó con 1667/1667 cuadros, como consta en la sección inicial de cierre técnico.
 
 **Condiciones para declarar cerrado:** job `done`; MP4 H264/AAC 1080×1920/30fps, 1667 cuadros,55,5667s, audio íntegro y sin cortes; sampleado de escenas/contornos de máscara/subtítulos, comprobación A/V visual y auditiva de dos pasadas, descarga Android desde la aplicación, cancelación/reanudación/revisión concurrente, autorización de despliegue. Sin ellas, V1 NO está terminada.
