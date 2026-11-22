@@ -1,3 +1,7 @@
+## 22/11/2026 · R23 · Rendimiento export móvil
+
+Corregido y desplegado 8443 cargado masivo de reproductores: 44→7 en QA, eliminados parones de >9s en muestra de 5 frames; HTML video activo+próximo, inactivos no se crean y anteriores se liberan. Barra 95/97/100 según etapas reales, QA botón→MP4 0.2s y regresiones 10/10. Instancia de export abierta antes de R23 sigue código anterior y NO fue interrumpida. Proyecto usuario intacto. Sin validación 55s completa ni promesa de tiempo en móvil. Véase docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
 ## 22/11/2026 · Revisión nº 22
 
 Corrección bloqueo mezcla de audio desplegada preview 8443: fuentes audibles únicas, ventanas de exportación, progreso, cancel/timeout; mezcla real 55.57s en 6.5s, QA 8/8; descarga por botón UI real de fragmento 1s H264/AAC con archivo recibido verificado y 10/10 regresión. R14 intacto. Pendiente export UI completa 55s y prueba física, no sustituir por export MCP. Ver docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
