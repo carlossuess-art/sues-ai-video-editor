@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SUES Q03 - Diagnostico de exportacion</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif}*{box-sizing:border-box}
+body{margin:0;background:#101114;color:#f5f1e9}main{max-width:680px;margin:auto;padding:20px 16px 40px}
+section{background:#1b1b1e;border:1px solid #393633;border-radius:12px;padding:15px;margin:16px 0}p,small{color:#c8c2b9;line-height:1.5}
+button{padding:12px 17px;min-height:46px;border:0;border-radius:8px;background:#d7b980;color:#111;font-weight:700;font-size:1rem}
+button:disabled{opacity:.5}a{color:#e9ca90}iframe{width:100%;height:120px;border:1px solid #444;border-radius:8px}
+table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #444;text-align:left;font-size:.9rem}td:last-child{text-align:right}
+#status,pre{white-space:pre-wrap;overflow-wrap:anywhere}pre{font-size:.75rem}
+</style></head><body><main>
+<small>SUES AI VIDEO EDITOR - Q03 - Diagnostico privado r29</small>
+<h1>Velocidad de exportacion en este dispositivo</h1>
+<p>Mide 36 fotogramas REALES del proyecto R14, en tres escenas (inicio, mascara y motion) a resolucion 1080 x 1920. No modifica archivos ni inicia exportaciones.</p>
+<section><p id="ready">Cargando el editor de pruebas...</p>
+<iframe id="editor" src="./?q03ColdProbe=1" title="Motor FableCut QA" loading="eager"></iframe>
+<p><small>Manten la pantalla activa y esta pagina en primer plano. Evita otras exportaciones durante la medicion.</small></p>
+<button id="start" disabled>Medir velocidad</button><p id="status">Sin mediciones.</p></section>
+<section id="results" hidden><h2>Resultado</h2><p id="summary"></p>
+<table><thead><tr><th>Escena</th><th>12 fotogramas</th><th>ms/fotograma posterior</th></tr></thead><tbody id="rows"></tbody></table>
+<p id="codec"></p><button id="copy">Copiar informe</button>
+<details><summary>Detalles tecnicos</summary><pre id="json"></pre></details></section>
+<p><a href="./qa.html">Volver al panel Q03</a></p>
+<small>Esta es una muestra del compositor; NO es una exportacion completa ni una confirmacion de aceleracion GPU.</small>
+</main><script>
+"use strict";
+const $=id=>document.getElementById(id);
+let output=null,running=false;
+function ready(){try{return $("editor").contentWindow.Function("return !!state.connected && project.clips.length>100 && typeof seekVideosTo==='function' && typeof VideoFrame==='function'")()}catch{return false}}
+let checks=0;
+const clock=setInterval(()=>{if(ready()){$("ready").textContent="Motor R14 disponible para medir.";$("start").disabled=false;clearInterval(clock)}else if(++checks>100){$("ready").textContent="No se pudo cargar R14. Verifica tu acceso y recarga.";clearInterval(clock)}},450);
+const source=String.raw`
+return (async()=>{
+ if(!state.connected||state.exporting)throw Error("El editor no esta disponible");
+ const old=state.time,played=state.playing,segments=[["Inicio",0],["Mascara",228],["Motion",1100]];
+ const result={width:project.width,height:project.height,fps:projectFps(),clips:project.clips.length,comps:project.comps.length,scenes:[]};
+ let started=false;
+ try{
+  pause();state.exporting=true;state.rendering=true;
+  await loadProjectFonts();exportDecodeBegin();started=true;
+  for(const [name,first] of segments){
+   let total=0,seek=0,draw=0,cold=0,decoded=0;
+   for(let n=0;n<12;n++){
+    const t=(first+n)/result.fps;state.time=t;
+    const a=performance.now();await seekVideosTo(t);
+    const b=performance.now();await prepareFrameAssets(t);
+    const c=performance.now();drawFrame(t);
+    const d=performance.now();const f=new VideoFrame(els.preview,{timestamp:Math.round(t*1e6)});f.close();
+    const end=performance.now(),elapsed=end-a;
+    total+=elapsed;seek+=b-a;draw+=d-c;
+    if(n===0)cold=elapsed;
+    if(runtime.exportFrames&&runtime.exportFrames.size)decoded++;
+    if(n===0||n===11)emit(name+" "+(n+1)+"/12");
+   }
+   result.scenes.push({name,frames:12,totalMs:Math.round(total),coldMs:Math.round(cold),hotMs:Math.round((total-cold)/11),seekMs:Math.round(seek),drawMs:Math.round(draw),decoded});
+  }
+ }finally{
+  if(started)try{exportDecodeEnd()}catch{}
+  state.exporting=false;state.rendering=false;state.time=old;
+  try{restoreExportVideoState()}catch{}
+  try{seekMediaWhilePaused()}catch{}
+  try{drawFrame(old)}catch{}
+  if(played)try{play()}catch{}
+ }
+ if(typeof VideoEncoder==="function"){
+  const c={codec:"avc1.640028",width:result.width,height:result.height,framerate:result.fps,bitrate:16000000,avc:{format:"annexb"}};
+  result.h264Hints={};
+  for(const hint of ["prefer-hardware","prefer-software"]){
+   try{result.h264Hints[hint]=(await VideoEncoder.isConfigSupported({...c,hardwareAcceleration:hint})).supported}
+   catch(e){result.h264Hints[hint]=String(e.message||e).slice(0,90)}
+  }
+ }
+ return result;
+})()`;
+$("start").onclick=async()=>{
+ if(running)return;running=true;$("start").disabled=true;$("results").hidden=true;
+ try{
+  if(!ready())throw Error("Motor no preparado");
+  const start=performance.now();
+  const result=await $("editor").contentWindow.Function("emit",source)(text=>$("status").textContent=text);
+  output={...result,elapsedMs:Math.round(performance.now()-start),userAgent:navigator.userAgent,at:new Date().toISOString()};
+  $("summary").textContent="36 fotogramas: "+(result.scenes.reduce((a,x)=>a+x.totalMs,0)/1000).toFixed(2)+" segundos. Muestra, no render completo.";
+  $("rows").innerHTML=result.scenes.map(x=>"<tr><td>"+x.name+"</td><td>"+(x.totalMs/1000).toFixed(2)+" s</td><td>"+x.hotMs+" ms</td></tr>").join("");
+  $("codec").textContent="Compatibilidad de solicitud H.264 por WebCodecs (no demuestra uso real de GPU): "+JSON.stringify(result.h264Hints||"No disponible");
+  $("json").textContent=JSON.stringify(output,null,2);$("results").hidden=false;
+  $("status").textContent="Prueba terminada. Copia el informe.";
+ }catch(e){$("status").textContent="Error de prueba: "+String(e.message||e)}
+ finally{running=false;$("start").disabled=false}
+};
+$("copy").onclick=async()=>{if(!output)return;try{await navigator.clipboard.writeText(JSON.stringify(output,null,2));$("status").textContent="Informe copiado"}catch{$("status").textContent="Copia los detalles tecnicos manualmente."}};
+</script></body></html>
