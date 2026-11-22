@@ -18,6 +18,15 @@ function windows(project,{frames,fps,chunkFrames,globalMediaProof,rendererProof,
      +x.duration<0||!Number.isFinite(+x.in||0)) return null;
   byId.set(x.id,x);
  }
+ // Fail closed on any cyclic or dangling hierarchy, including offscreen clips.
+ // Otherwise a parent cycle can escape window-local dependency checks.
+ for(const x of c){
+  const seen=new Set([x.id]);let node=x;
+  while(node.parent!==undefined&&node.parent!==null&&node.parent!==""){
+   if(typeof node.parent!=="string"||!byId.has(node.parent)||seen.has(node.parent))return null;
+   seen.add(node.parent);node=byId.get(node.parent);
+  }
+ }
  const stable={...project};delete stable.clips;delete stable.revision;delete stable.name;
  // Audio is intentionally global. A sound-reactive plugin must invalidate all
  // windows until its render dependencies are explicitly modeled.
