@@ -27,7 +27,7 @@ a{color:#ebcf94}
 <h2>1. Proyecto de pruebas</h2>
 <p id="project">Consultando la copia aislada…</p>
 <div class="row"><button id="refresh" class="secondary">Actualizar datos</button></div>
-<p class="notice">Copia QA del editor existente. La escena «EL OBSERVADOR» conserva el telescopio y su enfoque animado. Para cambiar el contenido, utiliza el editor; este panel permite revisarlo y descargarlo.</p>
+<p class="notice">Copia QA del editor existente. El recurso de los dos cerebros aparece de 2,400 a 4,200 segundos con fondo verde eliminado; el telescopio queda más adelante en su tramo original. Para cambiar el contenido, utiliza el editor; este panel permite revisarlo y descargarlo.</p>
 </section>
 <section class="panel">
 <h2>2. Vista previa rápida · 540 × 960 / 15 fps</h2>
@@ -59,9 +59,9 @@ a{color:#ebcf94}
 const prefix="/q03-export-qa",el=id=>document.getElementById(id);
 let revision=null,jobId=null,jobMode="full",output=null,previewSrc=null,previewFingerprint=null,downloadFingerprint=null,projectFingerprint=null,timer=null,started=0;
 const KNOWN_LIGHT={
- fingerprint:"9b68699008762e97033ca14736087f98fd1ad801da8233f870cd9da69227a9da",
- preview:"/exports/SUES_Q03_OBSERVADOR_preview_rev32_540x960_15fps.mp4",
- master:"/exports/SUES_export_xs_82c6624a1ff2.mp4"
+ fingerprint:"11405e399e87e80bed21ddd38b68864b26a31a75dfa016602e994674cd170427",
+ preview:"/exports/SUES_Q03_CEREBROS_preview_rev33_540x960_15fps.mp4",
+ master:"/exports/SUES_export_xs_42851c3555c6.mp4"
 };
 async function docFingerprint(p){
  const q={...p};delete q.revision;
