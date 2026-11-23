@@ -26,8 +26,8 @@ a{color:#ebcf94}
 <section class="panel">
 <h2>1. Proyecto de pruebas</h2>
 <p id="project">Consultando la copia aislada…</p>
-<div class="row"><button id="refresh" class="secondary">Actualizar datos</button><button id="change" class="secondary" disabled>Cambiar solo un texto de prueba</button></div>
-<p class="notice">Para medir una reexportación real, cambia primero este texto y después pulsa Exportar. Es una copia de ensayo, no el editor publicado.</p>
+<div class="row"><button id="refresh" class="secondary">Actualizar datos</button></div>
+<p class="notice">Copia QA del editor existente. La escena «EL OBSERVADOR» conserva el telescopio y su enfoque animado. Para cambiar el contenido, utiliza el editor; este panel permite revisarlo y descargarlo.</p>
 </section>
 <section class="panel">
 <h2>2. Vista previa rápida · 540 × 960 / 15 fps</h2>
@@ -59,9 +59,9 @@ a{color:#ebcf94}
 const prefix="/q03-export-qa",el=id=>document.getElementById(id);
 let revision=null,jobId=null,jobMode="full",output=null,previewSrc=null,previewFingerprint=null,downloadFingerprint=null,projectFingerprint=null,timer=null,started=0;
 const KNOWN_LIGHT={
- fingerprint:"6c99fe36f1dde82615c79c7b0b54ec412950d114c7e892f259fa0730a4800b5c",
- preview:"/exports/SUES_Q03_preview_rev30_540x960_15fps.mp4",
- master:"/exports/SUES_export_xs_3fb17db578c8.mp4"
+ fingerprint:"9b68699008762e97033ca14736087f98fd1ad801da8233f870cd9da69227a9da",
+ preview:"/exports/SUES_Q03_OBSERVADOR_preview_rev32_540x960_15fps.mp4",
+ master:"/exports/SUES_export_xs_82c6624a1ff2.mp4"
 };
 async function docFingerprint(p){
  const q={...p};delete q.revision;
@@ -89,7 +89,7 @@ function rememberJob(){try{
  else sessionStorage.removeItem("suesQ03RunningJob");
 }catch{}}
 function status(s){el("status").textContent=s}
-function busy(b){el("export").disabled=b;el("quick").disabled=b;el("change").disabled=b;el("cancel").disabled=!b}
+function busy(b){el("export").disabled=b;el("quick").disabled=b;el("cancel").disabled=!b}
 async function request(path,method="GET",data){
  const opts={method,credentials:"same-origin",cache:"no-store"};
  if(data!==undefined){opts.headers={"Content-Type":"application/json"};opts.body=JSON.stringify(data)}
@@ -114,25 +114,9 @@ async function getProject(){
   }
   const c=(p.clips||[]).find(x=>x.id==="SC08-QUESTION");
   if(!c)throw Error("No se encuentra la escena de QA");
-  el("project").textContent=(p.name||"R14")+" · revisión "+revision+" · "+p.clips.length+" capas. Texto de prueba: "+String(c.props?.text||"");
+  el("project").textContent=(p.name||"R14")+" · revisión "+revision+" · "+p.clips.length+" capas. Título: "+String(c.props?.text||"");
   if(!jobId)busy(false);
  }catch(e){el("project").textContent=e.message;busy(true)}
-}
-async function changeText(){
- if(jobId)return;
- if(!confirm("¿Cambiar solamente un texto de la COPIA PRIVADA para medir la reexportación?"))return;
- try{
-  const p=await request("/api/project"),c=p.clips.find(x=>x.id==="SC08-QUESTION");
-  if(!c)throw Error("Escena de prueba ausente");
-  const a="SUES Q03 · PRUEBA A",b="SUES Q03 · PRUEBA B";
-  c.props={...c.props,text:c.props?.text===a?b:a};
-  p.revision=Number(p.revision||0)+1;
-  await request("/api/project","PUT",p);
-  output=null;downloadFingerprint=null;el("download").hidden=true;clearPreview();
-  el("range").disabled=true;el("progress").value=0;
-  status("Texto actualizado solo en la copia QA. Pulsa Exportar.");
-  await getProject();
- }catch(e){status("Error al modificar la prueba: "+e.message)}
 }
 function showVideo(src){
  if(!src||!src.startsWith("/exports/"))throw Error("Ruta de exportación no válida");
@@ -196,7 +180,7 @@ async function testRange(){
  }catch(e){el("rangeResult").textContent="Error de descarga: "+e.message}
 }
 el("refresh").addEventListener("click",getProject);
-el("change").addEventListener("click",changeText);
+
 el("export").addEventListener("click",()=>startExport("full"));
 el("quick").addEventListener("click",()=>startExport("quick"));
 el("cancel").addEventListener("click",cancelExport);
