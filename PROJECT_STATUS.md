@@ -1,3 +1,7 @@
+## Q03 r42 · Máster HD / preview terminados, pendientes QA artística y aprobación · 23/11/2026
+
+**Estado real 23/11/2026:** edición Q03 privada ajustada (r42, autosaves r45 sin diferencias creativas); corazón 53,167–54,200 s a escala 0,65 a la izquierda sin cubrir a Carlos; Soul Brass hasta 12,40 s; agua instrumental de conciencia pico 0,26. Exportación HD 107905215 bytes / preview 10109012 bytes, 1667 frames1080×1920 a 30fps 55,566667s y audio AAC con pico -0,9dBFS. Panel QA activo con enlace y fingerprint de nueva revisión. Fuente del detalle/hashes/QA: **[checkpoint docs/SUES_Q03_R42_AJUSTE_FINAL_20261123.md](docs/SUES_Q03_R42_AJUSTE_FINAL_20261123.md)**. Sin publicación, sin cambios de producción/V29/WAC/DNS; pendiente visionado completo, doble QA artístico y aprobación de Carlos.
+
 ## Q03 r39 · Viaje musical SUES actualizado con fuentes originales y remezcla nativa · 23/11/2026
 
 **Alcance:** exclusivamente proyecto de pruebas FableCut existente `/opt/sues-secure-headless-qa-20261122/q03-integrated-stage-20261122`. No se modificó la producción, el editor principal, WAC, DNS ni V29 publicado. La revisión de audio se escribió por API en proyecto Q03 rev36→37; una escritura posterior dejó el proyecto en rev38 **sin cambios semánticos de medios, voz o vídeo**; verificación de contenido, no solo número de revisión. Backup recuperable: `data/analysis/q03-rev36-before-music-identity-r39.json`.
