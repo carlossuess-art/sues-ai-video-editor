@@ -1,3 +1,15 @@
+## Q03 r28 · Pixel: corregido HTTP403 «bad Host or Origin» · 23/11/2026
+
+Tras abrir la ruta QA https://studio.suesholistics.com:8443/q03-export-qa/qa.html desde el Pixel, el usuario aportó una captura del JSON «prohibido: la solicitud debe provenir de esta máquina (encabezado Host u Origin incorrecto)». El fallo fue reproducido con una petición local usando `Host: studio.suesholistics.com:8443`: **HTTP403** mientras `Host: 127.0.0.1:18156` daba **HTTP200**. Causa exacta: la función existente `requestAllowed` en la copia QA `server.js` restringe tanto `Host` como `Origin` a localhost salvo valores de `FABLECUT_ALLOWED_HOSTS`, y Caddy preserva el nombre del host HTTPS público. **No era un problema de credenciales ni de DNS**.
+
+Corrección de configuración reversible sin modificar código/productivo ni Caddy: drop-in **`/etc/systemd/system/sues-q03-pixel-qa.service.d/10-trusted-studio-origin.conf`** con `[Service]\nEnvironment=FABLECUT_ALLOWED_HOSTS=studio.suesholistics.com`; `systemctl daemon-reload && systemctl restart sues-q03-pixel-qa.service`. Se confía **solo en el host exacto del Studio existente**, se conserva comprobación de Origin (protección CSRF), la escucha QA sigue en 127.0.0.1 y la ruta Caddy en 8443 conserva `forward_auth` y lista cerrada de paths.
+
+**Pruebas después del cambio:** GET /qa.html con `Host: studio.suesholistics.com:8443` → **200**; con `Origin: https://studio.suesholistics.com:8443` → **200**; `Origin: https://example.invalid` → **403**; `Host: example.invalid` → **403**; GET /api/project con cabeceras Studio → **165 clips, HTTP200**; GET de MP4 con `Range: bytes=0-1023` y cabeceras Studio → **206/1024 bytes**. HTTPS público `https://studio.suesholistics.com:8443/q03-export-qa/qa.html` sin sesión → **302** al login, certificado `ssl_verify_result=0`, editor publicado `https://editor.suesholistics.com/` → **200**. QA servicio `active`, `NRestarts=0`; Caddy SHA256 **inalterado** `c0d866d653e699d29767643ea6ab68b1d0a7793935fb71ea8f06d56bdfdf22d6`.
+
+**Validación pendiente:** abrir panel de nuevo desde Pixel con sesión real, comprobar render/descarga desde el navegador. No afirmar que el Pixel ya ve el panel hasta ver la nueva captura. Render incremental QA131s y pixel-parity1487 frames sin cambios de la revisión anterior siguen verificados. Q03 en curso, Q04 pendiente; producción/V29/WAC/DNS intactos.
+
+---
+
 ## Q03 r27 · HTTPS privado para Pixel + render bajo servicio persistente · 22/11/2026
 
 **URL ACTIVA (autenticación SUES Studio):** https://studio.suesholistics.com:8443/q03-export-qa/qa.html . La fuente Caddy host `/opt/sues-video-setup/proxy/Caddyfile` incorpora únicamente la ruta `handle_path /q03-export-qa/*`, `forward_auth` existente en 7781 y upstream QA loopback18156; no DNS ni modificación de los demás vhosts. Backup único host `/opt/sues-video-setup/proxy/Caddyfile.q03-backup`, recarga Caddy verificada. Sin sesión, HTML/API/MP4 → HTTP302 al login, HTTPS certificado válido sin `-k`; preview8443 raíz→302, studio login443→200, editor443→200.
