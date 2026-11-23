@@ -1,3 +1,9 @@
+## 23/11/2026 · SUES AUDIO DNA: 9 ORIGINALES IMPORTADOS EN VPS MEDIA + HASHES VERIFICADOS, FALTA BIN PROYECTO
+
+FableCut VPS srv1841004 tiene 9 audios de SUES en `/srv/sues-fablecut-next/data/media` mediante API nativa `POST /api/import-url` (21.356.382 bytes total). 7 MP3 SHA256 idénticos a fuentes Drive; 2 M4A Opus MP4 remux faststart, flujos de audio con SHA256 idénticos y extensión .m4a corregida. HTTP Range 206 Soul Brass/Reggae; ffprobe 9/9 válido. Manifest de estado y hashes en VPS `data/qa/sues-audio-dna-20261123/manifest.json` y [registro versionado](engine-next/SUES_AUDIO_DNA_INVENTARIO_IMPORTACION_20261123.json). Skill SUES AI Film Director 1.7.2 (release registrada) incorpora la política musical; revisar la release tras cualquier nueva actualización.
+
+**NO HECHO TODAVÍA:** alta en project.media/bandeja de recursos, prueba de audición UI/operaciones MCP/catálogos, derivados/fragmentos, selección final tensión-tristeza, licencias, mezcla/QA. La subida a media no significa importación al proyecto. No se tocó ni desplegó el proyecto activo ni la rama de producción. La decisión y prioridades permanecen en [nota musical](SUES_MUSICA_IDENTIDAD_EMOCIONAL_Y_FABLECUT_20261123.md). No eliminar backups ni assets para liberar disco sin plan validado (97% ocupado al inspeccionar).
+
 ## 23/11/2026 · IDENTIDAD MUSICAL SUES: 3 BASES + MEDITATIVE, FABLECUT EN COLA
 
 Carlos aprueba firma Soul Brass `Midnight at the Plaza` (Drive 1YMkHGMwP_keW0LFi1wDr-e7xNetGeHVY), reggae-funk `Gold in the Midday Heat` (Drive 1pWmn6f3IRpoNzFXwKC9gCKFDkdwNshA1) y elegir base de conflicto/dolor entre `Stillness Between Breaths` y `The Unspoken Hour`. `Meditative · Introspective` de Carlos queda como recurso especial esencial de introspección. No exigir 8 temas ni 1 pista/emoción: director escoge 2–4 colores musicales según guion, transiciones, voz y silencios. Todos los originales permanecen en Drive; no generar ni duplicar activos por rutina.
