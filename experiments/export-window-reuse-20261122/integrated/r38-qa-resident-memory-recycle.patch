@@ -1,0 +1,66 @@
+--- a/app/sues-resident-chromium.cjs
++++ b/app/sues-resident-chromium.cjs
+@@ -121,13 +121,28 @@
+       return result.result?.value===true;
+     }catch{return false}
+   }
++  // QA-only controlled turnover between fully validated video windows.
++  // Do not emit a lost-worker event for an intentional recycle; preserve
++  // onLost for genuine future browser failures.
++  async function recycle(){
++    const old=browser;
++    browser=null;
++    clearSocket(Error("Resident recycle"));
++    if(old&&old.exitCode===null){
++      const exited=new Promise(resolve=>{old.once("exit",resolve);setTimeout(resolve,5000).unref?.()});
++      try{old.kill("SIGTERM")}catch{}
++      await exited;
++      if(old.exitCode===null)try{old.kill("SIGKILL")}catch{}
++    }
++    return true;
++  }
+   function shutdown(){
+     lost=()=>{};
+     clearSocket(Error("Resident shutdown"));
+     if(browser&&browser.exitCode===null)try{browser.kill("SIGTERM")}catch{}
+     browser=null;
+   }
+-  return {dispatch,cancel,release,shutdown,checkToken,onLost(fn){lost=typeof fn==="function"?fn:()=>{}},status(){return {running:!!browser&&browser.exitCode===null,connected:!!socket&&socket.readyState===WebSocket.OPEN}}};
++  return {dispatch,cancel,release,recycle,shutdown,checkToken,onLost(fn){lost=typeof fn==="function"?fn:()=>{}},status(){return {running:!!browser&&browser.exitCode===null,connected:!!socket&&socket.readyState===WebSocket.OPEN}}};
+ }
+ module.exports={createResidentWorker};
+ 
+--- a/app/export-jobs.js
++++ b/app/export-jobs.js
+@@ -173,6 +173,7 @@
+     fail(id, error) { const j=jobs.get(id);if(!j||isEnded(j))return null;end(j,"failed",{error:String(error||"private worker unavailable")});return view(j); },
+     failActiveWorker(error){for(const j of jobs.values())if(j.via==="worker"&&!isEnded(j))this.fail(j.id,error);},
+     releaseWorker(){return opts.worker?.release?.() || Promise.resolve(false);},
++    recycleWorker(){return opts.worker?.recycle?.() || Promise.resolve(false);},
+     cancel(id) {
+       const j = jobs.get(id);
+       if (!j) return null;
+--- a/app/sues-segmented-export.js
++++ b/app/sues-segmented-export.js
+@@ -113,7 +113,12 @@
+      clips.push({at:w.startFrame,frames:w.endFrame-w.startFrame,path:file});
+      j.progress=.12+.78*(w.endFrame/j.frames);j.updated=Date.now();
+      j.child=null;
+-     if(process.env.SUES_RESIDENT_WORKER!=='1')await delay(1200); // resident renderer is never restarted between windows
++     if(process.env.SUES_RESIDENT_WORKER==='1' && process.env.SUES_RESIDENT_RECYCLE_PER_WINDOW==='1'){
++       // Optional QA circuit breaker: release WebCodecs/native VideoFrames and
++       // browser process between completed windows to bound resident RAM.
++       await jobs.recycleWorker();
++       await delay(350);
++     }else if(process.env.SUES_RESIDENT_WORKER!=='1')await delay(1200);
+     }catch(e){
+      if(j.cancelled)throw e;
+      if(w.endFrame-w.startFrame<=30)throw e;
+--- a/start-private-qa.sh
++++ b/start-private-qa.sh
+@@ -8,4 +8,4 @@
+ test -x "$CHROME"
+ mkdir -p "$STAGE/home/config" "$STAGE/home/cache"
+ cd "$STAGE/app"
+-exec env HOME="$STAGE/home" XDG_CONFIG_HOME="$STAGE/home/config" XDG_CACHE_HOME="$STAGE/home/cache" FABLECUT_DATA_DIR="$STAGE/data" FABLECUT_CHROME="$CHROME" PORT=18156 HOST=127.0.0.1 SUES_RESIDENT_WORKER=1 SUES_RESIDENT_DEBUG_PORT=18157 FABLECUT_QA_NO_SANDBOX=0 SUES_RESIDENT_BITRATE_MBPS=16 SUES_SEGMENTED_EXPORT=1 SUES_SEGMENT_FRAMES=180 SUES_EXPORT_REUSE=1 SUES_WINDOW_REUSE=1 FABLECUT_ENABLE_AUDIO_ONLY=1 /usr/bin/node server.js
++exec env HOME="$STAGE/home" XDG_CONFIG_HOME="$STAGE/home/config" XDG_CACHE_HOME="$STAGE/home/cache" FABLECUT_DATA_DIR="$STAGE/data" FABLECUT_CHROME="$CHROME" PORT=18156 HOST=127.0.0.1 SUES_RESIDENT_WORKER=1 SUES_RESIDENT_RECYCLE_PER_WINDOW=1 SUES_RESIDENT_DEBUG_PORT=18157 FABLECUT_QA_NO_SANDBOX=0 SUES_RESIDENT_BITRATE_MBPS=16 SUES_SEGMENTED_EXPORT=1 SUES_SEGMENT_FRAMES=180 SUES_EXPORT_REUSE=1 SUES_WINDOW_REUSE=1 FABLECUT_ENABLE_AUDIO_ONLY=1 /usr/bin/node server.js
