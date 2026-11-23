@@ -1,3 +1,9 @@
+## 23/11/2026 · IDENTIDAD MUSICAL SUES: 3 BASES + MEDITATIVE, FABLECUT EN COLA
+
+Carlos aprueba firma Soul Brass `Midnight at the Plaza` (Drive 1YMkHGMwP_keW0LFi1wDr-e7xNetGeHVY), reggae-funk `Gold in the Midday Heat` (Drive 1pWmn6f3IRpoNzFXwKC9gCKFDkdwNshA1) y elegir base de conflicto/dolor entre `Stillness Between Breaths` y `The Unspoken Hour`. `Meditative · Introspective` de Carlos queda como recurso especial esencial de introspección. No exigir 8 temas ni 1 pista/emoción: director escoge 2–4 colores musicales según guion, transiciones, voz y silencios. Todos los originales permanecen en Drive; no generar ni duplicar activos por rutina.
+
+**ESTADO REAL:** Drive originales confirmado; skill/mapeo e ingesta a VPS/FableCut requieren su propio readback. VPS comprobado 23/11 97% ocupado (~1,8GB libre), media suesnle restringida, `rclone` no instalado. Sin evidencia de importación nativa. No exponer Drive privado, no escribir al proyecto activo ni desplegar; identificar API segura y registrar SHA/licencias antes de aceptar biblioteca. Checklist completo y IDs: [SUES_MUSICA_IDENTIDAD_EMOCIONAL_Y_FABLECUT_20261123.md](SUES_MUSICA_IDENTIDAD_EMOCIONAL_Y_FABLECUT_20261123.md). Q03, V29 y producción sin cambios por esta anotación.
+
 ## 11/11/2026 · Supervisor nativo y skill sincronizada · NO DESPLEGADO
 
 - **Código en rama PR27**: `87e4244d92d60f771dcabda6306a90178bdc8912` conecta el runner privado de FableCut al supervisor de evidencias existente mediante `qa-prepare` y `qa-verify`. Manifiestos exactos de fuente/timeline/revisión/decisión/plan/proyecto/MP4, comprobación de IDs antes y después de ejecutar, codecs/duración y evidencias de fotogramas/audio, dos informes de revisión y cola de incidencias con operationId/corrección. Sin reescritura autónoma, sin publicación. [Manual](engine-next/FABLECUT_NATIVE_SUPERVISOR_20261111.md).
