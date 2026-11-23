@@ -17,6 +17,12 @@ video{width:100%;max-height:400px;aspect-ratio:9/16;background:#050505;object-fi
 code{word-break:break-all;color:#dfc597}
 .row{display:flex;flex-wrap:wrap;align-items:center}.notice{font-size:.9rem;border-left:3px solid #b89c6e;padding-left:12px}
 a{color:#ebcf94}
+#qaFineTune label{display:block;margin:12px 0 5px;font-weight:650}
+#qaFineTune input[type=range]{display:block;width:100%;accent-color:#d7b980;min-height:32px}
+#qaFineTune select{width:100%;min-height:44px;border-radius:8px;background:#262529;color:#f5f1e9;border:1px solid #857961;font-size:1rem;padding:9px}
+#qaFineTune output{color:#ebcf94;font-variant-numeric:tabular-nums}
+#qaFineTune .hint{font-size:.87rem;color:#bdb5a7}
+#tuneStatus{white-space:pre-wrap;min-height:22px}
 </style>
 </head>
 <body><main>
@@ -28,6 +34,24 @@ a{color:#ebcf94}
 <p id="project">Consultando la copia aislada…</p>
 <div class="row"><button id="refresh" class="secondary">Actualizar datos</button></div>
 <p class="notice">Copia QA del editor existente. Música nueva: soul de apertura → tensión provisional → agua instrumental en la reflexión → reggae-funk en revelación y promesa. Voz original intacta; 37 sonidos redundantes retirados. Cerebros 2,40–5,20 s, telescopio original, corazón giratorio final y zoom progresivo conservados.</p>
+</section>
+<section class="panel" id="qaFineTune">
+<h2>Ajustes de corazón y música</h2>
+<p>Modifica esta misma edición. Guarda los ajustes y después genera la nueva vista rápida para comprobar el resultado.</p>
+<label for="heartSize">Tamaño del corazón · <output id="heartSizeValue">—</output></label>
+<input type="range" id="heartSize" min="0.45" max="1.45" step="0.05" aria-label="Tamaño del corazón">
+<label for="heartUntil">El corazón desaparece en el segundo · <output id="heartUntilValue">—</output></label>
+<input type="range" id="heartUntil" min="54.2" max="55.1" step="0.0333333333" aria-label="Final del corazón">
+<label for="soulUntil">La pista inicial Soul Brass termina en el segundo · <output id="soulUntilValue">—</output></label>
+<input type="range" id="soulUntil" min="8.9" max="13.5" step="0.1" aria-label="Duración de la primera pista">
+<label for="calmMusic">Música del tramo meditativo</label>
+<select id="calmMusic"><option value="water">Agua instrumental actual (9,7 s de archivo)</option><option value="meditative">Meditative · Introspectiva (original personal)</option></select>
+<label for="calmUntil">El tramo meditativo termina en el segundo · <output id="calmUntilValue">—</output></label>
+<input type="range" id="calmUntil" min="42.0" max="47.5" step="0.1" aria-label="Duración del tramo meditativo">
+<p class="hint" id="calmLimit">El agua instrumental original es breve; con «Meditative» podrás prolongar este tramo más.</p>
+<button id="saveTune" disabled>Guardar mis ajustes</button> <button id="reloadTune" class="secondary">Recuperar valores actuales</button>
+<p id="tuneStatus" role="status" aria-live="polite">Cargando ajustes reales…</p>
+<p class="hint">Al guardar se conservarán voz, máscaras, zooms y las demás capas. La vista previa anterior dejará de representar la nueva revisión hasta recalcularla.</p>
 </section>
 <section class="panel">
 <h2>2. Vista previa rápida · 540 × 960 / 15 fps</h2>
@@ -59,9 +83,9 @@ a{color:#ebcf94}
 const prefix="/q03-export-qa",el=id=>document.getElementById(id);
 let revision=null,jobId=null,jobMode="full",output=null,previewSrc=null,previewFingerprint=null,downloadFingerprint=null,projectFingerprint=null,timer=null,started=0;
 const KNOWN_LIGHT={
- fingerprint:"fe32c9375ef2770747e5386e030242c3583085a79772d0255818d208db2e6c6f",
- preview:"/exports/SUES_Q03_IDENTIDAD_SONORA_rev38_540x960_15fps.mp4",
- master:"/exports/SUES_Q03_IDENTIDAD_SONORA_rev38_HD.mp4"
+ fingerprint:"b5493e07ee7485c2b3d484303a96347ba2feadea4593b5174328fa3f0a07724a",
+ preview:"/exports/SUES_Q03_AJUSTE_FINAL_r42_540x960_15fps.mp4",
+ master:"/exports/SUES_Q03_AJUSTE_FINAL_r42_HD.mp4"
 };
 async function docFingerprint(p){
  const q={...p};delete q.revision;
@@ -81,12 +105,12 @@ function showPreview(src,label){
 }
 
 try{
- const saved=JSON.parse(sessionStorage.getItem("suesQ03RunningJob_r39")||"null");
+ const saved=JSON.parse(sessionStorage.getItem("suesQ03RunningJob_r42")||"null");
  if(saved&&/^(xs_|x_)[a-z0-9]+$/.test(saved.id)){jobId=saved.id;started=Number(saved.started)||Date.now();jobMode=saved.mode==="quick"?"quick":"full"}
 }catch{}
 function rememberJob(){try{
- if(jobId)sessionStorage.setItem("suesQ03RunningJob_r39",JSON.stringify({id:jobId,started,mode:jobMode}));
- else sessionStorage.removeItem("suesQ03RunningJob_r39");
+ if(jobId)sessionStorage.setItem("suesQ03RunningJob_r42",JSON.stringify({id:jobId,started,mode:jobMode}));
+ else sessionStorage.removeItem("suesQ03RunningJob_r42");
 }catch{}}
 function status(s){el("status").textContent=s}
 function busy(b){el("export").disabled=b;el("quick").disabled=b;el("cancel").disabled=!b}
@@ -121,7 +145,7 @@ async function getProject(){
 function showVideo(src){
  if(!src||!src.startsWith("/exports/"))throw Error("Ruta de exportación no válida");
  output=prefix+src;downloadFingerprint=projectFingerprint;
- const link=el("download");link.href=output;link.download="SUES_Q03_IDENTIDAD_SONORA_final_HD.mp4";link.hidden=false;
+ const link=el("download");link.href=output;link.download="SUES_Q03_AJUSTE_FINAL_r42_HD.mp4";link.hidden=false;
  el("range").disabled=false;
 }
 async function poll(){
@@ -212,4 +236,4 @@ el("speedTest").addEventListener("click",testDownloadSpeed);
 busy(true);getProject();
 if(jobId){timer=setInterval(poll,1200);void poll()}
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&jobId)void poll()});
-</script></body></html>
+</script><script src="./qa-tune.js"></script></body></html>
