@@ -1,3 +1,15 @@
+## Q03 r35 · 23/11/2026 · Croma de dos cerebros sincronizado con la narración · QA VERIFICADO
+
+**CAMBIO ACTIVO SOLO EN COPIA QA** `SUES QA R14 COMPLETO 55s`, revisión33. Vídeo `164226.mp4` facilitado por Carlos, original SHA256 `e29dee44c2f4083353a5b523ae7f4ee7016338fee5913e4a214d103ba6ff2c77`, conservado en Google Drive privado https://drive.google.com/file/d/1Hqbp7bR8iujPIKWA817cAcrCbNOjnpYq/view y `data/media/r14-brains-green-original.mp4` del stage.
+
+**Tiempos EXACTOS en la locución:** «DISCUTIR» termina a2,400s, «consigo mismo» comienza2,400s, «y lo CURIOSO» termina4,200s. El título inicial `SC01-TITLE` de V9 termina exactamente2,400s (antes3,900s). Vídeo nuevo `SC01-BRAIN-MIRROR-CHROMA` V9 va2,400–4,200s con `chromaKey:#26C73B`, tolerance32, softness18, escala0,90, x0 y-530, audio0, fade-in/out. Solo se ocultaron captions duplicados V8 durante 2,4–4,2s. **NO poner este vídeo sobre el telescopio**; `SC08-TELESCOPE` intacto32,300–35,100s, se quitó el retículo añadido erróneamente en rev31, título `EL\nOBSERVADOR` posterior intacto.
+
+**Resultado:** API export REAL `xs_42851c3555c6`, 185,7s, 1080×1920/1667f/55,566667s H264/AAC SHA256 `39e2e9d086daeee03cf567960996562c0db684412d72e3d7a4b615b3e86405f9`; versión 540×960/15fps con AAC10.225.193bytes obtenida en31s `SUES_Q03_CEREBROS_preview_rev33_540x960_15fps.mp4`. Croma comprobado en frame2,85s (sin fondo verde, persona no tapada) y salida4,27s (sin recurso). FrameMd5 fuera de dos ventanas modificadas 1307/1307 idénticos, audio apsnr166,085/166,118 dB. Cache resembrada con SHA previo verificado para reutilizar8/10 ventanas; tras reinicio del stage `cached:true` instantáneo. Test headless Chromium reproducción de preview 540p PASS. Acceso privado `https://studio.suesholistics.com:8443/q03-export-qa/qa.html`; master y media separados. Editor real/producción/DNS/V29/WAC intactos.
+
+**Checkpoint técnico y scripts:** `docs/SUES_V1_Q03_CEREBROS_CROMA_NARRACION_R35_20261123.md` y `experiments/export-window-reuse-20261122/integrated/`. **Pendiente:** aprobación visual física del Pixel, rendimiento primer render (frío) y descarga móvil, QA artística global y Q04. No confundir QA aprobada técnicamente con V1 terminada. VPS ~96% utilizado.
+
+---
+
 ## Q03 r31 · Ajustes DIRECTOS de tipografía en el editor de pruebas R14, dos tiempos distintos · 23/11/2026
 
 **Solicitud expresa de Carlos:** corregir solo dos defectos observados en las capturas del MP4 descargado: en 0:04 («que puedes») el subtítulo no se lee; en 0:34 el título grande se corta horizontalmente y debe ocupar **dos líneas con una palabra por línea**. Son tiempos/operaciones diferentes. **No usar ImageGen como sustituto de editar el proyecto o el vídeo.**
