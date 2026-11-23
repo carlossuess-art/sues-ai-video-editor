@@ -38,9 +38,11 @@ a{color:#ebcf94}
 </section>
 <section class="panel">
 <h2>3. Ver y descargar</h2>
-<video id="preview" controls playsinline preload="metadata"></video>
+<video id="preview" controls playsinline preload="none"></video>
 <div class="row"><a id="download" class="btn" hidden>Descargar MP4</a><button id="range" class="secondary" disabled>Comprobar descarga parcial</button></div>
 <p id="rangeResult"></p>
+<div class="row"><button id="speedTest" class="secondary">Medir velocidad de descarga (4 MB)</button></div>
+<p id="speedResult" role="status" aria-live="polite">Esta prueba no modifica ni exporta el vídeo.</p>
 </section>
 <section class="panel"><h2>4. Medir velocidad de este dispositivo</h2><p>Compara el compositor real de R14 y la compatibilidad de H.264 WebCodecs. No cambia la edición ni exporta un MP4.</p><a class="btn" href="./qa-cold-benchmark.html">Medir velocidad del Pixel o navegador</a></section>
 <p class="notice">Acceso protegido por la sesión del estudio SUES. La primera exportación completa de un proyecto nuevo todavía no está optimizada al objetivo de 1–3 minutos.</p>
@@ -142,7 +144,26 @@ el("refresh").addEventListener("click",getProject);
 el("change").addEventListener("click",changeText);
 el("export").addEventListener("click",startExport);
 el("cancel").addEventListener("click",cancelExport);
+async function testDownloadSpeed(){
+ const btn=el("speedTest"), out=el("speedResult");
+ btn.disabled=true;out.textContent="Midiendo 4 MB desde el servidor…";
+ try{
+  const src=output||prefix+"/exports/SUES_export_xs_c98010508888.mp4";
+  const url=src+(src.includes("?")?"&":"?")+"speedcheck="+Date.now();
+  const t0=performance.now();
+  const r=await fetch(url,{headers:{Range:"bytes=0-4194303"},cache:"no-store",credentials:"same-origin"});
+  if(r.status!==206)throw Error("HTTP "+r.status+": se esperaba descarga parcial");
+  const size=(await r.arrayBuffer()).byteLength;
+  const sec=(performance.now()-t0)/1000;
+  if(size!==4194304)throw Error("Tamaño inesperado: "+size);
+  const mbps=8*size/1e6/sec;
+  const est=100*8/mbps;
+  out.textContent="Velocidad real: "+mbps.toFixed(1)+" Mb/s ("+(size/1e6/sec).toFixed(2)+" MB/s). A ese ritmo, 100 MB tardarían aprox. "+Math.round(est)+" s. Repite con y sin VPN para comparar.";
+ }catch(e){out.textContent="No se pudo medir: "+e.message}
+ finally{btn.disabled=false}
+}
 el("range").addEventListener("click",testRange);
+el("speedTest").addEventListener("click",testDownloadSpeed);
 busy(true);getProject();
 if(jobId){timer=setInterval(poll,1200);void poll()}
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&jobId)void poll()});
