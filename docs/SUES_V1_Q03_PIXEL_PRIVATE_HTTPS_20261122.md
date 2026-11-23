@@ -1,3 +1,7 @@
+## Q03 r42 · CORAZÓN Y VIAJE MUSICAL FINAL, RENDER TÉCNICO OK · 23/11/2026
+
+El estado previo r39 se conserva abajo como histórico. **La entrega vigente** está en `docs/SUES_Q03_R42_AJUSTE_FINAL_20261123.md`: edición privada Q03 r42 (autosaves rev45), corazón sin interferencia con el rostro y final a54,20 antes de «sígueme», Soul Brass0–12,40, agua34,533–44,10 con pico0,26, voz/zoom intactos, HD55,566667s/1667 frames1080×1920 y preview publicados bajo /q03-export-qa/exports protegidos. Audio final -0,9dBFS. **No** hay autorización de publicación ni doble QA artístico; producción/V29 intactos.
+
 ## Q03 r39 · Viaje musical SUES actualizado con fuentes originales y remezcla nativa · 23/11/2026
 
 **Alcance:** exclusivamente proyecto de pruebas FableCut existente `/opt/sues-secure-headless-qa-20261122/q03-integrated-stage-20261122`. No se modificó la producción, el editor principal, WAC, DNS ni V29 publicado. La revisión de audio se escribió por API en proyecto Q03 rev36→37; una escritura posterior dejó el proyecto en rev38 **sin cambios semánticos de medios, voz o vídeo**; verificación de contenido, no solo número de revisión. Backup recuperable: `data/analysis/q03-rev36-before-music-identity-r39.json`.
