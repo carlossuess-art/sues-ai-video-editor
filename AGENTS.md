@@ -1,3 +1,9 @@
+## SUES AUDIO DNA · Biblioteca musical 23/11/2026 · SIN CAMBIOS EN Q03 ACTIVO
+
+Carlos confirmó como prioridades de futuros Reels: entrada/firma Soul Brass “Midnight at the Plaza”, cierre liberador Reggae-funk “Gold in the Midday Heat”, tercera base tensión/tristeza a elegir y “Meditative · Introspective” personal como recurso esencial. NO cuota de ocho temas. **9 audios físicos ya importados en el servidor FableCut original** `/srv/sues-fablecut-next/data/media` (21.356.382 bytes, 7 MP3 byte-identical, 2 M4A audio stream identically verified). No alta todavía en la biblioteca `project.media`, no integración/mezcla en el Reel Q03. Mantener Q03 r38 y su música actual intactos; la prioridad musical es una NORMA DE FUTUROS PLANES, no una orden de sustitución de audio. La skill SUES AI Film Director **1.7.3** incluye el contrato musical y pendientes; inventario verificado en GitHub PR27 `docs/engine-next/SUES_AUDIO_DNA_INVENTARIO_IMPORTACION_20261123.json`; Roadmap Maestro Drive `1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ`. Para registrar recursos en FableCut usar solo un proyecto QA seguro y autorización específica, conservar originales/licencias. No tocar cronología ni exports actuales.
+
+---
+
 ## Q03 r38 · 23/11/2026 · Zoom progresivo + música enviada por Carlos, QA EN CURSO
 
 **Editor existente, SOLO copia aislada del VPS** `/opt/sues-secure-headless-qa-20261122/q03-integrated-stage-20261122`, proyecto `SUES QA R14 COMPLETO 55s`, 1080×1920, 30fps, 1667 fotogramas, revisión **36**. No se modificaron producción, V29, WAC, DNS ni otros proyectos.
