@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SUES Motion · tarjeta con palabras individuales · previsualización aislada</title>
+<style>
+body{margin:0;background:#151516;color:#f5f3ea;font:16px system-ui,sans-serif}
+main{max-width:940px;margin:auto;padding:20px;display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:24px}
+#viewport{background:#0c0c0e;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;max-height:84vh}
+#viewport svg{height:80vh;max-width:100%;aspect-ratio:9/16}
+aside{display:flex;flex-direction:column;gap:12px}
+input{font:inherit;min-width:0;padding:8px;background:#25221e;color:white;border:1px solid #6e5d3a;border-radius:7px}
+button{background:#d8b96e;border:0;padding:12px;border-radius:7px;color:#292112;font-weight:bold;cursor:pointer}
+input[type=range]{width:95%;padding:0}
+small{color:#bcb6a9}
+@media(max-width:700px){main{grid-template-columns:1fr}#viewport svg{height:65vh}}
+</style></head>
+<body><main>
+<div id="viewport" aria-label="Motion vertical de tarjeta y esfera"></div>
+<aside><h2>Tarjeta + palabras</h2>
+<small>30 fps · 2,33 segundos · SVG por capa · palabra a palabra · salida por zoom · prototipo aislado</small>
+<label>Primera línea <input id="line1" maxlength="36" value="¿Y SI TE"></label>
+<label>Segunda línea <input id="line2" maxlength="36" value="ESCUCHARAS?"></label>
+<label>Tarjeta <input id="card" type="color" value="#30250f"></label>
+<button id="play">Reproducir</button>
+<label>Fotograma <output id="index">0</output> / 69 <input id="seek" type="range" min="0" max="69" value="0" step="1"></label>
+<small>No hay vídeo comercial ni pistas de voz, música o subtítulos añadidos. No es una exportación FableCut.</small>
+</aside></main>
+<script type="module">
+import {renderHookDropCardSvg,FRAME_COUNT,FPS} from '../../src/motion-templates/hook-drop-card-engine.js';
+const el=id=>document.getElementById(id);
+let playing=false,t0=0,start=0,handle;
+function render(f){
+ f=Math.min(FRAME_COUNT-1,Math.max(0,Math.round(f)));
+ el('index').value=f;el('seek').value=f;
+ el('viewport').innerHTML=renderHookDropCardSvg(f,{line1:el('line1').value||' ',line2:el('line2').value||' ',palette:{card:el('card').value}});
+}
+function tick(now){
+ if(!playing)return;
+ const f=Math.min(FRAME_COUNT-1,start+Math.floor((now-t0)*FPS/1000));
+ render(f);
+ if(f===FRAME_COUNT-1){playing=false;el('play').textContent='Reproducir';return;}
+ handle=requestAnimationFrame(tick);
+}
+el('play').onclick=()=>{
+ playing=!playing;cancelAnimationFrame(handle);
+ if(playing){start=Number(el('seek').value);if(start===FRAME_COUNT-1)start=0;t0=performance.now();el('play').textContent='Pausar';handle=requestAnimationFrame(tick);}
+ else el('play').textContent='Reproducir';
+};
+el('seek').oninput=()=>{playing=false;cancelAnimationFrame(handle);el('play').textContent='Reproducir';render(Number(el('seek').value));};
+for(const id of ['line1','line2','card'])el(id).oninput=()=>render(Number(el('seek').value));
+render(0);
+</script></body></html>

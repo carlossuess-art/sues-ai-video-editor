@@ -1,3 +1,497 @@
+## 22/11/2026 · Complemento R25: exportación WebCodecs en QA aislada (SIN DESPLIEGUE)
+
+En el mismo material «SUES · CONCIENCIA · PRUEBA R14», 55,5667 s/165 clips/37 medios/1080×1920/30fps, se ha reproducido el cuello de botella: exportación de 2 s mediante JPEG→FFmpeg a 720p tardó 37,0 s (caliente), y vía WebCodecs H.264→remux FFmpeg a 1080p tardó 26,7–26,8 s, con 60/60 frames y AAC audible; clic real Descargar→Normal creó MP4 y enlace HTTP 200. Se probó también cancelación con media bloqueada y el botón quedó habilitado tras corregir la limpieza (PASS). Caché estática de textos produjo frames idénticos (PSNR infinito), pero solo mejoró ~4 %. Código y QA únicamente en /opt/sues-video-setup/v1_1-mobile-20261121/stage y /opt/sues-video-setup/export-perf-20261122; producción y preview público intactos. Prueba COMPLETA R14 acotada, en curso desde 09:50 UTC, servicios sues-full-export-qa-20261122/sues-export-fullchrome-20261122/sues-export-fullserver-20261122; no afirmar resultado final. Leer docs/SUES_R14_EXPORT_PERFORMANCE_QA_20261122.md antes de tocar el render. Q03/Q04 y cierre funcional V1 siguen PENDIENTES.
+
+## R25 · 22/11/2026 · Bloqueo repetido al 11 %
+
+Confirmado ffmpeg del VPS esperando fotogramas del navegador móvil (~6min/2s CPU), audio preparado. QA del tramo 0.4-0.7s real sin bloqueo (7 players), perfil composición 150-350ms/frame. Probable suspensión del navegador al cambiar de app, no demostrado por logs del Android. Prueba stage de job headless 0.2s NO completada, navegador no accesible en servicio live; no integrar ni desplegar sin prueba. Live intacto rev375 165 clips; stage restaurado. Pendiente arquitectura servidor independiente del móvil y velocidad verificada del Reel completo, sin degradar MG ni máscaras. Ver checkpoint R25.
+
+## 22/11/2026 · R24 · Cancelación exportación reparada
+
+Localizado FFmpeg residual PID961113 de exportación cancelada: temporal ya eliminado, proceso vivo 35m; detenido selectivamente. Frontend aborta esperas bloqueadas y permite cerrar overlay con botón «Cancelar», señal visual inmediata y descarte sesión; backend limpia hijos SIGTERM→SIGKILL 1.5s. QA de cancelación congelada CDP, proceso sin TERM y regresión 10/10. Desplegado preview 8443, hashes validados y proyecto usuario rev374/165 clips intacto. Pendiente prueba móvil real y export completa 55s. Ver docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
+## 22/11/2026 · R23 · Rendimiento export móvil
+
+Corregido y desplegado 8443 cargado masivo de reproductores: 44→7 en QA, eliminados parones de >9s en muestra de 5 frames; HTML video activo+próximo, inactivos no se crean y anteriores se liberan. Barra 95/97/100 según etapas reales, QA botón→MP4 0.2s y regresiones 10/10. Instancia de export abierta antes de R23 sigue código anterior y NO fue interrumpida. Proyecto usuario intacto. Sin validación 55s completa ni promesa de tiempo en móvil. Véase docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
+## 22/11/2026 · Revisión nº 22
+
+Corrección bloqueo mezcla de audio desplegada preview 8443: fuentes audibles únicas, ventanas de exportación, progreso, cancel/timeout; mezcla real 55.57s en 6.5s, QA 8/8; descarga por botón UI real de fragmento 1s H264/AAC con archivo recibido verificado y 10/10 regresión. R14 intacto. Pendiente export UI completa 55s y prueba física, no sustituir por export MCP. Ver docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
+## 21/11/2026 · Revisión nº 21
+
+Arranque móvil prioritario por proxy y ventana cercana al cabezal, descarga simple MP4/MOV + calidad/peso estimado. Desplegado preview 8443; arranque frío 4.831s/7 reproductores en copia 166 clips; recarga 27.277s con ~20s antes de request, pendiente diagnóstico. QA frío 8/8 + regresión 10/10; R14 propietario intacto. Pendiente prueba física, reproducción completa y render final. Ver docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
+## 21/11/2026 · Revisión nº 20
+
+Exportación móvil simplificada ES, botones Volver/Exportar/Descargar visibles, ajustes avanzados plegables; volumen slider 0–200%, porcentaje vivo, silencio/original, undo. Desplegado preview 8443, QA 11+8+10, R14 intacto. R18 lean decoders experimental no pasó readiness y NO se desplegó. Pendiente auditoría integral, traducción restante, render real completo, fluidez. Ver docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
+## 21/11/2026 · Revisión nº 17
+
+Modo contextual móvil desplegado: «Editar existente» predeterminado, iconos/capas activos al cabezal, «+ Añadir» catálogo nativo, «Todas las capas». Máscara/B-roll doble acceso al mismo ID; undo sin pasos vacíos. QA 22/22 específicos y 10/10 regresión, R14 propietario intacto. Proxies 7/7 ready; R16 fluidez experimental aún NO desplegada. Validar en montaje completo y dispositivo real antes de cerrar. Evidencia y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
+## 21/11/2026 · Revisión nº 15
+
+Desplegada selección explícita timeline→monitor, hitbox comp por contenido y selector «Elegir elemento» para solapados, «Editar elementos» / «Salir del grupo». QA 15/15 con seis clips reales y 10/10 regresiones; proyecto R14 propietario byte a byte intacto. Fluidez R16 experimental NO desplegada. Reaplicar delta sobre R15 y validar; no cerrar V1/V1.1. Evidencia en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
+## 21/11/2026 · Revisión nº 14
+
+Prueba privada CONCIENCIA R14 activa preview p_33d4e74d3f, 55.57s, 165 clips, 56 comps, 37 medios importados, 315 operaciones MCP desde fuente. Reutiliza activos y composiciones anteriores, no es prueba de importación maestra completa. Render y doble auditoría pendientes. Evidencia en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No publicar ni cerrar V1/V1.1.
+
+## 21/11/2026 · Revisión móvil nº 13
+
+Preview 8443 desplegada: menú avanzado, catálogo 57 rutas, modos de corte nativos, recursos 86 visuales/320 SFX reconocidos, bind RO DAEDAL, búsqueda e inserción táctil, proxy 540p y reloj mejorado. QA 14/14 avanzados, 4/4 biblioteca, 10/10 regresiones, export técnico 1s 1080x1920 H264/AAC. Bruto preview p_27306f2839 intacto. Propietario no quiere más pruebas parciales; primera prueba conjunta pegar plan y render. Falta conexión nativa segura de plan al proyecto real, QA de edición/export completo y fluidez; no declarar terminado. Reutilizar store/ledger/MCP existentes, no mezclar contrato legado y nativo, no debilitar guard private-qa ni inventar aprobaciones. Evidencia, parche, límites y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No tocar producción.
+
+## 21/11/2026 · Revisión móvil nº 12
+
+Preview 8443 desplegada: hueco inicial 8px, cabezal parte de la izquierda hasta centro y regla libre. Usuario aprueba selección/gestos ronda11. Proyecto activo real p_27306f2839 «SUES · EDICIÓN REAL 158404» (73.75s, 1080x1920, V1/A1 vinculados; streamhash AV idéntico al bruto). Demo conservada. Stage aislado p_701ca40ed3, QA bruto 13/13 split/undo/seek/reloj/guardado; no certifica fluidez. Mantener originales/prod intactos. Continuar cobertura de funciones nativas, biblioteca y QA edición real; no dar V1/V1.1 por cerradas. Evidencia y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
+## 21/11/2026 · Revisión móvil nº 11
+
+Selección de capas aprobada por propietario. Desplazamiento de clips SOLO tras hold650ms horizontal/vertical, feedback visible turquesa/elevación y vibración opcional; taps sin espera, swipe temprano no muta clip. Regla SIEMPRE libre. Preview 8443 desplegada, sesión 21/21, 12/12 taps + 4/4 nombres y arrastres, 10/10 regresiones. Evidencia y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No cerrar V1/V1.1 ni tocar producción.
+
+## 21/11/2026 · Revisión móvil nº 10
+
+Corrección expresa del propietario: regla temporal SIEMPRE desplazable, sin hold ni bloqueo. Sustituye la norma anterior de rondas 7–9. Se conserva la selección de clip al navegar y la pulsación prolongada únicamente para cambios de pista. Preview 8443 desplegada; sesión continua 15/15, regresión 10/10 y cero conflictos de guardado. Evidencia/rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No cerrar V1/V1.1 ni tocar producción.
+
+## 21/11/2026 · Revisión móvil nº 9
+
+Auditoría autónoma UI en Chromium móvil 411x923 DPR2.625. Regla antes en blanco confirmada visualmente, render nativo visible 36px, hold500ms selección persistente, gestos clasificados, swipe no seleccionado navega, seleccionado mueve, selección/move sin rebuild masivo, serialización guardado y sync de revisiones antiguas. Sesión continua 14/14, 0 conflictos, 12/12 selección +4/4 nombres y 10/10 regresiones. Preview 8443 desplegada, detalle/evidencia/rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Pendiente QA Android físico/proyectos largos; no delegar decisiones de diseño de gestos al usuario, no cerrar V1/V1.1, no tocar producción.
+
+## 21/11/2026 · Revisión móvil nº 8
+
+Preview privada 8443 actualizada por queja de precisión. Captura estable timeline, selección por nombre/clip, resaltado sincronizado, gestos horizontal/vertical separados y regla hold500ms con tolerancia 14px y origen recalculado. CDP 12/12 clips y 4/4 nombres, arrastres, ruler/pinch y 10/10 regresiones PASS. Evidencia y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Falta validación humana móvil; no cerrar V1/V1.1 ni tocar producción.
+
+## 21/11/2026 · Revisión móvil nº 7
+
+Preview privada 8443: regla como barra protegida mediante hold 500ms, borde blanco activo, release desactiva; clips sin espera adicional y pinch conservado. CDP qa-ruler-hold-real.json PASS, 10/10 regresiones. Detalle y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Pendiente usuario móvil; no cerrar V1/V1.1 ni tocar producción.
+
+## 21/11/2026 · Revisión móvil nº 6
+
+Preview 8443 desplegada: regla temporal operativa, cabezal fijo centrado, scroll táctil y zoom sin mutación de clips. CDP qa-centered-timeline-real.json PASS, 4 pruebas navegador adicionales y 10/10 regresiones. Usuario aprueba mejora de navegación ronda 5, no aceptación formal completa. Ver detalle y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Próximo: validación humana de regla. No tocar producción.
+
+## 21/11/2026 · Revisión móvil nº 5
+
+Preview 8443 actualizada según investigación CapCut aportada. Catálogo 46 rutas, galería nativa Entrada 12/Salida 11/Bucle 5 y Filtros 15; Formato 5; controles audio contextuales. QA CDP qa-capcut-tree-real.json PASS, otras 5 pruebas navegador y 10/10 regresiones. Mantener volumen 0–200%, pistas 70%, monitor aprobado e interfaz privada. No certificar equivalencia 100%, miniaturas animadas ni paridad MCP completa. Detalle, arquitectura y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Una pregunta humana por turno. No tocar producción.
+
+## 21/11/2026 · Revisión móvil nº 4
+
+Preview 8443 desplegada: alturas de pistas móvil 70% (V41/A29), navegación por categorías CapCut, menús de clip principal/overlay separados y controles correspondientes. CDP qa-capcut-nav-real.json PASS, regresiones 10/10. Carlos acepta iconos pero todavía no navegación. Referencias, hashes, rollback y pendientes en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No prometer copia 100% sin inventario completo; no cerrar V1/Q03-Q05 ni aceptación V1.1. Mantener monitor y producción intactos.
+
+## 21/11/2026 · Revisión móvil nº 3
+
+Preview privada 8443 actualizada: menú contextual simplificado aprobado como diseño por Carlos, lupa superior, paneles específicos, volver/confirmar, Más avanzado. CDP qa-context-real.json y búsqueda PASS, 10/10 regresiones dirigidas, geometría monitor preservada. Validación humana portátil pendiente. Leer detalle y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. No cierre V1 ni aceptación formal V1.1; mantener producción intacta. Próximo: aceptación visual menú, cabezal centrado y demás pendientes ya definidos.
+
+## 21/11/2026 · Revisión móvil del propietario nº 2
+
+Monitor aprobado; CapCut referencia global. Preview 8443 actualizada con selección directa, marco nativo, edición texto multilinea, capas numeradas, volumen numérico 0–200% y ondas. QA CDP y 10/10 regresiones, 2/2 gesto adicional. Ver detalle y pendientes en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Una pregunta por turno. No confundir prototipo con aceptación, ni modificar producción. Próximo: dock contextual, caja real texto, cabezal centrado y QA pendiente.
+
+## 21/11/2026 · Prototipo V1.1 accesible al propietario
+
+Despliegue de prueba privado https://studio.suesholistics.com:8443/ autorizado por Carlos. Caddy HTTPS autenticado (sesión habitual de Studio), snapshot del stage existente, datos demo separados de producción en /var/lib/sues-v11-preview y servicio aislado sues-fablecut-v11-preview.service. Verified HTTP 200 HTML / demo 4 clips / JS buscador, 302 sin sesión, 403 MCP público/origen ajeno, Studio original en 443 109 clips intacto. Reabrir el enlace tras login habitual. Espera revisión móvil de Carlos, no implica aceptación de ningún módulo V1.1 ni cierre V1. QA técnica en stage 17899. Checkpoint y rollback en docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md.
+
+## 21/11/2026 · Continuación recuperada · VPS limpio y búsqueda contextual en STAGE
+
+VPS 93% -> 86%, 3.8G -> 6.8G libres. Tres tar antiguos eliminados tras verificación del consolidado; un único baseline histórico recuperable conservado más el consolidado actual. Rotación adaptada sin poda automática, test simulado PASS; restauración completa del consolidado pendiente. Stage móvil existente /opt/sues-video-setup/v1_1-mobile-20261121/stage, no desplegado. Recuperadas 87/87 pruebas dirigidas y geometría Chromium real vertical/horizontal/escritorio; nueva corrección búsqueda contextual y 10/10 tests dirigidos PASS + qa-search-real.json (seis condiciones PASS). Faltan gestos táctiles, exportación, paridad completa MCP y validación visual. Capturas CapCut y requisitos r16 recuperados. V1.1 sigue 0/10 aceptadas; V1 Q03/Q04/Q05 pendientes cierre. Checkpoint docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md. Versionar stage recuperado antes de nuevas modificaciones; producción intacta.
+
+## 21/11/2026 · Preparación AISLADA V1.1-01/02 · QA parcial, SIN despliegue
+
+Revisión conjunta Drive V1-2026-11-21-r16. Tras confirmar en vivo que V1 NO está cerrada (Q03 vigente, Q04 pendiente, Q05 publicada con cierre funcional pendiente, Q06 posterior), se preparó en /opt/sues-video-setup/v1_1-mobile-20261121/stage una copia funcional de código del Studio, con data privada qa-data y servidor sólo loopback 127.0.0.1:17899. Prototipo sues-mobile.css y sues-mobile.js introduce monitor y timeline móvil en una pantalla con barra inferior que abre los paneles FableCut originales Medios, Inspector/Ajustes, Mezcla y Transcripción. Prueba de escritorio/Android real NO terminada. No incluir ni activar en producción.
+
+QA comprobada: node --test qa-mobile-shell.test.cjs 2/2 PASS (mock DOM); keyframes + export-jobs + captions 56/56 PASS. Código original app.js SHA256 d68028065f4b9c5155c4405081291cd310ad8b3a5ae7bb29b68cf10f9eff8a8f y style.css 723b68f0a93437576282440b2823e7f74df1f5e0a19f39906151386d973155d4 iguales a publicados. Prueba HTTP aislada 200. Bloqueo: Chromium 155 falló leyendo DOM real y headless-shell 152 se cerró/agotó tiempo para Studio/fixture; test simple HTML sí funcionó. No registrar QA visual ni táctil como PASS. Resumen detallado docs/SUES_V1_1_MOBILE_STAGE_QA_20261121.md; archivos en ops/fablecut/mobile-v1_1/. Último checkpoint commit be24ea53fb719ce573e3aaf9ae51f6ef7a6c5627.
+
+Siguiente V1 activa: atender Q03 y validaciones Q04/Q05 según Roadmap; al poder trabajar V1.1-01, resolver QA de navegador y probar en portrait/landscape con toques reales, selección y reapertura, sin alterar producción. A día de hoy V1.1 0/10 ACEPTADOS.
+
+## 21/11/2026 · V1.1 FableCut móvil PLANIFICADA tras revisión del Roadmap (SIN IMPLEMENTAR)
+
+Carlos definió con capturas CapCut los requisitos de futura V1.1: monitor siempre visible, barra contextual, selección bidireccional monitor/timeline, mover clip desde centro sin variar duración, recortar SOLO desde los extremos, mantener pulsado para cambiar z-order, pellizco sobre vídeo para tamaño de capa y sobre timeline para zoom temporal, dividir clip para zoom instantáneo sin keyframe o con keyframes interpolados, editor de subtítulos estáticos/animados, lupa que lleva al menú original y conserva selección al cambiar de capa, audio/máscaras y QA táctil con export real.
+
+Registrado como V1.1-01 a V1.1-10 en Roadmap Maestro Drive https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit (revisión compartida V1-2026-11-21-r15), resumido en Estado General https://docs.google.com/document/d/1L4gycV0LnKGhZ5VtWXAOlzVOzY3GDCp-qW1_X4A9B08/edit y replicado en docs/SUES_V1_1_FABLECUT_MOBILE_SPEC_20261121.md. NO IMPLEMENTADO NI DESPLEGADO V1.1: 0/10 módulos. V1 permanece Q03 en curso, Q04 pendiente, Q05 publicada con cierre funcional pendiente, Q06 posterior. No declarar V1 cerrada.
+
+FableCut Studio en /srv/sues-fablecut-next/app presenta rama main con modificaciones locales no versionadas en app.js, delivery.js, export-jobs.js, index.html y archivos preview/PWA. No resetear ni sobrescribir esa carpeta; inspeccionar y aislar worktree+backup. Siguiente trabajo V1.1-01 sólo tras cierre de V1 o para preparación en clon aislado.
+
+## 21/11/2026 · Nuevo modo Vista rápida 540p publicado en FableCut Studio
+
+Carlos aprobó separar resolución de revisión del máster: 540×960/15fps para ver y 1080×1920 o perfil elegido al exportar. En la **instalación FableCut Studio existente** se publicó el botón `▶ Vista rápida`, junto a `⬇ Export`. Se añadió `sues-preview` en `delivery.js`, módulo `preview-render.js`, cambio mínimo de `app.js` para capturar JPEG a resolución reducida antes de subirlo, y `index.html`. NO se cambia el perfil ni el proyecto de exportación final; no se descartan capas o animaciones. Backup código antiguo `/opt/sues-video-setup/v1-preview-540-20261121/before`.
+
+QA: 8/8 tests PASS; prueba nativa real aislada `x_lp6c03r7` 2s de proyecto original 106 clips/15 medios => `done` 100 %, 540×960/15fps, 30 frames decodificados y AAC PASS, memoria pico 1,714GB. QA detenido y retirado; prueba `/opt/sues-video-setup/v1-preview-540-20261121/proof.json`. Preview ligera del Reel previamente exportado de 73,749s, 1106 frames, **5,5MiB** HTTPS Range206 verificado: https://studio.suesholistics.com/exports/SUES_158404_V1_VISTA_RAPIDA_540x960_15FPS.mp4 . La copia completa proviene de transcodificar un MP4 anterior, NO de renderizar desde cero todas las capas. El editor sigue con dos proyectos (activo p_65497bf597), originales y V29 intactos. Fuente/patch/test versionados en `ops/fablecut/`, checkpoint `docs/SUES_V1_PREVIEW_540_20261121.md`.
+
+**PENDIENTE REAL**: el compositor sigue pintando el fotograma a resolución original aun en Vista rápida, por lo que el tiempo del proyecto completo de 73s con máscaras continúa siendo elevado; resolver por tramos incrementales y cache de segmentos aprobados, luego confirmar desde navegador/móvil. No confundir 540p real en salida con renderizado nativo interno a 540p; no dar Q03/Q04 por cerrados.
+
+## 21/11/2026 · FableCut render estabilizado y SUES Console limpieza inteligente desplegada
+
+Tras autorización de Carlos de limpiar y corregir interrupciones: FableCut Studio PUBLICADO con heartbeat de render cada 15s, watchdog real 600s, tolerancia headless 180s y 1–2 JPEG workers según RAM. Ruta real: `/srv/sues-fablecut-next/app`; originales `app.js` y `export-jobs.js` respaldados en `/opt/sues-video-setup/v1-render-fix-20261121/before`. 4/4 pruebas export-jobs PASS, canario headless **45/45 fotogramas, 1,5 s, H264/AAC y decodificación total PASS**, 1,15GB peak. La prueba de proxy histórica falla PSNR (26,54dB vs 35dB), aunque proxies reales de bruto y balanza se crean; **NO está validado un render complejo completo nuevo de 73 s**. Preview 720×1280/30fps de 15,8MB servida con HTTP206: https://studio.suesholistics.com/exports/SUES_158404_V1_PRIMERA_PRUEBA_PREVIEW_720P.mp4 . Dos proyectos de FableCut intactos.
+
+Limpieza física real del VPS: de **4,2 GB libres/92%** a **8,0 GB/84%**, mediante hardlink de copia exacta 3,04GB, 24 render-work sin prueba, dependencias Remotion reproducibles, ZIP redundante Chrome, deduplicación de 21 copias del bruto y retiro de seis contenedores de pruebas + 34 contenedores históricos parados; manteniendo originales, proyectos, WAC, backups y rollbacks. Detalles en `docs/SUES_V1_RENDER_STABILITY_VPS_CLEANUP_20261121.md`.
+
+Mejora adicional: servicio privado EXISTENTE SUES Console, `/opt/sues-vps-mcp` puerto 3917, ampliado con herramientas OAuth `cleanup_scan`, `cleanup_prepare`, `cleanup_execute`; escáner clasifica `recomendado`/`revisar`/`conservar`, informe exportable, aprobación temporal única de diez minutos + frase obligatoria y revalidación antes de borrar. Backend publicado, tests sintéticos 2/2 PASS, HTTP OAuth 200 y /mcp sin sesión 401; **NINGÚN BORRADO ejecutado por herramienta nueva**. Inventario actual: 1 recomendado (~6MB), 34 revisar, 5 conservar. Código versionado en `ops/sues-console/`; checkpoint `docs/SUES_SERVER_CONSOLE_CLEANUP_20261121.md`. El botón de limpieza en la web ORIGINAL de Sites no se ha editado: **PENDIENTE acceso a esa interfaz y conexión con autenticación**, no inventar que ya funciona.
+
+Q03/Q04 siguen pendientes de aceptación audiovisual y prueba real compleja; Q05 candidata anterior sigue publicada, no confundir este endurecimiento con V1 terminada. Próximo trabajo con prioridad: render completo de nuevo proyecto desde FableCut, revisión móvil y después conexión UI de consola sin duplicar Sites.
+
+## 21/11/2026 · ENTREGA DEL REEL: CORRECCIÓN 404 DEL ENLACE Y PROYECTO FABLECUT STUDIO VISIBLE
+
+- Carlos reportó mediante captura error `404` al seguir `https://studio.suesholistics.com/exports/SUES_158404_V1_PRIMERA_PRUEBA_20261121.mp4?utm_source=chatgpt.com`. Se reprodujo: el FableCut privado 7780 servía Range GET 206 con y sin query, pero el middleware de autenticación `/srv/sues-fablecut-next/auth/auth.py` comparaba `self.path=='/verify'` literal, por lo que forward_auth con query devolvía 404. Backup preservado: `/srv/sues-fablecut-next/auth/qa-20261121-linkfix/auth-before-url-queryfix.py`. Corregido únicamente `do_GET` para comparar `urllib.parse.urlsplit(self.path).path` en `/verify` y `/login`, syntax check PASS, reiniciado **solo** `sues-fablecut-auth.service`. HTTPS verificado con sesión privada: descarga MP4 con `?utm_source=chatgpt.com` HTTP206, `Content-Type:video/mp4` y rango `0-1023/91532285`; proyectos `/api/projects?utm_source=chatgpt.com` HTTP200. Sin sesión permanece protegido.
+- FableCut Studio de producción `/srv/sues-fablecut-next/data` originalmente tenía un proyecto activo `p_3c0550a1dd` de prueba POC, mientras que la copia Q03_d de 158404 permanecía en `automation-v1/test-project-q03-158404-para-20261121`. Para permitir revisión editable al usuario sin tocar el proyecto anterior se verificó SHA y se incorporó con API `/api/projects` acción `import` con `open:false`: proyecto nuevo `p_65497bf597` **SUES 158404 · V1 primera prueba editable**, 106 clips y 15 medios. Los dos medios ya existentes RAW/VOX coincidían SHA; 13 medios nuevos copiados con prefijo reservado `review158404v1_` y hashes verificados, sin sobrescribir ni eliminar fuentes. Readback del proyecto y GET Range 206 para los 15 medios PASS. El proyecto activo `p_3c0550a1dd`, el archivo `data/project.json` y el índice de activos permanecen con SHA inalterado; ahora FableCut lista 2 proyectos.
+- Script de importación y comprobaciones: `/opt/sues-video-setup/v1-rollout-20261121/import-158404-private-review.py`; manifiesto `.../fablecut-review-import.json`. La revisión pública no fue automáticamente abierta porque abrirla alteraría el proyecto global activo de FableCut. Carlos debe refrescar el panel de proyectos de Studio y abrir el proyecto con ese nombre. Archivo de descarga: `https://studio.suesholistics.com/exports/SUES_158404_V1_PRIMERA_PRUEBA_20261121.mp4`.
+- **No confundir:** proyecto editable visible en FableCut Studio ≠ integración nativa automática habilitada dentro de SUES AI VIDEO EDITOR; esa ruta de host seguía desactivada. Sigue pendiente revisión artística y aceptación Q04. No se publicó en redes. Se debe comprobar en navegador móvil el acceso/visibilidad que comunicó Carlos; la API únicamente acredita listado/medios.
+
+## 21/11/2026 · PRIMER RENDER DE REVISIÓN V1 DEL REEL 158404 DESPUÉS DE DESPLIEGUE
+
+Carlos solicita volver a ejecutar el bruto 158404 con el plan de balanza previamente aprobado, sin segunda aprobación de guion. Se reactivó SUES AI Film Director v1.7.1 y todas sus referencias obligatorias, se recuperó `annex.json` (siete escenas, 87 operaciones, 14 recursos) y el proyecto FableCut de QA privado ya ejecutado mediante 108 instrucciones nativas. Se verificaron en disco los SHA256 de los 14 medios contra el anexo. Estilo del proyecto: 63 captions Montserrat de 54 px a y=415 debajo de barbilla, con word-pop salvo la palabra aislada C41.S04 neutralizada por solape con título, cuatro títulos Montserrat 75-92 px ajustados por longitud. NO afirmar que el navegador haya usado Montserrat sin prueba visual; fontconfig del host resuelve DejaVu, aunque FableCut trae WOFF2 Montserrat.
+
+Se reutilizaron las once ventanas anteriores íntegras y se renderizó nativamente `[1575,1775)` en el clon privado `test-project-q03-158404-para-20261121` con la corrección existente de C48.S05 («para» cerca de 54,9 s), recibo/segment-proof y validación de identidad. 200 frames nativos en la ventana; sin tocar Reel V29 ni datos de producción. Ensamblado 12 tramos; MP4 nuevo `SUES_158404_candidata_Q03_d.mp4`, 1080×1920 H264 30fps, 2.212 fotogramas y 73,733333 s, SHA256 `04c8ffd1094fce74b9804b9d50c9d1cd49e0c3b2bee206f2519b67e71ff8c06e`, AAC PCM idéntico a la copia base, decodificación completa PASS. Proof `/opt/sues-video-setup/q02-native-annex-20261119.j3YNOa/q03-review/full-para-20261121/technical-verification.json`, con `speechTimingConfirmedByEar:false` y `doubleAudiovisualReview:false`.
+
+Copia exacta para descarga autenticada: `https://studio.suesholistics.com/exports/SUES_158404_V1_PRIMERA_PRUEBA_20261121.mp4`. Servidor sin autenticación redirige a `/login` (HTTP302), SHA de copia igual al de QA. Carlos debe revisar el vídeo; NO aprobado creativamente ni publicado en redes.
+
+**Alcance técnico:** Se editó/renderizó usando FableCut en clon privado (MCP/QA) y el montaje previo; NO mediante aprobación nativa automática del editor público, que sigue desactivada en producción por host opt-in private-qa. La V1 web desplegada sigue operativa; la prueba no cierra Q03/Q04 ni certifica interoperabilidad nueva de proyectos en producción. Próxima acción: revisar observaciones precisas de Carlos y validación funcional de flujo público, sin volver a renderizar escenas correctas.
+
+## 21/11/2026 · CANDIDATA V1 PUBLICADA · despliegue controlado, aceptación pendiente
+
+Carlos autorizó el despliegue de la V1 actual sin esperar a perfeccionar motion graphics ni al autocorrector ASR. Se publicó la candidata de código `b2179b3` en `https://editor.suesholistics.com`, con montaje `/opt/sues-video-setup/v1-deploy-candidate-20261121:/app:ro` y el MISMO estado persistente `/opt/sues-video-setup/editor:/state`. El contenedor anterior quedó detenido pero íntegro como `sues-video-editor-pre-v1-20261121`, montando aún `release-mobile-layers-20261030`. Script de salida y rollback: `/opt/sues-video-setup/v1-rollout-20261121/deploy-v1.sh`; respaldo verificado de `project.json` e inspect en esa carpeta (0600). Imagen Docker anterior reutilizada, mismos límites de seguridad, sin modificar DNS, Caddy, WAC, FableCut producción, V29 ni originales.
+
+Validaciones PRE: `npm run check` PASS; tests host FableCut 5/5 PASS; candidata en 3099 HTTP200 y token protegido; prueba nueva de arranque candidata con IMAGEN DE PRODUCCIÓN en contenedor aislado 3101 HTTP200, API sin sesión 401. El primer intento preflight fue rechazado correctamente por lock de directorio QA compartido; se rehizo con estado privado independiente y pasó. Validaciones POST: contenedor en ejecución, bind candidate correcto; localhost 3010 y HTTPS públicos HTTP200; /api/jobs y /api/projects SIN sesión 401; con sesión privada autorizada, /api/health 200, /api/jobs 200 (29 trabajos), /api/projects 200; backup anterior conservado. No se realizó nuevo render real en producción ni visualización humana completa de esta versión, por tanto NO se declara V1 aceptada ni QA audiovisual final superada.
+
+LÍMITES VIGENTES: el nuevo native host opt-in solo admite clon private-qa; producción arranca sin SUES_NATIVE_HOST_CONFIG y mantiene la aprobación/ejecución nativa automatizada del Master Director desactivada. Edición asistida con conectores y trabajos manuales sigue posible fuera de esa ruta, pero NO afirmar integración nativa por proyecto nuevo ya publicada. No está desplegado el detector Whisper ni el autocorrector de palabras. Fase 5 Q03 validaciones restantes y Q04 aceptación funcional siguen abiertas; Q05 tiene salida inicial ejecutada y verificación técnica básica correcta, pero cierre funcional integral PENDIENTE. Q06 limpieza postaceptación. El 65% de antigua cabecera Drive no equivale al progreso estructural de cinco fases y requiere revisión separada, no usarlo como estado actual.
+
+## 21/11/2026 · E2E autenticado editor→MCP nativo PASS en clon privado
+
+Prueba complementaria en VPS superada: sesión real, borrador/revisión/decisión Master Director, asociación privada verificada con un job sintético, aprobación ledger, rechazo 401 sin sesión, ejecución MCP real con revisión FableCut 31→32, readback de x=1→2 y 15 clips preservados, rechazo de reutilización de autorización. `qa/v1-20261121/native-e2e.mjs` exit 0 en unidad aislada. Se añadió clip centinela exclusivamente al clon para igualar duración de fixture; no acredita un Reel nuevo ni render. QA server parado y binding revocado. Quedan onboarding multiproyecto, staged assets, reproducción audiovisual, regresión completa y rollback. Producción sin cambios. `docs/SUES_V1_NATIVE_HOST_PRIVATE_QA_20261121.md` actualizado.
+
+## 21/11/2026 · Host FableCut nativo opt-in · QA MCP real en clon
+
+Se añadió `src/engine-next/fablecut-trusted-host.js` y arranque opt-in `SUES_NATIVE_HOST_CONFIG` sin alterar la configuración pública. Host privado 0600, loopback QA, registro de binding y revisión, invocador MCP nativo y bloqueo de assets no verificados. 5/5 tests nuevos de host y 30/30 pruebas dirigidas de host/editor/bridge PASS, `npm run check` PASS. Clon real aislado: revisión obsoleta 999 BLOQUEADA, `fablecut_patch_project` revisión 29→30, transformación `af_text_qué_face` x:0→1, 14 clips intactos y lectura directa PASS. Unidad de QA detenida; proyecto de origen intacto. La prueba de invocador directo NO valida el ciclo HTTP de autorización humana completo. NO desplegado. Faltan binding por proyecto nuevo, recursos verificados, E2E web, doble QA audiovisual, rollback. Ver `docs/SUES_V1_NATIVE_HOST_PRIVATE_QA_20261121.md`. Q03 activo, Q04 aceptación funcional pendiente, Q05 autorizado sin ejecución.
+
+## 21/11/2026 · Auditoría conservadora de tiempos de palabras · candidata aislada
+
+Nuevo `scripts/asr/word_timing_silence.py` y conexión al worker Whisper: detecta silencios largos en intervalos ASR, marca `timingUncertain:true`, conserva timestamps; no hay corrección fonética automática ni retoques al Reel. En voz real separada, 170 palabras, 7 intervalos largos y 2 alertas: «para» 53,42–55,12 (silencio 53,50–55,02) y otro intervalo no aceptado como error. En mezcla con música no se activa la misma alerta; limitación confirmada. 6/6 unittest PASS, `npm run check` PASS, 7/7 tests nativos/bindings PASS. No se han ejecutado dos QA completas ni integrado todavía el arranque nativo público. Q03 sigue activo, Q04 será aceptación funcional, Q05 despliegue autorizado PENDIENTE. Ver `docs/SUES_V1_TIMING_AUDIO_AUDIT_20261121.md`.
+
+
+## 21/11/2026 · V1 prioritaria; despliegue autorizado y conexión nativa pendiente
+
+Carlos autoriza expresamente desplegar y pide acabar la V1, usando el Reel como prueba y evitando ajustes editoriales de publicación. Se actualizó el ref de PR #27 y se preparó worktree aislado `/opt/sues-video-setup/v1-deploy-candidate-20261121`, commit 98ca4e260b61559d36b04395741b53d8410ece62. La candidata arranca en contenedor privado `sues-v1-predeploy-3099-20261121` (127.0.0.1:3099, estado propio). `npm run check` PASS; pruebas dirigidas con FABLECUT_NATIVE_OPS real 81/81 PASS, 0 omitidas, log `q03-review/v1-predeploy-native-tests-20261121.log`. Hallazgo crítico: `scripts/app/start.mjs` no inyecta `nativeBatchRuntime`, `nativeDirectorInvoker` ni vínculo de proyecto en `createEditorServer`; la ejecución nativa de la interfaz está deshabilitada por defecto (503). Las pruebas previas la inyectaban en host técnico privado; no equivale a conexión productiva. No se desplegó ni se tocó el contenedor de producción. Siguiente acción: implementar/configurar host confiable para asociación real SUES–FableCut por proyecto, ejecución MCP y registro de recursos/decisión, con pruebas de proyecto equivocado y reversión; validar el recorrido antes de activar. Confirmada autorización ya concedida, no pedirla otra vez. Reel solo prueba; su edición final publicada queda fuera del alcance. Q03/Q04 no deben marcarse artificialmente cerrados ni presentar V1 como finalizada.
+
+
+## 21/11/2026 · Diagnóstico general de pausas en marcas de palabras
+
+En el audio de voz verificado VOX, Whisper asignó «para» a 53,42–55,12 s; diagnóstico RMS en bloques de 20 ms identificó silencio aproximado 53,50–55,02 s dentro de ese intervalo (umbral −55 dBFS; duración mínima 0,3 s). Esto explica la aparición temprana sin afirmar alineación fonética exacta. Prototipo diagnóstico aislado `q03-review/word-timing-research-20261121/detect-silence.cjs`: cuatro casos sintéticos superados y detección del caso real; no modifica marcas, no está integrado ni desplegado, y no demuestra robustez ante ruido, música, respiraciones o voz baja. Ruta existente: `transcribeFile` conserva PCM y usa `joinChunks`, mientras `captions.js` copia los tiempos Whisper. Siguiente: evaluar detección/ajuste conservador con varios audios aislados, pruebas de falsos positivos y experiencia de revisión; integrar de forma versionada solo cuando exista evidencia, preparar regresión y rollback. Se acata instrucción de no seguir corrigiendo el Reel de prueba. Q03 y despliegue no se declaran aprobados por este diagnóstico.
+
+
+## 21/11/2026 · Instrucción de Carlos: centrar en desarrollo y despliegue
+
+Carlos aclara que Reel 158404 es una prueba de la aplicación y que su edición definitiva ya se publicó. Pide dejar de pulir el Reel como entrega y centrarse en desarrollo, correcciones generales y preparación del despliegue. Se detuvieron las unidades privadas `sues-q03-para-render-20261121` y `sues-q03-para-assemble-20261121`; el render figura failed por detención voluntaria, no interpretar como prueba final. Q03_c y fuentes conservados. Se detectó que Whisper asignó 53,42–55,12 s a «para» incluyendo presuntamente una pausa; el editor hereda timestamps en `captions.js`/`transcribe.js`. Hipótesis: corregir o detectar intervalos de palabra con silencio; pendiente diseñar y probar solución general sobre voz real, sin prometer precisión. La versión del renderizador word-pop permanece aislada sin integrar en producción. No se han completado las dos revisiones integrales de una versión nueva ni otorgado aprobación Q04; no alterar el historial. Q05: preparar candidato de código, pruebas y rollback, y verificar autorización específica de despliegue antes de cambiar producción.
+
+
+## Q03 · 21/11/2026 · Ajuste de «para» en exportación privada
+
+Carlos detectó desfase en «para» de «ido abandonando para poder encajar». Gemini informa imagen a 10 fps, entrada 53,5 s y voz estimada 54,9–55,0 s (margen aproximado 0,1–0,15 s), por tanto adelanto de ~1,4 s; no equivale a escucha directa del operador. Copia técnica `test-project-q03-158404-para-20261121` preparada y ejecutada con 108 operaciones; se cambió la entrada del tercer wordTime C48.S05 a 54,9 s manteniendo el resto, fingerprint esperado d6f3e4210577107b5f1adcbe65e030ddca7b510a2275b0b5bc9dbb0fd1e18c41. Unidad `sues-q03-para-render-20261121` renderiza frames 1575–1775; unidad `sues-q03-para-assemble-20261121` espera y ejecuta ensamblado con validaciones. Consultar unidades y `q03-review/assemble-para-20261121.log` antes de reintentar. Todavía no hay nueva candidata verificada ni auditoría de ella. Se conserva Q03_c. Q03 en curso, no despliegue.
+
+
+## Q03 · 21/11/2026 · Segundo visionado de Carlos: «para» pendiente
+
+Carlos comunica un segundo visionado de la candidata Q03_c y considera correcta la sincronización salvo «para» en «ido abandonando para poder encajar», que percibe retrasado aproximadamente un segundo. La copia técnica identifica C48.S05: `ido abandonando para`, clip 52,0667–55,1333 s, entrada configurada de «para» 53,4333 s; ASR previo estima 53,42 s pero no sustituye escucha ni desvirtúa la observación. Evitar mover un segundo por suposición: comprobar a oído y con frames el inicio exacto del «para» hablado y mostrado, y si precisa corregirlo en copia conservando el resto, exportar y validar nueva versión. Carlos no ha aprobado el Reel ni autorizado despliegue. Q03 sigue en curso, no se afirma doble QA de una nueva versión.
+
+
+## Q03 · 21/11/2026 · Revisión comunicada por Carlos y Gemini
+
+Carlos informa haber visualizado y escuchado la candidata, sin percibir desfases importantes; el «si» le resulta un poco extraño. No ha expresado aprobación definitiva de Q04. Gemini declara haber escuchado audio completo y muestreado imagen a 1 fps y 6 fps entre 29–32 s; informa pausa limpia y «si» en 31,5 s, sincronizado, pero su muestreo no constituye visionado continuo integral y no confirma técnicamente el archivo por SHA. Inspección propia de Q03_c: a 29,6 s no se ve «si», a 31,5 s aparece en minúscula y a 56 s aparece «y» en minúscula. Gemini menciona clic de cierre, no comprobado por escucha del operador. No afirmar dos pases ni aprobación. Candidata conservada, Q03 sigue en curso pendiente segundo pase audiovisual real y cotejo auditivo; Q04 decisión explícita de Carlos, Q05 autorización específica y rollback. Sin despliegue.
+
+
+## Q03 · 21/11/2026 · Candidata Q03_c completa, pendiente de revisión audiovisual
+
+Los dos tramos de puntuación 1375–1575 y 1575–1775 se renderizaron y verificaron; ensamblado privado Q03_c: 2212 fotogramas, decodificación completa y PCM idéntico a la candidata anterior. SHA-256 `3ed3fb081e125581548acf7036f30a1b4314a3dad85dd675b3e4a7ba0bb72c72`; evidencia `/opt/sues-video-setup/q02-native-annex-20261119.j3YNOa/q03-review/full-punctuation-20261121/technical-verification.json`. Copia de descarga autenticada `https://studio.suesholistics.com/exports/SUES_158404_candidata_Q03_c.mp4` con SHA comprobado; la URL redirige a login sin sesión. El original se conserva. El ajuste de «si» a 31,4 s es provisional: falta comprobarlo a oído. Gemini inspeccionó muestras de la versión anterior, no dos reproducciones completas de esta versión. Pendientes dos visionados completos con imagen y sonido y cotejo auditivo; Q03 sigue en curso y Q04–Q06 pendientes. La variante del renderizador permanece aislada y no integrada en producción.
+
+
+## Q03 · 21/11/2026 · Reel reconstruido; puntuación en curso
+
+La unidad sues-q03-full-wrap-20261121 verificó 11 ventanas/2175 frames y se detuvo en la última por SILENT_OR_UNVERIFIED_AUDIO. Tras verificar igualdad de clips sin subtítulos y SHA de la ventana histórica final, sues-q03-recover-tail-20261121 ensambló el Reel privado Q03_b con 2212 fotogramas y PCM idéntico a la candidata anterior. SHA-256 2141ece817fba2854abc44fcfe1e697fc7d6b1ff7d0548d1de59e0b264ef8c56; prueba q03-review/full-wrap-20261121/technical-verification.json, sin doble QA ni escucha. NO confundir con resultado final.
+
+La revisión técnica /srv/sues-fablecut-next/data/automation-v1/test-project-q03-158404-punctuation-20261121 ejecutó 108 operaciones y difiere de la revisión anterior exclusivamente en C46.S05 («reconocer qué partes») y C49.S05 («poder encajar.»); no se han cambiado otras capas. Unidad sues-q03-punctuation-render-20261121 renderiza de forma secuencial 1375–1575 y 1575–1775. Consultar unidad y sus logs antes de reintentar. Pendiente comprobar ambos tramos, sustituirlos en ensamblado verificado, comprobar fotogramas, tiempos y PCM, doble revisión audiovisual y escucha. Entrega automática anterior está detenida para no confundir versiones. Q03 EN CURSO; Q04–Q06 pendientes.
+
+
+## Q03 · 21/11/2026 · Continuación de exportación
+
+Unidad sues-q03-full-wrap-20261121 activa. Las ventanas 0–200, 200–400, 400–600, 600–800 y 800–1000 se verificaron y están en q03-review/full-wrap-20261121/segments.json; ventana 1000–1175 en marcha. Consultar unidad, log y manifiesto antes de reintentar; no duplicar renders. CPUQuota reducida en tiempo de ejecución al 70 % para dejar margen al resto de servicios. Se preparó q03-review/recover-tail-20261121.py sin ejecutarlo para un eventual rechazo por audio bajo de la ventana final: solo admite 11 ventanas previas verificadas y la cola anterior de 37 fotogramas con SHA comprobado y clips iguales sin texto. MP4 completo, escuchas y doble QA siguen pendientes. No producción, no Q04.
+
+
+## Q03 · 21/11/2026 · Exportación privada en curso
+
+Candidata de espaciado y ajuste de línea en /opt/sues-video-setup/q02-native-annex-20261119.j3YNOa/faststart-app-wrap-20261120 (app.js SHA 3d0f15962c8c4c4d0d4bcf6554ee9b59da37fba9a1c19ebcf72262fa3dfa475e); clon técnico /srv/sues-fablecut-next/data/automation-v1/test-project-q03-158404-wrap-20261120. Comprobación con fuente Montserrat y Chromium de 62 captions: 0 desbordes calculados, dos líneas reacomodadas; muestras reales de los dos casos largos verificadas visualmente en ventanas 1040–1105 SHA b1e701737952c362df074d20a30aa88ad6394a183e335f9f5f4ff4e5a77d3437 y 2025–2080 SHA 5fd254b9553cfa51d0efbb4d7a6bedc953f09d36bd7988226d17e633450d1d47, ambas SEGMENT_COPY_VERIFIED. No equivale a auditoría del vídeo completo. C31.S04 desplazado provisionalmente de 29,233–30,367 a 31,400–31,800 s sobre análisis de Gemini y ASR; ventana 870–960 SHA 19ee64516607db48609621ef2450f1fa0e85cbddb196e3c5dd8b42096ea87049 decodificada y verificada, muestras muestran ausencia a 29,6 y presencia a 31,5. Pendiente confirmación a oído.
+
+Exportación completa privada de 12 ventanas iniciada en unidad sues-q03-full-wrap-20261121, controlador q03-review/render-full-wrap-20261121.py, log q03-review/full-wrap-20261121.log, código de salida q03-review/full-wrap-20261121.exit, manifest q03-review/full-wrap-20261121/segments.json. Consultar unidad/log/manifest antes de reintentar. Primera ventana 0–200 en curso al iniciar. Se exige identidad, mínimo 2,5 GB libres, paridad y SHA por ventana, 2212 fotogramas, timestamps, decodificación y PCM idéntico al MP4 de referencia. El último tramo puede rechazar volumen bajo; no declarar resultado hasta verificar prueba final. En caso de fallo conservar tramos verificados. Sin QA audiovisual completa ni aprobación Q04, sin modificar producción. Q03 continúa activo.
+
+
+## Q03 · 20/11/2026 · Prueba privada de separación de palabras
+
+En /opt/sues-video-setup/q02-native-annex-20261119.j3YNOa/faststart-app-spacing-20261120 se preparó una variante aislada del renderizador: separa palabras de captions word-pop considerando ampliación y contorno, conservando la animación. Sin cambios en producción ni en la candidata MP4 original. Clon de prueba /srv/sues-fablecut-next/data/automation-v1/test-project-q03-158404-spacing-20261120. Un primer render produjo imágenes útiles pero quedó SIN prueba completa por ausencia de un draft en el clon; no considerarlo validado. Repetición con draft: 720–790, 70 frames SHA 3d0e295097d210551516837d361d8eea89503fbb50eb17a814438e3ab4696c49; 220–280, 60 frames SHA 3ff784439239257206128f1ed95512cd01b49fb7ed0e8abdde9d435a729386bf. Ambos WINDOW_DECODE_VERIFIED y SEGMENT_COPY_VERIFIED. En muestras visuales se leen separados «ser tú mismo» y «De pequeño aprendes». En la ventana 720–790 el PCM decodificado coincide por SHA con la revisión anterior; PSNR de recorte superior sin captions 70,99 dB, no identidad pixel exacta. No demuestra ausencia de desbordes ni sincronización en todos los subtítulos. Pendiente probar el resto del Reel, evaluar ocupación en textos largos, integrar la corrección en código versionado y ejecutar regresión, verificar voz de C31, crear MP4 completo y dos auditorías reales. Q03 EN CURSO; Q04–Q06 pendientes.
+
+
+## Q03 · 20/11/2026 · Tildes verificadas en fragmento privado
+
+Informe Gemini recibido: «Hasta que un día» está visible en fotograma 520 de la candidata Q03, contrario a su informe; «si» aparece en 29,6 s, su sincronización auditiva no está validada. En C26.S03 se corrigió «ser tu mismo,» a «ser tú mismo,» en la copia técnica aislada /srv/sues-fablecut-next/data/automation-v1/test-project-q03-158404-accent-20261120. Se prepararon y ejecutaron 108 operaciones con alcance technical-qa. Ventana nativa 720–790, 70 fotogramas, 2,333 s, decodificada; verify-segment-copy SEGMENT_COPY_VERIFIED; SHA-256 abdac6e2ae709568b5c620425c01d3816fa9d9d26fd525d9448a42bdcc8cf2da. Fotogramas verifican tildes, pero a 25,8 s «tú mismo» se ve pegado durante word-pop: falta corregir y validar espaciado, sin cambiar animación ni degradarla sin autorización. No se ha generado nuevo MP4 completo ni auditado dos veces; original Q03 SHA 7b90ea6ff2049b3baaca8a79f645a9fb26395110c576b5a1608240f4378a3438 se conserva. Q03 sigue EN CURSO; Q04–Q06 pendientes. Sondeo de escucha con Gemini es apoyo, no dos visionados completos acreditados.
+
+## Fase 5 · Q03 en curso · MP4 corregido completo y verificado técnicamente
+
+La candidata corregida del Reel 158404 terminó con 2212 fotogramas, tiempos verificados y PCM idéntico a la referencia. Confirmado el aspecto de los subtítulos en fotogramas del propio MP4. Quedan los dos pases audiovisuales completos de Q03 y el visto bueno de Carlos en Q04. [Checkpoint Q03](docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md).
+
+## Fase 5 · Q03 en curso · Tramos de subtítulos verificados
+
+Las cuatro pruebas focales se renderizaron y comprobaron en privado. La candidata completa del Reel 158404 está en exportación por ventanas. Consultar los trabajos `sues-q03-reel158404-corrected-windows` y `sues-q03-reel158404-assemble` antes de repetir. Roadmap y Estado General sincronizados en V1-2026-11-19-r13, con Q01 y Q02 finalizados. La escucha de los pasajes pendientes, la doble revisión y Q04–Q06 siguen abiertos. [Checkpoint Q03](docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md).
+
+## 19/11/2026 · Fase 5 · Q03 en curso · Correcciones privadas de captions
+
+C41.S04 se verificó en un tramo nativo de 45 fotogramas. El texto blanco «perderlo?» conserva su posición y pierde el salto de escala al coincidir con el titular superior. La candidata conjunta incorpora además C11.S02, C19.S03, C29.S04 y C30.S04, con 108 recibos en la copia privada. Estado de los tres renders por pasaje en `q03-review/captions-render.log`. El MP4 completo y la doble revisión de la revisión corregida siguen pendientes. Ver [checkpoint](docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md).
+
+## 19/11/2026 · Fase 5 · Q02 con exportación técnica verificada · Q03 iniciado
+
+Reel 158404. El MP4 privado de 73,733 s se completó y decodificó con 2212 fotogramas, H.264 1080 × 1920 a 30 fps y AAC. Q03 registró tres incidencias en subtítulos y la repetición visual de «perderlo» a 42,200 s. La voz de la mezcla se alinea con la pista original en las 18 ventanas medibles alrededor de las uniones. Quedan la corrección de los pasajes, la doble reproducción audiovisual completa y la revisión de Carlos. Consultar `docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md`, sección «Inicio de Q03». Q04–Q06 pendientes.
+
+## 19/11/2026 · Fase 5 · Q02 en curso · 108 órdenes y render privado
+
+Segunda limpieza VPS: aproximadamente 0,91 GB adicionales recuperados. Libres 6,22 GB y 88 % de ocupación. Se archivaron los repositorios Git de tres clones temporales, se retiraron dos cachés de instalaciones npm inactivas y dos índices regenerables de APT. Tercer tramo del Reel verificado (600 de 2212 fotogramas), cuarto en marcha.
+
+Limpieza VPS: se recuperaron unos 1,94 GB de capacidad disponible. Tareas seguras limitadas a perfiles temporales de exportación, caché de paquetes, tres archivos truncados y deduplicación comprobada de copias de QA. El original conserva su SHA. Dos tramos completos verificados y tercero en marcha al revisar el espacio.
+
+Reanudación por v5. El render monolítico v4 se detuvo por memoria. Se renderizó y decodificó el tramo 35,8–42,9 s en dos disposiciones. Tres imágenes del segundo MP4 muestran la balanza a la izquierda y el rostro despejado. V5 aplicada con 108 recibos. Exportación completa por 12 tramos en curso en el VPS. El checkpoint enlaza ambas pruebas y las comprobaciones de salida. Q01 finalizado y Q02 en curso.
+
+Seguimiento tarde del 19/11. El exportador privado ya completó la mezcla de 23 tramos e inició la entrega a 1080 × 1920. Se descartó de la mezcla el audio de capas silenciadas y se limitó FFmpeg a un hilo. Voz sin desfase medido en siete ventanas. El trabajo x_bb4okxqo y el auditor de salida se detallan en el checkpoint Q02. El cierre exige el MP4 completo y la revisión audiovisual.
+
+[Checkpoint Q02](docs/SUES_V1_FASE5_Q02_NATIVE_20261119.md). Las 87 operaciones fuente se conservan; primer clon con 107 recibos y candidata v4 con 108, ambos por Master Director, ledger y MCP, revisión 1→2. V4 traduce sobres de mezcla y fundidos sin reiniciarlos, conserva dependencias y añade máscara temporal candidata y ajuste de 18 frames al motion existente. Regresión VPS 67/67 PASS. Gateway y staging reproducibles comprobados. Se corrigieron límite HTTP, arranque Chrome y timeout SSE; la exportación v4 larga sigue pendiente de resultado. Consultar unidad sues-q02-render-v4-20261119 y sus archivos de estado antes de reintentar. No hay dos revisiones A/V ni escucha acreditada ni aprobación del resultado. Q01 cerrado, Q02 activo, Q03–Q06 pendientes. Revisión compartida V1-2026-11-19-r12. V1 65 % estimado; no subir por tests.
+
+## 19/11/2026 · V1 · Fase 5 de 5 · Punto 1 de 6 finalizado
+
+[Q01 cerrado](docs/SUES_V1_FASE5_Q01_CIERRE_20261119.md). Reel 158404 recuperado, plan de siete escenas y anexo de 87 operaciones preparados y aceptados por Carlos en conversación. Se corrige el seguimiento conforme al criterio Q01 registrado al cerrar la fase 4. Próximo Q02 pendiente, ejecutar en copia y exportar, con preflight de transcripción, recursos y traducción íntegra antes de cualquier escritura. La fuente ASR sigue sin validación auditiva, las 20 operaciones no textuales requieren traducción y el Reel nuevo no tiene exportación. Revisión compartida V1-2026-11-19-r11. V1 65 % estimado, sin incremento por tests. Evidencia técnica anterior conservada.
+
+## 19/11/2026 · Fase 5 · Q01 · Textos y prueba de máscara corregidos
+
+El adaptador de la PR27 conserva ahora caja, contorno y peso tipográfico en títulos y captions. Los títulos admiten reloj de palabra verificado, conservando compatibilidad con títulos históricos. Se corrigió la comparación ID/SHA de las pruebas de máscara. **43/43 pruebas dirigidas con FableCut nativo PASS, cero omitidas**. Prueba adicional de los 63 captions y cuatro títulos del anexo 158404: 67/67 conservan tiempos, posición, dimensiones y estilo en memoria nativa. No se ha renderizado el Reel. Q01 sigue abierto por transcripción, recursos/composición y traducción de las 20 operaciones restantes y sus transiciones. [Evidencia y siguientes pasos](docs/SUES_V1_FASE5_Q01_PREFLIGHT_20261119.md).
+
+## 19/11/2026 · V1 · Fase 5 de 5 · Q01 en curso
+
+Carlos aceptó el plan creativo del Reel 158404. Verificación previa identificó los 14 recursos por SHA, confirmó estructura del anexo (87 operaciones y 168 palabras) y ejecutó 40/40 pruebas dirigidas con el motor FableCut real. El anexo todavía no es importable al contrato maestro. La transcripción contiene fragmentos dudosos que requieren escucha, y siguen pendientes la traducción sin pérdida, composición, ejecución en copia, exportación y doble QA. Q02 no se ha completado. [Detalle y continuación](docs/SUES_V1_FASE5_Q01_PREFLIGHT_20261119.md). Sin cambios en producción.
+
+## 18/11/2026 · V1 · Fase 4 de 5 finalizada
+
+[Recorrido del editor](docs/SUES_V1_FLUJO_EDITOR_FASE4_20261118.md). S01–S04: barra de tres pasos, entrada de plan común, ejecución privada del lote vinculado y correcciones sobre la revisión del proyecto. Chromium comprobó móvil y escritorio, conservar la otra capa, reabrir el trabajo y deshacer. El código se integra en la PR #27. La aprobación creativa y el render del Reel nuevo quedan en la fase 5.
+
+Siguiente fase 5 de 5, punto 1 de 6 (Q01), usar un Reel real distinto para preparar el plan de revisión. V1 65 % estimado de avance funcional. Roadmap y Estado General deben compartir revisión V1-2026-11-18-r7.
+
+## 18/11/2026 · V1 · Fase 3 de 5 finalizada
+
+[Cadena real V17 → V18](docs/SUES_MASTER_DIRECTOR_V17_V18_E02_E05_20261118.md). E02–E05 verificados en un clon con el Master Director, el registro de un uso y FableCut MCP. Diez recibos y equivalencia exacta del proyecto V18. La pérdida de respuesta se reconcilió por lectura, el reintento no duplicó capas y la reversión restauró V17 en revisión 24. Los dos originales se conservaron. El registro y la decisión de QA son exclusivos de la copia privada.
+
+Siguiente fase 4 de 5, punto 1 de 4 (S01), simplificar el recorrido del editor. V1 58 % estimado de avance funcional. Roadmap y Estado General deben compartir revisión V1-2026-11-18-r6.
+
+## 18/11/2026 · V1 · Fase 3 de 5 · Punto 1 de 5 finalizado
+
+[Caso técnico V17 → V18](docs/SUES_MASTER_DIRECTOR_CASO_V17_V18_E01_20261118.md). El almacén del Master Director conserva las 10 órdenes históricas en una revisión privada del contrato existente. Dos ejecuciones independientes dieron la misma revisión y el mismo resultado. Volver a aplicar las órdenes recuperadas al motor nativo en memoria reproduce exactamente el proyecto V18. Se conservan 5 recursos, solapes de V3, fotogramas clave y 18 tramos de A-roll.
+
+Siguiente E02, punto 2 de 5, pendiente. Faltan comprobaciones del registro de recursos y capacidad del adaptador para las órdenes históricas. El borrador técnico no ha ejecutado ediciones vía Master Director. V1 52 % estimado de avance funcional. Roadmap y Estado General deben compartir revisión V1-2026-11-18-r5.
+
+## 18/11/2026 · V1 · Fase 2 de 5 finalizada · Auditoría V17 → V18
+
+[Informe y criterio de regresión](docs/SUES_AUDITORIA_CADENA_REAL_V17_V18_20261118.md). En un clon de la V17, FableCut aplicó las diez órdenes históricas y devolvió exactamente la V18 guardada (165 clips, 49 recursos, revisión 23). Audio idéntico en las previsualizaciones. El Master Director bloqueó el mismo archivo antes de emitir órdenes por `INVALID_STORY_SCHEMA`. Su adaptador también rechazó con `TRACK_OVERLAP` el destello real de V3. El reintento de la revisión 22 mostró conflicto y conservó la 23.
+
+Fase 2, puntos D01 a D04 finalizados. Fase 3, E01 (punto 1 de 5), queda como siguiente. El criterio es pasar esas diez órdenes por la entrada canónica con cobertura por ID, los tiempos y la superposición conservados y el mismo resultado del montaje. V1 52 % estimado de avance funcional. Roadmap y Estado General deben compartir revisión V1-2026-11-18-r4.
+
+## 18/11/2026 · V1 · Limpieza de ramas aparcada
+
+Carlos aplaza la retirada de ramas hasta Q06, último punto tras validar la V1. Siguen las 82 ramas. El inventario conserva las 41 candidatas y sus SHA para revalidar en Q06. La PR #27 sigue como única línea de integración. Roadmap y Estado General verificados en revisión V1-2026-11-18-r3.
+
+Activo D01: recuperar el caso real, su plan y revisión, el proyecto editable FableCut y sus pruebas previas. Siguiente D02: contrastar las operaciones con el montaje. V1 52 % estimado y etapa 2 de 4 al 72 %.
+
+## 18/11/2026 · V1 · Ruta canónica y checklist operativo
+
+La PR #27 es la línea de integración. La prioridad de producto es validar la cadena del Master Director con un plan existente sobre un único proyecto FableCut. [Roadmap Maestro y checklist](https://docs.google.com/document/d/1OUJyWN4Hs580-C6EEyiyBy_lSSWzQwe8vT62eg5cKPQ/edit) · [Estado General V1](https://docs.google.com/document/d/1L4gycV0LnKGhZ5VtWXAOlzVOzY3GDCp-qW1_X4A9B08/edit) · [Inventario de ramas](docs/SUES_V1_BRANCH_INVENTORY_20261118.md).
+
+Auditoría sobre el grafo completo: 82 referencias, 49 históricas contenidas, 41 retirables tras revalidación, 25 protegidas, 15 divergentes restantes y una canónica. Las 41 referencias siguen en GitHub. Se conserva el estado de producción. Las pruebas de la V8 son evidencia auxiliar: la comparación de 546 fotogramas fue diagnóstica y la exportación nativa completa no terminó. El Roadmap contiene la próxima acción y sus criterios de cierre.
+
+## 18/11/2026 · V8 · Selección de palabras vacía confirmada
+
+Carlos indicó que no quiere añadir palabras destacadas. El plan de estilo conserva el texto y sus tiempos, con subtítulos blancos y los títulos y motions de referencia como capas independientes. El editor distingue la selección vacía guardada de la selección pendiente y evita bloquear la base de subtítulos por texto gráfico que no interviene en su énfasis. **12 pruebas dirigidas superadas**. La traducción de la apertura y el desarrollo a capas nativas y las dos revisiones de la V8 completa siguen pendientes. V1 52 %, etapa 2 de 4 al 72 %.
+
+## 18/11/2026 · V8 · Corrección de voz verificada en exportación nativa
+
+- [Checkpoint del render y la referencia](docs/SUES_V8_NATIVE_VOICE_RECHECK_20261118.md). V1 **52 %**, etapa **2 de 4 · 72 %**. FableCut exportó 88 frames del cierre en una copia privada; 88/88 idénticos al MP4 previo. Respecto al IN solicitado, la desviación de voz pasó de +399 ms a −1 ms.
+- La referencia de 18,2 s coincide con el SHA registrado y se comprobó en 12 frames. El nuevo MP4 sigue siendo solo del cierre. Quedan la traducción de las capas anteriores, revisión del límite de voz a 18,2 s, nueva revisión creativa y dos pasadas audiovisuales. Sin despliegue.
+
+## 18/11/2026 · PR #27 · Cortes del montaje y sincronía de voz V8
+
+- [Checkpoint técnico](docs/SUES_PR27_V1_CUT_MAP_V8_VOICE_20261118.md). V1 **50 %**, etapa **2 de 4 · 65 %**. El preflight admite cortes lineales comprobados y conserva las palabras completas. VPS V18: 18 clips V1 y ocho anclas reales reproducidas en el tramo de prueba.
+- En la exportación privada V8 previa se midió la voz adelantada ~0,38 s. El adaptador de muestra usa ahora el mismo reloj que la referencia V8; queda pendiente comprobarlo en el nuevo MP4.
+- La revisión del plan maestro muestra inicio, fin y duración por registro. Chromium aislado verificó la vista con seis operaciones en tamaños móvil y escritorio, y la carga de Montserrat variable en FableCut. La tipografía del nuevo MP4 sigue pendiente de revisión.
+- Verificado en VPS aislado: 11/11 mapa, 4/4 Asset-First y regresión de tiempos de V18. Próximo hito abierto: completar el plan ejecutable de V8 (18,2 s), confirmar la voz en el nuevo render y hacer dos revisiones A/V. El plan y el resultado completo siguen pendientes de revisión creativa. Sin despliegue.
+
+## 15/11/2026 · ÚLTIMO REEL AUTÉNTICO (10/11) · HyperFrames/FableCut probado en clon V18, DISEÑO NO APROBADO
+
+**Checkpoint más reciente:** [SUES_HF_REAL_REEL_V18_PRIVATE_QA_20261115.md](docs/SUES_HF_REAL_REEL_V18_PRIVATE_QA_20261115.md). El MP4 subido coincidió por **SHA-256 `0190efba90de1f7f73bfef8fc1c3822779a82c123225f77b68a50a9b31a77ad8`** con `recording-20261110-115912/original.mp4`; se reutilizó la V18 original (165 clips, 49 media, rev23, 55,5667s editados). QA en clon FableCut, sin sobrescribir ni publicar.
+
+- HF render NATIVO con ocho palabras **reales del CTA**, tiempos convertidos desde clips V1 con cortes: inicio F1488 / 49,6s, duración151f, entradas [8,14,17,29] + [89,103,108,111]; MP4 HF SHA **`b5d47f9f366b4c86c52523395a582944c8ef8b08479c1092f92aa4fe3603f80f`**.
+- FableCut MCP privado: CAS `addMedia+addClip` V9, proyecto166 clips/50 media, export real151f/30fps/1080×1920 con audio, SHA **`583e49dd53304e93112f785703beb953b2f8d0f7cc6e68bea52661ec7d6b053c`**; 151/151 PSNR mínima45,31dB. **FAIL VISUAL:** panel a pantalla completa cubre a Carlos, título y captions; **NO APROBADO**.
+- 2.ª variante V3 blend screen 88 % en otro clon, preserva 165 clips, pero dos exportaciones no completaron archivo único comprobable y la captura compositor `fablecut_frame` falló `presented frame timeout`. **NO VALIDADA.** Mezcla sonora de primera preview vs V18 anterior también difiere; QA auditiva pendiente.
+- El preflight de editor rama actual **todavía bloquea sourceTimeMap con cortes**; este QA usó un mapper limitado desde los verdaderos V1 del Reel, no se ha desplegado esa capacidad. Transcripción ASR 129 palabras `humanReviewed:false`.
+- Siguiente: **selector humano real, guion A/V de todas las capas, rediseño sin interferencias, rebase formal de cortes, QA audiovisual doble, aprobación de Carlos por revisión, y despliegue separado**. Ningún Reel publicado/WAC ni servicio productivo modificado. No declarar 100 %.
+
+## 15/11/2026 · HITO: Master Director aprobado (QA) → HyperFrames → FableCut CAS y 300/300 frames · NO DESPLEGADO
+
+- **Checkpoint técnico más reciente:** [SUES_HF_MASTER_PRIVATE_APPROVAL_CAS_20261115.md](docs/SUES_HF_MASTER_PRIVATE_APPROVAL_CAS_20261115.md). Código de rama integra selección y guion A/V de palabra real con **una operación `hyperframes-word-motion-v1` en `sues-master-story/v1`**, nueva revisión CAS y comprobación de preflight inmutable antes de aprobación.
+- **Flujo privado probado con autorización sintética de QA de un solo uso** mediante `MasterDirectorProjectStore`, `DirectorApprovalLedger`, HyperFrames nativo y FableCut MCP. Commit de **una transacción FableCut** con `addMedia+addClip` preservó vídeo original sintético 10s V1 y puso motion 151f en V2. Proyecto rev1→2; FableCut export normalizó a rev3 sin alterar las pistas.
+- **MP4 final FableCut real y aislado:** 1080×1920/30fps/300 fotogramas/10s H264, SHA **`87903e0fff576a68ffcaa23738b121def90e3d1afa235fd9fb5a91443930f0d2`**. Comparados 151/151 fotogramas contra el motion HyperFrames (PSNR mín **45,19 dB**) y 149/149 restantes contra el original (mín **49,70 dB**). Recibo QA SHA **`d27f94ad33ade828e243d13933ddc523aaf7ad4d473166ac1f1720946e5aa00b`**.
+- **102/102 tests Node PASS, 0 FAIL/SKIP** más prueba Chromium real 1/1 PASS (anclas palabra a palabra, validación de schedules). **Todo material, decisiones y autorizaciones de esta prueba son ficticios**: NO aprobación de Carlos ni Reel real, NO producción ni publicación. FableCut activo y SUES Server Console intactos.
+- **Próximo bloqueo de producto:** host de ejecución auténtico con sesión humana verificada y permisos sobre clon de un Reel real, orquestación multioperación sin pérdida, sourceTimeMap con cortes y QA visual/audio real en 2 pasadas. El workflow de una sola operación HF está probado SOLO en QA, no instalado en el editor publicado.
+
+## 15/11/2026 · Primer puente automatizable: editor palabras → HyperFrames · STAGING NO PRODUCCIÓN
+
+- **Checkpoint más reciente:** [SUES_HYPERFRAMES_EDITOR_AUTOMATIC_PREFLIGHT_20261115.md](docs/SUES_HYPERFRAMES_EDITOR_AUTOMATIC_PREFLIGHT_20261115.md). Se añadió el preflight autenticado `POST /api/jobs/:id/motion-hyperframes-preflight`, botón en el panel de subtítulos existente, comprobación de cada palabra del caption contra la transcripción y exportación de variables HyperFrames y tabla A/V humana por 7 bloques.
+- Preflight **solo lectura**: dos frases reales 4+4 palabras, reloj original ↔ editado **identidad sin cortes**, huellas fuente/job/timeline, clip 151f/30fps. Bloquea cualquier dato incierto o modo no soportado, siempre `creativeApproved:false`, `canExecute:false`, sin modificar Reel.
+- HyperFrames v0.9.20 renderizó con `--variables-file --strict-variables` una composición sintética con anclas **F8/F16/F24/F30 + F86/F99/F108/F120**. MP4 H264 1080×1920/30fps/151f SHA-256 `095bc084c26959381bd0f79f4ea5b1fdfc6633a4f145cf2fb2e36d2388bcdb4f`; Chrome real confirmó opacidades diferenciadas F15/F19/F93/F102 y bloqueó esquema falso.
+- **93/93 tests Node PASS + 1/1 test Chromium PASS** en VPS, sin editar producción. Código, informe y recibo QA guardados; último blob HTML fuente HF `a1fdbe7a3bfa5068fb1e9baec96459d9594f7bf1`.
+- **Pendiente crítico:** aprobación creativa auténtica con `MasterDirectorProjectStore`, render exacto y puente al proyecto FableCut del Reel con CAS/ledger, mapas con cortes, QA imagen/voz completa y doble auditoría. La cadena FableCut demostrada previamente corresponde al **demo sin variables reales**, no a un Reel aprobado.
+
+## 15/11/2026 · HITO: HyperFrames → FableCut EXPORTACIÓN NATIVA REAL (PRIVADA) · SIN PUBLICACIÓN
+
+- **Checkpoint principal vigente:** [SUES_HYPERFRAMES_FABLECUT_NATIVE_CHAIN_20261115.md](docs/SUES_HYPERFRAMES_FABLECUT_NATIVE_CHAIN_20261115.md). Se resolvió el bloqueo de Chrome con trabajos transitorios systemd de QA (`LimitFSIZE=128M`, CPU/memoria/tiempo limitados), sin tocar los límites del servidor ni producción.
+- **Render HyperFrames REAL:** H.264 1080×1920 30fps, 151 frames, 5,033333 s, SHA **`7f1ac8807b8275fde6d9d2b43fa440954484aae3588a477c17d35ba8395a9ec1`**. HF `check` retornó `ok:true`, con **76 avisos `line_unread` + 1 overflow de cámara** por revisar. No confundirlos con QA aprobada.
+- **Importación y exportación FableCut REALES** mediante MCP y Chrome, exclusivamente en QA `fablecut-private-qa/hf-native-v2-mcp-qa` (puerto aislado 17942). MP4 FableCut 1080×1920/30fps/151 frames, SHA **`909eaaa37b41546fff29292403eedf677a63ee1c6eb2ea679347d42c5cfa9713`**; un vídeo editable como clip, animación interna solo editable en HyperFrames.
+- **Comparativa:** 12 imágenes PSNR mínima 39,62 dB, y **151/151 fotogramas** comparados íntegramente mediante `ffmpeg psnr`: mínimo **45,36 dB**, media **46,97 dB**. Manifiesto verificador E2E firmado por SHA `1981c1e94328450a5419f8b97111a357e870b1edad4e2edf6d1d57d579a95161`; sin aprobación artística.
+- Nuevos módulos de validación SHA, ffprobe, importación, exportación privada y comprobación íntegra. **Sin modificar FableCut publicado, V29, WAC, DNS, medios, ni servidores productivos.** Aún falta voz verdadera, plan A/V aprobado, QA integral en 2 pasadas, mapeo Master Director verificable y aprobación/públicación separadas.
+
+## 15/11/2026 · Arquitectura corregida: HyperFrames dueño de motion, FableCut monta · 74/74 pruebas PASS
+
+- **Checkpoint prioritario:** [SUES_HYPERFRAMES_PRIMARY_HANDOFF_20261115.md](docs/SUES_HYPERFRAMES_PRIMARY_HANDOFF_20261115.md). HyperFrames es el **motor principal** para motion (palabras/blur/máscaras/objetos/cámaras/easing). FableCut es el editor del Reel y consume clips verificados manteniendo una referencia al proyecto editable **en HyperFrames**; un MP4 no convierte sus parámetros internos en objetos FableCut editables.
+- Se añadió **`hyperframes-motion-handoff.js`** (bloquea proxies falsos e importaciones prematuras) y `prepare-hyperframes-handoff.mjs` (hash de 3 archivos, verificación de fuente canónica, dimensiones/FPS/seek, salida review-only).
+- Hallazgo y reparación en proyecto HyperFrames privado: runtime de segunda escena estaba obsoleto (blob `8d51c9905f9d36705c7e73efdcf710752018cca7`), sincronizado al SHA GitHub `6e3e8246e266a662d17c957e4dfe1f2c20cb225c`, copia anterior conservada. **Fingerprint vigente `e41dadf2a5130698b5c193155b2a7dd28a922ed4bfe28ced404e45e0b8a9dba3`**; manifiesto fuente privado `hyperframes-source-review-v3.json`; no hay render nativo aprobado.
+- **74/74 pruebas dirigidas PASS** en VPS (65 anteriores +9 nuevas), `hyperframes lint` 0 errores/0 warnings, `timeline` 5,0333 s. `doctor` detecta actualización disponible, NO instalada. Chrome/HF runtime aún bloqueado `SIGXFSZ`; no producción, WAC, V29, FableCut productivo ni DNS modificados.
+- Siguiente paso: render real HyperFrames en navegador autorizado sin límite de consola, QA frame-a-frame 1080×1920/30, y después handoff al montaje FableCut con source ID, derechos, aprobaciones y revisión/fingerprint. **No derivar un contrato FableCut nativo de un prototipo SVG.**
+
+## 15/11/2026 · FableCut por fotogramas · 65/65 pruebas PASS · SIN DESPLIEGUE
+
+- **Checkpoint prioritario:** [SUES_MOTION_FRAME_SAMPLED_QA_20261115.md](docs/SUES_MOTION_FRAME_SAMPLED_QA_20261115.md). Candidata `fablecut-frame-sampled-candidate.js` deriva keyframes **lineales por fotograma real** del motor SVG para radio, altura, cámara, rieles y opacidad de las 8 palabras, sin crear movimiento vertical del texto que no está en la fuente. Doble opacidad de rieles corregida. Dos comps, 8 textos y 5 figuras editables verificadas con `project-ops.js`/`motion.js` de FableCut.
+- **QA real VPS:** suite dirigida 65/65 PASS, 0 FAIL/SKIP; fixture privado SHA-256 `359f0015c8a3d1f7f80844dcfdbeff468bc21614214d45fc3a69efbf6111b0bc` guardado sin sobrescribir el anterior. Chrome en VPS sigue bloqueado por `SIGXFSZ`; **no existe aún paridad visual nativa acreditada**, ni fuente de voz real o QA audiovisual doble. Sin cambios productivos.
+
+## 15/11/2026 · Motion: palabras ancladas durante apertura + QA Chromium móvil/escritorio · SIN DESPLIEGUE
+
+- Corregido bloqueo contradictorio de la frase siguiente: anclas con IDs reales pueden comenzar en **F81** durante apertura de líneas, sin exigir F91. `sequence-card-to-space.js` y `bind-sequence-to-speech.js` actualizados.
+- Panel narrativo ahora invalida propuestas/exportaciones al editar texto o palabras y descarta respuestas asincrónicas antiguas. `web/narrative-motion-panel.js` actualizado.
+- **60/60 pruebas dirigidas PASS en VPS**; Chromium local con **JS exacto SHA `011fdbb34b25e32e8a3c4573b467c9b213638fd0`** en viewports 390×844 y 1280×920: 0 errores JS/overflow, selección fuente 3/5, exportación y reversión por cambios. **Fixture HTML + API ficticia:** no es prueba visual del editor publicado.
+- Repetir la QA con `tests/browser/narrative-motion-playwright.py` si se dispone de Chromium+Playwright autorizados; `hyperframes check` en VPS sigue bloqueado por SIGXFSZ. No hay render nativo validado, paridad ni aprobación; leer [checkpoint](docs/SUES_MOTION_HYPERFRAMES_FABLECUT_20261115.md).
+
+## 15/11/2026 · Motion graphics: HyperFrames instalado + composición FableCut editable en fixture · SIN DESPLIEGUE
+
+- **Checkpoint técnico prioritario:** [SUES_MOTION_HYPERFRAMES_FABLECUT_20261115.md](docs/SUES_MOTION_HYPERFRAMES_FABLECUT_20261115.md). Reutiliza el repo y la rama `feat/speech-linked-motion-grammar-20261115`.
+- HyperFrames real **v0.9.20** y GSAP preinstalados en VPS. Se preparó escena HTML determinista y `hyperframes lint` pasó **0 errores/0 warnings**. La validación de runtime con Chrome quedó BLOQUEADA por `SIGXFSZ` de la consola (`ulimit -Hf 1024`); **no afirmar render HyperFrames**.
+- Se corrigió transición F81/F89/F104/F112 y separación de palabras a **84 px** tras revisión visual del proxy. **Proxy r2** H.264 540×960, 30fps, 151 frames, 5,033s, SHA `b2da9bfbb651739408377ac70854f7f453e8de7b1263ee8cf33d6277993e9bb3`. No es máster.
+- **FableCut nativo:** candidata `fablecut-editable-candidate.js` probada en `project-ops.js` y `comp.js` reales, sobre proyecto temporal en memoria: 2 comps, 8 textos y 5 figuras editables, 14 clips virtuales. Fixture solo QA, SHA `e6275c414b5a855ee45b3908f4bd282af8f25b74daaf3cf52ffe9f14c49474aa`. **No validado pixel a pixel** (blur, clipping, degradados, tipografía y easing) ni admitido aún por contrato canónico Master Director.
+- **54/54 tests dirigidos PASS en VPS** de los módulos relevantes (no suite histórica completa); FableCut, UI y WAC productivos intactos. Siguiente: renderer/browser QA autorizado, comparación visual de FableCut comp, anclas de voz reales y mapping canónico con protección de revisión/ledger. No publicar.
+
+## 15/11/2026 · SUES Motion narrativo · selector existente → revisión A/V, QA en VPS · NO DESPLEGADO
+
+- **Rama aislada:** `feat/speech-linked-motion-grammar-20261115`; último checkpoint: [docs/SUES_MOTION_NARRATIVE_VPS_INTEGRATION_20261115.md](docs/SUES_MOTION_NARRATIVE_VPS_INTEGRATION_20261115.md).
+- **Continuidad entre agentes/chats:** [AGENTS.md](AGENTS.md) y [instrucciones del proyecto ChatGPT listas para incorporar](docs/CHATGPT_PROJECT_INSTRUCTIONS_SUES_VIDEO_20261115.md). Las instrucciones de la interfaz ChatGPT deben incorporarse manualmente si no se dispone de una acción de edición autorizada.
+- SUES Server Console MCP ejecuta comandos en VPS real srv1841004; no se necesita Desktop Commander. Código de revisión narrativa integrado en la rama (panel de subtítulos existente, endpoint autenticado POST, adapter de índice original a palabra y reporte A/V). **Solo lectura y revisión: no ejecuta efectos ni monta un Reel.**
+- **28/28 tests dirigidos PASS en VPS** con Node 22.23.3: autenticación, CSRF, origen, fingerprint, mapping de palabra, regresión HTTP wiring UI y simulación DOM de selección/revisión; sintaxis JS verificada. No representa suite global ni QA visual.
+- Disco ~90 % ocupado; consola impone `ulimit -Hf 1024`, por lo que la prueba usó copia parcial aislada, sin descargar medios ni tocar worktrees existentes. QA de navegador real y dos pasadas audiovisuales pendientes.
+- **No desplegar, no publicar, no tocar FableCut/Originales/V29/WAC/DNS.** Siguiente: UI/browser QA aislada y, solo con evidencia de un bruto real y aprobación, mapping nativo sin pérdida.
+
+## 11/11/2026 · Supervisor nativo y skill sincronizada · NO DESPLEGADO
+
+- **Código en rama PR27**: `87e4244d92d60f771dcabda6306a90178bdc8912` conecta el runner privado de FableCut al supervisor de evidencias existente mediante `qa-prepare` y `qa-verify`. Manifiestos exactos de fuente/timeline/revisión/decisión/plan/proyecto/MP4, comprobación de IDs antes y después de ejecutar, codecs/duración y evidencias de fotogramas/audio, dos informes de revisión y cola de incidencias con operationId/corrección. Sin reescritura autónoma, sin publicación. [Manual](docs/engine-next/FABLECUT_NATIVE_SUPERVISOR_20261111.md).
+- **11/11 tests unitarios nuevos PASS** en Node 22.16.0, fixtures sintéticos; blobs de módulo y tests coinciden exactamente con los de GitHub (8c6bdd473a5c5849b452c59ba3887f53a174d420 / 051e0abbbe90f67d0a1f4fc4887328297ff123f8). Los 63/63 anteriores pertenecen al corte del 10/11, no se suman como una suite conjunta ejecutada. Aún no se ha probado este runner nuevo contra FableCut del VPS ni se ha hecho una auditoría artística real.
+- **Skill privada SUES AI Film Director 1.7.1 publicada y releída mediante Plugin Creator**, identidad y 16 archivos anteriores preservados (17 con referencia nueva); `FABLECUT_NATIVE_HANDOFF_20261111.md` obligatoria junto a políticas anteriores. La sesión que abrió con 1.7.0 puede conservar caché; consultar release vigente, no afirmar refresco no verificado.
+- **Bloqueo real:** dispositivo VPS conectado, pero cuota mensual Desktop Commander agotada. No repetir llamadas, no reconectar para eludir cuota. La copia privada de VPS y producción no se han tocado en este corte. GitHub sí está actualizado; el worktree privado debe reconciliarse con HEAD cuando exista acceso autorizado. No desplegar, no tocar B05 paralelo ni original/Reel publicado.
+- **Siguiente acción exacta:** ejecutar la regresión dirigida y nuevos modos QA en un clon privado con acceso autorizado, verificar política/derechos de masters y completar un bruto nuevo auténtico con transcripción, selección interactiva, plan A/V aprobado, montaje editable, render y dos pasadas reales. Faltan rotoscopia integral, híbrido lossless, supervisor semántico autónomo y corrección automática validada. No atribuir 100% ni aprobación creativa.
+
+## 10/11/2026 · Plan canónico → lote aprobado → exportación privada
+
+Conexión real store/ledger/MCP, HTTP privado opt-in, 20 órdenes nativas, subtítulos progresivos, fundido entre capas, efectos visuales. 59/59 regresiones dirigidas; V27 reconstruido 217 clips/1089 frames, V29 completo 72,6 s con filtros históricos y SSIM 0,976504 (no todos efectos editables). Nuevo runner privado prepare/run; QA 015 tres operaciones confirmadas. [Manual y límites](docs/engine-next/FABLECUT_STORY_AUTOMATION_20261110.md). Sin despliegue.
+
+## 10/11/2026 · Puente FableCut por lotes, exportación nativa y MCP real
+
+Adaptador privado generalizado, catálogo de órdenes y búsqueda de recursos; copia V26 169→170 clips, MCP rev124→125 con CAS y autorización técnica. QA 002: export real 1080×1920, 30 frames + AAC estéreo; 28/28 tests dirigidos, negativos y undo. Sin despliegue; aprobación creativa, integración ledger HTTP, mapping completo y reconstrucción V29 pendientes. [Manual y evidencia](docs/engine-next/FABLECUT_COMMAND_ADAPTER_20261110.md).
+
+## 06/11/2026 · MP4 1080 privado para revisión en rama
+
+Los flujos Remotion y mixto admitidos pueden solicitar un MP4 privado de 1080×1920, con verificación técnica, trazabilidad y etiqueta de revisión no final. Se han probado la API y la interfaz con datos simulados y una salida sintética Remotion de seis fotogramas; la memoria, un Reel real, el supervisor semántico y la aceptación siguen pendientes. Sin despliegue. Detalle: [checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md).
+
+## 06/11/2026 · Evidencia de audio para supervisión
+
+La escucha de supervisión usa una conversión estéreo y muestra pico, RMS y muestras próximas al máximo por canal; son medidas objetivas, no QA. Cinco pruebas con FFmpeg pasaron. Se midió también el audio convertido de la previsualización real V6B existente, sin generar otro Reel; la escucha y aceptación completas siguen pendientes. [Checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Sin despliegue.
+
+## 06/11/2026 · Ajuste centrado de medios en rama
+
+Las capas Remotion de imagen y vídeo aceptan `fill`, `contain` y `cover` con encuadre centrado. Pruebas dirigidas 37/37, TypeScript y comprobaciones por píxeles en imágenes y un fotograma de vídeo sintéticos; no equivale a QA de movimiento ni Reel real. La skill privada se sincronizó a 1.5.6. [Checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Sin despliegue.
+
+## 06/11/2026 · Plan externo: fidelidad del montaje mixto
+
+El grafo conserva tiempos originales y el motor mixto detecta solapamientos antes del redondeo. Se bloquean combinaciones con orden visual nativo/Remotion no implementado en vez de alterar el efecto. Regresión dirigida 174 aprobadas y 5 omitidas; una omitida pasó aparte con FFmpeg sobre material sintético. La composición completa, supervisor, exportación y prueba de Reel real siguen pendientes. Véase [checkpoint](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Sin despliegue.
+
+## 06/11/2026 · Generador local opcional de borradores maestros
+
+En rama existe un adaptador para Qwen3/llama.cpp local conectado al mismo flujo de revisión; está desactivado por defecto y no despliega ni aprueba planes. Una prueba sintética con modelo real produjo JSON; una prueba HTTP guardó un borrador que la revisión bloqueó. Los límites, evidencia y trabajo pendiente constan en [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md) y [manual](docs/SUES_MASTER_LOCAL_GENERATOR_20261106.md).
+
+## 05/11/2026 · Master Director: máscaras candidatas y muestras de supervisión
+
+Estado vivo: [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). En rama se ha conectado generación local opt-in de máscaras candidatas y preparación independiente de muestras para revisión. No se aprueban máscaras ni se certifica calidad automáticamente. Última regresión: 163 PASS, 0 FAIL, 5 SKIP en host; pruebas específicas omitidas ejecutadas aparte en entornos indicados en el checkpoint. No se ha desplegado ni generado un Reel nuevo. Pendientes planificación IA gratuita real, verificación de máscaras, supervisor audiovisual autónomo, integración integral y aceptación creativa.
+
+## 05/11/2026 · Master Director: continuidad en rama
+
+Estado vivo y detalle de commits: [checkpoint activo](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Entrada IA preparada para proveedor gratuito inyectable, aún sin proveedor configurado; ambas entradas comparten borrador y revisión. Trazabilidad inmutable y comprobación nativa previa a aprobación incorporadas. Pendientes efectos, máscaras, editabilidad integral, supervisor audiovisual y validación posterior. Sin tests ni renders por decisión de Carlos; sin despliegue ni gasto.
+
+## ESTADO ACTIVO · 05/11/2026 · SUES MASTER DIRECTOR
+
+**Consultar antes de continuar:** [CHECKPOINT ACTIVO ÚNICO](docs/SUES_MASTER_DIRECTOR_CHECKPOINT_ACTIVO.md). Es la fuente de verdad operativa del trabajo de Work/chat normal; contiene 50 % estimado global, evidencia, bloqueos, única rama escritora, permisos y próxima acción. **Todo lo que aparece a continuación es HISTÓRICO** y no debe sustituir el último checkpoint. Reglas aprobadas: [20 reglas](docs/SUES_MASTER_DIRECTOR_REGLAS_APROBADAS_20261104.md). No hay despliegue de este cerebro.
+
+## 04/11/2026 · MASTER DIRECTOR · PREVIEW EN ENTORNO AISLADO · MISIÓN INCOMPLETA
+
+- Servidor/UI de desarrollo integran revisión, versiones y preview Remotion privada con aprobación, validación de fuente CFR30/cortes, bloqueo de cambios, auditoría técnica, reproducción autenticada e idempotencia. No habilitado en producción: política y configuración real faltan; no es exportación final.
+- Prueba HTTP completa de 24 s sintéticos: render 720 frames+audio, auditoría de decodificación, Range e idempotencia PASS. Sobre copia normalizada de 158404 se verificó fuente de 65,1 s y se renderizó/auditó solo un segundo de prueba; no Reel creativo. Prueba técnica de 65,1 s en curso: no reclamarla hasta final.
+- 130/130 Node dirigidas PASS en copia productiva con parche selectivo; navegador desktop/móvil con fixtures PASS. Suite amplia anterior 525/529 con salvedades documentadas, falta repetir final. Detalle y siguientes pasos: docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md.
+- Sin despliegue, gastos API, publicación ni cambio de skill. Faltan evidencia de masters, máscaras dinámicas, compositor integral, recursos, backup portable, QA audiovisual doble y aprobación creativa.
+
+## 04/11/2026 · MASTER DIRECTOR · UI Y PROTOTIPOS MULTICAPA · INCOMPLETO
+
+- Añadida revisión/decisión en UI de desarrollo, selección de versiones y edición reversible parcial de capas (posición, tamaño, tiempos, texto, opacidad, volumen y origen según corresponda). No se inicia render y la política real continúa bloqueada. Prueba Chromium PASS escritorio y móvil con fixtures, incluida recuperación de versión.
+- Prototipo Remotion añade vídeo silencioso con entrada exacta y compone vídeo+texto Montserrat+SFX: MP4 sintético de 30 fotogramas comprobado por fotogramas y RMS; no equivale a editar un Reel real ni a verificación de audio profesional. Máscaras estáticas probadas, dinámica aún pendiente.
+- 121/121 pruebas Node dirigidas PASS sobre copia productiva y parche selectivo; suite amplia anterior 525/529 con fallos y limitaciones documentadas. No hay deploy, publicación ni gastos API. Informe: docs/SUES_MASTER_DIRECTOR_WORK_UI_CAPAS_20261104.md.
+
+## 04/11/2026 · MASTER DIRECTOR · CONTEXTO Y REMOTION EXPERIMENTAL · INCOMPLETO
+
+- Adaptador del servidor basado en 20 reglas literales, SHA y biblioteca; política real permanece bloqueada hasta documentar derechos de los tres tapices, que existen en biblioteca pero carecen de metadatos V2. Revisiones invalidadas cuando cambia evidencia; edición de parámetros crea otra versión inmutable. No hay aún UI editable ni backup TAR.
+- Remotion experimental: texto con fuente real por hash, imagen estática, máscara alfa estática y audio con tiempos/ganancia; reproduce prototipos aislados, rechaza lo no soportado. Sin integración de vídeo completo, máscara dinámica, mezcla completa o QA creativo de 158404.
+- Prueba amplia intermedia 525/529: dos fallos reproducidos en base productiva por expectativas antiguas de tests, uno falta de git en contenedor (host PASS), otro documento no copiado en QA (corregido); no declarar regresión limpia. Detalles: docs/SUES_MASTER_DIRECTOR_WORK_AVANCE_CONTEXT_20261104.md.
+- Sin producción, deploy, publicaciones, gastos de API ni cambio de skill. Misión no terminada; mantener restricciones originales.
+
+## 04/11/2026 · MASTER DIRECTOR · INTEGRACIÓN PARCIAL DE BACKEND Y PRUEBA REMOTION · SIN DESPLIEGUE
+
+- Nuevas rutas autenticadas de borrador, revisión, decisión y grafo de capas; revisiones inmutables y bloqueo ante cambios. Sin proveedor real de confianza quedan bloqueadas; el ejemplo positivo de tests es sintético. Aún no hay ejecución/render ni UI editable.
+- Adaptador experimental Remotion limitado a texto posicionado y keyframes lineales; rechaza máscaras y efectos no soportados. TypeScript PASS y un fotograma sintético renderizado e inspeccionado por píxeles; no demuestra edición de un Reel ni sonido.
+- 107/107 pruebas dirigidas Node PASS en copia aislada del código productivo con parche selectivo. La rama y el servidor productivo difieren; no copiar el servidor entero. No deploy, gasto o publicación.
+- Limitaciones, resultados y continuación exacta: docs/SUES_MASTER_DIRECTOR_WORK_AVANCE_BACKEND_20261104.md. Siguen pendientes registro confiable real, UI, capas editables, motor integral, QA audiovisual y regresión completa.
+
+## 04/11/2026 · SUES MASTER DIRECTOR · AVANCE VERIFICADO · SIN DESPLIEGUE
+
+- **20 reglas creativas aprobadas verbalmente por Carlos**, capturadas en docs/SUES_MASTER_DIRECTOR_REGLAS_APROBADAS_20261104.md. El borrador anterior es histórico; no pedir reaprobarlo.
+- Continúa la rama feat/master-director-story-orchestration-20261104 / PR borrador #27. NO mezclar con main ni con producción.
+- Código nuevo/actualizado: master-director-gate, master-director-rulebook, master-director-story, master-director-narrative-arc, master-director-orchestration, master-director-workflow, master-director-native-bridge, master-director-native-review y master-director-layer-graph, con tests.
+- Comprobación real sobre una **copia aislada** del editor productivo: 96/96 pruebas Node PASS (director, importador externo y adaptador creativo).
+- Pruebas de exportación real con FFmpeg en contenedor temporal de la misma imagen de producción, red desactivada, CPU limitada: 12/12 PASS (máscaras, MP4, audio multicapa, cortes y exportación). No confundir con un vídeo completo ya dirigido por el nuevo cerebro.
+- Producción Docker actual: /app montado desde /opt/sues-video-setup/release-mobile-layers-20261030; este directorio NO tiene .git. No modificado.
+- **Todavía falta** integrar registro/autorizaciones reales de backend, motor Remotion con capas editables en UI, supervisor QA audiovisual independiente y dos auditorías completas de un vídeo generado mediante este cerebro. La skill continúa sin cambios y no se han consumido créditos API.
+- Handoff específico para Work: docs/SUES_MASTER_DIRECTOR_WORK_HANDOFF_20261104.md. Solo cuando corresponda, continuar en Work; no crear otro editor ni duplicar módulos.
+
+## DESARROLLO · unificación de reglas y narrativa del cerebro · 04/11/2026
+- Rama: feat/master-director-story-orchestration-20261104; PR borrador #27 contra feat/master-director-gate-20261104.
+- Se implementaron: master-director-rulebook.js (ámbitos, aprobaciones verificadas, conflictos no resueltos), master-director-story.js (narrativa integral, metáforas distantes, recursos existentes/por generar, palabras/timings, pruebas obligatorias) y master-director-orchestration.js (puerta única de reglas → historia → gate con snapshot exacto para invalidar aprobaciones).
+- QA real de lógica: Node.js v22.23.3, 40/40 PASS; tests combinados del gate y los 3 módulos nuevos en /tmp/sues-master-director-story-qa-20261104. No se han ejecutado suite completa de la app ni pruebas audiovisuales reales.
+- No hay merge, deploy, cambios de skill, consumo API, render nuevo ni modificación de proyectos. Las 20 reglas en lenguaje natural esperan aprobación de Carlos.
+- Siguiente: verificar árbol efectivo de producción, crear adaptadores por capacidad y backend autenticado, comprobar resultado MP4/preview/capas/audio con 2 QA integrales, obtener aprobación creativa y solo entonces adaptar la skill.
+
+## EN DESARROLLO · cerebro coordinador narrativo · 04/11/2026
+- Rama aislada: feat/master-director-story-orchestration-20261104; PR borrador #27 contra feat/master-director-gate-20261104.
+- Código nuevo: src/master-director-story.js; traduce historia global, metáforas entre escenas y recursos verificados a sues-master-director/v1; propone creación si falta un recurso ideal, sin generar ni degradar.
+- Contrato en lenguaje natural: docs/SUES_MASTER_DIRECTOR_REGLAS_PARA_CARLOS_20261104.md (20 reglas; PENDIENTE APROBACIÓN).
+- QA comprobada: 24/24 Node.js 22 en copia temporal aislada (9 gate + 14 narrativa). NO es suite de la aplicación ni auditoría audiovisual; no conectado al renderer ni editor web. Sin merge, deploy, cambio de skill, consumo API ni alteración de originales.
+- Siguiente: aprobación de reglas maestras; adaptador seguro al formato del editor y Remotion, capacidades verificadas por motor, supervisor autenticado, QA de vídeo real y doble auditoría limpia. Solo después adaptar skill.
+
 ## Publicado · correcciones de auditoría · 29/10/2026
 
 ## VIDEO COMPLETO 158404 · V2 GRÁFICOS SUSTITUTIVOS · 04/11/2026
@@ -1333,3 +1827,50 @@ La tabla técnica de Carlos queda codificada como `sues-visual-grammar-158623-v1
 - Preview privada `SUES_158404_V4B_DESDE_ORIGINAL_RECONSTRUIDO_PREVIEW720_20261104.mp4`, 11.561.089 bytes, H.264/AAC 720×1280, 30 fps, 2.230 frames, 74,333333 s, SHA256 `3c8e608f29021972302ac8adaa8f7097c3b500e38d6e18d91ea23c44c806ff82`. `faststart` y grabación única en biblioteca de proyectos.
 - QA verificado: `tsc --noEmit` PASS; 13 segmentos de 2.230 frames; FFmpeg decode completo audio/vídeo PASS; 74 fotogramas a 1 fps y 297 a 4 fps extraídos y hojas de contacto visualmente revisadas, sin palabras protagonistas descentradas/recortes de texto evidentes. No afirmar auditoría exhaustiva de 2.230 frames ni calidad creativa aprobada. Editor accesible; no pruebas visuales reales del reproductor autenticado en móvil.
 - Fuentes versionadas en rama de desarrollo, informe `experiments/remotion-cta/docs/EDICION_158404_V4B_20261104.md` commit `da6e44af32296969e8632b66cc78d0c0a8b8baf9`. Assets MP4/logo permanecen privados en VPS/Drive, no se subieron a GitHub. Sin merge, coste nuevo de API 0, ni Full HD final: **preview 720p** pendiente de revisión de Carlos, licencia B-roll y export a 1080p tras aceptación. Progreso de Fase 9 y global no modificados.
+
+## 04/11/2026 · Master Director: preview asíncrona y límites de memoria
+- Implementación aislada en rama: solicitud de preview asíncrona con persistencia de estado y recuperación segura; protección de memoria y copias en streaming. Prueba sintética autenticada de 24 s con Remotion, audio, auditoría técnica, Range e idempotencia PASS. Prueba técnica de 65,1 s de la copia normalizada 158404 en curso; intentos anteriores incompletos. No representa un montaje creativo ni prueba de exportación final. Detalles y limitaciones en `docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md`. Sin despliegue, gasto ni publicación.
+
+- Actualización: el render limitado de 65,1 s no terminó por el máximo de 10 minutos; se aumentó el límite a 30 minutos sin desactivar el control de memoria y se inició una nueva prueba. 113/113 pruebas específicas de la copia y 2/2 de renderizador en el árbol PASS; regresión con exportación móvil real PASS, batería general aún en curso. Ninguna de estas pruebas valida un Reel creativo final.
+
+- Regresión aislada: 543/548. Dos fallos presentes en base productiva; Git ausente de imagen (PASS en host); preview bloqueada por contenedor menor que requisito de memoria (PASS en host); máscara FFmpeg PASS al repetir con 768 MiB tras fallar fixture con 384 MiB. Suite completa aún no limpia.
+
+- Prueba técnica aislada 158404 completada: 65,109 s, 1953 fotogramas a 30 fps, preview privada 270×480 con audio, SHA256 `84489cd837f55d1a147adbddfdedaf452148b6ef6bcb11d5fb36b6ee7306d3b9`. Auditoría técnica separada con decodificación completa PASS; Range e idempotencia PASS. Fuente es copia normalizada, plan y contexto simulados. Sin revisión artística, Reel terminado ni exportación final.
+
+- Master Director en rama aislada: curvas de animación `linear`, `ease-in`, `ease-out`, `ease-in-out` implementadas y preservadas con cubic-bezier estándar; `spring` sigue bloqueado. 8/8 pruebas dirigidas, TypeScript y fotograma sintético Remotion PASS. No implica aceptación audiovisual ni despliegue. Detalle en `docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md`.
+
+- UI aislada Master Director: selección de curva por fotograma, guardada en versión nueva con revisión requerida. Smoke Chromium escritorio/móvil PASS con backend de prueba; no desplegado.
+
+- UI aislada Master Director ampliada para editar valores existentes de keyframes con versionado. Prueba de navegador escritorio/móvil PASS con fixture simulado; sin despliegue.
+
+- Prueba aislada autenticada de preview sintética con animación ease-in-out: 24 s con render Remotion real, audio, auditoría técnica independiente, Range e idempotencia PASS. No equivale a calidad creativa aprobada.
+
+- Reel 158541 recibido: archivo ya editado 13,2 s. El original carece de SAR y se bloqueó con seguridad. Una copia privada con SAR 1:1 asumido, sin recodificación y con todos los fotogramas decodificados idénticos, permitió prueba técnica autenticada Remotion: 396 frames, audio y decode completo, Range e idempotencia PASS. Plan y transcripción simulados; sin revisión creativa ni Reel completo. Ver `docs/SUES_MASTER_DIRECTOR_WORK_PREVIEW_20261104.md`. Sin despliegue, publicación ni coste.
+
+- Master Director aislado: corregido reintento de preview tras BLOCKED/FAILED conservando idempotencia en conexiones inciertas; geometría no verificada se explica en UI. Browser desktop/mobile PASS con servicio simulado. Sin despliegue.
+
+- Master Director: bruto de práctica de Drive, 30,2 s; análisis local y plan preliminar aplicado en aislamiento, dos previews técnicas PASS, corrección de ubicación de texto y QA visual parcial. Política simulada, derechos de tercero, acabado cinematográfico y auditoría completos pendientes; sin despliegue ni publicación.
+
+- Master Director rama aislada: validación narrativa basada en fases documentadas, evidencia requerida, aviso de fases sin documentar y sin inventar moraleja/caída. Mantiene compatibilidad del modo estricto y exige nueva revisión cuando cambie contexto. 27 pruebas dirigidas, 116 específicas y Chromium escritorio/móvil PASS con fixtures. No acredita comprensión audiovisual integral ni despliegue.
+
+- Arco observado comprobado con bruto privado y transcripción local: 20 reglas procesadas, fases documentadas, moraleja sin documentar y cinco capas preparadas PASS en proveedor real con derechos de recursos simulados. No demuestra comprensión audiovisual completa, verificación de derechos ni autorización creativa.
+
+- Master Director: arranque normal admite configuración de preview opt-in con rutas y SHA de tres puntos de entrada validados antes de iniciar; por defecto desactivado. 2 tests de configuración/arranque HTTP y 117 pruebas específicas PASS. No protege dependencias transitivas ni sustituye política real/rollback; no configurado ni desplegado en producción.
+
+- Master Director: configuración privada de preview rechaza rutas no normalizadas, directorios padres inseguros o enlaces simbólicos; 122/122 pruebas Master Director en rama PASS. No protege dependencias transitivas ni elimina carreras de archivos; aún requiere runtime inmutable y validación de producción. Sin despliegue.
+
+- Seguridad y perfiles: política del cerebro rechaza ficheros de otro propietario, rutas o directorios inseguros; estilos ajenos a CALMA y DOPAMIN se bloquean en vez de convertirse silenciosamente a CALMA. 122 pruebas específicas PASS. ELEMENTS aún no integrado como perfil; producción intacta.
+
+- Preparación de política: comprobador offline de solo lectura valida bytes, metadatos y 20 reglas para tres IDs seleccionados; no crea política ni modifica biblioteca. 125 pruebas del cerebro PASS. Los tres tapices reales figuran como propios, pero carecen de metadatos V2 de prueba/licencia, por lo que el comprobador bloquea correctamente la activación; no se deben inventar pruebas.
+
+- Regresión 05/11: al probar sobre copia productiva se detectó que alteraciones rápidas del mismo tamaño podían conservar mtime/ctime y evadir caché de integridad de live preview. En rama y staging se recalcula SHA antes de servir cada petición; 30 alteraciones repetidas y suite live PASS. Ensayo local 40 MiB × 5 = 312 ms; impacto en reproducción/cargas grandes pendiente de medir. Sin cambios productivos. Batería inicial 550/552 (Git ausente del contenedor, prueba aislada PASS en host; fallo de integridad corregido).
+
+- Integración nativa: aprobación o modo autónomo conecta con importador existente, revisa de nuevo plan/versión/evidencia y crea versión hija editable con petición idempotente; operaciones incompatibles se bloquean. Test autenticado con FFmpeg real produjo MP4 privado sintético 12 s, audio y decode completo PASS; interfaz escritorio supervisado y móvil autónomo PASS con fixtures y acciones DOM, sin evaluar visibilidad de todos los controles. 125 específicas PASS en host y render real PASS en contenedor. Sin despliegue ni aprobación artística.
+- Regresión de base productiva aislada, antes de esta conexión nativa: 554/554 ejecutadas PASS con dos tests actualizados en staging para la cola/límite actual; test Git omitido en contenedor y superado por separado en host. No equivale a batería completa posterior a la conexión ni a auditoría creativa.
+
+- ELEMENTS nativo conectado como formato combinable con CALMA/DOPAMIN: LIST, RANKING, COMPARE, Q&A, REVEAL y FLOW con copy y anclas explícitas, sin reemplazar elementos existentes sin autorización; presentación a pantalla completa declarada. 21 pruebas dirigidas PASS; MP4 sintético privado 12 s con LIST, audio y decode completo PASS con FFmpeg real. No equivale a acabados artísticos avanzados ni Remotion por capas; evaluación audiovisual pendiente. Batería de rama 127 PASS, una prueba real omitida por falta de FFmpeg en host y superada aparte en contenedor.
+
+- Integración completa en copia productiva: 558/558 casos ejecutados PASS (prueba Git omitida en contenedor y PASS por separado en host; dos tests de base ajustados en staging). Generador reproducible crea candidato bajo /tmp, verifica 458 hashes de la base antes y después de copiar y bloquea cambios inesperados; candidato previo 141/141 pruebas dirigidas PASS. Runtime Remotion no instalado ni fijado. Fotogramas sintéticos LIST revisados de forma parcial; no sustituye revisión audiovisual ni artística. Sin despliegue.
+
+### 10/11/2026 · FableCut private automation second checkpoint
+63/63 directed tests; 24 native commands, verified source intake, exact approved story batch, isolated render copy parity. QA015 3s/90f and QA018 five operations 1s/30f 1080x1920 with complete technical proofs. DAEDAL 394 files/12 CC0 licences hash verified; QA020 real riser inserted. Actual brand master commercial provenance and new recording acceptance remain pending. See docs/engine-next/FABLECUT_STORY_AUTOMATION_20261110.md. No deployment.

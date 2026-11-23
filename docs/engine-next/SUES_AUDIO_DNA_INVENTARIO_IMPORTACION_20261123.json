@@ -1,0 +1,160 @@
+{
+  "schema": "sues-audio-dna-intake/v1",
+  "asOf": "2026-11-23",
+  "project": "SUES AI VIDEO EDITOR",
+  "sourceOfTruth": "Drive private originals",
+  "mediaRoot": "/srv/sues-fablecut-next/data/media",
+  "projectRegistration": "PENDING",
+  "originalsInDriveUnmodified": true,
+  "rightsReview": "PENDING",
+  "creativePolicy": "3 strong colors + optional Meditative; no fixed per-emotion quota",
+  "items": [
+    {
+      "driveId": "1YMkHGMwP_keW0LFi1wDr-e7xNetGeHVY",
+      "file": "PRIORITARIA_SUES_FIRMA_SONORA_ENTRADA_SOUL_BRASS_MIDNIGHT_AT_THE_PLAZA.mp3",
+      "mediaSrc": "/media/PRIORITARIA_SUES_FIRMA_SONORA_ENTRADA_SOUL_BRASS_MIDNIGHT_AT_THE_PLAZA.mp3",
+      "role": "signature-brass-hook",
+      "priority": "essential",
+      "bytes": 1409552,
+      "sha256": "1d517f4cffce524a380a549adb6af9eeed5a5b9b98496e8fee22dd9b1cac3d2a",
+      "durationSeconds": 58.40975,
+      "codec": "mp3",
+      "sampleRate": "44100",
+      "channels": 2,
+      "status": "VPS_MEDIA_IMPORTED_UNREGISTERED_IN_PROJECT"
+    },
+    {
+      "driveId": "1pWmn6f3IRpoNzFXwKC9gCKFDkdwNshA1",
+      "file": "PRIORITARIA_SUES_06-08_SOLUCION_ALEGRIA_CTA_REGGAE_FUNK_GOLD_IN_THE_MIDDAY_HEAT.mp3",
+      "mediaSrc": "/media/PRIORITARIA_SUES_06-08_SOLUCION_ALEGRIA_CTA_REGGAE_FUNK_GOLD_IN_THE_MIDDAY_HEAT.mp3",
+      "role": "solution-joy-promise-cta-reggae",
+      "priority": "essential",
+      "bytes": 1449049,
+      "sha256": "2bcc93407796c8ae0b16579f0f75cf4c4438292c9278d0a52807ef123e471197",
+      "durationSeconds": 60.055458,
+      "codec": "mp3",
+      "sampleRate": "44100",
+      "channels": 2,
+      "status": "VPS_MEDIA_IMPORTED_UNREGISTERED_IN_PROJECT"
+    },
+    {
+      "driveId": "1zdcpCUKQom6ZmNPbEBB-RJaemo1Q6SZj",
+      "file": "SUES_04_MEDITATIVE_INTROSPECTIVA_CUENCOS_AGUA_ORIGINAL.m4a",
+      "mediaSrc": "/media/SUES_04_MEDITATIVE_INTROSPECTIVA_CUENCOS_AGUA_ORIGINAL.m4a",
+      "role": "personal-introspection-meditation",
+      "priority": "essential",
+      "bytes": 3385898,
+      "sha256": "ba036fe7183effbd4988c11085e5a0c5a55fb315cb6d8c4bb716cbd1eb103829",
+      "durationSeconds": 188.68,
+      "codec": "opus",
+      "sampleRate": "48000",
+      "channels": 2,
+      "status": "VPS_MEDIA_IMPORTED_UNREGISTERED_IN_PROJECT"
+    },
+    {
+      "driveId": "1iJ7lGCrax1FjuLPXOctd2oKHokKu7390",
+      "file": "SUES_02_DOLOR_EMOCIONAL_ORIGINAL.mp3",
+      "mediaSrc": "/media/SUES_02_DOLOR_EMOCIONAL_ORIGINAL.mp3",
+      "role": "sadness-pain-candidate",
+      "priority": "candidate",
+      "bytes": 3865271,
+      "sha256": "9afdd42ebf1f1d5e67781c9e4071bfa2318f9dbabb6555d769c151d6fb0f6c19",
+      "durationSeconds": 160.731375,
+      "codec": "mp3",
+      "sampleRate": "44100",
+      "channels": 2,
+      "status": "VPS_MEDIA_IMPORTED_UNREGISTERED_IN_PROJECT"
+    },
+    {
+      "driveId": "1X3IA45a79R8XoHda3j4lrTD9iBMvJBHG",
+      "file": "SUES_03_TENSION_EMOCIONAL_THE_UNSPOKEN_HOUR_ORIGINAL.mp3",
+      "mediaSrc": "/media/SUES_03_TENSION_EMOCIONAL_THE_UNSPOKEN_HOUR_ORIGINAL.mp3",
+      "role": "tension-candidate",
+      "priority": "candidate",
+      "bytes": 960664,
+      "sha256": "eff4d62cc2621e5cda997002e4602fcd11b456d9ce53253d5e711fff2d0cbb84",
+      "durationSeconds": 39.706083,
+      "codec": "mp3",
+      "sampleRate": "44100",
+      "channels": 2,
+      "status": "VPS_MEDIA_IMPORTED_UNREGISTERED_IN_PROJECT"
+    },
+    {
+      "driveId": "1RjnNBITAucFmcy8q_cMqZd9XYUC1j_gI",
+      "file": "SUES_01_INTRIGA_ORIGINAL.m4a",
+      "mediaSrc": "/media/SUES_01_INTRIGA_ORIGINAL.m4a",
+      "role": "intrigue-candidate",
+      "priority": "candidate",
+      "bytes": 2772760,
+      "sha256": "e11962b13df718a4b51a3e81fde4ea58a01d8dede9c213308a5c90a07e8d8bcb",
+      "durationSeconds": 159.56,
+      "codec": "opus",
+      "sampleRate": "48000",
+      "channels": 2,
+      "status": "VPS_MEDIA_IMPORTED_UNREGISTERED_IN_PROJECT"
+    },
+    {
+      "driveId": "10IuytZoejq0zHgLEz_VZDEzb5gl7HPIm",
+      "file": "SUES_05_REVELACION_EXPANSIVA_BETWEEN_TWO_BREATHS_ORIGINAL.mp3",
+      "mediaSrc": "/media/SUES_05_REVELACION_EXPANSIVA_BETWEEN_TWO_BREATHS_ORIGINAL.mp3",
+      "role": "revelation-candidate",
+      "priority": "candidate",
+      "bytes": 1625846,
+      "sha256": "ab4be080905b946fce4e158d534a7b3beda197398dcd750299d36362c1159c88",
+      "durationSeconds": 67.422,
+      "codec": "mp3",
+      "sampleRate": "44100",
+      "channels": 2,
+      "status": "VPS_MEDIA_IMPORTED_UNREGISTERED_IN_PROJECT"
+    },
+    {
+      "driveId": "1AvRVMrVOFbRkL-6yxGMMRtC9SDJkzggM",
+      "file": "SUES_06_SOLUCION_A_PROMISES_AT_DAYBREAK_ORIGINAL.mp3",
+      "mediaSrc": "/media/SUES_06_SOLUCION_A_PROMISES_AT_DAYBREAK_ORIGINAL.mp3",
+      "role": "hiphop-alternative-a",
+      "priority": "candidate",
+      "bytes": 1613307,
+      "sha256": "a689689276131bc1b1501b2020d0f5bfc8c4cd4e10314bb7bbf0e077955bd258",
+      "durationSeconds": 66.899542,
+      "codec": "mp3",
+      "sampleRate": "44100",
+      "channels": 2,
+      "status": "VPS_MEDIA_IMPORTED_UNREGISTERED_IN_PROJECT"
+    },
+    {
+      "driveId": "1OSdnRgNjtFJYA0PVs7TUhehGLPHwDFC1",
+      "file": "SUES_06_SOLUCION_B_A_WINDOW_LEFT_OPEN_ORIGINAL.mp3",
+      "mediaSrc": "/media/SUES_06_SOLUCION_B_A_WINDOW_LEFT_OPEN_ORIGINAL.mp3",
+      "role": "hiphop-alternative-b",
+      "priority": "candidate",
+      "bytes": 4274035,
+      "sha256": "55573e8ec104aa6944576d18eceb7e1660ffa70cfeadbb143ab1db9e568f5a77",
+      "durationSeconds": 177.763208,
+      "codec": "mp3",
+      "sampleRate": "44100",
+      "channels": 2,
+      "status": "VPS_MEDIA_IMPORTED_UNREGISTERED_IN_PROJECT"
+    }
+  ],
+  "verification": {
+    "fileCount": 9,
+    "mp3Sha256SourceEqualsServer": true,
+    "m4aOriginalContainerDiffersDueToFaststart": true,
+    "m4aAudioStreamVerifiedEqual": true,
+    "brassAndReggaeHttp206": true,
+    "projectMediaRegistered": false,
+    "licensingApproved": false
+  },
+  "streamIntegrity": {
+    "1zdcpCUKQom6ZmNPbEBB-RJaemo1Q6SZj": {
+      "originalSha256": "e6aa7f3b5d2f37f7997188ddee808f09c16f6012ab18dd35bb70f2e39eaf4f1a",
+      "audioStreamSha256": "b4851ad86ea2179a88b9b83ecdbabf3971d0431fa949ded1a7fd318376e178a0",
+      "identicalStreamAfterRemux": true
+    },
+    "1RjnNBITAucFmcy8q_cMqZd9XYUC1j_gI": {
+      "originalSha256": "3a39f4d4dfdbcc3b2c8b91bc6ecd7a943e490b18ef5688b77b80b6e7176ddade",
+      "audioStreamSha256": "1566724dec384b331f74a9aef7b04639d2b7c0ac784152f432788a1b3418bedf",
+      "identicalStreamAfterRemux": true
+    }
+  }
+}

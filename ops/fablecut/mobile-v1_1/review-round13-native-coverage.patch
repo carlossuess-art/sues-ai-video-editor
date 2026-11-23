@@ -1,0 +1,305 @@
+--- a/app.js
++++ b/app.js
+@@ -2246,6 +2246,14 @@
+       e.stopPropagation();
+       removeMediaFromBin(m);
+     });
++    if(mobileTimeline()){
++      const add=document.createElement("button");add.type="button";add.className="btn tiny accent sues-bin-add";add.textContent="＋";add.title="Añadir al cabezal";add.setAttribute("aria-label","Añadir "+m.name);add.disabled=offline;
++      add.onclick=e=>{e.stopPropagation();addClipFromMedia(m,window.SuesMobileContext?.mediaTarget(m.kind)||null,state.time);};
++      item.appendChild(add);
++      const options=document.createElement("button");options.type="button";options.className="btn tiny sues-bin-options";options.textContent="⋯";options.title="Opciones del archivo";
++      options.onclick=e=>{e.stopPropagation();const r=options.getBoundingClientRect();showMediaMenu(r.left,r.top,m);};
++      item.appendChild(options);
++    }
+     return item;
+   };
+ 
+@@ -3203,7 +3211,10 @@
+       <p class="hint">Drop files into<br><b>library/${dir}/</b><br>— this list live-updates.</p></div>`;
+     return;
+   }
+-  for (const f of files) {
++  const q=mobileTimeline()?String(document.getElementById("suesLibraryQuery")?.value||"").toLowerCase().trim():"";
++  const visible=mobileTimeline()?files.filter(f=>libKind(f.name)&&(!q||String(f.rel||f.name).toLowerCase().includes(q))):files;
++  if(mobileTimeline()&&!visible.length){els.libList.textContent="No se encontraron recursos.";}
++  for (const f of visible) {
+     const kind = libKind(f.name);
+     const item = document.createElement("div");
+     item.className = "bin-item lib-item";
+@@ -3231,7 +3242,7 @@
+       e.dataTransfer.effectAllowed = "copy";
+     });
+     item.addEventListener("dblclick", () => addLibraryItem(f, null, state.time));
+-    item.querySelector(".lib-add").addEventListener("click", () => addLibraryItem(f, null, state.time));
++    item.querySelector(".lib-add").addEventListener("click", () => addLibraryItem(f, mobileTimeline()?window.SuesMobileContext?.mediaTarget(kind)||null:null, state.time));
+     const play = item.querySelector(".lib-play");
+     if (play) play.addEventListener("click", () => toggleSfxPreview(f, play));
+     els.libList.appendChild(item);
+@@ -5745,6 +5756,7 @@
+   const label = EDIT_TOOLS[tool].label;
+   let moved = false, applied = 0;
+   const onMove = (ev) => {
++    if(ev.pointerId!==e.pointerId)return;
+     if (!moved && Math.abs(ev.clientX - x0) <= 3) return;
+     moved = true;
+     restore();
+@@ -5763,12 +5775,17 @@
+     renderInspector(true);
+     showTrimReadout(ev, `${label} ${fmtTrimDelta(applied)}`);
+   };
+-  const onUp = () => {
++  let finished=false;
++  const onUp = (ev,cancel=false) => {
++    if(finished||(ev&&ev.pointerId!==e.pointerId))return;
++    finished=true;
+     window.removeEventListener("pointermove", onMove);
+     window.removeEventListener("pointerup", onUp);
++    window.removeEventListener("pointercancel", onUp);
+     hideTrimReadout();
+     state.gesture = false;
+-    if (moved && Math.abs(applied) > 1e-9) {
++    if((cancel||ev?.type==="pointercancel")&&moved)restore();
++    else if (moved && Math.abs(applied) > 1e-9) {
+       runtime.undo.push(snapshot);
+       if (runtime.undo.length > 100) runtime.undo.shift();
+       runtime.redo.length = 0;
+@@ -5780,6 +5797,8 @@
+   };
+   window.addEventListener("pointermove", onMove);
+   window.addEventListener("pointerup", onUp);
++  window.addEventListener("pointercancel", onUp);
++  return {move:onMove,finish:(cancel=false)=>onUp(null,cancel)};
+ }
+ /* Right-click a clip: enable / lock / link menu. */
+ els.tracksContent.addEventListener("contextmenu", (e) => {
+@@ -16079,7 +16098,11 @@
+ }
+ function loop(ts) {
+   if (lastTs == null) lastTs = ts;
+-  const dt = Math.min(0.1, (ts - lastTs) / 1000);
++  const elapsed = Math.max(0,(ts-lastTs)/1000);
++  const dt = Math.min(0.1, elapsed);
++  // Preview uses elapsed wall time (drop visual frames instead of slowing speech).
++  // Leave desktop and all exported frame clocks unchanged.
++  const timelineDt = mobileTimeline()&&!state.exporting&&!state.rendering&&!document.hidden?Math.min(0.5,elapsed):dt;
+   lastTs = ts;
+   // projDur() is an O(clips) scan — compute it once per tick and reuse below
+   // instead of the 2-4 independent recomputations this loop used to trigger.
+@@ -16109,13 +16132,13 @@
+     if (rate < 0) { // reverse: stop at IN under Limit (if the playhead is past it) or 0
+       const floor = playLimited() && project.inPoint != null && state.time >= project.inPoint - 1e-4
+         ? project.inPoint : 0;
+-      state.time += dt * rate;
++      state.time += timelineDt * rate;
+       if (state.time <= floor) {
+         state.time = floor;
+         pause();
+       }
+     } else {
+-      state.time += dt * rate;
++      state.time += timelineDt * rate;
+       let end = playStopAt(dur);
+       if (state.exporting && !state.rendering && exportWindow) end = exportWindow.end;
+       if (state.time >= end) {
+--- a/sues-mobile-context.js
++++ b/sues-mobile-context.js
+@@ -67,10 +67,26 @@
+ function openPanel(id){if(!app.dataset.mobilePanel)savedScroll=strip.scrollLeft;if(app.dataset.mobilePanel&&app.dataset.mobileAction!==id)oldOpen("close");if(!app.dataset.mobilePanel)oldOpen(id);}
+ function close(){search.clearFocus?.();resetScope();if(app.dataset.mobilePanel)oldOpen("close");advanced=false;app.dataset.suesTimelineTools="";render(true);}
+ function tool(id){hideGallery();app.dataset.suesTextMode="";const g=find("suesTextGallery");if(g)g.hidden=true;return search.navigate(id);}
+-function chooseMedia(tab,label){resetScope();caption=label;openPanel("media");setBinTab(tab);render(true);}
++let mediaPurpose="";
++function mediaTarget(kind){
++ const audio=kind==="audio";
++ const ids=TRACKS.filter(t=>audio?t.kind==="audio":t.kind==="video").map(t=>t.id);
++ const preferred=audio?["A2","A3","A4","A1"]:mediaPurpose==="Agregar superposición"||mediaPurpose==="Elementos"||mediaPurpose==="Motion graphics"?["V2","V3","V1"]:["V1","V2","V3"];
++ const free=id=>ids.includes(id)&&!isTrackLocked(id)&&!project.clips.some(c=>c.track===id&&state.time>=c.start&&state.time<c.start+c.duration);
++ return preferred.find(free)||ids.find(free)||null;
++}
++function chooseMedia(tab,label){
++ resetScope();caption=label;mediaPurpose=label;openPanel("media");setBinTab(tab);
++ const q=find("suesLibraryQuery");if(q){q.value="";q.hidden=tab==="project"||tab==="shapes"||tab==="templates";}
++ render(true);
++}
+ function textTab(tab){openPanel("tools");if(!root.querySelector('[data-k="text"]'))return false;window.SuesMobileText.show(tab);return true;}
+ function section(sel,label){hideGallery();search.clearFocus?.();app.dataset.suesTextMode="";openPanel("tools");setSideTab("inspector");scope(sel,label);}
+ function title(){find("btnTitle")?.click();window.SuesMobileText?.openEditor();}
++const libraryQuery=document.createElement("input");libraryQuery.id="suesLibraryQuery";libraryQuery.type="search";libraryQuery.placeholder="Buscar en biblioteca";libraryQuery.setAttribute("aria-label","Buscar en biblioteca");libraryQuery.hidden=true;
++find("libList")?.before(libraryQuery);
++libraryQuery.addEventListener("input",()=>renderLibrary());
++find("binTabs")?.addEventListener("click",e=>{const tab=e.target.closest("[data-tab]")?.dataset.tab;if(tab){libraryQuery.value="";libraryQuery.hidden=["project","shapes","templates"].includes(tab);}},true);
+ const nativeGalleryHost=document.createElement("div");nativeGalleryHost.id="suesNativeGallery";nativeGalleryHost.hidden=true;root.before(nativeGalleryHost);
+ const strip=document.createElement("div");strip.id="suesContextStrip";dock.appendChild(strip);
+ original.forEach(b=>b.classList.add("sues-old-dock"));
+@@ -78,8 +94,20 @@
+ if(sb){sb.classList.remove("sues-old-dock");sb.id="suesTopSearch";sb.textContent="";sb.innerHTML='<svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7"><path d="'+paths.search+'"/></svg>';document.querySelector(".topbar")?.insertBefore(sb,find("projectName"));}
+ const quick=(id,lab,ico,fn)=>button(id,lab,ico,fn);
+ function native(id){find(id)?.click();}
+-function full(){resetScope();caption="Ajustes avanzados";openPanel("tools");app.dataset.suesAdvanced="1";render(true);}
++function full(){resetScope();caption="Ajustes avanzados";openPanel("tools");setSideTab("inspector");app.dataset.suesAdvanced="1";render(true);}
+ function group(id){category=id;savedScroll=0;render(true);}
++let advancedParent="";
++function openAdvanced(id="advanced"){advancedParent=category;group(id);}
++function leaveAdvanced(){category=advancedParent;advancedParent="";savedScroll=0;render(true);}
++function sidePage(tab,label){resetScope();caption=label;openPanel("tools");setSideTab(tab);render(true);}
++function translateCtx(){
++ const labels={"Disable clip":"Desactivar clip","Enable clip":"Activar clip","Lock clip":"Bloquear clip","Unlock clip":"Desbloquear clip","Crossfade with neighbours":"Fundir con clips vecinos","Auto-duck under other tracks":"Atenuación automática","Find silences":"Buscar silencios","Parent to a new null":"Vincular a objeto nulo","Precompose":"Precomponer","Open composition":"Abrir composición","Reveal in project":"Mostrar en proyecto","Unlink audio / video":"Desvincular audio y vídeo","Link audio / video":"Vincular audio y vídeo","Remove track":"Eliminar capa"};
++ for(const b of document.querySelectorAll("#trackCtxMenu .ctx-item")){const x=b.querySelector("span")||b;if(labels[x.textContent])x.textContent=labels[x.textContent];}
++}
++function clipMenu(c){const r=strip.getBoundingClientRect();showClipCtxMenu(r.left+8,r.top,c);translateCtx();}
++function trackMenu(c){if(!c)return;const r=strip.getBoundingClientRect(),t=TRACKS.find(x=>x.id===c.track);if(t){showTrackCtxMenu(r.left+8,r.top,t);translateCtx();}}
++function toolMode(name){setEditTool(name);advanced=true;app.dataset.suesTimelineTools="1";render(true);}
++
+ function backHome(){category="";savedScroll=0;selectClip(null);close();}
+ function edit(){const c=visibleClipsAt(state.time).filter(c=>c.track==="V1"&&isVisualClip(c)).pop();if(c){selectClip(c.id);return;}group("edit");}
+ function visualAdjust(){section('[data-k="brightness"],[data-k="contrast"],[data-k="saturation"],[data-k="temperature"],[data-k="tint"],[data-k="grayscale"],[data-k="vignette"]',"Ajustar");}
+@@ -87,7 +115,7 @@
+ function render(force=false){
+  if(!mobile())return;
+  const c=getClip(state.selId),kind=c?.kind||"",panel=app.dataset.mobilePanel||"";
+- const sig=[state.selId,kind,panel,caption,advanced,category].join("|");
++ const sig=[state.selId,kind,panel,caption,advanced,category,state.tool].join("|");
+  if(!force&&sig===lastMode)return;lastMode=sig;
+  app.dataset.suesAdvanced=panel==="tools"&&!scopeSpec&&caption==="Ajustes avanzados"?"1":"";
+  const a=[];
+@@ -95,6 +123,29 @@
+   a.push(quick("back","Volver","back",close));
+   const h=document.createElement("strong");h.className="sues-panel-label";h.textContent=caption||({media:"Medios",tools:"Ajustes"}[panel]);a.push(h);
+   a.push(quick("done","Listo","check",close));
++ }else if(category==="advanced"||category==="trimtools"||category==="tracktools"){
++  const add=(id,lab,ico,fn)=>a.push(quick(id,lab,ico,fn));
++  add("back","Volver","back",category==="advanced"?leaveAdvanced:()=>group("advanced"));
++  if(category==="trimtools"){
++   for(const [id,label] of [["select","Selección"],["ripple","Recorte con arrastre"],["roll","Recorte de unión"],["slip","Deslizar contenido"],["slide","Desplazar entre vecinos"]]){
++    const b=quick("mode-"+id,label,"split",()=>toolMode(id));b.setAttribute("aria-pressed",String(state.tool===id));a.push(b);
++   }
++   add("rippleDelete","Eliminar y cerrar hueco","trash",()=>native("btnRippleDelete"));
++   add("closeGap","Cerrar hueco","split",()=>native("btnCloseGap"));add("nextGap","Buscar hueco","search",()=>native("btnNextGap"));
++   add("lift","Levantar rango","split",()=>native("btnLift"));add("extract","Extraer rango","split",()=>native("btnExtract"));
++  }else if(category==="tracktools"&&c){
++   add("trackToggle","Activar/desactivar capa","layers",()=>toggleTrackEnabled(c.track));
++   add("trackLock","Bloquear capa","layers",()=>toggleTrackLocked(c.track));
++   add("trackSolo","Solo capa","audio",()=>toggleTrackSolo(c.track));add("trackTarget","Destino de edición","layers",()=>toggleTrackTargeted(c.track));
++   add("trackOptions","Opciones de capa","more",()=>trackMenu(c));
++  }else{
++   if(c){add("inspector","Inspector completo","style",full);add("clipOptions","Opciones del clip","more",()=>clipMenu(c));add("tracktools","Gestionar capa","layers",()=>group("tracktools"));}
++   add("trimtools","Herramientas de corte","split",()=>group("trimtools"));add("mixer","Mezclador","audio",()=>sidePage("mixer","Mezclador"));add("grade","Color avanzado","style",()=>sidePage("color","Color avanzado"));add("transcript","Transcripción","text",()=>sidePage("transcript","Transcripción"));
++   add("sequences","Secuencias","layers",()=>{advanced=true;app.dataset.suesTimelineTools="1";native("btnSequences");});
++   add("markers","Marcadores","edit",()=>{advanced=true;app.dataset.suesTimelineTools="1";native("btnMarkers");});
++   add("fitTimeline","Ajustar timeline","media",()=>native("btnZoomFit"));add("proxy","Previsualización ligera","speed",()=>{const v=project.media.filter(m=>m.kind==="video");if(v.some(m=>!proxyOf(m)))createProxies(v,540);else native("btnProxy");});
++   add("settings","Configuración","more",()=>native("btnSettings"));
++  }
+  }else if(!c){
+   const add=(id,lab,ico,fn)=>a.push(quick(id,lab,ico,fn));
+   if(category)add("back","Volver","back",backHome);
+@@ -117,7 +168,7 @@
+   }else if(category==="edit"){
+    add("media","Medios","media",()=>chooseMedia("project","Medios"));add("snap","Imán","layers",()=>native("btnSnap"));add("timeline","Línea de tiempo","edit",()=>{advanced=true;app.dataset.suesTimelineTools="1";render(true);});
+   }else{
+-   add("edit","Ediciones","split",edit);add("audio","Audio","audio",()=>group("audio"));add("title","Texto","text",()=>group("text"));add("effects","Efectos","fx",()=>group("effects"));add("overlay","Superposición","layers",()=>group("overlay"));add("captions","Subtítulos","text",()=>{caption="Subtítulos automáticos";openPanel("transcript");render(true);});add("format","Formato","media",()=>group("format"));add("media","Multimedia","media",()=>chooseMedia("project","Multimedia"));
++   add("edit","Ediciones","split",edit);add("audio","Audio","audio",()=>group("audio"));add("title","Texto","text",()=>group("text"));add("effects","Efectos","fx",()=>group("effects"));add("overlay","Superposición","layers",()=>group("overlay"));add("captions","Subtítulos","text",()=>{caption="Subtítulos automáticos";openPanel("transcript");render(true);});add("format","Formato","media",()=>group("format"));add("media","Multimedia","media",()=>chooseMedia("project","Multimedia"));add("advanced","Herramientas","more",()=>openAdvanced());
+   }
+  }else{
+   const add=(id,lab,ico,fn)=>a.push(quick(id,lab,ico,fn));
+@@ -161,16 +212,30 @@
+    if(root.querySelector("[data-norm-run]"))add("normalize","Normalizar intensidad","audio",()=>tool("normalize"));
+    if(nativeField("transIn"))add("transition","Transiciones","fade",()=>tool("transition"));
+   }
+-  add("more","Más","more",full);
++  add("more","Más","more",()=>openAdvanced());
+  }
+  strip.replaceChildren(...a);if(!panel)strip.scrollLeft=savedScroll;
+ }
+ shell.open=function(id){if(id==="close"){close();return;}resetScope();caption=({media:"Medios",tools:"Ajustes",mixer:"Mezcla",transcript:"Subtítulos"})[id]||"";openPanel(id);render(true);};
+-new MutationObserver(()=>{if(state.selId!==lastSel){if(app.dataset.suesGallery)close();lastSel=state.selId;savedScroll=0;render();}paintScope();}).observe(root,{childList:true,subtree:false});
++new MutationObserver(()=>{if(state.selId!==lastSel){if(app.dataset.suesGallery)close();if(category==="tracktools"&&!state.selId)category="advanced";lastSel=state.selId;savedScroll=0;render();}paintScope();}).observe(root,{childList:true,subtree:false});
+ const mq=matchMedia("(max-width:980px)");mq.addEventListener("change",()=>{applyTrackHeights();buildTrackDOM();state.dirtyTimeline=true;rebuildClips();});
+ window.addEventListener("resize",()=>{paintScope();render(true);});
+ const bar=document.querySelector(".timeline-toolbar"),tc=document.createElement("span");tc.className="sues-timeline-time";tc.hidden=true;bar?.appendChild(tc);
+  const updateTime=()=>{tc.textContent=(find("tcCurrent")?.textContent||"")+" / "+(find("tcTotal")?.textContent||"");};
+  new MutationObserver(updateTime).observe(find("tcCurrent"),{childList:true,characterData:true,subtree:true});updateTime();
+- window.SuesMobileContext={scope,resetScope,render,close,nativeGallery,hideGallery,revealTimeline(){advanced=true;app.dataset.suesTimelineTools="1";render(true);}};render(true);
++ function navigateAdvanced(id){
++ if(!mobile())return false;
++ close();const c=getClip(state.selId);
++ const routes={advanced:"advanced",trimtools:"trimtools",tracktools:"tracktools",inspector:"advanced",clipOptions:"advanced",fitTimeline:"advanced",proxy:"advanced",sequences:"advanced",markers:"advanced",settings:"advanced",grade:"advanced"};
++ if(!routes[id]||(["tracktools","inspector","clipOptions"].includes(id)&&!c))return false;
++ openAdvanced(routes[id]);
++ if(id!=="advanced"&&id!=="trimtools"&&id!=="tracktools"){
++  const b=strip.querySelector('[data-context-action="'+id+'"]');
++  if(!b)return false;
++  if(id==="grade"||id==="inspector")b.click();
++  else{b.scrollIntoView({block:"nearest",inline:"center"});b.classList.add("sues-focused-control");}
++ }
++ return true;
++}
++ window.SuesMobileContext={scope,resetScope,render,close,nativeGallery,hideGallery,navigateAdvanced,mediaTarget,revealTimeline(){advanced=true;app.dataset.suesTimelineTools="1";render(true);}};render(true);
+ })();
+--- a/sues-mobile-gestures.js
++++ b/sues-mobile-gestures.js
+@@ -200,7 +200,10 @@
+    if(state.playing)pause();
+    selectClip(g.clip.id);
+    g.mode=horizontal||g.edge?"clip-x":"clip-y";
+-   g.drag=startClipGesture(g.original,g.clip,g.edge||"move",false,g.mode==="clip-x"?"x":"y");
++   const edit=state.tool||"select";
++   if(g.edge&&(edit==="ripple"||edit==="roll"))g.drag=startTrimToolGesture(g.original,g.clip,edit+"-"+g.edge.slice(-1));
++   else if(horizontal&&g.long&&(edit==="slip"||edit==="slide"))g.drag=startTrimToolGesture(g.original,g.clip,edit);
++   else g.drag=startClipGesture(g.original,g.clip,g.edge||"move",false,g.mode==="clip-x"?"x":"y");
+   }else if(horizontal){
+    if(state.playing){pause();g.t=state.time;}
+    g.mode="scrub";
+--- a/sues-mobile.css
++++ b/sues-mobile.css
+@@ -231,3 +231,16 @@
+  .clip.sues-move-ready{z-index:12;outline:2px solid #53e6ed;outline-offset:-1px;box-shadow:0 0 0 2px #53e6ed88,0 5px 12px #000b;filter:brightness(1.32);transform:translateY(-2px);cursor:grabbing}
+  .clip.sues-move-ready::after{content:"✥";position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:17px;line-height:1;color:#fff;text-shadow:0 1px 3px #000;pointer-events:none;z-index:8}
+ }
++@media(max-width:980px){
++ #suesContextStrip button[aria-pressed=true]{color:#53e6ed;background:#354b51}
++ #trackCtxMenu{max-height:60dvh;overflow:auto;min-width:220px}
++ #trackCtxMenu .ctx-item{min-height:42px;white-space:normal;text-align:left}
++}
++#suesLibraryQuery,.sues-bin-add,.sues-bin-options{display:none}
++@media(max-width:980px){
++ #suesLibraryQuery:not([hidden]){display:block;flex:none;margin:4px 7px;padding:7px 10px;min-height:36px;color:var(--text);background:#19191f;border:1px solid #55535d;border-radius:6px;font:14px system-ui}
++ .app[data-mobile-panel=media] .sues-bin-add,.app[data-mobile-panel=media] .sues-bin-options{display:flex;align-items:center;justify-content:center;min-width:33px;min-height:36px}
++ .app[data-mobile-panel=media] .bin .lib-add,.app[data-mobile-panel=media] .bin .lib-play{min-height:36px;min-width:34px;flex:none}
++ .app[data-mobile-panel=media] .bin-item .bin-del{display:none}
++ .app[data-mobile-panel=media] .bin .bin-tabs{overflow-x:auto;white-space:nowrap}
++}
+--- a/sues-mobile-catalog.js
++++ b/sues-mobile-catalog.js
+@@ -47,6 +47,17 @@
+  {"id": "normalize", "name": "Normalizar intensidad", "aliases": "nivelar volumen audio", "kind": "selector", "selector": "[data-norm-target],[data-norm-run]"},
+  {"id": "replace", "name": "Sustituir", "aliases": "reemplazar clip archivo", "kind": "selector", "selector": "[data-media-open]"},
+  {"id": "reframe", "name": "Reencuadre automático", "aliases": "seguir sujeto encuadre automatico", "kind": "selector", "selector": "[data-rf-follow],[data-rf-centre],[data-rf-smooth]"},
++ {"id": "advanced", "name": "Herramientas avanzadas", "aliases": "mas menu controles", "kind": "route"},
++ {"id": "trimtools", "name": "Herramientas de corte", "aliases": "ripple roll slip slide recorte union contenido desplazar", "kind": "route"},
++ {"id": "tracktools", "name": "Gestionar capa", "aliases": "pista bloquear solo destino activar desactivar", "kind": "route"},
++ {"id": "inspector", "name": "Inspector completo", "aliases": "todos ajustes propiedades", "kind": "route"},
++ {"id": "clipOptions", "name": "Opciones del clip", "aliases": "desvincular vincular precomponer bloquear", "kind": "route"},
++ {"id": "fitTimeline", "name": "Ajustar línea temporal", "aliases": "encajar fit timeline", "kind": "route"},
++ {"id": "proxy", "name": "Previsualización ligera", "aliases": "proxy rendimiento 540p", "kind": "route"},
++ {"id": "sequences", "name": "Secuencias", "aliases": "timeline composiciones", "kind": "route"},
++ {"id": "markers", "name": "Marcadores", "aliases": "marcas tiempo", "kind": "route"},
++ {"id": "settings", "name": "Configuración", "aliases": "preferencias ajustes", "kind": "route"},
++ {"id": "grade", "name": "Color avanzado", "aliases": "ruedas curvas correccion color", "kind": "route"},
+  {id:"transcript",name:"Transcripción",aliases:"voz palabras subtitulos",kind:"tab",tab:"transcript"},
+ ]);
+ function norm(x){return String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();}
+--- a/sues-mobile-search.js
++++ b/sues-mobile-search.js
+@@ -67,6 +67,11 @@
+ }
+ function navigate(id){
+  const t=dir.get(id);if(!t)return false;
++ if(t.kind==="route"){
++  active=null;const ok=!!window.SuesMobileContext?.navigateAdvanced(id);
++  status.textContent=ok?"":"Selecciona una capa compatible para utilizar "+t.name;
++  return ok;
++ }
+  window.SuesMobileContext?.hideGallery?.();active=id;
+  if(t.kind==="button"){
+    if(app.dataset.mobilePanel){shell.open("close");active=id;}

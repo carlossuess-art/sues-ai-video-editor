@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {assessNativeRangeParity} from '../../src/engine-next/native-range-parity.js';
+const h='a'.repeat(64);
+const ok={fps:30,frames:120,start:9.5,ssimSamples:[10,11.5,13].map(time=>({time,all:.976,nativeFrameSha256:h})),decodedFrameEvidence:{decodedFrames:120,distinctFrames:118,adjacentDuplicateFrames:2},exportAudioReport:{ok:true,checks:[{ok:true,text:'1080x1920'}]}};
+test('reports complete range evidence but never cinematic approval',()=>{const r=assessNativeRangeParity(ok);assert.equal(r.windowEnd,13.5);assert.equal(r.technicalChecksPassed,true);assert.equal(r.cinematicQA,false);});
+test('rejects missing frame evidence, misaligned timestamps and invented hashes',()=>{assert.throws(()=>assessNativeRangeParity({...ok,frames:15}));assert.throws(()=>assessNativeRangeParity({...ok,ssimSamples:ok.ssimSamples.slice(0,2)}));assert.throws(()=>assessNativeRangeParity({...ok,ssimSamples:ok.ssimSamples.map((x,i)=>i?x:{...x,time:11})}));assert.throws(()=>assessNativeRangeParity({...ok,decodedFrameEvidence:{decodedFrames:15}}));});
+test('audio fail or poor image similarity cannot pass technical gate',()=>{assert.equal(assessNativeRangeParity({...ok,exportAudioReport:{ok:false,checks:[{ok:false,text:'peak'}]}}).technicalChecksPassed,false);assert.equal(assessNativeRangeParity({...ok,ssimSamples:ok.ssimSamples.map(x=>({...x,all:.4}))}).technicalChecksPassed,false);});

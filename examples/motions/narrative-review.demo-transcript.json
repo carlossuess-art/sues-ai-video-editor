@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "language": "es",
+  "sourceDuration": 5.5,
+  "text": "¿Y si te escucharas? Haz espacio para escucharte.",
+  "_note": "PRUEBA SINTÉTICA: NO ES TRANSCRIPCIÓN DE UN REEL NI AUDIO INSPECCIONADO. Los IDs y tiempos son ficticios y solo sirven para probar el selector.",
+  "words": [
+    {
+      "id": "demo-0001",
+      "text": "¿Y",
+      "start": 0.267,
+      "end": 0.41
+    },
+    {
+      "id": "demo-0002",
+      "text": "si",
+      "start": 0.467,
+      "end": 0.59
+    },
+    {
+      "id": "demo-0003",
+      "text": "te",
+      "start": 0.667,
+      "end": 0.778
+    },
+    {
+      "id": "demo-0004",
+      "text": "escucharas?",
+      "start": 0.867,
+      "end": 1.1
+    },
+    {
+      "id": "demo-0005",
+      "text": "Haz",
+      "start": 3.1,
+      "end": 3.25
+    },
+    {
+      "id": "demo-0006",
+      "text": "espacio",
+      "start": 3.4,
+      "end": 3.62
+    },
+    {
+      "id": "demo-0007",
+      "text": "para",
+      "start": 3.7,
+      "end": 3.83
+    },
+    {
+      "id": "demo-0008",
+      "text": "escucharte.",
+      "start": 4.1,
+      "end": 4.3
+    }
+  ]
+}

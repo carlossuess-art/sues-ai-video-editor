@@ -23,7 +23,7 @@ test('external plan binds source; precise flash, missing resources and unsupport
  }finally{rmSync(f.dir,{recursive:true,force:true});}
 });
 
-test('HTTP review is private and read-only; stale/partial plans rejected; execute creates one reversible persistent version',async()=>{
+test('HTTP review is private and read-only; stale/partial plans rejected; execute changes the existing persistent project',async()=>{
  const f=fixture(),options={directory:join(f.dir,'jobs'),profiles:f.profiles},app=createEditorServer(options);app.jobs.autoStart=false;
  try{
  const url=(await app.listen()).split('/#')[0],session=await fetch(url+'/api/session',{method:'POST',headers:{Authorization:'Bearer '+app.token}}),headers={Cookie:session.headers.get('set-cookie').split(';')[0],'Content-Type':'application/json','X-Sues-Request':'editor'};
@@ -33,7 +33,7 @@ test('HTTP review is private and read-only; stale/partial plans rejected; execut
  const proposal=await (await call('external-review',{text})).json();assert.equal(proposal.canApply,true,JSON.stringify(proposal));assert.equal(app.jobs.list().length,1);
  assert.equal((await call('external-execute',{text,reviewId:'old',requestId:randomUUID()})).status,409);
  const missing=JSON.stringify({...catalog.example,operations:[{type:'image',resourceId:'missing',start:3,end:4}]});assert.equal((await call('external-execute',{text:missing,requestId:randomUUID()})).status,422);assert.equal(app.jobs.list().length,1);
- const body={text,reviewId:proposal.reviewId,requestId:randomUUID()},res=await call('external-execute',body);assert.equal(res.status,202);const child=await res.json();assert.equal(child.parentId,parent.id);assert.equal(child.projectId,parent.projectId);assert.equal(child.settings.transitions[0].start,3.1);assert.equal(child.settings.motionChoices[0].number,2);assert.equal(app.jobs.plan(child.id).manifest.semantic.motions[0].params.motionId,'NUMBER_BADGE_GOLD_01');assert.equal(child.instructions.at(-1).kind,'external-plan');assert.equal((await (await call('external-execute',body)).json()).id,child.id);assert.equal(app.jobs.list().length,2);assert.equal(JSON.stringify(app.jobs.get(parent.id)),snapshot);
+ const body={text,reviewId:proposal.reviewId,requestId:randomUUID()},res=await call('external-execute',body);assert.equal(res.status,202);const child=await res.json();assert.equal(child.id,parent.id);assert.equal(child.parentId,null);assert.equal(child.projectId,parent.projectId);assert.equal(child.settings.transitions[0].start,3.1);assert.equal(child.settings.motionChoices[0].number,2);assert.equal(app.jobs.plan(child.id).manifest.semantic.motions[0].params.motionId,'NUMBER_BADGE_GOLD_01');assert.equal(child.instructions.at(-1).kind,'external-plan');assert.equal((await (await call('external-execute',body)).json()).id,child.id);assert.equal(app.jobs.list().length,1);assert.notEqual(JSON.stringify(app.jobs.get(parent.id)),snapshot);
  await app.close();const restarted=createEditorServer(options);try{assert.equal(restarted.jobs.get(child.id).instructions.at(-1).text,text);}finally{await restarted.close();}
  }finally{if(app.server.listening)await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });

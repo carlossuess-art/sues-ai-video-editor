@@ -1,0 +1,154 @@
+--- a/app.js
++++ b/app.js
+@@ -1680,6 +1680,23 @@
+ }
+ function listenSSE() {
+   const es = new EventSource("/api/events");
++  // MCP controls the SAME on-screen tools; this acknowledgement is not a render QA.
++  es.addEventListener("mobile-ui", async (event) => {
++    let id, ok = false, error = "";
++    try {
++      const cmd = JSON.parse(event.data);
++      id = cmd.id;
++      if (typeof id !== "string") throw Error("Missing UI command ID");
++      ok = window.SuesMobileRemote?.execute(cmd) === true;
++      if (!ok) error = "UI action not applied";
++    } catch (e) { error = String(e?.message || e); }
++    if (!id) return;
++    try {
++      await fetch("/api/mobile-ui/ack", { method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ id, ok, error }) });
++    } catch { /* MCP call times out and reports failure */ }
++  });
+   // Named events: "change" = project/media/library; "profiles" = encoding-profiles.json only
+   es.addEventListener("change", () => { noteActivity(); syncFromServer(); scheduleOfflineCheck(); });
+   es.addEventListener("proxy", (e) => onProxyEvent(e.data));
+--- a/server.js
++++ b/server.js
+@@ -586,6 +586,7 @@
+   });
+ }
+ 
++const mobileUiApi = require("./sues-mobile-ui-api").create({ broadcast, count: () => sseClients.size, readBody, sendJSON });
+ /* ── Server ── */
+ const server = http.createServer(async (req, res) => {
+   if (!requestAllowed(req)) {
+@@ -596,6 +597,9 @@
+   const p = decodeURIComponent(url.pathname);
+   // never serve dotfiles/dot-directories (.git, .gitignore, …)
+   if (p.split(/[\\/]/).some((seg) => seg.startsWith("."))) { res.writeHead(403); res.end(); return; }
++
++  /* SUES authenticated MCP UI-only control; no timeline writes here. */
++  if (await mobileUiApi.handle(req, res, p)) return;
+ 
+   /* API: project */
+   if (p === "/api/project" && req.method === "GET") {
+--- a/mcp-server.js
++++ b/mcp-server.js
+@@ -15,6 +15,8 @@
+    ═══════════════════════════════════════════════════════════════════════════ */
+ "use strict";
+ const fs = require("fs");
++const MobileUiCommand = require("./sues-mobile-ui-command");
++const { getToken: suesMobileUiToken } = require("./sues-mobile-token");
+ const path = require("path");
+ const http = require("http");
+ const { spawn, spawnSync } = require("child_process");
+@@ -137,6 +139,16 @@
+ 
+ /* ── Tool definitions ── */
+ const TOOLS = [
++  {
++    name: "fablecut_mobile_ui",
++    description: "Control the visible mobile editor UI in exactly one active browser tab: open a real tool/menu, select a clip, seek or zoom the timeline, open/close an original panel. UI commands require a browser ACK; they never modify project.json. For actual clip, mask, animation and audio edits use fablecut_patch_project with baseRevision.",
++    inputSchema: {type:"object",properties:{
++      action:{type:"string",enum:["open_tool","select_clip","seek","zoom_timeline","open_panel","close_panel","undo","redo","play_pause","toggle_keyframe","expand_view","open_text_tab"]},
++      tool:{type:"string"},clip:{type:"string"},time:{type:"number"},zoom:{type:"number"},
++      tab:{type:"string"},
++      panel:{type:"string",enum:["media","tools","mixer","transcript"]}
++    },required:["action"]},
++  },
+   {
+     name: "fablecut_status",
+     description: "FableCut video editor: ensure the editor web server is running (auto-starts it), and get the editor URL, project summary and media library. Call this first in a session.",
+@@ -1572,6 +1584,13 @@
+ /* ── Tool implementations ── */
+ async function callTool(name, args, attempt = 0) {
+   switch (name) {
++    case "fablecut_mobile_ui": {
++      const command = MobileUiCommand.normalize(args);
++      if (!(await httpOk(API + "/api/project"))) throw Error("FableCut editor server is not running");
++      const r = await apiJSON("POST", "/api/mobile-ui", command, { "X-Sues-Mcp-Ui": suesMobileUiToken() });
++      if (r.status !== 200) throw Error(r.body?.error || ("UI control failed HTTP " + r.status));
++      return "Browser confirmed: " + JSON.stringify(command);
++    }
+     case "fablecut_track":
+       return trackTool(args);
+     case "fablecut_export":
+--- a/index.html
++++ b/index.html
+@@ -8,6 +8,7 @@
+ <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png">
+ <meta name="theme-color" content="#0e0e10">
+ <link rel="stylesheet" href="style.css">
++<link rel="stylesheet" href="sues-mobile.css">
+ <link rel="manifest" href="/pwa-manifest.json" crossorigin="use-credentials">
+ <link rel="apple-touch-icon" href="/icons/pwa-192.png">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+@@ -700,5 +701,14 @@
+ <script src="mp4-demux.js"></script>
+ <script src="app.js"></script>
+ <script src="/pwa-install.js"></script>
++<script src="sues-mobile-mcp.js"></script>
++<script src="sues-mobile-catalog.js"></script>
++<script src="sues-mobile.js"></script>
++<script src="sues-mobile-search.js"></script>
++<script src="sues-mobile-ui-command.js"></script>
++<script src="sues-mobile-gestures.js"></script>
++<script src="sues-mobile-controls.js"></script>
++<script src="sues-mobile-text.js"></script>
++<script src="sues-mobile-remote.js"></script>
+ </body>
+ </html>
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,3 +1,13 @@
++## SUES Mobile V1.1 · MCP para interfaz y edición (prototipo aislado, 21/11/2026)
++
++Mismo FableCut, mismo project.json, mismas operaciones: todos los cambios persistentes de clips se ejecutan también con `fablecut_patch_project`, con `baseRevision` para evitar sobrescribir cambios de otro usuario. Los controles táctiles reutilizan selección, inspector, división y keyframes del editor existente.
++
++Equivalencias MCP: mover/reordenar → updateClip {start,track}; pellizcar vídeo → updateClip {props:{scale}}; volumen → updateClip {props:{volume}}; dividir → split {at,ids}; texto → updateClip {props:{text}}; keyframes → updateClip {keyframes}; máscaras → setMask; animaciones → applyPreset; borrar → removeClip. Los datos se guardan en el modelo normal de FableCut.
++
++Herramienta adicional `fablecut_mobile_ui` para navegación no persistente: `{action:"open_tool",tool:"volume"}`, `{action:"select_clip",clip:"c_id"}`, `{action:"seek",time:2.5}`, `{action:"zoom_timeline",zoom:100}`, `{action:"open_panel",panel:"tools"}`, `{action:"close_panel"}`. Las acciones de menú no son ediciones; NO las use para sustituir fablecut_patch_project. Este canal exige exactamente una pestaña activa, token secreto aleatorio de 0600 en DATA_DIR/.sues-mobile-mcp-ui-token, solicitud HTTP desde loopback y confirmación de la pestaña vía SSE + ACK. Nunca se envía el token al navegador. Si falta la pestaña o el ACK, MCP falla en vez de afirmar éxito.
++
++Implementación aún en stage del VPS. Pruebas de operaciones con MCP real y del protocolo UI con navegador simulado PASS. NO acredita QA visual ni táctil. No desplegar producción hasta validaciones reales de Android, máscara, subtítulos y render.
++
+ # FableCut — browser video editor, drivable by Claude Code
+ 
+ A production-style non-linear video editor (Premiere-style) that runs in the
+--- a/README.md
++++ b/README.md
+@@ -1,3 +1,13 @@
++## SUES Mobile V1.1 · MCP para interfaz y edición (prototipo aislado, 21/11/2026)
++
++Mismo FableCut, mismo project.json, mismas operaciones: todos los cambios persistentes de clips se ejecutan también con `fablecut_patch_project`, con `baseRevision` para evitar sobrescribir cambios de otro usuario. Los controles táctiles reutilizan selección, inspector, división y keyframes del editor existente.
++
++Equivalencias MCP: mover/reordenar → updateClip {start,track}; pellizcar vídeo → updateClip {props:{scale}}; volumen → updateClip {props:{volume}}; dividir → split {at,ids}; texto → updateClip {props:{text}}; keyframes → updateClip {keyframes}; máscaras → setMask; animaciones → applyPreset; borrar → removeClip. Los datos se guardan en el modelo normal de FableCut.
++
++Herramienta adicional `fablecut_mobile_ui` para navegación no persistente: `{action:"open_tool",tool:"volume"}`, `{action:"select_clip",clip:"c_id"}`, `{action:"seek",time:2.5}`, `{action:"zoom_timeline",zoom:100}`, `{action:"open_panel",panel:"tools"}`, `{action:"close_panel"}`. Las acciones de menú no son ediciones; NO las use para sustituir fablecut_patch_project. Este canal exige exactamente una pestaña activa, token secreto aleatorio de 0600 en DATA_DIR/.sues-mobile-mcp-ui-token, solicitud HTTP desde loopback y confirmación de la pestaña vía SSE + ACK. Nunca se envía el token al navegador. Si falta la pestaña o el ACK, MCP falla en vez de afirmar éxito.
++
++Implementación aún en stage del VPS. Pruebas de operaciones con MCP real y del protocolo UI con navegador simulado PASS. NO acredita QA visual ni táctil. No desplegar producción hasta validaciones reales de Android, máscara, subtítulos y render.
++
+ <div align="center">
+ 
+ <img src="docs/fablecut-banner.png" alt="FableCut" width="800">
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,3 +1,6 @@
++## Unreleased (private QA)
++- SUES mobile MCP parity prototype. Isolated; not deployed.
++
+ # Changelog
+ 
+ All notable changes to FableCut are documented here.

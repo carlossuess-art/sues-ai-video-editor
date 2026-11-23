@@ -98,7 +98,7 @@ test('portable project backup preserves selected B-roll bytes, rights and timing
  }finally{rmSync(backupRoot,{recursive:true,force:true});rmSync(f.dir,{recursive:true,force:true});}
 });
 
-test('authenticated Gemini HTTP review uses imported B-roll and creates a new version, leaving its parent unchanged',async()=>{
+test('authenticated Gemini HTTP review uses imported B-roll and updates the current project with B-roll',async()=>{
  const {createEditorServer}=await import('../src/editor-server.js');
  const {Readable}=await import('node:stream');
  const {randomUUID}=await import('node:crypto');
@@ -129,10 +129,10 @@ test('authenticated Gemini HTTP review uses imported B-roll and creates a new ve
    body:JSON.stringify({text,reviewId:proposal.reviewId,requestId:randomUUID()})});
   assert.equal(create.status,202,await create.clone().text());
   const child=await create.json();
-  assert.equal(child.parentId,parent.id);
+  assert.equal(child.id,parent.id);assert.equal(child.parentId,null);
   assert.equal(child.settings.videoEvents.length,1);
   assert.equal(app.jobs.plan(child.id).manifest.selectedMedia[0].assetId,resource.id);
   assert.equal(app.jobs.plan(child.id).manifest.originalVoice,true);
-  assert.equal(JSON.stringify(app.jobs.get(parent.id)),before);
+  assert.notEqual(JSON.stringify(app.jobs.get(parent.id)),before);assert.equal(app.jobs.list().length,1);
  }finally{await app.close();rmSync(f.dir,{recursive:true,force:true});}
 });

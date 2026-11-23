@@ -1,0 +1,25 @@
+# Fase 5 · Q01 · Comprobación previa del Reel 158404 · 19/11/2026
+
+Estado: Q01 en curso. Carlos aceptó en conversación el plan creativo del 18/11. La validación de transcripción y la preparación técnica siguen abiertas. Q02 no ha ejecutado ni exportado el nuevo montaje.
+
+Plan de revisión: archivo Library libfile_c8217cf464088191b31c015fdab6be9d. Anexo libfile_1c4ddd0ebd5881918917d8ab32cb88a9, 87 operaciones, siete escenas y 63 bloques para 168 palabras. Fuente SHA 9e06f49c30731d8a57aed312cfb46281bcffb7b3d5d62bf5a2164333944ccaad. Se verificaron 2212 fotogramas previstos, continuidad de escenas, IDs, dependencias, texto y anclas de los subtítulos. Los 14 archivos del anexo se localizaron y coinciden por SHA. La auditoría V24 identifica Pexels para B01. Las condiciones y escucha de otros recursos siguen pendientes.
+
+El anexo original es un formato de revisión y el inspector de PR27 lo rechaza con INVALID_STORY_SCHEMA. Debe traducirse sin pérdida a su contrato real, conservar las 87 IDs y probar cobertura y fidelidad antes de ejecución. La implementación add_caption admite wordTimes, aunque el adaptador de alto nivel no expone todos los parámetros de caja y contorno del plan. Los comandos adicionales podrían superar el límite de 100, verificar y resolver sin trocear arbitrariamente ni perder cobertura. Las máscaras requieren pruebas de fuente, intervalo y composición, y la balanza editable tiene fuente HTML en /opt/sues-video-setup/hyperframes-engine-next/sues-balanza-decisiones-amor-miedo-v16.
+
+Voz: Whisper local se ejecutó sobre el original, con salida en /opt/sues-video-setup/q02-preflight-20261119.AAVCda, código 0. Persisten incertidumbres ASR alrededor de 8–9 s, 16–17 s y 28–32 s. La comparación entre reconocimientos automáticos NO es escucha humana. El entorno de esta sesión no pudo reproducir audio para el modelo. No marcar transcripción validada ni aplicar cambios no escuchados. El archivo de voz separada y el audio original tienen igual número de muestras, correlación 0,999856 y hashes PCM distintos, no afirmar identidad binaria.
+
+El proyecto 001 V26 tiene 170 clips y 76,477 s, y por tanto contiene cortes/capas ajenas al plan de A-roll continuo. El proyecto QA reel-158404-full-native-49ops-20261108 conserva A-roll continuo pero tiene capas B02 activas, voz a 0,8, seis pistas y 73,766667 s, requiere adaptación en copia y comprobación del final antes de vincular el plan. No se ha modificado ningún proyecto.
+
+PR27 d12d31d. Regresión dirigida con motor nativo real VPS: 40 PASS, 0 FAIL, 0 SKIP, hashes del adaptador y prueba iguales al HEAD. Las pruebas comprueban capacidades aisladas, no demuestran ejecución íntegra del plan. Continuar verificando transcripción y traducción completa, resolver geometría y dependencias de recursos, preparar clon, comprobar CAS/recibos y luego exportación y doble revisión. No desplegar ni publicar.
+
+## Correcciones posteriores del adaptador · 19/11/2026
+
+Se añadieron parámetros opcionales boxW/boxH, strokeWidth/strokeColor y weight a add_title/add_caption. Títulos con wordIds/wordTimes usan word-pop y se verifican contra el registro de anclas y la fuente con su peso exacto. Se permite mayúscula y puntuación diferente en el título conservando las letras y los acentos; los captions siguen exigiendo texto literal. Títulos históricos conservan su comportamiento. Datos incompletos, tiempos superpuestos, estilo inválido, fuente ausente o palabra distinta bloquean la operación.
+
+set_matte comparaba proof.assetId con binding.sha256, impidiendo validar un recurso con ID y SHA distintos. Ahora compara proof.assetId con binding.assetId y proof.sha256 con binding.sha256. Pruebas negativas de SHA, ID, fuente y timeline conservadas.
+
+VPS aislado /opt/sues-video-setup/q01-adapter-20261119.pilaPB. Tres suites con motor /srv/sues-fablecut-next/app/project-ops.js, 43 PASS, 0 FAIL, 0 SKIP. El primer intento de la suite no cargó por falta del directorio config en el nuevo entorno privado. Se incorporó config y se repitió con éxito. Prueba adicional verify-67.mjs sobre datos del anexo: 67/67 textos aplicados en memoria, igualdad de reloj, posición, caja, contorno, peso y texto. El primer fixture de base shape fue normalizado por FableCut y rechazado por el auditor de cambios ajenos. Se corrigió el fixture a base video, sin relajar el auditor. No modifica proyecto persistente ni valida render, escucha, tipografía pintada o las 20 operaciones no textuales.
+
+El cálculo de posición usa el centro de cada rectángulo del anexo relativo al centro 540,960 del lienzo FableCut. Para contornos de captions, el anexo da 4 px sin color expreso, y la prueba utiliza el contorno antracita #171717 ya descrito para los títulos. Esa elección requiere revisión visual en el montaje.
+
+Continúan pendientes escucha de 8–9, 16–17 y 28–32 s, traducción íntegra de operaciones no textuales, CAS del clon, exportación y dos revisiones reales. La sesión no dispone de entrada de audio reproducible para el modelo. No atribuir a Whisper una revisión auditiva. El estado Q01 y Q02 conserva su alcance anterior.
