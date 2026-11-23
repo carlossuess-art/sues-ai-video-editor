@@ -1,6 +1,12 @@
 # SUES · Identidad musical emocional y firma sonora · Decisión 23/11/2026
 
-Estado: DIRECCIÓN CREATIVA APROBADA POR CARLOS; INGESTA EN FABLECUT/PUBLICACIÓN NO VERIFICADAS. Aplica a SUES AI Film Director 1.7.1+, SUES MASTER DIRECTOR, FableCut nativo y biblioteca única SUES. Esta nota complementa las políticas previas; no autoriza un montaje concreto, edición de proyectos existentes, publicación ni despliegue.
+Estado: DIRECCIÓN CREATIVA APROBADA POR CARLOS; 9 AUDIOS IMPORTADOS AL ALMACÉN NATIVO DE MEDIOS FABLECUT, PERO SIN ALTA EN project.media NI QA DE MEZCLA/PUBLICACIÓN. Aplica a SUES AI Film Director 1.7.1+, SUES MASTER DIRECTOR, FableCut nativo y biblioteca única SUES. Esta nota complementa las políticas previas; no autoriza un montaje concreto, edición de proyectos existentes, publicación ni despliegue.
+
+## Actualización técnica comprobada tras la decisión · 23/11/2026
+
+**VPS INGESTA FÍSICA TERMINADA:** 9/9 audios en `/srv/sues-fablecut-next/data/media`, por la API NATIVA `POST /api/import-url` de FableCut. 21.356.382 bytes totales. Siete MP3 tienen SHA256 idéntico a sus fuentes. Meditative e Intriga son Opus en contenedor MP4; `faststart` modificó metadatos/tamaño del contenedor (3.399.882→3.385.898 y 2.786.744→2.772.760), pero el hash SHA256 del flujo de audio coincidente fue comprobado contra las fuentes. Archivos renombrados en media con extensión .m4a correcta. Respuesta HTTP Range 206 de firma Soul Brass y Reggae verificada. Checkpoint físico VPS: `/srv/sues-fablecut-next/data/qa/sues-audio-dna-20261123/manifest.json` (propietario suesnle, 0640). Registro JSON reproducible en [inventario FableCut](engine-next/SUES_AUDIO_DNA_INVENTARIO_IMPORTACION_20261123.json).
+
+**NO CONFUNDIR ESTADOS:** FableCut `/api/import-url` importa el archivo al almacén, pero su documentación exige un paso independiente de alta en `project.media`/MCP para que aparezca en la bandeja de un proyecto. Esta alta, asociación al catálogo compartido/Director, playback desde interfaz, fragmentos y mezcla continúan PENDIENTES. No se alteraron el proyecto 158404, Q03, V29 ni la producción para este trabajo. Originales Drive intactos.
 
 ## Decisión creativa
 
@@ -25,7 +31,7 @@ Mantener recurso original, no renombrar IDs ni duplicar por Reel. Registrar proc
 
 A. En Film Director, leer esta nota y la skill vigente; detectar primero audios prioritarios por ID y consultar biblioteca en vez de pedir regeneración. Crear guía de fragmentos solo tras escucha y selección en contexto, con puntos de entrada/salida, BPM/energía, picos, regiones con voces espurias, conflictos con voz, transiciones y ducking.
 B. Evaluar sistema existente de medios en FableCut único (sin duplicar NLE). En VPS srv1841004 existen `/srv/sues-fablecut-next/app` y `/srv/sues-fablecut-next/data/media` con acceso restringido al servicio `suesnle`. Diagnóstico VPS 23/11: 48GB totales, 46GB usados, ~1.8GB libres, 97% ocupado. `rclone` NO disponible. No escribir a data/media mediante una ruta improvisada; primero inspeccionar contrato real de importación/API, permisos, límite y espacio, elegir canal autenticado de transferencia privada. NO hacer públicos los Drive para copiarlos.
-C. Importar íntegros al almacenamiento de FableCut bajo identidad controlada; si FableCut usa un registro/catálogo, crear UN SOLO recurso por SHA256/origen, registrar ID propio, nombre de rol, estado creativePriority, ruta segura y timestamps. Verificar tamaño, SHA256 extremo a extremo, `ffprobe`, playback y existencia en UI/biblioteca del proyecto. Aún no hay prueba de subida ni registro nativo. Subida a VPS: **PENDIENTE**.
+C. **Transferencia física realizada 9/9** mediante import-url nativo de FableCut. Verificado tamaño y hashes en VPS; 2 contenedores M4A reordenados sin alterar audio. Registro en project.media/catálogo, identidad resourceId, playback UI y QA siguen **PENDIENTES**. No imponer que existan activos en un proyecto aún no registrado.
 D. Preparar derivados NO destructivos (posibles ~30s por segmento, no cuota fija), 2–3 scratches entre estados si aporta; guardar en carpeta 07 de Drive y en biblioteca FableCut como nuevas referencias derivadas con referencia al original. Auditar bucles, saltos, voz inteligible, silencios, corte a frame, ducking y loudness. Derivados: PENDIENTES.
 E. Asociar activos verificables al plan humano A/V y al JSON `sues-master-story/v1` solo con schema/HEAD real verificados, recurso IDs y SHA. Toda capacidad ausente permanece en anexo técnico NO IMPORTABLE; nunca enviar JSON simulado ni tocar Q03/V29 publicados/activos.
 F. QA musical y audiovisual sobre UN NUEVO Reel aprobado por Carlos; dos revisiones, comparación real de audio y vídeo, aprobación creativa separada de publicación.
@@ -38,7 +44,8 @@ F. QA musical y audiovisual sobre UN NUEVO Reel aprobado por Carlos; dos revisio
 - [ ] Elección final entre bases tensión/tristeza y control de vocales intrusas.
 - [ ] Auditoría derechos/licencias/pistas originales.
 - [ ] Ruta técnica autorizada y segura de importación FableCut; limpieza de disco segura SOLO con protocolo de backups.
-- [ ] Transferencia al VPS y SHA/FFprobe/readback en biblioteca FableCut.
+- [x] Transferencia privada al almacén de medios VPS; SHA y ffprobe verificados (9 pistas, sin inscripción en proyecto).
+- [ ] Alta nativa de las pistas en project.media / catálogo de recursos, reproducción UI y prueba en un proyecto QA aislado.
 - [ ] Selección de fragmentos y scratch/transiciones + normalización/ducking.
 - [ ] Integración de IDs de recursos en catálogo Master Director/FableCut.
 - [ ] Reel de prueba, dos pasadas QA, aprobación humana.
