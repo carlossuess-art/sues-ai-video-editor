@@ -1,3 +1,15 @@
+## Q03 r28 · Pixel: corregido HTTP403 «bad Host or Origin» · 23/11/2026
+
+Tras abrir la ruta QA https://studio.suesholistics.com:8443/q03-export-qa/qa.html desde el Pixel, el usuario aportó una captura del JSON «prohibido: la solicitud debe provenir de esta máquina (encabezado Host u Origin incorrecto)». El fallo fue reproducido con una petición local usando `Host: studio.suesholistics.com:8443`: **HTTP403** mientras `Host: 127.0.0.1:18156` daba **HTTP200**. Causa exacta: la función existente `requestAllowed` en la copia QA `server.js` restringe tanto `Host` como `Origin` a localhost salvo valores de `FABLECUT_ALLOWED_HOSTS`, y Caddy preserva el nombre del host HTTPS público. **No era un problema de credenciales ni de DNS**.
+
+Corrección de configuración reversible sin modificar código/productivo ni Caddy: drop-in **`/etc/systemd/system/sues-q03-pixel-qa.service.d/10-trusted-studio-origin.conf`** con `[Service]\nEnvironment=FABLECUT_ALLOWED_HOSTS=studio.suesholistics.com`; `systemctl daemon-reload && systemctl restart sues-q03-pixel-qa.service`. Se confía **solo en el host exacto del Studio existente**, se conserva comprobación de Origin (protección CSRF), la escucha QA sigue en 127.0.0.1 y la ruta Caddy en 8443 conserva `forward_auth` y lista cerrada de paths.
+
+**Pruebas después del cambio:** GET /qa.html con `Host: studio.suesholistics.com:8443` → **200**; con `Origin: https://studio.suesholistics.com:8443` → **200**; `Origin: https://example.invalid` → **403**; `Host: example.invalid` → **403**; GET /api/project con cabeceras Studio → **165 clips, HTTP200**; GET de MP4 con `Range: bytes=0-1023` y cabeceras Studio → **206/1024 bytes**. HTTPS público `https://studio.suesholistics.com:8443/q03-export-qa/qa.html` sin sesión → **302** al login, certificado `ssl_verify_result=0`, editor publicado `https://editor.suesholistics.com/` → **200**. QA servicio `active`, `NRestarts=0`; Caddy SHA256 **inalterado** `c0d866d653e699d29767643ea6ab68b1d0a7793935fb71ea8f06d56bdfdf22d6`.
+
+**Validación pendiente:** abrir panel de nuevo desde Pixel con sesión real, comprobar render/descarga desde el navegador. No afirmar que el Pixel ya ve el panel hasta ver la nueva captura. Render incremental QA131s y pixel-parity1487 frames sin cambios de la revisión anterior siguen verificados. Q03 en curso, Q04 pendiente; producción/V29/WAC/DNS intactos.
+
+---
+
 ## Q03 · r29 · Diagnóstico frío en dispositivo real preparado y probado en Chromium QA · 22/11/2026
 
 **Apéndice r29, validación final del acceso privado:** el proxy Caddy redirige la raíz `/q03-export-qa/` a `qa.html`; por ello se corrigió el iframe del diagnóstico a `./index.html?q03ColdProbe=1` (commit `386f0883c055cda2dd39b66c81d8a6faa31a9668`). Segundo test íntegro del botón sobre esa ruta explícita: **PASS 36/36 frames**, 17.073ms de sesión en Chromium headless VPS, inicio 3.322ms / máscara 7.377ms / motion 6.322ms, H264 `prefer-hardware=false`, `prefer-software=true` en VPS. Resultado `r29-browser-final.log`. Se cerró el Chrome/CDP temporal (18169) y se dejó activo únicamente el servicio privado Q03; URL anónima sigue HTTP302/login. Pixel físico **todavía sin medir**.
