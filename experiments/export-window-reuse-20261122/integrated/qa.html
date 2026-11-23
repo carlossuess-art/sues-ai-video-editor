@@ -30,37 +30,66 @@ a{color:#ebcf94}
 <p class="notice">Para medir una reexportación real, cambia primero este texto y después pulsa Exportar. Es una copia de ensayo, no el editor publicado.</p>
 </section>
 <section class="panel">
-<h2>2. Exportar</h2>
-<div class="row"><button id="export" disabled>Exportar vídeo</button><button id="cancel" class="secondary" disabled>Cancelar exportación</button></div>
-<progress id="progress" value="0" max="100"></progress>
-<div id="status" role="status" aria-live="polite">Esperando.</div>
-<small>Si aparece «caché», el vídeo se recuperó sin renderizar. Tras editar una escena se mide una exportación incremental auténtica.</small>
+<h2>2. Vista previa rápida · 540 × 960 / 15 fps</h2>
+<p>Revisa primero el vídeo ligero, sin descargar el máster de 103 MB.</p>
+<video id="preview" controls playsinline preload="metadata"></video>
+<div class="row"><button id="quick" disabled>Ver / crear vista rápida</button></div>
+<p id="quickInfo" class="notice" role="status" aria-live="polite">Comprobando vista previa…</p>
 </section>
 <section class="panel">
-<h2>3. Ver y descargar</h2>
-<video id="preview" controls playsinline preload="none"></video>
-<div class="row"><a id="download" class="btn" hidden>Descargar MP4</a><button id="range" class="secondary" disabled>Comprobar descarga parcial</button></div>
+<h2>3. Exportación final · 1080 × 1920 / 30 fps</h2>
+<p>Solo cuando estés satisfecho con la vista previa.</p>
+<div class="row"><button id="export" disabled>Exportar MP4 final HD</button><button id="cancel" class="secondary" disabled>Cancelar proceso</button></div>
+<progress id="progress" value="0" max="100"></progress>
+<div id="status" role="status" aria-live="polite">Esperando.</div>
+<small>La vista rápida usa un archivo independiente. El máster conserva calidad y audio.</small>
+</section>
+<section class="panel">
+<h2>4. Descargar máster final</h2>
+<div class="row"><a id="download" class="btn" hidden>Descargar MP4 HD</a><button id="range" class="secondary" disabled>Comprobar descarga parcial</button></div>
 <p id="rangeResult"></p>
 <div class="row"><button id="speedTest" class="secondary">Medir velocidad de descarga (4 MB)</button></div>
 <p id="speedResult" role="status" aria-live="polite">Esta prueba no modifica ni exporta el vídeo.</p>
 </section>
-<section class="panel"><h2>4. Medir velocidad de este dispositivo</h2><p>Compara el compositor real de R14 y la compatibilidad de H.264 WebCodecs. No cambia la edición ni exporta un MP4.</p><a class="btn" href="./qa-cold-benchmark.html">Medir velocidad del Pixel o navegador</a></section>
+<section class="panel"><h2>5. Medir velocidad de este dispositivo</h2><p>Compara el compositor real de R14 y la compatibilidad de H.264 WebCodecs. No cambia la edición ni exporta un MP4.</p><a class="btn" href="./qa-cold-benchmark.html">Medir velocidad del Pixel o navegador</a></section>
 <p class="notice">Acceso protegido por la sesión del estudio SUES. La primera exportación completa de un proyecto nuevo todavía no está optimizada al objetivo de 1–3 minutos.</p>
 </main>
 <script>
 "use strict";
 const prefix="/q03-export-qa",el=id=>document.getElementById(id);
-let revision=null,jobId=null,output=null,timer=null,started=0;
+let revision=null,jobId=null,jobMode="full",output=null,previewSrc=null,previewFingerprint=null,downloadFingerprint=null,projectFingerprint=null,timer=null,started=0;
+const KNOWN_LIGHT={
+ fingerprint:"6c99fe36f1dde82615c79c7b0b54ec412950d114c7e892f259fa0730a4800b5c",
+ preview:"/exports/SUES_Q03_preview_rev30_540x960_15fps.mp4",
+ master:"/exports/SUES_export_xs_3fb17db578c8.mp4"
+};
+async function docFingerprint(p){
+ const q={...p};delete q.revision;
+ const bytes=new TextEncoder().encode(JSON.stringify(q));
+ const digest=await crypto.subtle.digest("SHA-256",bytes);
+ return [...new Uint8Array(digest)].map(n=>n.toString(16).padStart(2,"0")).join("");
+}
+function clearPreview(){
+ previewSrc=null;previewFingerprint=null;
+ const v=el("preview");v.removeAttribute("src");v.load();
+}
+function showPreview(src,label){
+ if(!src?.startsWith("/exports/"))throw Error("Ruta de vista previa no válida");
+ previewSrc=prefix+src;previewFingerprint=projectFingerprint;
+ const v=el("preview");v.src=previewSrc;v.load();
+ el("quickInfo").textContent=label||"Vista rápida 540 × 960 · 15 fps. Archivo de revisión, no máster.";
+}
+
 try{
  const saved=JSON.parse(sessionStorage.getItem("suesQ03RunningJob")||"null");
- if(saved&&/^xs_[a-f0-9]+$/.test(saved.id)){jobId=saved.id;started=Number(saved.started)||Date.now()}
+ if(saved&&/^(xs_|x_)[a-z0-9]+$/.test(saved.id)){jobId=saved.id;started=Number(saved.started)||Date.now();jobMode=saved.mode==="quick"?"quick":"full"}
 }catch{}
 function rememberJob(){try{
- if(jobId)sessionStorage.setItem("suesQ03RunningJob",JSON.stringify({id:jobId,started}));
+ if(jobId)sessionStorage.setItem("suesQ03RunningJob",JSON.stringify({id:jobId,started,mode:jobMode}));
  else sessionStorage.removeItem("suesQ03RunningJob");
 }catch{}}
 function status(s){el("status").textContent=s}
-function busy(b){el("export").disabled=b;el("change").disabled=b;el("cancel").disabled=!b}
+function busy(b){el("export").disabled=b;el("quick").disabled=b;el("change").disabled=b;el("cancel").disabled=!b}
 async function request(path,method="GET",data){
  const opts={method,credentials:"same-origin",cache:"no-store"};
  if(data!==undefined){opts.headers={"Content-Type":"application/json"};opts.body=JSON.stringify(data)}
@@ -74,6 +103,15 @@ async function request(path,method="GET",data){
 async function getProject(){
  try{
   const p=await request("/api/project");revision=Number(p.revision||0);
+  projectFingerprint=await docFingerprint(p);
+  if(previewSrc&&previewFingerprint!==projectFingerprint)clearPreview();
+  if(output&&downloadFingerprint!==projectFingerprint){output=null;el("download").hidden=true;el("range").disabled=true}
+  if(projectFingerprint===KNOWN_LIGHT.fingerprint){
+   if(!previewSrc)showPreview(KNOWN_LIGHT.preview,"Vista rápida verificada: 540 × 960 · 15 fps · 10,2 MB. Mismo montaje actual, sin reconstruir capas.");
+   if(!output)showVideo(KNOWN_LIGHT.master);
+  }else if(!previewSrc){
+   el("quickInfo").textContent="El proyecto actual cambió. Para no mostrar una revisión antigua, pulsa «Ver / crear vista rápida». El motor debe recalcular la nueva edición a 540p y 15 fps.";
+  }
   const c=(p.clips||[]).find(x=>x.id==="SC08-QUESTION");
   if(!c)throw Error("No se encuentra la escena de QA");
   el("project").textContent=(p.name||"R14")+" · revisión "+revision+" · "+p.clips.length+" capas. Texto de prueba: "+String(c.props?.text||"");
@@ -90,7 +128,7 @@ async function changeText(){
   c.props={...c.props,text:c.props?.text===a?b:a};
   p.revision=Number(p.revision||0)+1;
   await request("/api/project","PUT",p);
-  output=null;el("download").hidden=true;el("preview").removeAttribute("src");el("preview").load();
+  output=null;downloadFingerprint=null;el("download").hidden=true;clearPreview();
   el("range").disabled=true;el("progress").value=0;
   status("Texto actualizado solo en la copia QA. Pulsa Exportar.");
   await getProject();
@@ -98,9 +136,9 @@ async function changeText(){
 }
 function showVideo(src){
  if(!src||!src.startsWith("/exports/"))throw Error("Ruta de exportación no válida");
- output=prefix+src;
- const link=el("download");link.href=output;link.download="SUES_Q03_prueba.mp4";link.hidden=false;
- const v=el("preview");v.src=output;v.load();el("range").disabled=false;
+ output=prefix+src;downloadFingerprint=projectFingerprint;
+ const link=el("download");link.href=output;link.download="SUES_Q03_final_HD.mp4";link.hidden=false;
+ el("range").disabled=false;
 }
 async function poll(){
  if(!jobId)return;
@@ -109,21 +147,38 @@ async function poll(){
   el("progress").value=Math.round(100*(j.progress||0));
   const sec=Math.round((Date.now()-started)/1000);
   if(j.status==="done"){
-   showVideo(j.src);
-   status("Exportación finalizada en "+sec+" s"+(j.cached?" · recuperada de caché":" · vídeo renderizado")+"\nPuedes reproducir o descargar el MP4.");
+   if(jobMode==="quick"){
+    showPreview(j.src,"Vista rápida de la edición actual · 540 × 960 · 15 fps. Generada en "+sec+" s.");
+    status("Vista previa lista en "+sec+" s. Revisa el vídeo antes de exportar HD.");
+   }else{
+    showVideo(j.src);
+    status("Máster HD terminado en "+sec+" s"+(j.cached?" · de caché":" · renderizado")+". Puedes descargarlo; el reproductor usa el vídeo ligero.");
+   }
    jobId=null;rememberJob();clearInterval(timer);busy(false);await getProject();
   }else if(j.status==="failed"||j.status==="cancelled"){
    status("Exportación "+j.status+" · "+(j.error||""));jobId=null;rememberJob();clearInterval(timer);busy(false);
   }else status("Estado: "+j.status+" · "+el("progress").value+" % · "+sec+" segundos");
  }catch(e){status("Consulta de exportación fallida: "+e.message);clearInterval(timer);jobId=null;busy(false)}
 }
-async function startExport(){
+async function startExport(mode="full"){
+ jobMode=mode==="quick"?"quick":"full";
  try{
   if(revision===null)throw Error("Revisión no cargada");
+  if(jobMode==="quick"&&projectFingerprint===KNOWN_LIGHT.fingerprint){
+   showPreview(KNOWN_LIGHT.preview,"Vista rápida 540 × 960 · 15 fps · 10,2 MB, lista sin volver a renderizar.");
+   status("Vista previa disponible inmediatamente desde la caché de esta misma edición.");return;
+  }
   busy(true);started=Date.now();
-  const j=await request("/api/export/request","POST",{where:"headless",range:"entire",segmented:true,expectedRevision:revision});
+  const params=jobMode==="quick"
+   ? {where:"headless",range:"entire",preset:"sues-preview"}
+   : {where:"headless",range:"entire",segmented:true,expectedRevision:revision};
+  const j=await request("/api/export/request","POST",params);
   jobId=j.id;rememberJob();status("Exportación solicitada: "+j.id);
-  if(j.status==="done"){showVideo(j.src);status("Vídeo recuperado de caché, sin renderizar.");jobId=null;busy(false)}
+  if(j.status==="done"){
+   if(jobMode==="quick")showPreview(j.src,"Vista rápida actual recuperada.");
+   else showVideo(j.src);
+   status("Archivo "+(jobMode==="quick"?"de vista previa":"HD")+" recuperado de caché.");jobId=null;rememberJob();busy(false)
+  }
   else{timer=setInterval(poll,1200);await poll()}
  }catch(e){jobId=null;rememberJob();busy(false);status("No se inició la exportación: "+e.message)}
 }
@@ -142,7 +197,8 @@ async function testRange(){
 }
 el("refresh").addEventListener("click",getProject);
 el("change").addEventListener("click",changeText);
-el("export").addEventListener("click",startExport);
+el("export").addEventListener("click",()=>startExport("full"));
+el("quick").addEventListener("click",()=>startExport("quick"));
 el("cancel").addEventListener("click",cancelExport);
 async function testDownloadSpeed(){
  const btn=el("speedTest"), out=el("speedResult");
