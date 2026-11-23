@@ -27,7 +27,7 @@ a{color:#ebcf94}
 <h2>1. Proyecto de pruebas</h2>
 <p id="project">Consultando la copia aislada…</p>
 <div class="row"><button id="refresh" class="secondary">Actualizar datos</button></div>
-<p class="notice">Copia QA del editor existente. El recurso de los dos cerebros aparece de 2,400 a 4,200 segundos con fondo verde eliminado; el telescopio queda más adelante en su tramo original. Para cambiar el contenido, utiliza el editor; este panel permite revisarlo y descargarlo.</p>
+<p class="notice">Copia QA del editor existente. Música nueva: soul de apertura → tensión provisional → agua instrumental en la reflexión → reggae-funk en revelación y promesa. Voz original intacta; 37 sonidos redundantes retirados. Cerebros 2,40–5,20 s, telescopio original, corazón giratorio final y zoom progresivo conservados.</p>
 </section>
 <section class="panel">
 <h2>2. Vista previa rápida · 540 × 960 / 15 fps</h2>
@@ -52,16 +52,16 @@ a{color:#ebcf94}
 <p id="speedResult" role="status" aria-live="polite">Esta prueba no modifica ni exporta el vídeo.</p>
 </section>
 <section class="panel"><h2>5. Medir velocidad de este dispositivo</h2><p>Compara el compositor real de R14 y la compatibilidad de H.264 WebCodecs. No cambia la edición ni exporta un MP4.</p><a class="btn" href="./qa-cold-benchmark.html">Medir velocidad del Pixel o navegador</a></section>
-<p class="notice">Acceso protegido por la sesión del estudio SUES. La primera exportación completa de un proyecto nuevo todavía no está optimizada al objetivo de 1–3 minutos.</p>
+<p class="notice">Acceso protegido por la sesión del estudio SUES. Esta revisión ya dispone de vista previa y máster HD sin recalcular vídeo. Para cambios posteriores puede seguir siendo necesaria una nueva exportación.</p>
 </main>
 <script>
 "use strict";
 const prefix="/q03-export-qa",el=id=>document.getElementById(id);
 let revision=null,jobId=null,jobMode="full",output=null,previewSrc=null,previewFingerprint=null,downloadFingerprint=null,projectFingerprint=null,timer=null,started=0;
 const KNOWN_LIGHT={
- fingerprint:"11405e399e87e80bed21ddd38b68864b26a31a75dfa016602e994674cd170427",
- preview:"/exports/SUES_Q03_CEREBROS_preview_rev33_540x960_15fps.mp4",
- master:"/exports/SUES_export_xs_42851c3555c6.mp4"
+ fingerprint:"fe32c9375ef2770747e5386e030242c3583085a79772d0255818d208db2e6c6f",
+ preview:"/exports/SUES_Q03_IDENTIDAD_SONORA_rev38_540x960_15fps.mp4",
+ master:"/exports/SUES_Q03_IDENTIDAD_SONORA_rev38_HD.mp4"
 };
 async function docFingerprint(p){
  const q={...p};delete q.revision;
@@ -81,12 +81,12 @@ function showPreview(src,label){
 }
 
 try{
- const saved=JSON.parse(sessionStorage.getItem("suesQ03RunningJob")||"null");
+ const saved=JSON.parse(sessionStorage.getItem("suesQ03RunningJob_r39")||"null");
  if(saved&&/^(xs_|x_)[a-z0-9]+$/.test(saved.id)){jobId=saved.id;started=Number(saved.started)||Date.now();jobMode=saved.mode==="quick"?"quick":"full"}
 }catch{}
 function rememberJob(){try{
- if(jobId)sessionStorage.setItem("suesQ03RunningJob",JSON.stringify({id:jobId,started,mode:jobMode}));
- else sessionStorage.removeItem("suesQ03RunningJob");
+ if(jobId)sessionStorage.setItem("suesQ03RunningJob_r39",JSON.stringify({id:jobId,started,mode:jobMode}));
+ else sessionStorage.removeItem("suesQ03RunningJob_r39");
 }catch{}}
 function status(s){el("status").textContent=s}
 function busy(b){el("export").disabled=b;el("quick").disabled=b;el("cancel").disabled=!b}
@@ -107,7 +107,7 @@ async function getProject(){
   if(previewSrc&&previewFingerprint!==projectFingerprint)clearPreview();
   if(output&&downloadFingerprint!==projectFingerprint){output=null;el("download").hidden=true;el("range").disabled=true}
   if(projectFingerprint===KNOWN_LIGHT.fingerprint){
-   if(!previewSrc)showPreview(KNOWN_LIGHT.preview,"Vista rápida verificada: 540 × 960 · 15 fps · 10,2 MB. Mismo montaje actual, sin reconstruir capas.");
+   if(!previewSrc)showPreview(KNOWN_LIGHT.preview,"Vista rápida verificada: 540 × 960 · 15 fps · 10,1 MB. Mismo montaje actual, sin reconstruir capas.");
    if(!output)showVideo(KNOWN_LIGHT.master);
   }else if(!previewSrc){
    el("quickInfo").textContent="El proyecto actual cambió. Para no mostrar una revisión antigua, pulsa «Ver / crear vista rápida». El motor debe recalcular la nueva edición a 540p y 15 fps.";
@@ -121,7 +121,7 @@ async function getProject(){
 function showVideo(src){
  if(!src||!src.startsWith("/exports/"))throw Error("Ruta de exportación no válida");
  output=prefix+src;downloadFingerprint=projectFingerprint;
- const link=el("download");link.href=output;link.download="SUES_Q03_final_HD.mp4";link.hidden=false;
+ const link=el("download");link.href=output;link.download="SUES_Q03_IDENTIDAD_SONORA_final_HD.mp4";link.hidden=false;
  el("range").disabled=false;
 }
 async function poll(){
@@ -148,8 +148,13 @@ async function startExport(mode="full"){
  jobMode=mode==="quick"?"quick":"full";
  try{
   if(revision===null)throw Error("Revisión no cargada");
+  if(jobMode==="full"&&projectFingerprint===KNOWN_LIGHT.fingerprint){
+   showVideo(KNOWN_LIGHT.master);
+   status("Máster HD de esta revisión disponible desde caché, sin volver a renderizar. Descárgalo directamente.");
+   return;
+  }
   if(jobMode==="quick"&&projectFingerprint===KNOWN_LIGHT.fingerprint){
-   showPreview(KNOWN_LIGHT.preview,"Vista rápida 540 × 960 · 15 fps · 10,2 MB, lista sin volver a renderizar.");
+   showPreview(KNOWN_LIGHT.preview,"Vista rápida 540 × 960 · 15 fps · 10,1 MB, lista sin volver a renderizar.");
    status("Vista previa disponible inmediatamente desde la caché de esta misma edición.");return;
   }
   busy(true);started=Date.now();
