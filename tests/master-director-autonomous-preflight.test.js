@@ -29,6 +29,12 @@ const make=()=>{
  masks:{op1:{operationId:'op1',sourceSha256:a,projectId:project.projectId,verifiedOnOriginal:true,
  noFaceOrHandOcclusion:true,alphaAndFeatherVerified:true,samples:[{time:10,evidenceRef:'frame10'},
  {time:11,evidenceRef:'frame11'},{time:12,evidenceRef:'frame12'}]}},
+ semanticVisualProof:{op1:{operationId:'op1',projectId:project.projectId,storyFingerprint:fp,
+  status:'PASS',representation:'DIRECT',spokenText:'La libertad se siente al respirar',
+  literalMeaningInContext:'Una persona descubre la libertad',visualSubject:'Persona feliz al aire libre',
+  recognizableAction:'Abre brazos hacia cielo soleado',whyImmediatelyRecognizable:'Gesto y paisaje reconocibles',
+  evidenceRef:'qa-frame-real-12',reviewedOnActualMedia:true,meaningRecognizableWithoutCaptions:true,
+  ambiguityDetected:false}},
  preflight:{creative:{status:'PASS',evidenceRef:'QA1'},technical:{status:'PASS',evidenceRef:'QA2'}},
  nativeMapping:{fingerprint:fp,projectId:project.projectId,supported:true,operationIds:['op1']}};
  return {story,registry,project,evidence};
@@ -70,4 +76,25 @@ test('three repeated mask snapshots do not cover entrance middle and exit',()=>{
  const x=make();x.evidence.masks.op1.samples=[{time:10,evidenceRef:'a'},{time:10,evidenceRef:'b'},{time:10,evidenceRef:'c'}];
  const r=reviewAutonomousPreproduction(x);
  assert.ok(r.issues.some(i=>i.code==='SUBJECT_MASK_VISUAL_PROOF_MISSING'));
+});
+
+test('CVI-01 missing real visual meaning inspection blocks the Reel before editing',()=>{
+ const x=make();delete x.evidence.semanticVisualProof.op1;
+ const r=reviewAutonomousPreproduction(x);
+ assert.ok(r.issues.some(i=>i.code==='SEMANTIC_VISUAL_AMBIGUITY'&&i.subject==='op1'));
+});
+test('CVI-01 visual abstraction with no understandable literal support is rejected',()=>{
+ const x=make();x.evidence.semanticVisualProof.op1.representation='SUPPORT_ONLY';
+ const r=reviewAutonomousPreproduction(x);
+ assert.ok(r.issues.some(i=>i.code==='SEMANTIC_VISUAL_AMBIGUITY'));
+});
+test('CVI-01 declared recognition cannot override actual ambiguity observed',()=>{
+ const x=make();x.evidence.semanticVisualProof.op1.ambiguityDetected=true;
+ const r=reviewAutonomousPreproduction(x);
+ assert.ok(r.issues.some(i=>i.code==='SEMANTIC_VISUAL_AMBIGUITY'));
+});
+test('CVI-01 image claims without actual inspected media cannot certify semantic clarity',()=>{
+ const x=make();x.evidence.semanticVisualProof.op1.reviewedOnActualMedia=false;
+ const r=reviewAutonomousPreproduction(x);
+ assert.ok(r.issues.some(i=>i.code==='SEMANTIC_VISUAL_AMBIGUITY'));
 });
