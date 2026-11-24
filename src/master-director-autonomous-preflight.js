@@ -68,6 +68,28 @@ export function reviewAutonomousPreproduction({story,registry={},project={},evid
        p.samples.some(x=>Math.abs(x.time-time)<=1/(t.fps||30)+1e-6)))
     note(issues,'SUBJECT_MASK_VISUAL_PROOF_MISSING',op.id);
  }
+ // CVI-01: metadata is taken from authenticated review of real footage, not the prompt.
+ // This checks that a real clarity review exists; the code itself does not see/understand images.
+ const semantic=evidence.semanticVisualProof??{};
+ for(const op of story.operations??[]){
+  if(!['broll','graphics'].includes(op.track))continue;
+  const v=semantic[op.id],kind=v?.representation;
+  const supported=kind==='SUPPORT_ONLY'&&valid(v?.supportedByOperationId)&&
+    (story.operations??[]).some(other=>other.id===v.supportedByOperationId&&other.id!==op.id&&
+      other.start<op.end&&other.end>op.start&&
+      ['DIRECT','CONTEXTUAL','UNIVERSAL_SYMBOL'].includes(semantic[other.id]?.representation)&&
+      semantic[other.id]?.status==='PASS');
+  if(!v||v.operationId!==op.id||v.projectId!==project.projectId||
+     v.storyFingerprint!==fp||v.status!=='PASS'||
+     !['DIRECT','CONTEXTUAL','UNIVERSAL_SYMBOL','SUPPORT_ONLY'].includes(kind)||
+     (kind==='SUPPORT_ONLY'&&!supported)||
+     !valid(v.spokenText)||!valid(v.literalMeaningInContext)||
+     !valid(v.visualSubject)||!valid(v.recognizableAction)||
+     !valid(v.whyImmediatelyRecognizable)||!valid(v.evidenceRef)||
+     v.reviewedOnActualMedia!==true||v.meaningRecognizableWithoutCaptions!==true||
+     v.ambiguityDetected!==false)
+    note(issues,'SEMANTIC_VISUAL_AMBIGUITY',op.id);
+ }
  const preflight=evidence.preflight??{};
  if(preflight.creative?.status!=='PASS'||preflight.technical?.status!=='PASS'||
     !valid(preflight.creative.evidenceRef)||!valid(preflight.technical.evidenceRef))
