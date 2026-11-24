@@ -1,3 +1,7 @@
+## 24/11/2026 · RTA-01 · Recuperación técnica autónoma
+
+Plugin privado Film Director **v1.7.6** actualizado y verificado por readback (20 archivos, skill original intacta, CVI-01 conservada). Skill `sues-produccion-autonoma` exige recuperar procedimientos probados, corregir fallos ordinarios en entorno aislado, probar, reanudar y continuar tareas independientes sin eludir gates. Norma canónica en [Protocolo Maestro, sección 11](docs/SUES_PROTOCOLO_MAESTRO_PRODUCCION_AUTONOMA_20261124.md). VPS: PIL ausente en Python global y dos venv inspeccionados; seis archivos matte de Q03 presentes, dos verificados por ffprobe. Registro histórico `/opt/sues-video-setup/nov2-mask-log.txt` acredita recuperación de matte de 2213 frames en noviembre; no equivale a validación actual. Pendiente recuperar intérprete/modelo exactos y nueva prueba real de composición; no se modificó producción ni el Reel. No detener el trabajo por una incidencia ordinaria ni declarar reparación sin evidencia.
+
 ## 24/11/2026 · CVI-01: claridad visual literal primero
 Film Director plugin 1.7.5, skill `sues-produccion-autonoma` y su referencia `CLARIDAD_VISUAL_INMEDIATA_20261124.md`. La imagen debe mostrar reconociblemente lo que dice la frase: persona enfadada para enfado, pájaro volando para volar, cielo abierto soleado para libertad según contexto. Priorizar B-roll real y gestos frente a metáforas geométricas. Ver sección CVI-01 del Protocolo Maestro. Preflight semántico en rama NO desplegado, 31/31 tests dirigidos aislados.
 
