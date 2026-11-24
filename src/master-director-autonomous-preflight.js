@@ -49,7 +49,8 @@ export function reviewAutonomousPreproduction({story,registry={},project={},evid
      a.sha256!==resolved.sha256||a.projectId!==project.projectId||
      !valid(a.fablecutMediaId)||a.registeredInProject!==true||
      a.physicalShaVerified!==true||a.nativeDecodeVerified!==true||
-     a.visualContentVerified!==true||a.rightsVerified!==true)
+     a.visualContentVerified!==true||a.rightsVerified!==true||
+     !Array.isArray(project.media)||!project.media.some(m=>m?.id===a.fablecutMediaId))
     note(issues,'FABLECUT_MEDIA_NOT_READY',r.id);
  }
  const masks=evidence.masks??{};
@@ -62,7 +63,9 @@ export function reviewAutonomousPreproduction({story,registry={},project={},evid
      p.projectId!==project.projectId||p.verifiedOnOriginal!==true||
      p.noFaceOrHandOcclusion!==true||p.alphaAndFeatherVerified!==true||
      !Array.isArray(p.samples)||p.samples.length<3||
-     !p.samples.every(x=>Number.isFinite(x.time)&&valid(x.evidenceRef)))
+     !p.samples.every(x=>Number.isFinite(x.time)&&valid(x.evidenceRef))||
+     ![op.start,(op.start+op.end)/2,op.end-1/(t.fps||30)].every(time=>
+       p.samples.some(x=>Math.abs(x.time-time)<=1/(t.fps||30)+1e-6)))
     note(issues,'SUBJECT_MASK_VISUAL_PROOF_MISSING',op.id);
  }
  const preflight=evidence.preflight??{};
