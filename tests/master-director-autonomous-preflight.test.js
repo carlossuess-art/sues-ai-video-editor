@@ -18,7 +18,7 @@ const make=()=>{
  const registry={sourceSha256:a,timelineFingerprint:'timeline-01',approvedRuleVersion:'rules-v1',unresolvedRuleConflicts:[],
  lockedMastersByMode:{'brand-sues':[{id:'tapiz',sha256:b}]},masterHashes:{tapiz:b},
  rendererCapabilities:{remotion:['subject-occlusion']},licensedAssets:{asset1:{sha256:c,rightsVerified:true,commercialUseAllowed:true}}};
- const fp=H(story),project={projectId:'p_ac513f2e6a',revision:396,sourceSha256:a,timelineFingerprint:'timeline-01'};
+ const fp=H(story),project={projectId:'p_ac513f2e6a',revision:396,sourceSha256:a,timelineFingerprint:'timeline-01',media:[{id:'media1'}]};
  const evidence={projectId:project.projectId,projectRevision:396,
  director:{version:'1.7.4',loadedCompleteRules:true,rulesFingerprint:b,references:Array.from({length:8},(_,i)=>({id:'ref'+i,sha256:b}))},
  sourceAnalysis:{sha256:a,transcriptWordTimesVerified:true,videoFramesInspected:true,faceAndHandsAnalyzed:true,inspectedIntervals:[[0,60]]},
@@ -60,4 +60,14 @@ test('missing graph coverage or unlicensed media fails closed',()=>{
  const r=reviewAutonomousPreproduction(x);
  assert.ok(r.issues.some(i=>i.code==='EXECUTABLE_MAPPING_NOT_COMPLETE'));
  assert.ok(r.issues.some(i=>i.code==='LIBRARY_ASSET_UNVERIFIED'));
+});
+
+test('evidence flag cannot substitute for actual registration in project.media',()=>{
+ const x=make();x.project.media=[];const r=reviewAutonomousPreproduction(x);
+ assert.ok(r.issues.some(i=>i.code==='FABLECUT_MEDIA_NOT_READY'));
+});
+test('three repeated mask snapshots do not cover entrance middle and exit',()=>{
+ const x=make();x.evidence.masks.op1.samples=[{time:10,evidenceRef:'a'},{time:10,evidenceRef:'b'},{time:10,evidenceRef:'c'}];
+ const r=reviewAutonomousPreproduction(x);
+ assert.ok(r.issues.some(i=>i.code==='SUBJECT_MASK_VISUAL_PROOF_MISSING'));
 });
