@@ -34,3 +34,12 @@
 
 ## 6. Endurecimiento del validador (mismo 24/11/2026)
 Se añadió comparación efectiva de `fablecutMediaId` contra `project.media`; no basta declarar `registeredInProject:true`. Se añadió cobertura obligatoria con evidencia de máscara en entrada, punto medio y salida del intervalo, rechazando tres capturas repetidas del mismo instante. Dos tests adicionales (12/12 nuevos), regresión conjunta 27/27 PASS en VPS aislado. Esto sigue sin ser un route handler desplegado ni auditoría artística del Reel.
+
+## 24/11/2026 · CVI-01 · CLARIDAD VISUAL INMEDIATA (DECISIÓN POSTERIOR DE CARLOS)
+
+Nueva regla expresa: representar de forma directa y reconocible el sentido de la frase, sin obligar al espectador a descifrar metáforas. «Enfado» → persona enfadada; «volar» literal → pájaro volando; «libertad» → pájaro en cielo abierto con sol u otra escena inequívoca según el contexto. B-roll y gestos cotidianos antes que geometría abstracta; conservar fotografía y materiales cinematográficos. La prioridad es claridad semántica, emoción y acabado visual. Nunca forzar literalidad errónea si el sentido es figurado, negativo o está evolucionando.
+
+**Actualizado y leído de vuelta:** plugin privado SUES AI Film Director versión **1.7.5** (`plugins_6ae06835c8c881918d5bbe8294e16dfb`), skill complementaria `sues-produccion-autonoma` + referencia nueva `CLARIDAD_VISUAL_INMEDIATA_20261124.md`, sin sustituir la skill original ni D01–D77. Fuente procedimental `docs/SUES_PROTOCOLO_MAESTRO_PRODUCCION_AUTONOMA_20261124.md` ampliada con CVI-01.
+
+**Código aislado:** `src/master-director-autonomous-preflight.js` exige `semanticVisualProof` por operación protagonista de B-roll/gráficos, con inspección de material real, significado de frase, sujeto/acción reconocible y ausencia de ambigüedad; los adornos solo pueden ser secundarios a un recurso protagonista claro. No finge comprender imágenes: inspección audiovisual con evidencia procedente del host. Tests añadidos rechazan imágenes ambiguas, decoraciones sin apoyo o pruebas no inspeccionadas; **31/31 PASS** (preflight, lotes y Master Story) sobre VPS aislado. **No integrado/desplegado en FableCut móvil**, no es QA perceptual del Reel, Reel p_ac513f2e6a rev396 intacto. Siguiente paso: fuente host-side confiable para pruebas de claridad + conexión de preflight antes de ejecutar y doble QA MP4.
+
