@@ -35,7 +35,7 @@ const scenePolicy=h.scope==='private-reviewed'?{sceneTransitionPolicy:'TAV-01',s
 const registry={...h.registry,projectFingerprint:h.nativeFingerprint,nativeTrackRoles:h.nativeTrackRoles,nativeMediaBindings:h.nativeMediaBindings??{},...scenePolicy};
 const store=new MasterDirectorProjectStore(out,async story=>({sourceSha256:h.sourceSha256,timelineFingerprint:h.timelineFingerprint,duration:h.duration,registry,rulebook:h.rulebook,nativePreflight:async(_plan,r)=>{
  const p=(await readProject()).data;
- const plan=await prepareStoryBatch(story,{registry:{...r,unresolvedRuleConflicts:[]},project:p,bindings:h.bindings,authorize:async()=>true});
+ const plan=await prepareStoryBatch(story,{registry:{...r,unresolvedRuleConflicts:[],...scenePolicy},project:p,bindings:h.bindings,authorize:async()=>true});
  if(plan.status!=='PREPARED_NOT_EXECUTED')return plan;
  try{const result=applyCommandBatch(p,plan.request,{native,resolveAsset});if(result.assets.some(a=>!a.rightsVerified))throw Error('RESOURCE_RIGHTS_UNVERIFIED');return {status:'READY_FOR_EDITOR_PREVIEW'}}catch(e){return {status:'BLOCKED',issues:[{code:e.message,operationId:e.operationId??'plan'}]}}
 }}));
