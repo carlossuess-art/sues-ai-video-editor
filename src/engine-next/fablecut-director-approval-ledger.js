@@ -14,11 +14,11 @@ const batchKeys=['actor','projectId','storyRevision','decisionId','planFingerpri
 const validBatchProof=p=>p&&Object.keys(p).length===batchKeys.length&&batchKeys.every(k=>Object.hasOwn(p,k))&&ACTOR.test(p.actor??'')&&ID.test(p.projectId??'')&&Number.isInteger(p.baseRevision)&&p.baseRevision>=0&&batchKeys.slice(2,8).every(k=>SHA.test(p[k]??''));
 const batchRef=p=>createHash('sha256').update(JSON.stringify(batchKeys.map(k=>p[k]))).digest('hex');
 export class DirectorApprovalLedger{
- constructor({directory,now=Date.now,ttlMs=300000}={}){
+ constructor({directory,now=Date.now,ttlMs=300000,delegatedAuthority=null}={}){
   if(typeof directory!=='string'||!directory.startsWith('/')||!Number.isInteger(ttlMs)||ttlMs<1000||ttlMs>600000)throw Error('Private absolute ledger directory and bounded TTL required');
   this.directory=resolve(directory);mkdirSync(this.directory,{recursive:true,mode:0o700});
   if(!lstatSync(this.directory).isDirectory()||lstatSync(this.directory).isSymbolicLink())throw Error('Unsafe approval ledger directory');
-  this.now=now;this.ttlMs=ttlMs;
+  this.now=now;this.ttlMs=ttlMs;this.delegatedAuthority=delegatedAuthority;
  }
  /** Must be called only by trusted host after authenticating a human confirmation. */
  issue(request,{verifiedHumanSession=false}={}){
@@ -47,7 +47,20 @@ export class DirectorApprovalLedger{
   * Separate record schema; shares one-use claim and durable audit directory. */
  issueBatch(proof,{verifiedHumanSession=false}={}){
   if(verifiedHumanSession!==true||!validBatchProof(proof))throw Error('Verified exact batch approval required');
-  const approvalId='a_'+randomBytes(16).toString('hex'),record={schema:'sues-director-batch-approval/v1',approvalId,requestHash:batchRef(proof),actor:proof.actor,projectId:proof.projectId,createdAt:this.now(),expiresAt:this.now()+this.ttlMs};
+  return this.#writeBatch(proof,null);
+ }
+ /** Separate trusted-host delegated grant; never asserts a human session. */
+ issueDelegatedBatch(proof){
+  if(!validBatchProof(proof)||proof.actor!=='sues-delegated-director')throw Error('Invalid delegated proof');
+  const delegationProof=this.delegatedAuthority?.verify(proof);
+  if(!SHA.test(delegationProof??''))throw Error('Verified scoped delegation required');
+  // Prevent blind re-issuance after unknown commit or process failure.
+  const fd=openSync(join(this.directory,'delegated-'+batchRef(proof)+'.issued'),'wx',0o600);
+  try{writeSync(fd,delegationProof);fsyncSync(fd)}finally{closeSync(fd)}
+  return this.#writeBatch(proof,delegationProof);
+ }
+ #writeBatch(proof,delegationProof){
+  const approvalId='a_'+randomBytes(16).toString('hex'),record={schema:'sues-director-batch-approval/v1',approvalId,requestHash:batchRef(proof),actor:proof.actor,projectId:proof.projectId,createdAt:this.now(),expiresAt:this.now()+this.ttlMs,...(delegationProof?{authorizationMode:'delegated',delegationProof}:{})};
   const fd=openSync(join(this.directory,approvalId+'.json'),'wx',0o600);
   try{writeSync(fd,JSON.stringify(record)+'\n');fsyncSync(fd);}finally{closeSync(fd);}
   return {approvalId,expiresAt:record.expiresAt};
@@ -56,6 +69,8 @@ export class DirectorApprovalLedger{
   if(!validBatchProof(proof)||!/^a_[a-f0-9]{32}$/.test(approvalId??''))return false;
   let r;try{const f=join(this.directory,approvalId+'.json'),st=lstatSync(f);if(!st.isFile()||st.isSymbolicLink()||st.size>2048)return false;r=JSON.parse(readFileSync(f,'utf8'));}catch{return false}
   if(r.schema!=='sues-director-batch-approval/v1'||r.approvalId!==approvalId||r.requestHash!==batchRef(proof)||r.actor!==proof.actor||r.projectId!==proof.projectId||r.expiresAt<=this.now()||r.createdAt>this.now()||r.expiresAt-r.createdAt>600000)return false;
+  if(r.authorizationMode==='delegated'&&(proof.actor!=='sues-delegated-director'||!SHA.test(r.delegationProof??'')||this.delegatedAuthority?.verify(proof)!==r.delegationProof))return false;
+  if(proof.actor==='sues-delegated-director'&&r.authorizationMode!=='delegated')return false;
   let fd;try{fd=openSync(join(this.directory,approvalId+'.claimed'),'wx',0o600);writeSync(fd,JSON.stringify({id:approvalId,at:this.now()})+'\n');fsyncSync(fd);return true}catch{return false}finally{if(fd!==undefined)closeSync(fd)}
  }
  /** Preserve exact per-operation receipts and an immutable private undo snapshot. */
