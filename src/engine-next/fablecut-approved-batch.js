@@ -4,17 +4,19 @@ import {prepareStoryBatch,projectFingerprint,applyCommandBatch} from './fablecut
 import {dispatchCommandBatch} from './fablecut-command-dispatcher.js';
 import {assertStoryOperationCoverage} from './fablecut-native-supervisor.js';
 const SHA=/^[a-f0-9]{64}$/;
-export function createApprovedBatchService({ledger,resolveContext,readProject,native,resolveAsset,stageAssets,invokeMcp}={}){
+export function createApprovedBatchService({ledger,resolveContext,readProject,native,resolveAsset,stageAssets,invokeMcp,delegatedAuthority=null}={}){
  if(!ledger||![resolveContext,readProject,resolveAsset,stageAssets,invokeMcp].every(x=>typeof x==='function')||!native?.applyPatch)throw Error('TRUSTED_BATCH_HOST_REQUIRED');
  async function prepare({actor,projectId,storyRevision,decisionId}){
   if(!/^p_[A-Za-z0-9_-]{2,96}$/.test(projectId??'')||![storyRevision,decisionId].every(x=>SHA.test(x??'')))throw Error('INVALID_BATCH_REFERENCE');
   const c=await resolveContext(projectId);
-  if(!c||c.nativeProjectId!==projectId||c.privateClone!==true||!c.store?.approved||!c.store?.current||!c.store?.readDraft)throw Error('PRIVATE_BOUND_PROJECT_REQUIRED');
+  const delegated=actor==='sues-delegated-director';
+  const allowed=delegated?c?.mobileMcp===true&&delegatedAuthority?.projectAllowed(projectId)===true:c?.privateClone===true;
+  if(!c||c.nativeProjectId!==projectId||!allowed||!c.store?.approved||!c.store?.current||!c.store?.readDraft)throw Error('PRIVATE_BOUND_PROJECT_REQUIRED');
   const before=await readProject();
   if(before.projectId!==projectId||c.nativeFingerprint!==projectFingerprint(before.data))throw Error('NATIVE_BINDING_STALE');
   if(c.store.current().revision!==storyRevision)throw Error('STORY_HEAD_STALE');
   const approved=await c.store.approved(storyRevision,decisionId);
-  if(!approved||approved.mode!=='approve'||approved.view?.status!=='READY_FOR_CHOICE'||c.store.current().revision!==storyRevision)throw Error('CREATIVE_APPROVAL_REQUIRED');
+  if(!approved||approved.mode!==(delegated?'autonomous':'approve')||approved.view?.status!=='READY_FOR_CHOICE'||c.store.current().revision!==storyRevision)throw Error('CREATIVE_APPROVAL_REQUIRED');
   const story=c.store.readDraft(storyRevision);
   if(approved.registry.projectFingerprint!==c.nativeFingerprint||
      projectFingerprint(approved.registry.nativeTrackRoles??{})!==projectFingerprint(c.nativeTrackRoles??{})||
@@ -36,11 +38,18 @@ export function createApprovedBatchService({ledger,resolveContext,readProject,na
   if(predicted.assets.some(a=>a.rightsVerified!==true))throw Error('RESOURCE_RIGHTS_UNVERIFIED');
   const proof={actor,projectId,storyRevision,decisionId,planFingerprint:approved.view.fingerprint,projectFingerprint:approved.view.projectFingerprint,nativeFingerprint:c.nativeFingerprint,requestFingerprint:projectFingerprint(plan.request),baseRevision:before.data.revision};
   const mobileDirectorContext=c.mobileMcp===true?{story,evidence:registry.sceneTransitions}:null;
-  return {status:'PREPARED',proof,request:plan.request,receipts:predicted.receipts,mobileDirectorContext};
+  return {status:'PREPARED',proof,request:plan.request,receipts:predicted.receipts,mobileDirectorContext,delegated};
  }
  return {
+  async issueAutonomous(input){
+   if(input.actor!=='sues-delegated-director'||!delegatedAuthority)throw Error('DELEGATED_HOST_REQUIRED');
+   const p=await prepare(input);if(p.status!=='PREPARED')return p;
+   delegatedAuthority.seal(p.proof,p.mobileDirectorContext.story,p.request);
+   return {status:'APPROVAL_ISSUED_NOT_EXECUTED',authorizationMode:'delegated',...ledger.issueDelegatedBatch(p.proof),proof:p.proof,receipts:p.receipts};
+  },
   async issue(input,{verifiedHumanSession=false}={}){
    const p=await prepare(input);if(p.status!=='PREPARED')return p;
+   if(p.delegated)throw Error('USE_SCOPED_DELEGATION');
    return {status:'APPROVAL_ISSUED_NOT_EXECUTED',...ledger.issueBatch(p.proof,{verifiedHumanSession}),proof:p.proof,receipts:p.receipts};
   },
   async execute(input){
