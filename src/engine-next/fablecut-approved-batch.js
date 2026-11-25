@@ -22,6 +22,7 @@ export function createApprovedBatchService({ledger,resolveContext,readProject,na
    throw Error('APPROVED_NATIVE_BINDING_CHANGED');
   const registry={...approved.registry,projectFingerprint:c.nativeFingerprint,nativeTrackRoles:c.nativeTrackRoles,nativeMediaBindings:c.nativeMediaBindings,unresolvedRuleConflicts:[]};
   // Host-side TAV-01 must be reapplied at issue and execute, not just at review.
+  if(c.mobileMcp===true&&c.sceneTransitionPolicy!=='TAV-01')throw Error('MOBILE_TAV01_POLICY_REQUIRED');
   if(c.sceneTransitionPolicy==='TAV-01'){
    registry.sceneTransitionPolicy='TAV-01';
    registry.sceneTransitions=c.sceneTransitions??{};
@@ -34,7 +35,8 @@ export function createApprovedBatchService({ledger,resolveContext,readProject,na
   // Untrusted resource bytes may never stage in an approved batch.
   if(predicted.assets.some(a=>a.rightsVerified!==true))throw Error('RESOURCE_RIGHTS_UNVERIFIED');
   const proof={actor,projectId,storyRevision,decisionId,planFingerprint:approved.view.fingerprint,projectFingerprint:approved.view.projectFingerprint,nativeFingerprint:c.nativeFingerprint,requestFingerprint:projectFingerprint(plan.request),baseRevision:before.data.revision};
-  return {status:'PREPARED',proof,request:plan.request,receipts:predicted.receipts};
+  const mobileDirectorContext=c.mobileMcp===true?{story,evidence:registry.sceneTransitions}:null;
+  return {status:'PREPARED',proof,request:plan.request,receipts:predicted.receipts,mobileDirectorContext};
  }
  return {
   async issue(input,{verifiedHumanSession=false}={}){
@@ -45,8 +47,8 @@ export function createApprovedBatchService({ledger,resolveContext,readProject,na
    const p=await prepare(input);if(p.status!=='PREPARED')return p;
    const audit=e=>ledger.audit({...e,schema:'sues-director-mcp-dispatch/v1',storyRevision:p.proof.storyRevision,decisionId:p.proof.decisionId,planFingerprint:p.proof.planFingerprint,operationIds:undefined});
    const result=await dispatchCommandBatch({projectId:input.projectId,approvalId:input.approvalId,request:p.request},{
-    native,resolveAsset,stageAssets,readProject,invokeMcp,audit,
-    authorize:async()=>{const fresh=await prepare(input);return fresh.status==='PREPARED'&&projectFingerprint(fresh.proof)===projectFingerprint(p.proof)&&ledger.consumeBatch(p.proof,input.approvalId)}
+    native,resolveAsset,stageAssets,readProject,invokeMcp,audit,mobileDirectorContext:p.mobileDirectorContext,
+    authorize:async()=>{const fresh=await prepare(input);return fresh.status==='PREPARED'&&projectFingerprint(fresh.proof)===projectFingerprint(p.proof)&&projectFingerprint(fresh.mobileDirectorContext)===projectFingerprint(p.mobileDirectorContext)&&ledger.consumeBatch(p.proof,input.approvalId)}
    });
    try{ledger.recordBatchResult(input.approvalId,p.proof,result)}catch{throw Error('NATIVE_COMMITTED_RESULT_PERSISTENCE_FAILED_DO_NOT_RETRY')}
    // Preserve the durable result before blocking any post-commit discrepancy.
