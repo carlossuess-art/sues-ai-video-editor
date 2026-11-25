@@ -3,6 +3,7 @@
 import {auditRevisionDelta} from '../sues-production-policy.js';
 import {createHash} from 'node:crypto';
 import {inspectMasterDirectorStory} from '../master-director-story.js';
+import {reviewSceneTransitions} from '../master-director-autonomous-preflight.js';
 const hash=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const id=x=>typeof x==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/.test(x);
 const fail=m=>{throw Error(m)};
@@ -178,6 +179,11 @@ export function undoCommandBatch(current,undo){if(hash(current)!==undo?.baseFing
 export async function prepareStoryBatch(story,{registry,authorize,project,bindings}={}){
  const audit=inspectMasterDirectorStory(story,registry);
  if(audit.status!=='READY_FOR_PLAN_REVIEW') return {status:'BLOCKED',issues:audit.issues,assetRequests:audit.assetRequests,story};
+ // TAV-01: only the trusted host selects this policy and supplies scene evidence.
+ if(registry?.sceneTransitionPolicy==='TAV-01'){
+  const issues=reviewSceneTransitions(story,registry.sceneTransitions??{});
+  if(issues.length)return {status:'BLOCKED',issues,story};
+ }
  if(typeof authorize!=='function'||await authorize(story,registry)!==true)return {status:'BLOCKED',issues:[{code:'APPROVAL_REQUIRED'}],story};
  const issues=[],commands=[],virtualClips=new Map();
  if(!project||project.fps!==story.timeline.fps||Math.abs(Math.max(0,...project.clips.map(c=>c.start+c.duration))-story.timeline.duration)>1e-6||registry.projectFingerprint!==hash(project))return {status:'BLOCKED',issues:[{code:'NATIVE_PROJECT_BINDING_STALE'}],story};
