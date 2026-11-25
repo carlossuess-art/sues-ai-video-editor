@@ -21,6 +21,11 @@ export function createApprovedBatchService({ledger,resolveContext,readProject,na
      projectFingerprint(approved.registry.nativeMediaBindings??{})!==projectFingerprint(c.nativeMediaBindings??{}))
    throw Error('APPROVED_NATIVE_BINDING_CHANGED');
   const registry={...approved.registry,projectFingerprint:c.nativeFingerprint,nativeTrackRoles:c.nativeTrackRoles,nativeMediaBindings:c.nativeMediaBindings,unresolvedRuleConflicts:[]};
+  // Host-side TAV-01 must be reapplied at issue and execute, not just at review.
+  if(c.sceneTransitionPolicy==='TAV-01'){
+   registry.sceneTransitionPolicy='TAV-01';
+   registry.sceneTransitions=c.sceneTransitions??{};
+  }
   const plan=await prepareStoryBatch(story,{registry,project:before.data,bindings:c.bindings,authorize:async()=>true});
   if(plan.status!=='PREPARED_NOT_EXECUTED')return {status:'BLOCKED',issues:plan.issues??[],storyRevision};
   const predicted=applyCommandBatch(before.data,plan.request,{native,resolveAsset});
