@@ -1,3 +1,7 @@
+## 25/11/2026 · SEL-01 · Guion íntegro interactivo o delegación expresa
+
+Decisión expresa de Carlos, prevalece sobre selectores históricos: si revisa palabras destacadas, mostrar la transcripción íntegra del bruto, cronológica, en contexto, con cada palabra seleccionable individualmente por ocurrencia; incluir repeticiones y marcar propuestas de corte y correcciones ASR pendientes de escucha. Sin selección previa, no premarcar; permitir selección de frases, revisión de lo marcado y confirmación por IDs de palabra/tiempos. Si delega expresamente la selección completa, el Director elige y registra esa delegación, no exigir revisión intermedia ni inventar aprobación personal. Si la interfaz no admite pulsación directa, proporcionar guion íntegro con IDs seleccionables y declarar limitación. No fijar énfasis dependiente sin decisión. Preservar mapa fuente→timeline→captions, sincronía de títulos/motion, tabla A/V y trazabilidad Master Director. Skill complementaria actualizada a release 1.7.8; esta es norma de procedimiento, no un nuevo control de código probado.
+
 # SUES HOLISTICS · PROTOCOLO MAESTRO DE PRODUCCIÓN AUDIOVISUAL AUTÓNOMA
 Versión documental: 1.0 · 24/11/2026 · Fuente canónica de procedimiento
 Repositorio: carlossuess-art/sues-ai-video-editor · Rama documental: feat/speech-linked-motion-grammar-20261115
