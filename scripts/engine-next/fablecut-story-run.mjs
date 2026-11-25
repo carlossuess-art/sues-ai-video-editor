@@ -30,7 +30,9 @@ const sourceMedia=before.media.find(m=>m.kind==='video'&&/^\/media\/[A-Za-z0-9_.
 if(before.fps!==30||before.width!==h.registry.canvas?.width||before.height!==h.registry.canvas?.height||Math.abs(duration-h.duration)>1e-6)throw Error('NATIVE_PROJECT_GEOMETRY_CHANGED');
 const resolveAsset=id=>{const a=h.assets?.[id],rights=h.registry.licensedAssets?.[id];if(!a||rights?.rightsVerified!==true||rights?.commercialUseAllowed!==true||rights.sha256!==a.sha256)return null;const file=safeFile(a.file);if(hash(file)!==a.sha256||!/^\/media\/[A-Za-z0-9_.-]+$/.test(a.src)||fs.statSync(file).size!==a.size)throw Error('ASSET_BYTES_CHANGED');if(a.licenseFile&&(hash(safeFile(a.licenseFile))!==a.licenseSha256||rights.proofSha256!==a.licenseSha256))throw Error('ASSET_LICENSE_CHANGED');return {...a,id,file,verifiedPhysical:true,rightsVerified:true}};
 const stageAssets=async assets=>{for(const a of assets){const f=path.join(out,a.src.slice(1));if(fs.existsSync(f)){if(hash(safeFile(f))!==a.sha256)throw Error('ASSET_COLLISION');continue}fs.symlinkSync(a.file,f);if(hash(safeFile(f))!==a.sha256)throw Error('STAGED_HASH_MISMATCH')}};
-const registry={...h.registry,projectFingerprint:h.nativeFingerprint,nativeTrackRoles:h.nativeTrackRoles,nativeMediaBindings:h.nativeMediaBindings??{}};
+// TAV-01 is required for newly reviewed creative runs; preserve historical technical QA.
+const scenePolicy=h.scope==='private-reviewed'?{sceneTransitionPolicy:'TAV-01',sceneTransitions:h.sceneTransitions??{}}:{};
+const registry={...h.registry,projectFingerprint:h.nativeFingerprint,nativeTrackRoles:h.nativeTrackRoles,nativeMediaBindings:h.nativeMediaBindings??{},...scenePolicy};
 const store=new MasterDirectorProjectStore(out,async story=>({sourceSha256:h.sourceSha256,timelineFingerprint:h.timelineFingerprint,duration:h.duration,registry,rulebook:h.rulebook,nativePreflight:async(_plan,r)=>{
  const p=(await readProject()).data;
  const plan=await prepareStoryBatch(story,{registry:{...r,unresolvedRuleConflicts:[]},project:p,bindings:h.bindings,authorize:async()=>true});
@@ -38,7 +40,7 @@ const store=new MasterDirectorProjectStore(out,async story=>({sourceSha256:h.sou
  try{const result=applyCommandBatch(p,plan.request,{native,resolveAsset});if(result.assets.some(a=>!a.rightsVerified))throw Error('RESOURCE_RIGHTS_UNVERIFIED');return {status:'READY_FOR_EDITOR_PREVIEW'}}catch(e){return {status:'BLOCKED',issues:[{code:e.message,operationId:e.operationId??'plan'}]}}
 }}));
 const ledger=new DirectorApprovalLedger({directory:out+'/approvals'});
-const service=createApprovedBatchService({ledger,resolveContext:async()=>({nativeProjectId:projectId,privateClone:true,store,nativeFingerprint:h.nativeFingerprint,nativeTrackRoles:h.nativeTrackRoles,nativeMediaBindings:h.nativeMediaBindings??{},bindings:h.bindings}),readProject,native,resolveAsset,stageAssets,invokeMcp:async(n,a)=>call(n,a)});
+const service=createApprovedBatchService({ledger,resolveContext:async()=>({nativeProjectId:projectId,privateClone:true,store,nativeFingerprint:h.nativeFingerprint,nativeTrackRoles:h.nativeTrackRoles,nativeMediaBindings:h.nativeMediaBindings??{},bindings:h.bindings,...scenePolicy}),readProject,native,resolveAsset,stageAssets,invokeMcp:async(n,a)=>call(n,a)});
 if(mode==='run'){
  // One explicit confirmation starts both stages; a failed render never replays edits.
  execFileSync(process.execPath,[process.argv[1],'execute',out,storyFile,confirmation],{stdio:'inherit',timeout:120000});
