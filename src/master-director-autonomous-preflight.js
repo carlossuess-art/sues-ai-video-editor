@@ -8,6 +8,31 @@ const valid=x=>typeof x==='string'&&x.trim().length>0;
 const hash=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const note=(issues,code,subject='preproduction')=>issues.push({code,subject});
 
+// TAV-01: scene-boundary A/V pairs; host evidence must be tied to the actual story.
+export function reviewSceneTransitions(story, evidence = {}) {
+ const issues=[],scenes=story?.narrative?.scenes??[],ops=story?.operations??[];
+ if(!Array.isArray(scenes)||!Array.isArray(ops))return [{code:'SCENE_TRANSITION_INPUT_INVALID',subject:'story'}];
+ const frame=1/(story?.timeline?.fps||30),eps=1e-6,fp=hash(story);
+ const pairs=Array.isArray(evidence.pairs)?evidence.pairs:[];
+ const usedVisual=new Set(),usedSound=new Set();
+ for(let i=0;i<scenes.length-1;i++){
+  const a=scenes[i],b=scenes[i+1],at=a?.end,key=(a?.id??'unknown')+':'+(b?.id??'unknown');
+  const candidates=pairs.filter(p=>p?.fromSceneId===a?.id&&p?.toSceneId===b?.id);
+  const p=candidates[0],v=ops.find(o=>o?.id===p?.visualOperationId),s=ops.find(o=>o?.id===p?.sfxOperationId);
+  const near=o=>o&&Number.isFinite(o.start)&&Number.isFinite(o.end)&&o.end>o.start&&
+   [a?.id,b?.id].includes(o.sceneId)&&o.start<=at+frame+eps&&o.end>=at-frame-eps;
+  if(candidates.length!==1||!Number.isFinite(at)||!Number.isFinite(b?.start)||Math.abs(at-b.start)>eps||
+    evidence.storyFingerprint!==fp||!Number.isFinite(p?.boundaryTime)||Math.abs(p.boundaryTime-at)>frame+eps||
+    v?.track!=='transition'||s?.track!=='sfx'||!valid(s?.resourceRef)||v.id===s.id||
+    !near(v)||!near(s)||Math.max(v.start,s.start)>Math.min(v.end,s.end)+frame+eps||
+    usedVisual.has(v.id)||usedSound.has(s.id)||!valid(p?.direction)||!valid(p?.emotion)||!valid(p?.syncIntent)){
+    note(issues,'SCENE_TRANSITION_AV_PAIR_MISSING',key);continue;
+  }
+  usedVisual.add(v.id);usedSound.add(s.id);
+ }
+ return issues;
+}
+
 export function reviewAutonomousPreproduction({story,registry={},project={},evidence={}}={}){
  const issues=[];
  const check=inspectMasterDirectorStory(story,registry);
@@ -90,6 +115,7 @@ export function reviewAutonomousPreproduction({story,registry={},project={},evid
      v.ambiguityDetected!==false)
     note(issues,'SEMANTIC_VISUAL_AMBIGUITY',op.id);
  }
+ issues.push(...reviewSceneTransitions(story,evidence.sceneTransitions??{}));
  const preflight=evidence.preflight??{};
  if(preflight.creative?.status!=='PASS'||preflight.technical?.status!=='PASS'||
     !valid(preflight.creative.evidenceRef)||!valid(preflight.technical.evidenceRef))
