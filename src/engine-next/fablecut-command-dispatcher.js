@@ -2,7 +2,7 @@
 // This is not an HTTP route and must not be exposed without the existing
 // authenticated approval ledger and an independently verified project binding.
 import {applyCommandBatch,projectFingerprint} from './fablecut-command-batch.js';
-export async function dispatchCommandBatch({projectId,approvalId,request},{authorize,readProject,invokeMcp,audit,native,resolveAsset,stageAssets}={}){
+export async function dispatchCommandBatch({projectId,approvalId,request},{authorize,readProject,invokeMcp,audit,native,resolveAsset,stageAssets,mobileDirectorContext}={}){
  if(![authorize,readProject,invokeMcp,audit,stageAssets].every(x=>typeof x==='function')||typeof projectId!=='string'||typeof approvalId!=='string')throw Error('TRUSTED_HOST_REQUIRED');
  const before=await readProject();if(before.projectId!==projectId)throw Error('PROJECT_ID_MISMATCH');
  const predicted=applyCommandBatch(before.data,request,{native,resolveAsset});
@@ -12,7 +12,10 @@ export async function dispatchCommandBatch({projectId,approvalId,request},{autho
  await stageAssets(predicted.assets); // Host validates bytes, paths and rights; no arbitrary uploads.
  const current=await readProject();
  if(current.projectId!==projectId||projectFingerprint(current.data)!==request.baseFingerprint)throw Error('PROJECT_CHANGED_BEFORE_DISPATCH');
- let result;try{result=await invokeMcp('fablecut_patch_project',{baseRevision:request.baseRevision,ops:predicted.patchOps})}
+ const patchArgs={baseRevision:request.baseRevision,ops:predicted.patchOps};
+ const tool=mobileDirectorContext?'fablecut_director_patch_project':'fablecut_patch_project';
+ if(mobileDirectorContext)patchArgs.directorContext={...mobileDirectorContext,projectId,baseFingerprint:request.baseFingerprint,patchFingerprint:projectFingerprint(predicted.patchOps)};
+ let result;try{result=await invokeMcp(tool,patchArgs)}
  catch(e){await audit({...proof,stage:'dispatch-failed',reason:String(e.message).slice(0,250)});throw e}
  const after=await readProject();
  const verified=typeof result==='string'&&result.includes('Patched (revision '+(request.baseRevision+1)+')')&&after.projectId===projectId&&projectFingerprint(after.data)===projectFingerprint(predicted.project);
