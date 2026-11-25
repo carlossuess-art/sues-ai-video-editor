@@ -1,0 +1,8 @@
+# 25/11/2026 · TAV-01 · Conexión MCP móvil
+
+Carlos autoriza integrar y aplazar pruebas al render del Reel de respiración.
+
+- FableCut móvil: añadido módulo `sues-mobile-tav01.cjs` y herramientas `fablecut_director_preflight` (solo lectura) y `fablecut_director_patch_project` (misma operación nativa de patch, exige contexto TAV-01). Instalados en `/srv/sues-fablecut-next/preview-v11/app` mediante consola VPS, recibo exit 0. Copia previa `mcp-server.js.before-tav01-mobile-20261125`. No reinicio ni invocación de herramientas.
+- Master Director: commits d688002, bd5f30d, 1d2125c. Servicio de batch autorizado y dispatcher conectan la ruta cuando el contexto confiable del host selecciona `mobileMcp:true`, exige `sceneTransitionPolicy:TAV-01`, revalida contexto, usa proyecto/revisión/fingerprint y patch exacto. Parche equivalente aplicado en worktree privado VPS, preservando `nativePatch` y backups; exit 0. No se amplió el ámbito privado del servicio de aprobaciones ni se emitió aprobación.
+- El control comprueba estructura y sincronización planificada por escena; no certifica calidad audiovisual ni acredita derechos. Las rutas manuales originales no cambian. Para un nuevo Reel, el host debe vincular su contexto aprobado al proyecto móvil real; no se ha activado una sesión de ejecución móvil para ese Reel todavía. No afirmar integración end-to-end verificada ni bypass del ledger.
+- Sin tests, render, publicación, modificación de timeline ni gasto. Próximo paso: vincular contexto real del Reel respiración y utilizar la ruta, aplicar preproducción esencial y validación durante el render conforme al protocolo maestro. La modificación del código nativo no se ha probado.
