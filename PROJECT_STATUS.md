@@ -1,3 +1,7 @@
+## 26/11/2026 · Texto y capas de Motion Graphics en producción
+
+La V1.1 habitual sirve `715152efda2af7763a7207ddfb44378b9810c976`. Los bloques T/ST muestran el texto y abren el inspector nativo al tocar. Las composiciones MG abren sus capas editables desde el timeline móvil. Validación aislada con toques emulados, persistencia, MCP y MP4, además de regresión filmstrip/voz con AAC. Backup y evidencias en [registro de despliegue](docs/SUES_TIMELINE_RELEASE_20261126.md). Próximo punto de continuidad: clips de subtítulo independientes por palabra con tiempos reales y filas T/ST con subfilas por solape.
+
 ## 26/11/2026 · Audio y grabación VS en producción
 
 La V1.1 sirve el commit `4f5c5e80cde8c845246f09689bfda8ba6ccd7eb5`. Menú Audio unificado y grabación de voz superpuesta sincronizada con el reloj nativo. Validación aislada con micrófono simulado, inicio a 0,20 s, forma de onda, persistencia y MP4 descargado con H.264/AAC. Se conservaron los proyectos activos. El [registro de publicación](docs/SUES_TIMELINE_RELEASE_20261126.md) recoge los requisitos abiertos y las tres rutas de reversión.
