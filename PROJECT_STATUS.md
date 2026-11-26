@@ -1,3 +1,7 @@
+## 26/11/2026 · Subfilas de texto por solape en producción
+
+La V1.1 sirve `229d9e7ec4fa6f024b00baaea9403d8a54c5a55d`. Las subfilas temporales aparecen al seleccionar un grupo solapado en una pista homogénea de títulos o subtítulos y se pliegan al salir. Persistencia/MCP y regresión dirigidas 4/4, suite 374/388, backup y reversión probada. [Evidencia](docs/SUES_TIMELINE_RELEASE_20261126.md). Próximo punto: agrupar entre pistas nativas, expansión inline MG y máscaras direccionales con compositor compartido.
+
 ## 26/11/2026 · Subtítulos independientes desde transcripción en producción
 
 V1.1 sirve `0cdace0c2ebe7614efc332b8b18316f1840aef55`. Transcripción → Subtítulos por palabra crea clips de texto independientes preservando el inicio de cada palabra. Pruebas dirigidas de interfaz y MCP 4/4, suite 374/388 con los 14 fallos preexistentes, backup y reversión probada. [Evidencia](docs/SUES_TIMELINE_RELEASE_20261126.md). Continuar por agrupación T/ST y subfilas temporales de solape; MG todavía abre las capas en su composición nativa.
