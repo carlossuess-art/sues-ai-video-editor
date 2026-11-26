@@ -24,3 +24,13 @@
  #tracks .clip:not(.c-audio) .trans-mark.focused polygon{fill:#d4af37;stroke:#fff0a6}
  #tracks .clip:not(.c-audio) .trans-mark::after{content:"";position:absolute;top:50%;left:50%;width:16px;height:13px;transform:translate(-50%,-50%);background:#181818;clip-path:polygon(0 0,50% 50%,0 100%,0 0,100% 0,50% 50%,100% 100%,100% 0);pointer-events:none}
 }
+
+/* Quick font size, native Inspector adapter. */
+#suesQuickFontSize{display:none}
+@media(max-width:980px){
+ #suesQuickFontSize:not([hidden]){display:flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;padding:2px 0}
+ #suesQuickFontSize button,#suesQuickFontSize input{height:30px;border:1px solid #666;border-radius:5px;color:#fff;background:#292b30;text-align:center;font-size:15px}
+ #suesQuickFontSize button{width:38px;touch-action:none}
+ #suesQuickFontSize input{width:58px}
+ #suesQuickFontSize button:disabled,#suesQuickFontSize input:disabled{opacity:.4}
+}
