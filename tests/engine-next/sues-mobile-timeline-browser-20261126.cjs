@@ -4,12 +4,21 @@ const {makeDataDir,startServer,seedProject,startMcp,readProject}=require("./help
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 async function until(fn,attempts=100){for(let i=0;i<attempts;i++){try{const v=await fn();if(v)return v;}catch{}await delay(100);}throw Error("timeout");}
 test("SUES mobile family filter and native text controls",async t=>{
- const dir=makeDataDir(t,seedProject({width:540,height:960,fps:15,media:[],clips:[
+ const withFilmstrip = process.env.SUES_QA_FILMSTRIP === "1";
+ const media = withFilmstrip ? [{id:"source",kind:"video",src:"/media/source.mp4",duration:2,width:180,height:320,fps:15}] : [];
+ const videoClips = withFilmstrip ? [{id:"original",name:"Vídeo principal",mediaId:"source",kind:"video",track:"V1",start:0,in:.2,duration:1,props:{}}] : [];
+ const dir=makeDataDir(t,seedProject({width:540,height:960,fps:15,media,clips:[
+ ...videoClips,
  {id:"title",kind:"text",name:"TITLE-test",track:"V2",start:0,in:0,duration:1,props:{text:"TITULO",fontSize:80}},
  {id:"sub",kind:"text",name:"CAP-test",track:"V3",start:0,in:0,duration:1,props:{text:"subtitulo",fontSize:50}},
  {id:"ellipse",kind:"shape",name:"Elementos de prueba",track:"V5",start:0,in:0,duration:1,props:{shapes:[{type:"ellipse",w:300,h:300,fill:"#ffffff"}]}},
  {id:"grade",kind:"adjust",name:"CE-Sombra fria",track:"V4",start:0,in:0,duration:1,props:{grade:{temp:-20}}},
  ]}));
+ if (withFilmstrip) {
+   fs.mkdirSync(path.join(dir,"media"));
+   execFileSync("ffmpeg",["-v","error","-f","lavfi","-i","testsrc2=size=180x320:rate=15",
+     "-t","2","-c:v","libx264","-pix_fmt","yuv420p",path.join(dir,"media","source.mp4")]);
+ }
  const {base,port:serverPort}=await startServer(t,dir);
  const http=await fetch(base+"/index.html");console.log("HTTP",http.status,http.headers.get("content-type"),(await http.text()).slice(0,60));
  const profile=fs.mkdtempSync(path.join(os.tmpdir(),"sues-ux-chrome-"));const chrome=spawn("/opt/sues-qa-browser-20261122/chrome-linux64/chrome",["--headless=new","--disable-dev-shm-usage","--disable-gpu","--no-proxy-server","--no-first-run","--no-default-browser-check","--remote-debugging-port=0","--user-data-dir="+profile,"--window-size=393,852","about:blank"],{stdio:"ignore"});
@@ -22,6 +31,28 @@ test("SUES mobile family filter and native text controls",async t=>{
  await send("Runtime.enable");await send("Page.enable");await send("Emulation.setDeviceMetricsOverride",{width:393,height:852,deviceScaleFactor:1,mobile:false});
  console.log("NAV",base,JSON.stringify(await send("Page.navigate",{url:base+"/index.html"})));
  try{await until(()=>val('typeof project!=="undefined"&&project.clips.some(c=>c.id==="sub")&&!!document.querySelector(\'.clip[data-id="sub"]\')'));}catch(e){console.log("DEBUG",await val('({url:location.href,title:document.title,ready:document.readyState,project:typeof project==="undefined"?null:project.clips.map(c=>[c.id,c.kind]),body:document.body.innerText.slice(0,500),viewport:innerWidth,clipCount:document.querySelectorAll(".clip").length})'));throw e;}
+ if (withFilmstrip) {
+   await val('state.pps=60;rebuildClips();true');
+   const readStrip = `Array.from(document.querySelectorAll('.clip[data-id="original"] .sues-filmstrip-batch'))
+     .filter(image=>image.complete && image.naturalWidth>0).map(image=>image.dataset.url)`;
+   const normal = await until(async ()=>{
+     const images = await val(readStrip);
+     return images.length === 1 && images;
+   });
+   assert.equal(new URL(normal[0],base).searchParams.get("t"),"0.200000");
+   await val('state.pps=240;rebuildClips();true');
+   const enlarged = await until(async ()=>{
+     const images = await val(readStrip);
+     return images.length === 4 && images;
+   });
+   const sourceTimes = enlarged.map(url=>new URL(url,base).searchParams.get("t"));
+   assert.deepEqual(sourceTimes,["0.200000","0.466667","0.733333","1.000000"]);
+   const frame = await fetch(new URL(enlarged[1],base));
+   assert.equal(frame.status,200);
+   assert.equal(frame.headers.get("x-fablecut-frame-times"),"0.466667");
+   console.log("Filmstrip uses real frames",sourceTimes.join(","));
+   await val('state.pps=60;rebuildClips();true');
+ }
  const details=await val('Array.from(document.querySelectorAll(".clip[data-sues-family]")).map(e=>[e.dataset.id,e.dataset.suesFamily,getComputedStyle(e).borderColor])');
  assert.ok(details.some(x=>x[0]==="sub"&&x[1]==="ST"&&x[2]==="rgb(255, 255, 255)"),JSON.stringify(details));
  assert.ok(details.some(x=>x[0]==="title"&&x[1]==="T"&&x[2]==="rgb(255, 218, 53)"),JSON.stringify(details));
@@ -110,10 +141,10 @@ test("SUES mobile family filter and native text controls",async t=>{
    if(["done","failed","error","cancelled"].includes(job.status)) return job;
  },450);
  assert.equal(result.status,"done",JSON.stringify(result));
- const media = await fetch(new URL(result.src,base));
- assert.equal(media.status,200);
+ const download = await fetch(new URL(result.src,base));
+ assert.equal(download.status,200);
  const output = path.join(profile,"timeline-qa.mp4");
- fs.writeFileSync(output,Buffer.from(await media.arrayBuffer()));
+ fs.writeFileSync(output,Buffer.from(await download.arrayBuffer()));
  const streams = JSON.parse(execFileSync("ffprobe",["-v","error","-show_entries",
    "stream=codec_name,width,height,nb_frames,duration","-of","json",output],{encoding:"utf8"})).streams;
  const video = streams.find(stream=>stream.codec_name==="h264");
