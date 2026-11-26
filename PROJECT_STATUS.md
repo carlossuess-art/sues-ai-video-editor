@@ -1,3 +1,7 @@
+## 26/11/2026 · Subtítulos independientes desde transcripción en producción
+
+V1.1 sirve `0cdace0c2ebe7614efc332b8b18316f1840aef55`. Transcripción → Subtítulos por palabra crea clips de texto independientes preservando el inicio de cada palabra. Pruebas dirigidas de interfaz y MCP 4/4, suite 374/388 con los 14 fallos preexistentes, backup y reversión probada. [Evidencia](docs/SUES_TIMELINE_RELEASE_20261126.md). Continuar por agrupación T/ST y subfilas temporales de solape; MG todavía abre las capas en su composición nativa.
+
 ## 26/11/2026 · Texto y capas de Motion Graphics en producción
 
 La V1.1 habitual sirve `715152efda2af7763a7207ddfb44378b9810c976`. Los bloques T/ST muestran el texto y abren el inspector nativo al tocar. Las composiciones MG abren sus capas editables desde el timeline móvil. Validación aislada con toques emulados, persistencia, MCP y MP4, además de regresión filmstrip/voz con AAC. Backup y evidencias en [registro de despliegue](docs/SUES_TIMELINE_RELEASE_20261126.md). Próximo punto de continuidad: clips de subtítulo independientes por palabra con tiempos reales y filas T/ST con subfilas por solape.
