@@ -5,6 +5,7 @@ const delay=ms=>new Promise(r=>setTimeout(r,ms));
 async function until(fn,attempts=100){for(let i=0;i<attempts;i++){try{const v=await fn();if(v)return v;}catch{}await delay(100);}throw Error("timeout");}
 test("SUES mobile family filter and native text controls",async t=>{
  const withFilmstrip = process.env.SUES_QA_FILMSTRIP === "1";
+ const withVoiceover = process.env.SUES_QA_VOICE === "1";
  const media = withFilmstrip ? [{id:"source",kind:"video",src:"/media/source.mp4",duration:2,width:180,height:320,fps:15}] : [];
  const videoClips = withFilmstrip ? [{id:"original",name:"Vídeo principal",mediaId:"source",kind:"video",track:"V1",start:0,in:.2,duration:1,props:{}}] : [];
  const dir=makeDataDir(t,seedProject({width:540,height:960,fps:15,media,clips:[
@@ -21,7 +22,7 @@ test("SUES mobile family filter and native text controls",async t=>{
  }
  const {base,port:serverPort}=await startServer(t,dir);
  const http=await fetch(base+"/index.html");console.log("HTTP",http.status,http.headers.get("content-type"),(await http.text()).slice(0,60));
- const profile=fs.mkdtempSync(path.join(os.tmpdir(),"sues-ux-chrome-"));const chrome=spawn("/opt/sues-qa-browser-20261122/chrome-linux64/chrome",["--headless=new","--disable-dev-shm-usage","--disable-gpu","--no-proxy-server","--no-first-run","--no-default-browser-check","--remote-debugging-port=0","--user-data-dir="+profile,"--window-size=393,852","about:blank"],{stdio:"ignore"});
+ const profile=fs.mkdtempSync(path.join(os.tmpdir(),"sues-ux-chrome-"));const chrome=spawn("/opt/sues-qa-browser-20261122/chrome-linux64/chrome",["--headless=new","--disable-dev-shm-usage","--disable-gpu","--no-proxy-server","--no-first-run","--no-default-browser-check","--remote-debugging-port=0","--user-data-dir="+profile,"--window-size=393,852",...(withVoiceover?["--use-fake-device-for-media-stream","--use-fake-ui-for-media-stream"]:[]),"about:blank"],{stdio:"ignore"});
  t.after(()=>{chrome.kill();});
  const port=await until(()=>{const f=path.join(profile,"DevToolsActivePort");return fs.existsSync(f)&&fs.readFileSync(f,"utf8").split("\n")[0]});
  const page=await until(async()=>{const r=await fetch("http://127.0.0.1:"+port+"/json");return (await r.json()).find(x=>x.type==="page")});
@@ -119,6 +120,31 @@ test("SUES mobile family filter and native text controls",async t=>{
  await until(()=>val(`typeof getClip !== "undefined" && getClip("title")?.props?.textScaleX > 1`));
  assert.equal(await val('getClip("title").props.textScaleY'),uniform.textScaleY);
 
+ if (withVoiceover) {
+   await val(`(() => {
+     setTime(.2);
+     window.SuesMobileContext.setContextMode("add");
+     [...document.querySelectorAll("button")].find(el=>el.textContent.trim()==="Audio"&&el.getBoundingClientRect().width>0).click();
+     [...document.querySelectorAll("button")].find(el=>el.textContent.includes("Grabar voz superpuesta")&&el.getBoundingClientRect().width>0).click();
+     return true;
+   })()`);
+   const started = await until(()=>val('state.playing&&state.time>.52'));
+   assert.equal(started,true);
+   await val(`(() => {
+     const button=[...document.querySelectorAll("button")].find(el=>el.textContent.includes("Detener grabación")&&el.getBoundingClientRect().width>0);
+     if(button)button.click();
+     return true;
+   })()`);
+   const voice = await until(()=>val('project.clips.find(c=>c.kind==="audio"&&c.name.startsWith("Voz superpuesta"))'));
+   assert.ok(Math.abs(voice.start - .2) < .001, JSON.stringify(voice));
+   assert.ok(voice.duration >= .1 && voice.duration <= .8);
+   assert.equal(await val(`suesClipFamily(getClip(${JSON.stringify(voice.id)}))`),"VS");
+   await until(()=>val(`!!wavePeaksFor(getClip(${JSON.stringify(voice.id)}))`));
+   await until(()=>readProject(dir).clips.some(c=>c.id===voice.id));
+   assert.equal(readProject(dir).media.find(item=>item.id==="source").src,"/media/source.mp4");
+   console.log("Voiceover",JSON.stringify({start:voice.start,duration:voice.duration,track:voice.track}));
+ }
+
  const mcp = startMcp(t,dir,{FABLECUT_PORT:String(serverPort)});
  await mcp.request("initialize",{protocolVersion:"2025-11-25"});
  const revision = readProject(dir).revision;
@@ -128,7 +154,8 @@ test("SUES mobile family filter and native text controls",async t=>{
  });
  assert.equal(update.isError,false,update.text);
  assert.equal(readProject(dir).clips.find(c=>c.id==="title").props.textScaleY,1.42);
- await until(()=>val('getClip("title")?.props.textScaleY===1.42'));
+ await send("Page.reload");
+ await until(()=>val('typeof getClip!=="undefined"&&getClip("title")?.props.textScaleY===1.42'));
 
  const queued = await fetch(base+"/api/export/request",{
    method:"POST",headers:{"Content-Type":"application/json"},
@@ -147,6 +174,7 @@ test("SUES mobile family filter and native text controls",async t=>{
  fs.writeFileSync(output,Buffer.from(await download.arrayBuffer()));
  const streams = JSON.parse(execFileSync("ffprobe",["-v","error","-show_entries",
    "stream=codec_name,width,height,nb_frames,duration","-of","json",output],{encoding:"utf8"})).streams;
+ if (withVoiceover) assert.ok(streams.some(stream=>stream.codec_name==="aac"),JSON.stringify(streams));
  const video = streams.find(stream=>stream.codec_name==="h264");
  assert.ok(video,JSON.stringify(streams));
  assert.equal(video.width,540);
