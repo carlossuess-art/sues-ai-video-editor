@@ -63,3 +63,8 @@ El segundo despliegue sirve `a0b186817448` y añade fotogramas reales para V con
 ### Audio y voz superpuesta
 
 El tercer despliegue sirve `4f5c5e80cde8`. El menú Audio agrupa controles y permite grabar una toma VS en una pista independiente. El reloj de la previsualización y la grabación parten del mismo tiempo. El caso de prueba emulado incluyó forma de onda, guardado y MP4 H.264/AAC. Las filas de música y la comprobación auditiva con material real mantienen AU-01 abierto. La [evidencia de los tres despliegues](SUES_TIMELINE_RELEASE_20261126.md) conserva el estado detallado.
+
+
+### Acceso desde bloques de texto y composiciones MG
+
+Cuarto despliegue `715152efda2a`: T/ST muestran texto y abren el inspector con un toque corto. El marcador nativo de subtítulo también se reconoce. Botón en MG para editar las capas de la composición en su timeline nativo con tiempos conservados. Prueba táctil emulada, guardado, MCP y exportación dirigida superados. Ver [registro](SUES_TIMELINE_RELEASE_20261126.md). Siguen abiertos la generación de clips por palabra, la agrupación y el plegado por solape, y el desplegable MG en la línea principal.
