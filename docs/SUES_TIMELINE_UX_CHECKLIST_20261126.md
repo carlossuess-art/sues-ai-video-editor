@@ -68,3 +68,8 @@ El tercer despliegue sirve `4f5c5e80cde8`. El menú Audio agrupa controles y per
 ### Acceso desde bloques de texto y composiciones MG
 
 Cuarto despliegue `715152efda2a`: T/ST muestran texto y abren el inspector con un toque corto. El marcador nativo de subtítulo también se reconoce. Botón en MG para editar las capas de la composición en su timeline nativo con tiempos conservados. Prueba táctil emulada, guardado, MCP y exportación dirigida superados. Ver [registro](SUES_TIMELINE_RELEASE_20261126.md). Siguen abiertos la generación de clips por palabra, la agrupación y el plegado por solape, y el desplegable MG en la línea principal.
+
+
+### Subtítulos independientes desde transcripción
+
+Quinto despliegue `0cdace0c2ebe`: Transcripción → **Subtítulos por palabra** crea un clip por palabra con su inicio real, incluso cuando dos palabras comienzan en el mismo fotograma. Se probó la persistencia y la paridad con el generador y editor MCP. El mínimo de 0,05 s puede producir un solape corto. Quedan las filas generales por familia, subfilas de solape, expansión inline de MG y revisión en dispositivo físico.
