@@ -1,0 +1,216 @@
+[
+  {
+    "file": "Original",
+    "luminance": 0.4613,
+    "saturation": 0.2396,
+    "red_minus_blue": 0.0222,
+    "shadows_under_12": 0.0073,
+    "highlights_over_244": 0.0019
+  },
+  {
+    "file": "Bruma Lumínica.cube",
+    "collection": "v1",
+    "size": 64,
+    "sha256": "02b9cc8044c6c1f5c328c276f52bb27980334c0cc7d5b7239509d1b08f26b8f1",
+    "luminance": 0.5202,
+    "saturation": 0.3432,
+    "red_minus_blue": -0.0366,
+    "shadows_under_12": 0.02,
+    "highlights_over_244": 0.0254
+  },
+  {
+    "file": "Café Profundo.cube",
+    "collection": "v1",
+    "size": 33,
+    "sha256": "ccb737f3843323b338518ba9af9c9b00e0f44b6c11ae0fdf5dfc9b8293dc10f1",
+    "luminance": 0.3668,
+    "saturation": 0.3455,
+    "red_minus_blue": 0.0498,
+    "shadows_under_12": 0.0277,
+    "highlights_over_244": 0.0
+  },
+  {
+    "file": "Caos Nocturno.cube",
+    "collection": "v1",
+    "size": 64,
+    "sha256": "9cc09582bb76777424145ef7ee22b7080bbf28abea395847a1d4107272e72347",
+    "luminance": 0.4778,
+    "saturation": 0.2742,
+    "red_minus_blue": 0.0402,
+    "shadows_under_12": 0.0296,
+    "highlights_over_244": 0.0098
+  },
+  {
+    "file": "Despedida Fría.cube",
+    "collection": "v1",
+    "size": 33,
+    "sha256": "f54cf7bf6f4a30abde9cc3db5ab5c0627eaf609d98136246353713931d963094",
+    "luminance": 0.4331,
+    "saturation": 0.403,
+    "red_minus_blue": -0.03,
+    "shadows_under_12": 0.0138,
+    "highlights_over_244": 0.0
+  },
+  {
+    "file": "Nostalgia Cálida.cube",
+    "collection": "v1",
+    "size": 64,
+    "sha256": "26c45bd929c692f7c32a38631a892fcb07c342aaa26d1cd5ba3ffa5fa8a74522",
+    "luminance": 0.4726,
+    "saturation": 0.4435,
+    "red_minus_blue": 0.2296,
+    "shadows_under_12": 0.018,
+    "highlights_over_244": 0.0012
+  },
+  {
+    "file": "Ocaso Difuso.cube",
+    "collection": "v1",
+    "size": 64,
+    "sha256": "0841d7534708a3c7f9a2ccea5e6fb56cecde99a21d8a34eb5a7ddec9d26f0663",
+    "luminance": 0.423,
+    "saturation": 0.309,
+    "red_minus_blue": 0.0838,
+    "shadows_under_12": 0.0184,
+    "highlights_over_244": 0.0011
+  },
+  {
+    "file": "Thriller Urbano.cube",
+    "collection": "v1",
+    "size": 33,
+    "sha256": "3f9c6f13905fa880cd372c919c5cc5aab4f66598619315adedbfe6e8644be738",
+    "luminance": 0.4079,
+    "saturation": 0.3158,
+    "red_minus_blue": 0.0934,
+    "shadows_under_12": 0.0276,
+    "highlights_over_244": 0.0
+  },
+  {
+    "file": "Urbano Crudo.cube",
+    "collection": "v1",
+    "size": 33,
+    "sha256": "e8de81657829f5b387a5259ceaccbd98b1517690f8703497a64e51d58fe36618",
+    "luminance": 0.5422,
+    "saturation": 0.354,
+    "red_minus_blue": 0.1036,
+    "shadows_under_12": 0.0183,
+    "highlights_over_244": 0.0358
+  },
+  {
+    "file": "Vibrante Luminoso.cube",
+    "collection": "v1",
+    "size": 64,
+    "sha256": "2d18b45f6f0de81c3b40e6687bfeb77e8f1ac75653ff41cd0860be576a0b8fab",
+    "luminance": 0.4357,
+    "saturation": 0.2343,
+    "red_minus_blue": -0.021,
+    "shadows_under_12": 0.0094,
+    "highlights_over_244": 0.0
+  },
+  {
+    "file": "Vintage Jungle.cube",
+    "collection": "v1",
+    "size": 65,
+    "sha256": "7259d86b29cb382f91d3b66f78ad0ba45a0f6bdfe000ab2fcab99b47c3b17dc5",
+    "luminance": 0.6176,
+    "saturation": 0.3251,
+    "red_minus_blue": 0.1247,
+    "shadows_under_12": 0.0,
+    "highlights_over_244": 0.0
+  },
+  {
+    "file": "CRYSTAL AURA.cube",
+    "collection": "v2",
+    "size": 33,
+    "sha256": "51a5323b0b60c80cb66f57f2be9181e513c7d50186bc1e943605fae503a7a857",
+    "luminance": 0.3482,
+    "saturation": 0.3894,
+    "red_minus_blue": 0.0013,
+    "shadows_under_12": 0.0438,
+    "highlights_over_244": 0.0
+  },
+  {
+    "file": "Calor Desvanecido.cube",
+    "collection": "v2",
+    "size": 33,
+    "sha256": "2c23bd57c16d23e384fd430caed21d40fa54713d51bd87164c8a4b21a6bc8cbd",
+    "luminance": 0.3896,
+    "saturation": 0.3205,
+    "red_minus_blue": 0.0647,
+    "shadows_under_12": 0.0236,
+    "highlights_over_244": 0.0
+  },
+  {
+    "file": "Mirada Gélida.cube",
+    "collection": "v2",
+    "size": 64,
+    "sha256": "688d024f6dfb3dc70de34b419d533466e615ef8513d827d2cd324a2561cf764e",
+    "luminance": 0.4602,
+    "saturation": 0.4288,
+    "red_minus_blue": -0.145,
+    "shadows_under_12": 0.0072,
+    "highlights_over_244": 0.0007
+  },
+  {
+    "file": "Nostalgia Verdosa.cube",
+    "collection": "v2",
+    "size": 64,
+    "sha256": "565396df0f1330df75b2b1bcfa7e216a12f76632088b26bba9adfbf5a9a62dc1",
+    "luminance": 0.4837,
+    "saturation": 0.3867,
+    "red_minus_blue": 0.0152,
+    "shadows_under_12": 0.0388,
+    "highlights_over_244": 0.0265
+  },
+  {
+    "file": "Océano oscuro.cube",
+    "collection": "v2",
+    "size": 33,
+    "sha256": "f38c80efaf64c1a192e27f190ea11ed7b281fd2d9cdbf62eab69cfdf3daa9db9",
+    "luminance": 0.347,
+    "saturation": 0.248,
+    "red_minus_blue": 0.0246,
+    "shadows_under_12": 0.0446,
+    "highlights_over_244": 0.0
+  },
+  {
+    "file": "Planeta Alienígena.cube",
+    "collection": "v2",
+    "size": 64,
+    "sha256": "6bf94c8808109d802cddd0e37e124cfbf01f2d948530eb4057944489ad999d5c",
+    "luminance": 0.4542,
+    "saturation": 0.2444,
+    "red_minus_blue": -0.0298,
+    "shadows_under_12": 0.0301,
+    "highlights_over_244": 0.0
+  },
+  {
+    "file": "Teal cálido.cube",
+    "collection": "v2",
+    "size": 33,
+    "sha256": "c4944ee4d190bd9b7ac7a195fb4a45fc40d26d22c89e2b0fa8c1557fe83c918a",
+    "luminance": 0.4128,
+    "saturation": 0.4604,
+    "red_minus_blue": 0.2047,
+    "shadows_under_12": 0.0271,
+    "highlights_over_244": 0.0
+  },
+  {
+    "file": "Vintage.cube",
+    "collection": "v2",
+    "size": 64,
+    "sha256": "ac11030b728454af5143c6df4439994213ef79b55d0e167a571cfbb2791a7240",
+    "luminance": 0.4677,
+    "saturation": 0.2626,
+    "red_minus_blue": 0.0702,
+    "shadows_under_12": 0.0455,
+    "highlights_over_244": 0.001
+  },
+  {
+    "file": "Blanco y negro dramático · prueba",
+    "luminance": 0.4214,
+    "saturation": 0.0,
+    "red_minus_blue": 0.0,
+    "shadows_under_12": 0.0445,
+    "highlights_over_244": 0.0194
+  }
+]

@@ -1,3 +1,7 @@
+## 26/11/2026 · Timeline móvil y LUT Creator Club
+
+El estudio V1.1 sirve `a0b1868174481301065cc22755524677d873bd33`. Fotogramas de V a densidad dependiente del zoom con tiempos fuente del clip y caché nativa, comprobados en Chromium. Se mantienen las pruebas de filtros, escalas y exportación. Se aplicaron los 18 LUT Creator Club a un único fotograma Q03 y se compararon visualmente. El [registro de publicación](docs/SUES_TIMELINE_RELEASE_20261126.md) y la [prueba de LUT](docs/SUES_LUT_QA_20261126.md) documentan la evidencia y los requisitos abiertos.
+
 ## 26/11/2026 · Timeline móvil · Primer despliegue del mandato
 
 Publicado en el editor V1.1 habitual con el commit de código `52c6970387cd05652fe2863e5022c05d88fcb235`. Siglas, paleta, filtro de familia, contornos por familia, detección de transparencia, control rápido de tamaño y escala desde ocho tiradores. Prueba aislada de gestos táctiles emulados, persistencia, undo/redo, MCP y exportación MP4 descargada. Checksums servidos y acceso exterior protegido verificados. El checklist continúa abierto. Evidencia, límites y ruta de reversión en [Despliegue de timeline móvil](docs/SUES_TIMELINE_RELEASE_20261126.md).

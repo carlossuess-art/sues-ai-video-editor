@@ -53,3 +53,8 @@ Reproducción independiente con servidor HTTP Python y HTML mínimo: Chromium co
 ## 26/11/2026 · Integración en el editor habitual
 
 El mandato del 26/11 autorizó producir, probar y publicar los cambios validados. El primer bloque de funcionalidades está operativo en el editor habitual, versión `52c6970387cd`. Siglas y colores, filtrado en filas de familia única, hit-test según píxeles visibles, control rápido de tamaño y escalas de texto se han integrado. El [registro de publicación](SUES_TIMELINE_RELEASE_20261126.md) recoge pruebas, elementos pendientes, backup y reversión. Cada casilla representa un conjunto completo de requisitos. Las casillas abiertas incluyen validaciones o funciones todavía pendientes.
+
+
+### Fotogramas de vídeo y evaluación de color
+
+El segundo despliegue sirve `a0b186817448` y añade fotogramas reales para V con caché y densidad dependiente del zoom. Chromium comprobó la combinación de zoom y entrada recortada a 0,20 s, y se repitieron persistencia, MCP y descarga del MP4. Los [18 LUT Creator Club](SUES_LUT_QA_20261126.md) se comprobaron con FFmpeg sobre Q03 en aislamiento. Queda el uso de esos LUT dentro del compositor.

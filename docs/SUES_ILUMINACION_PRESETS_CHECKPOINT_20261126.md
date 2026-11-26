@@ -127,3 +127,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
+
+
+## 26/11/2026 · Fuentes de Color Emocional
+
+Se aplicaron los 18 LUT de Creator Club V1 y V2 a un mismo fotograma autorizado de Q03. La [comparativa y las métricas](SUES_LUT_QA_20261126.md) recogen los resultados, con nombres originales y SHA-256. El paso pertenece a CE. Los presets IL de ReLight siguen pendientes de integración y validación temporal en FableCut.
