@@ -58,3 +58,8 @@ El mandato del 26/11 autorizó producir, probar y publicar los cambios validados
 ### Fotogramas de vídeo y evaluación de color
 
 El segundo despliegue sirve `a0b186817448` y añade fotogramas reales para V con caché y densidad dependiente del zoom. Chromium comprobó la combinación de zoom y entrada recortada a 0,20 s, y se repitieron persistencia, MCP y descarga del MP4. Los [18 LUT Creator Club](SUES_LUT_QA_20261126.md) se comprobaron con FFmpeg sobre Q03 en aislamiento. Queda el uso de esos LUT dentro del compositor.
+
+
+### Audio y voz superpuesta
+
+El tercer despliegue sirve `4f5c5e80cde8`. El menú Audio agrupa controles y permite grabar una toma VS en una pista independiente. El reloj de la previsualización y la grabación parten del mismo tiempo. El caso de prueba emulado incluyó forma de onda, guardado y MP4 H.264/AAC. Las filas de música y la comprobación auditiva con material real mantienen AU-01 abierto. La [evidencia de los tres despliegues](SUES_TIMELINE_RELEASE_20261126.md) conserva el estado detallado.

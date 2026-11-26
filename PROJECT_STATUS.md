@@ -1,3 +1,7 @@
+## 26/11/2026 · Audio y grabación VS en producción
+
+La V1.1 sirve el commit `4f5c5e80cde8c845246f09689bfda8ba6ccd7eb5`. Menú Audio unificado y grabación de voz superpuesta sincronizada con el reloj nativo. Validación aislada con micrófono simulado, inicio a 0,20 s, forma de onda, persistencia y MP4 descargado con H.264/AAC. Se conservaron los proyectos activos. El [registro de publicación](docs/SUES_TIMELINE_RELEASE_20261126.md) recoge los requisitos abiertos y las tres rutas de reversión.
+
 ## 26/11/2026 · Timeline móvil y LUT Creator Club
 
 El estudio V1.1 sirve `a0b1868174481301065cc22755524677d873bd33`. Fotogramas de V a densidad dependiente del zoom con tiempos fuente del clip y caché nativa, comprobados en Chromium. Se mantienen las pruebas de filtros, escalas y exportación. Se aplicaron los 18 LUT Creator Club a un único fotograma Q03 y se compararon visualmente. El [registro de publicación](docs/SUES_TIMELINE_RELEASE_20261126.md) y la [prueba de LUT](docs/SUES_LUT_QA_20261126.md) documentan la evidencia y los requisitos abiertos.
