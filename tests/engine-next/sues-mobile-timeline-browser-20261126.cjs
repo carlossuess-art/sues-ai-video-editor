@@ -1,15 +1,16 @@
 "use strict";
-const fs=require("node:fs"),os=require("node:os"),path=require("node:path"),assert=require("node:assert/strict"),{spawn}=require("node:child_process"),{test}=require("node:test");
-const {makeDataDir,startServer,seedProject}=require("./helpers");
+const fs=require("node:fs"),os=require("node:os"),path=require("node:path"),assert=require("node:assert/strict"),{spawn,execFileSync}=require("node:child_process"),{test}=require("node:test");
+const {makeDataDir,startServer,seedProject,startMcp,readProject}=require("./helpers");
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
-async function until(fn){for(let i=0;i<100;i++){try{const v=await fn();if(v)return v;}catch{}await delay(100);}throw Error("timeout");}
-test("SUES mobile family palette and native quick size browser smoke",async t=>{
- const dir=makeDataDir(t,seedProject({width:1080,height:1920,media:[],clips:[
- {id:"title",kind:"text",name:"TITLE-test",track:"V2",start:0,in:0,duration:5,props:{text:"TITULO",fontSize:80}},
- {id:"sub",kind:"text",name:"CAP-test",track:"V3",start:0,in:0,duration:5,props:{text:"subtitulo",fontSize:50}},
- {id:"grade",kind:"adjust",name:"CE-Sombra fria",track:"V4",start:0,in:0,duration:5,props:{grade:{temp:-20}}},
+async function until(fn,attempts=100){for(let i=0;i<attempts;i++){try{const v=await fn();if(v)return v;}catch{}await delay(100);}throw Error("timeout");}
+test("SUES mobile family filter and native text controls",async t=>{
+ const dir=makeDataDir(t,seedProject({width:540,height:960,fps:15,media:[],clips:[
+ {id:"title",kind:"text",name:"TITLE-test",track:"V2",start:0,in:0,duration:1,props:{text:"TITULO",fontSize:80}},
+ {id:"sub",kind:"text",name:"CAP-test",track:"V3",start:0,in:0,duration:1,props:{text:"subtitulo",fontSize:50}},
+ {id:"ellipse",kind:"shape",name:"Elementos de prueba",track:"V5",start:0,in:0,duration:1,props:{shapes:[{type:"ellipse",w:300,h:300,fill:"#ffffff"}]}},
+ {id:"grade",kind:"adjust",name:"CE-Sombra fria",track:"V4",start:0,in:0,duration:1,props:{grade:{temp:-20}}},
  ]}));
- const {base}=await startServer(t,dir);
+ const {base,port:serverPort}=await startServer(t,dir);
  const http=await fetch(base+"/index.html");console.log("HTTP",http.status,http.headers.get("content-type"),(await http.text()).slice(0,60));
  const profile=fs.mkdtempSync(path.join(os.tmpdir(),"sues-ux-chrome-"));const chrome=spawn("/opt/sues-qa-browser-20261122/chrome-linux64/chrome",["--headless=new","--disable-dev-shm-usage","--disable-gpu","--no-proxy-server","--no-first-run","--no-default-browser-check","--remote-debugging-port=0","--user-data-dir="+profile,"--window-size=393,852","about:blank"],{stdio:"ignore"});
  t.after(()=>{chrome.kill();});
@@ -29,4 +30,101 @@ test("SUES mobile family palette and native quick size browser smoke",async t=>{
  await val('document.querySelector("#suesQuickFontSize button:last-child").click();true');
  assert.equal(await val('getClip("sub").props.fontSize'),51);
  assert.equal(await val('getClip("title").props.fontSize'),80);
+ const selection = await val(`(() => {
+   const track = document.querySelector('.track-head[data-sues-family="ST"] .track-id');
+   const before = state.time;
+   track.click();
+   const first = [track.getAttribute("aria-pressed"), state.time === before, state.selId];
+   selectClip("title");
+   const protectedSelection = state.selId;
+   const other = document.querySelector('.clip[data-id="title"]');
+   const interactive = getComputedStyle(other).pointerEvents;
+   track.click();
+   const second = track.getAttribute("aria-pressed");
+   selectClip("title");
+   return {first, protectedSelection, interactive, second, selected:state.selId};
+ })()`);
+ assert.deepEqual(selection, {first:["true", true, "sub"],protectedSelection:"sub",interactive:"none",second:"false",selected:"title"});
+
+ const visiblePixels = await val(`(() => {
+   const c=getClip("ellipse"), W=els.preview.width, H=els.preview.height;
+   const b=clipBounds(c,evalProps(c,state.time),W,H);
+   return [suesVisiblePixel(c,{x:b.cx,y:b.cy},W,H,state.time),
+     suesVisiblePixel(c,{x:b.cx+b.hw*.9,y:b.cy+b.hh*.9},W,H,state.time)];
+ })()`);
+ assert.deepEqual(visiblePixels, [true,false]);
+
+ const dragTextHandle = async (index, dx, dy) => {
+   const point = await val(`(() => {
+     const c = getClip(state.selId), W = els.preview.width, H = els.preview.height;
+     const box = clipBounds(c,evalProps(c,state.time),W,H);
+     const handle = suesTextHandles(box,W,H)[${index}];
+     const bounds = els.preview.getBoundingClientRect();
+     return {x:bounds.left+handle.x*bounds.width/W,y:bounds.top+handle.y*bounds.height/H};
+   })()`);
+   await send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[point]});
+   await send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:point.x+dx,y:point.y+dy}]});
+   await send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+   return val('({...getClip("title").props})');
+ };
+ await send("Emulation.setTouchEmulationEnabled",{enabled:true,maxTouchPoints:1});
+ const xScale = await dragTextHandle(7, 12, 0);
+ assert.ok(xScale.textScaleX > 1, JSON.stringify(xScale));
+ assert.equal(xScale.textScaleY ?? 1, 1);
+ const yScale = await dragTextHandle(5, 0, 12);
+ assert.equal(yScale.textScaleX,xScale.textScaleX);
+ assert.ok(yScale.textScaleY > 1);
+ const uniform = await dragTextHandle(2, 10, 10);
+ assert.ok(uniform.textScaleX > yScale.textScaleX && uniform.textScaleY > yScale.textScaleY);
+ assert.ok(Math.abs(uniform.textScaleX/uniform.textScaleY-yScale.textScaleX/yScale.textScaleY) < .001);
+ await val('undo();true');
+ assert.equal(await val('getClip("title").props.textScaleX'),yScale.textScaleX);
+ await val('redo();true');
+ assert.equal(await val('getClip("title").props.textScaleY'),uniform.textScaleY);
+ assert.equal(uniform.fontSize, 80);
+ assert.equal(await val('getClip("title").start'),0);
+ await delay(700);
+ await send("Page.reload");
+ await until(()=>val(`typeof getClip !== "undefined" && getClip("title")?.props?.textScaleX > 1`));
+ assert.equal(await val('getClip("title").props.textScaleY'),uniform.textScaleY);
+
+ const mcp = startMcp(t,dir,{FABLECUT_PORT:String(serverPort)});
+ await mcp.request("initialize",{protocolVersion:"2025-11-25"});
+ const revision = readProject(dir).revision;
+ const update = await mcp.callTool("fablecut_patch_project",{
+   baseRevision:revision,
+   ops:[{op:"updateClip",id:"title",set:{props:{textScaleY:1.42}}}]
+ });
+ assert.equal(update.isError,false,update.text);
+ assert.equal(readProject(dir).clips.find(c=>c.id==="title").props.textScaleY,1.42);
+ await until(()=>val('getClip("title")?.props.textScaleY===1.42'));
+
+ const queued = await fetch(base+"/api/export/request",{
+   method:"POST",headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({where:"tab",range:"entire"})
+ });
+ const ticket = await queued.json();
+ assert.equal(queued.status,200,JSON.stringify(ticket));
+ const result = await until(async ()=>{
+   const job = await fetch(base+"/api/export/job?id="+ticket.id).then(r=>r.json());
+   if(["done","failed","error","cancelled"].includes(job.status)) return job;
+ },450);
+ assert.equal(result.status,"done",JSON.stringify(result));
+ const media = await fetch(new URL(result.src,base));
+ assert.equal(media.status,200);
+ const output = path.join(profile,"timeline-qa.mp4");
+ fs.writeFileSync(output,Buffer.from(await media.arrayBuffer()));
+ const streams = JSON.parse(execFileSync("ffprobe",["-v","error","-show_entries",
+   "stream=codec_name,width,height,nb_frames,duration","-of","json",output],{encoding:"utf8"})).streams;
+ const video = streams.find(stream=>stream.codec_name==="h264");
+ assert.ok(video,JSON.stringify(streams));
+ assert.equal(video.width,540);
+ assert.equal(video.height,960);
+ assert.equal(+video.nb_frames,15);
+ assert.ok(Math.abs(+video.duration-1)<.07);
+ execFileSync("ffmpeg",["-v","error","-i",output,"-f","null","-"]);
+ if(process.env.SUES_QA_ARTIFACT_DIR){
+   fs.copyFileSync(output,path.join(process.env.SUES_QA_ARTIFACT_DIR,"timeline-qa.mp4"));
+ }
+ console.log("Export verified",JSON.stringify(streams));
 });
