@@ -1,0 +1,26 @@
+/* SUES timeline families 2026-11-26; mobile display only. */
+@media(max-width:980px){
+ .clip[data-sues-family="V"]{--sues-fill:#3675c5;--sues-border:#3675c5}
+ .clip[data-sues-family="T"]{--sues-fill:#ffffff;--sues-border:#ffda35;--sues-ink:#141414}
+ .clip[data-sues-family="ST"]{--sues-fill:#ffffff40;--sues-border:#ffffff}
+ .clip[data-sues-family="F"]{--sues-fill:#999999;--sues-border:#bcbcbc;--sues-ink:#141414}
+ .clip[data-sues-family="I"]{--sues-fill:#e7a455;--sues-border:#e7a455;--sues-ink:#141414}
+ .clip[data-sues-family="E"]{--sues-fill:#e7a45540;--sues-border:#ffc477}
+ .clip[data-sues-family="BR"]{--sues-fill:#a17add;--sues-border:#a17add;--sues-ink:#141414}
+ .clip[data-sues-family="MR"]{--sues-fill:#a17add50;--sues-border:#e8c4ff}
+ .clip[data-sues-family="MG"]{--sues-fill:#b5dc69;--sues-border:#b5dc69;--sues-ink:#141414}
+ .clip[data-sues-family="VFX"],.clip[data-sues-family="CE"]{--sues-fill:#d4af37;--sues-border:#f3cf70;--sues-ink:#141414}
+ .clip[data-sues-family="IL"]{--sues-fill:#d4af374d;--sues-border:#f3cf70}
+ .clip[data-sues-family="A"]{--sues-fill:#357f99;--sues-border:#45d9e5}
+ .clip[data-sues-family="VS"]{--sues-fill:#76bcd5;--sues-border:#45d9e5;--sues-ink:#141414}
+ .clip[data-sues-family="M"]{--sues-fill:#258e75;--sues-border:#45d9e5}
+ .clip[data-sues-family="SFX"]{--sues-fill:#da778f;--sues-border:#45d9e5;--sues-ink:#141414}
+ #tracks .clip[data-sues-family]{background-color:var(--sues-fill,#40434b);border-color:var(--sues-border,#73757b);--clip-color:var(--sues-fill,#40434b)}
+ #tracks .clip[data-sues-family] .clip-body{background-color:transparent}
+ #tracks .clip[data-sues-family] .clip-label{color:var(--sues-ink,#fff);text-shadow:none}
+ #tracks .clip[data-sues-family="V"] .clip-label{color:#fff;text-shadow:0 1px 3px #000}
+ #tracks .clip[data-sues-family].selected{outline-color:var(--sues-border,#fff)}
+ #tracks .clip:not(.c-audio) .trans-mark polygon{fill:#d4af37b3;stroke:#f3cf70}
+ #tracks .clip:not(.c-audio) .trans-mark.focused polygon{fill:#d4af37;stroke:#fff0a6}
+ #tracks .clip:not(.c-audio) .trans-mark::after{content:"";position:absolute;top:50%;left:50%;width:16px;height:13px;transform:translate(-50%,-50%);background:#181818;clip-path:polygon(0 0,50% 50%,0 100%,0 0,100% 0,50% 50%,100% 100%,100% 0);pointer-events:none}
+}
