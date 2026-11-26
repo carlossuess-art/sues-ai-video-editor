@@ -73,3 +73,8 @@ Cuarto despliegue `715152efda2a`: T/ST muestran texto y abren el inspector con u
 ### Subtítulos independientes desde transcripción
 
 Quinto despliegue `0cdace0c2ebe`: Transcripción → **Subtítulos por palabra** crea un clip por palabra con su inicio real, incluso cuando dos palabras comienzan en el mismo fotograma. Se probó la persistencia y la paridad con el generador y editor MCP. El mínimo de 0,05 s puede producir un solape corto. Quedan las filas generales por familia, subfilas de solape, expansión inline de MG y revisión en dispositivo físico.
+
+
+### Subfilas temporales de solape
+
+Sexto despliegue `229d9e7ec4fa`: dentro de una pista homogénea T/ST, seleccionar un texto solapado abre los carriles mínimos y salir del grupo los vuelve a plegar. Los tiempos, los IDs y los datos se conservan. Falta consolidar tracks físicos de una misma familia en una única fila general y la expansión inline de MG. Se conserva pendiente Pixel real y QA completo.
